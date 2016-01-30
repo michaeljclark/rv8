@@ -2587,7 +2587,7 @@ riscv_hu decode_code_2[] = {
 };
 
 template <const size_t count>
-void decode_dsm_sw(riscv_ptr start, riscv_ptr end)
+void decode_dsm_sw(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
@@ -2603,11 +2603,11 @@ void decode_dsm_sw(riscv_ptr start, riscv_ptr end)
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
 	const char* last_insn = riscv_instructions[dec.op];
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-15s %12s %12lu %12.2lf\n", __func__, last_insn, decoded, insn_ns);
+	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }
 
 template <const size_t count>
-void decode_switch(riscv_ptr start, riscv_ptr end)
+void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
@@ -2623,11 +2623,11 @@ void decode_switch(riscv_ptr start, riscv_ptr end)
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
 	const char* last_insn = riscv_instructions[dec.op];
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-15s %12s %12lu %12.2lf\n", __func__, last_insn, decoded, insn_ns);
+	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }
 
 template <const size_t count>
-void decode_spike(riscv_ptr start, riscv_ptr end)
+void decode_spike_nohash(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	insn_desc_t insn;
 	processor_t proc;
@@ -2646,23 +2646,48 @@ void decode_spike(riscv_ptr start, riscv_ptr end)
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
 	const char* last_insn = insn.name;
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-15s %12s %12lu %12.2lf\n", __func__, last_insn, decoded, insn_ns);
+	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }
 
-#define TEST_DECODER(decoder,code,count) \
-	decoder<count>((riscv_ptr)code, (riscv_ptr)code + sizeof(code));
+template <const size_t count>
+void decode_spike_hash(riscv_ptr start, riscv_ptr end, const char *code)
+{
+	insn_desc_t insn;
+	processor_t proc;
+	unsigned char* pc;
+	proc.register_base_instructions();
+	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
+	size_t decoded = 0;
+	for (size_t i = 0; i < count; i++) {
+		pc = (unsigned char*)start;
+		while (pc < end) {
+			insn_bits_t bits = proc.get_instruction(&pc);
+			insn = proc.decode_insn(bits);
+			decoded++;
+		}
+	}
+	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
+	const char* last_insn = insn.name;
+	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
+	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
+}
+
+#define TEST_DECODER(decoder,code,count,type) \
+	decoder<count>((riscv_ptr)code, (riscv_ptr)code + sizeof(code), type);
 
 int main()
 {
 	static const ssize_t count = 1000000;
 
-	printf("%-15s %12s %12s %12s\n", "decoder", "last_insn", "insn_count", "nanoseconds");
+	printf("%-20s %12s %12s %12s %12s\n", "decoder", "last_insn", "insn_count", "nanoseconds", "code");
 
-	TEST_DECODER(decode_dsm_sw,decode_code_1,count);
-	TEST_DECODER(decode_switch,decode_code_1,count);
-	TEST_DECODER(decode_spike,decode_code_1,count);
+	TEST_DECODER(decode_dsm_sw,decode_code_1,count, "RV64");
+	TEST_DECODER(decode_switch,decode_code_1,count, "RV64");
+	TEST_DECODER(decode_spike_nohash,decode_code_1,count, "RV64");
+	TEST_DECODER(decode_spike_hash,decode_code_1,count, "RV64");
 
-	TEST_DECODER(decode_dsm_sw,decode_code_2,count);
-	TEST_DECODER(decode_switch,decode_code_2,count);
-	TEST_DECODER(decode_spike,decode_code_2,count);
+	TEST_DECODER(decode_dsm_sw,decode_code_2,count, "RV64C");
+	TEST_DECODER(decode_switch,decode_code_2,count, "RV64C");
+	TEST_DECODER(decode_spike_nohash,decode_code_2,count, "RV64C");
+	TEST_DECODER(decode_spike_hash,decode_code_2,count, "RV64C");
 }

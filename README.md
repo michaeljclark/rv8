@@ -20,13 +20,15 @@ This is a component of a RISC-V binary translation investigation.
 ## Performance Statistics
 
 ```
-decoder            last_insn   insn_count  nanoseconds  format
-decode_dsm_sw            jal     33000000        26.71  RV64
-decode_switch            jal     33000000        12.83  RV64
-decode_spike             jal     33000000        28.17  RV64
-decode_dsm_sw            c.j     32000000        26.43  RV64C
-decode_switch            c.j     32000000         9.65  RV64C
-decode_spike             c_j     32000000        37.88  RV64C
+decoder                 last_insn   insn_count  nanoseconds         code
+decode_dsm_sw                 jal     33000000        27.33         RV64
+decode_switch                 jal     33000000        11.64         RV64
+decode_spike_nohash           jal     33000000        15.59         RV64
+decode_spike_hash             jal     33000000         2.64         RV64
+decode_dsm_sw                 c.j     32000000        26.52        RV64C
+decode_switch                 c.j     32000000         9.95        RV64C
+decode_spike_nohash           c_j     32000000        23.43        RV64C
+decode_spike_hash             c_j     32000000         2.08        RV64C
 ```
 
 ## Build Instructions
