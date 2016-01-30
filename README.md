@@ -7,13 +7,14 @@ state machine tables to decode RISC-V instructions.
  * Dynamic state machine decoder (suitable for runtime generation)
  * Dynamic state machine decoder with native JIT - TODO
 
-Note: the riscv-isa-sim decoder is included (hash cache disabled).
+Note: the riscv-isa-sim decoder is included (with and without hash).
 Hash caching can be added to any of these decoders. The switch
 decoder has approximately equal worst and best case decode times
 and does not require any warm up. The state machine decoder can be
 used to create opcode tables at runtime (and mapped read only).
 The dynamic state machine table is statically embedded in the demo
 however the code supports creating decoder tables at runtime.
+The decoder numbers should be compared to spike_nohash.
 
 This is a component of a RISC-V binary translation investigation.
 
