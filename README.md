@@ -51,7 +51,7 @@ To print a dynamic state machine decoder table:
 make dsm
 ```
 
-To print decoder meta data table
+To print decoder meta data table:
 ```
 make meta
 ```
