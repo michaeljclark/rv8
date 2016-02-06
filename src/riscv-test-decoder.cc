@@ -41,7 +41,7 @@ struct processor_t
 	void register_base_instructions();
 	void register_insn(insn_bits_t match, insn_bits_t mask, const char* name);
 	insn_bits_t get_instruction(unsigned char **pc);
-	insn_desc_t decode_insn_nohash(insn_bits_t bits);
+	insn_desc_t decode_insn_nocache(insn_bits_t bits);
 	insn_desc_t decode_insn(insn_bits_t bits);
 };
 
@@ -95,7 +95,7 @@ insn_bits_t processor_t::get_instruction(unsigned char **pc)
 	return inst;
 }
 
-insn_desc_t processor_t::decode_insn_nohash(insn_bits_t bits)
+insn_desc_t processor_t::decode_insn_nocache(insn_bits_t bits)
 {
 	insn_desc_t* p = &instructions[0];
 
@@ -2627,7 +2627,7 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 }
 
 template <const size_t count>
-void decode_spike_nohash(riscv_ptr start, riscv_ptr end, const char *code)
+void decode_spike_nocache(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	insn_desc_t insn;
 	processor_t proc;
@@ -2639,7 +2639,7 @@ void decode_spike_nohash(riscv_ptr start, riscv_ptr end, const char *code)
 		pc = (unsigned char*)start;
 		while (pc < end) {
 			insn_bits_t bits = proc.get_instruction(&pc);
-			insn = proc.decode_insn_nohash(bits);
+			insn = proc.decode_insn_nocache(bits);
 			decoded++;
 		}
 	}
@@ -2650,7 +2650,7 @@ void decode_spike_nohash(riscv_ptr start, riscv_ptr end, const char *code)
 }
 
 template <const size_t count>
-void decode_spike_hash(riscv_ptr start, riscv_ptr end, const char *code)
+void decode_spike_cache(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	insn_desc_t insn;
 	processor_t proc;
@@ -2683,11 +2683,11 @@ int main()
 
 	TEST_DECODER(decode_dsm_sw,decode_code_1,count, "RV64");
 	TEST_DECODER(decode_switch,decode_code_1,count, "RV64");
-	TEST_DECODER(decode_spike_nohash,decode_code_1,count, "RV64");
-	TEST_DECODER(decode_spike_hash,decode_code_1,count, "RV64");
+	TEST_DECODER(decode_spike_nocache,decode_code_1,count, "RV64");
+	TEST_DECODER(decode_spike_cache,decode_code_1,count, "RV64");
 
 	TEST_DECODER(decode_dsm_sw,decode_code_2,count, "RV64C");
 	TEST_DECODER(decode_switch,decode_code_2,count, "RV64C");
-	TEST_DECODER(decode_spike_nohash,decode_code_2,count, "RV64C");
-	TEST_DECODER(decode_spike_hash,decode_code_2,count, "RV64C");
+	TEST_DECODER(decode_spike_nocache,decode_code_2,count, "RV64C");
+	TEST_DECODER(decode_spike_cache,decode_code_2,count, "RV64C");
 }

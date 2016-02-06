@@ -39,3 +39,6 @@ dsm: bin/riscv-parse-opcodes
 	bin/riscv-parse-opcodes -d \
 		-r $(OPCODES_DIR)/opcodes \
 		-r $(OPCODES_DIR)/opcodes-rvc
+
+bench: bin/riscv-test-decoder
+	bin/riscv-test-decoder
