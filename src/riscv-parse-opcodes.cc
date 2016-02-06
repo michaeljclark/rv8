@@ -126,6 +126,7 @@ struct riscv_opcode
 	std::string name;
 	riscv_tag_list tags;
 	riscv_opcode_mask_list masks;
+	std::string meta_type;
 
 	size_t mask;
 	size_t match;
@@ -225,7 +226,9 @@ struct riscv_inst_set
 	riscv_decoder_node node;
 
 	static bool is_mask(std::string tag);
-	static riscv_opcode_mask decode_mask(std::string rspec);
+	static bool is_meta(std::string tag);
+	static riscv_opcode_mask decode_mask(std::string bit_spec);
+	static std::string decode_meta(std::string mc_spec);
 
 	static std::string opcode_spec(riscv_opcode_ptr opcode);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
@@ -244,6 +247,7 @@ struct riscv_inst_set
 
 	void print_map();
 	void print_enum();
+	void print_meta();
 	void print_strings();
 	void print_switch();
 	void print_dsm();
@@ -298,16 +302,44 @@ std::string join(std::vector<T> list, std::string separator)
 	return ss.str();
 }
 
-bool riscv_inst_set::is_mask(std::string tag)
+std::string format_string(const char* fmt, ...)
 {
-	return ((tag.find("=") != std::string::npos) && (tag.find("ignore") == std::string::npos));
+    std::vector<char> buf(1024);
+    va_list ap;
+    
+    va_start(ap, fmt);
+    int len = vsnprintf(buf.data(), buf.capacity(), fmt, ap);
+    va_end(ap);
+    
+    std::string str;
+    if (len >= (int)buf.capacity()) {
+        buf.resize(len + 1);
+        va_start(ap, fmt);
+        vsnprintf(buf.data(), buf.capacity(), fmt, ap);
+        va_end(ap);
+    }
+    str = buf.data();
+    
+    return str;
 }
 
-riscv_opcode_mask riscv_inst_set::decode_mask(std::string rspec)
+bool riscv_inst_set::is_mask(std::string tag)
 {
-	std::vector<std::string> spart = split(rspec, "=", false, false);
+	return ((tag.find("=") != std::string::npos) &&
+		(tag.find("=ignore") == std::string::npos) &&
+		(tag.find("mc=") == std::string::npos));
+}
+
+bool riscv_inst_set::is_meta(std::string tag)
+{
+	return (tag.find("mc=") == 0);
+}
+
+riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
+{
+	std::vector<std::string> spart = split(bit_spec, "=", false, false);
 	if (spart.size() != 2) {
-		std::cerr << "range " << rspec << " must be in form n..m=v" << std::endl;
+		std::cerr << "bit range " << bit_spec << " must be in form n..m=v" << std::endl;
 		exit(1);
 	}
 	std::vector<std::string> rpart = split(spart[0], "..", false, false);
@@ -318,7 +350,7 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string rspec)
 		msb = strtoul(rpart[0].c_str(), nullptr, 10);
 		lsb = strtoul(rpart[1].c_str(), nullptr, 10);
 	} else {
-		std::cerr << "range " << rspec << " must be in form n..m=v" << std::endl;
+		std::cerr << "bit range " << bit_spec << " must be in form n..m=v" << std::endl;
 		exit(1);
 	}
 	if (spart[1].find("0x") == 0) {
@@ -329,6 +361,17 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string rspec)
 
 	return riscv_opcode_mask(riscv_bitrange(msb, lsb), val);
 }
+
+std::string riscv_inst_set::decode_meta(std::string mc_spec)
+{
+	std::vector<std::string> spart = split(mc_spec, "=", false, false);
+	if (spart.size() != 2) {
+		std::cerr << "meta data " << mc_spec << " must be in form mc=value" << std::endl;
+		exit(1);
+	}
+	return spart[1];
+}
+
 
 std::vector<riscv_bitrange> riscv_inst_set::bitmask_to_bitrange(std::vector<ssize_t> &bits)
 {	
@@ -433,6 +476,8 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 		opcode->tags.push_back(lookup_tag(part[i]));
 		if (is_mask(part[i])) {
 			opcode->masks.push_back(decode_mask(part[i]));
+		} else if (is_meta(part[i])) {
+			opcode->meta_type = decode_meta(part[i]);
 		}
 	}
 }
@@ -496,6 +541,20 @@ void riscv_inst_set::print_enum()
 	std::cout << "enum riscv_op {" << std::endl;
 	for (auto &opcode : opcodes) {
 		std::cout << "\t" << opcode_name("riscv_op_", opcode, '_') << "," << std::endl;
+	}
+	std::cout << "};" << std::endl;
+}
+
+void riscv_inst_set::print_meta()
+{
+	std::cout << "{" << std::endl;
+	for (auto &opcode : opcodes) {
+		std::cout << "\t{ "
+			<< std::left << std::setw(20)
+			<< format_string("%s,", opcode_name("riscv_op_", opcode, '_').c_str())
+			<< std::left << std::setw(30)
+			<< format_string("riscv_inst_type_%s, ", opcode->meta_type.c_str())
+			<< " }," << std::endl;
 	}
 	std::cout << "};" << std::endl;
 }
@@ -798,6 +857,7 @@ int main(int argc, const char *argv[])
 	bool print_switch = false;
 	bool print_dsm = false;
 	bool print_enum = false;
+	bool print_meta = false;
 	bool print_strings = false;
 	bool help_or_error = false;
 
@@ -818,6 +878,9 @@ int main(int argc, const char *argv[])
 		{ "-e", "--print-enum", cmdline_arg_type_none,
 			"Print enum",
 			[&](std::string s) { return (print_enum = true); } },
+		{ "-c", "--print-meta", cmdline_arg_type_none,
+			"Print meta compiler data",
+			[&](std::string s) { return (print_meta = true); } },
 		{ "-i", "--print-strings", cmdline_arg_type_none,
 			"Print strings",
 			[&](std::string s) { return (print_strings = true); } },
@@ -834,7 +897,10 @@ int main(int argc, const char *argv[])
 		std::cerr << argv[0] << ": wrong number of arguments" << std::endl;
 		help_or_error = true;
 	}
-	help_or_error |= !print_map && !print_switch && !print_enum && !print_strings && !print_dsm;
+
+	help_or_error |= !print_map && !print_switch && !print_enum &&
+		!print_strings && !print_dsm && !print_meta;
+
 	if (help_or_error) {
 		std::cerr << "usage: " << argv[0] << std::endl;
 		cmdline_option::print_options(options);
@@ -849,6 +915,10 @@ int main(int argc, const char *argv[])
 
 	if (print_enum) {
 		inst_set.print_enum();
+	}
+
+	if (print_meta) {
+		inst_set.print_meta();
 	}
 
 	if (print_strings) {
