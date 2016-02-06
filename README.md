@@ -34,9 +34,7 @@ decode_spike_hash             c_j     32000000         2.08        RV64C
 
 ## Build Instructions
 
-Check out in a subdirectory of ```riscv-tools``` and build:
 ```
-cd riscv-mc
 make
 ```
 
@@ -50,11 +48,17 @@ To print a static switch decoder:
 make switch
 ```
 
-To print a dynamic state machine decoder:
+To print a dynamic state machine decoder table:
 ```
 make dsm
+```
+
+To print decoder meta data table
+```
+make meta
 ```
 
 To run the decoder benchmarks:
 ```
 ./bin/riscv-test-decoder
+```
