@@ -861,7 +861,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 							dec.op = riscv_op_c_fld;
 							break;
 						case riscv_proc_type_rv128i:
-							//riscv_decode_cl_lq(dec, inst);
+							//riscv_decode_cl_lq(dec, inst); BOOM
 							//dec.op = riscv_op_c_lq;
 							break;
 					}
@@ -895,7 +895,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 							dec.op = riscv_op_c_fsd;
 							break;
 						case riscv_proc_type_rv128i:
-							//riscv_decode_cs_sq(dec, inst);
+							//riscv_decode_cs_sq(dec, inst); BOOM
 							//dec.op = riscv_op_c_sq;
 							break;
 					}
@@ -1046,7 +1046,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 							dec.op = riscv_op_c_fldsp;
 							break;
 						case riscv_proc_type_rv128i:
-							//riscv_decode_ci_lqsp(dec, inst);
+							//riscv_decode_ci_lqsp(dec, inst); BOOM
 							//dec.op = riscv_op_c_lqsp;
 							break;
 					}
@@ -1101,7 +1101,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 							dec.op = riscv_op_c_fsdsp;
 							break;
 						case riscv_proc_type_rv128i:
-							//riscv_decode_css_sqsp(dec, inst);
+							//riscv_decode_css_sqsp(dec, inst); BOOM
 							//dec.op = riscv_op_c_sqsp;
 							break;
 					}
@@ -1163,7 +1163,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 				case 0x04:
 					riscv_decode_i(dec, inst);
 					switch (riscv_decode_funct3(inst)) {
-						case 0: dec.op = riscv_op_addi;  break; // TODO: nop
+						case 0: dec.op = riscv_op_addi;  break; // BOOM: nop
 						case 1: dec.op = riscv_op_slli;  break;
 						case 2: dec.op = riscv_op_slti;  break;
 						case 3: dec.op = riscv_op_sltiu; break;
@@ -1314,6 +1314,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 					}
 					break;
 
+				// BOOM floating point
 				case 0x0f:
 				case 0x10:
 				case 0x11:
