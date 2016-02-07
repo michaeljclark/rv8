@@ -1,4 +1,4 @@
-# RISC-MMXV Meta Compiler
+# RISC-MMXVI Meta Compiler
 
 Experiment with a tiny solver that writes C code and simple
 state machine tables to decode RISC-V instructions.
