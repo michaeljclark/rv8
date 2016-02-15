@@ -1,4 +1,4 @@
-OPCODES_DIR=risc-mmxv
+OPCODES_DIR=riscv
 
 all: bin asm bin/riscv-mc bin/riscv-parse-opcodes bin/riscv-test-decoder asm/riscv-test-decoder.s
 
