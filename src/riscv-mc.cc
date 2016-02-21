@@ -6,13 +6,11 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
 
 #include <sys/stat.h>
 
 #include "endian.h"
+#include "riscv-util.h"
 #include "riscv-mc.h"
 
 const char* riscv_instructions[] = {
@@ -1795,81 +1793,6 @@ riscv_hu test_code_2[] = {
 	0xbff5
 };
 
-static const int INITIAL_BUFFER_SIZE = 256;
-
-static const char* FATAL_PREFIX = "FATAL";
-static const char* ERROR_PREFIX = "ERROR";
-static const char* DEBUG_PREFIX = "DEBUG";
-static const char* INFO_PREFIX = "INFO";
-
-std::string format_string(const char* fmt, ...)
-{
-    std::vector<char> buf(INITIAL_BUFFER_SIZE);
-    va_list ap;
-    
-    va_start(ap, fmt);
-    int len = vsnprintf(buf.data(), buf.capacity(), fmt, ap);
-    va_end(ap);
-    
-    std::string str;
-    if (len >= (int)buf.capacity()) {
-        buf.resize(len + 1);
-        va_start(ap, fmt);
-        vsnprintf(buf.data(), buf.capacity(), fmt, ap);
-        va_end(ap);
-    }
-    str = buf.data();
-    
-    return str;
-}
-
-void log_prefix(const char* prefix, const char* fmt, va_list arg)
-{
-	std::vector<char> buf(INITIAL_BUFFER_SIZE);
-
-	int len = vsnprintf(buf.data(), buf.capacity(), fmt, arg);
-
-	if (len >= (int)buf.capacity()) {
-		buf.resize(len + 1);
-		vsnprintf(buf.data(), buf.capacity(), fmt, arg);
-	}
-
-	fprintf(stderr, "%s: %s\n", prefix, buf.data());
-}
-
-void log_fatal_exit(const char* fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	log_prefix(FATAL_PREFIX, fmt, ap);
-	va_end(ap);
-	exit(9);
-}
-
-void log_error(const char* fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	log_prefix(ERROR_PREFIX, fmt, ap);
-	va_end(ap);
-}
-
-void log_info(const char* fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	log_prefix(INFO_PREFIX, fmt, ap);
-	va_end(ap);
-}
-
-void log_debug(const char* fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	log_prefix(DEBUG_PREFIX, fmt, ap);
-	va_end(ap);
-}
-
 static std::vector<char> read_file(std::string filename)
 {
 	std::vector<char> buf;
@@ -1877,17 +1800,17 @@ static std::vector<char> read_file(std::string filename)
 
 	FILE *file = fopen(filename.c_str(), "r");
 	if (!file) {
-		log_fatal_exit("error fopen: %s: %s", filename.c_str(), strerror(errno));
+		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
 	}
 
 	if (fstat(fileno(file), &stat_buf) < 0) {
-		log_fatal_exit("error fstat: %s: %s", filename.c_str(), strerror(errno));
+		panic("error fstat: %s: %s", filename.c_str(), strerror(errno));
 	}
 
 	buf.resize(stat_buf.st_size);
 	size_t bytes_read = fread(buf.data(), 1, stat_buf.st_size, file);
 	if (bytes_read != (size_t)stat_buf.st_size) {
-		log_fatal_exit("error fread: %s", filename.c_str());
+		panic("error fread: %s", filename.c_str());
 	}
 	fclose(file);
 
@@ -1905,8 +1828,7 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 		riscv_ptr pc = proc.pc;
 		riscv_decode_instruction(dec, &proc);
 		//riscv_decode_instruction_dsm(dec, &proc);
-		std::string s = riscv_format_instruction(dec, &proc, pc, pc_offset);
-		printf("%s\n", s.c_str());
+		riscv_print_instruction(dec, &proc, pc, pc_offset);
 	}
 }
 
@@ -1914,7 +1836,7 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 
 int main(int argc, char *argv[])
 {
-	printf("sizeof(riscv_decode)=%lu\n", sizeof(riscv_decode));
+
 #if 1
 	//DECODE_RV64(test_code_1);
 	DECODE_RV64(test_code_2);

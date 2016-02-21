@@ -2383,26 +2383,14 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 
 void riscv_print_dsm_entry(const riscv_dsm_entry *pc)
 {
-	std::cout << "/* " << std::left << std::setw(5) << pc << "*/";
+	printf("/* %p */", pc);
 	switch (pc->dsm_op) {
-		case riscv_dsm_break:
-			std::cout << "{ riscv_dsm_break, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_table_brk:
-			std::cout << "{ riscv_dsm_table_brk, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_table_dfl:
-			std::cout << "{ riscv_dsm_table_dfl, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_match:
-			std::cout << "{ riscv_dsm_match, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_jump:
-			std::cout << "{ riscv_dsm_jump, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_select:
-			std::cout << "{ riscv_dsm_select, " << riscv_instructions[pc->dsm_val] << " }," << std::endl;
-			break;
+		case riscv_dsm_break: printf("{ riscv_dsm_break, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_table_brk: printf("{ riscv_dsm_table_brk, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_table_dfl: printf("{ riscv_dsm_table_dfl, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_match: printf("{ riscv_dsm_match, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_jump: printf("{ riscv_dsm_jump, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", riscv_instructions[pc->dsm_val]); break;
 		case riscv_dsm_mask_srl0:
 		case riscv_dsm_mask_srl1:
 		case riscv_dsm_mask_srl2:
@@ -2435,7 +2423,7 @@ void riscv_print_dsm_entry(const riscv_dsm_entry *pc)
 		case riscv_dsm_mask_srl29:
 		case riscv_dsm_mask_srl30:
 		case riscv_dsm_mask_srl31:
-			std::cout << "{ riscv_dsm_mask_srl" << (pc->dsm_op - riscv_dsm_mask_srl0) << ", " << pc->dsm_val << " }," << std::endl;
+			printf("{ riscv_dsm_mask_srl%d, %d },\n", (pc->dsm_op - riscv_dsm_mask_srl0), pc->dsm_val);
 			break;
 	}
 }

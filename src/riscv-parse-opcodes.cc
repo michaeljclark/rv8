@@ -15,6 +15,8 @@
 #include <map>
 #include <set>
 
+#include "riscv-util.h"
+
 
 /* cmdline_option */
 
@@ -339,7 +341,7 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=", false, false);
 	if (spart.size() != 2) {
-		std::cerr << "bit range " << bit_spec << " must be in form n..m=v" << std::endl;
+		printf("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 		exit(1);
 	}
 	std::vector<std::string> rpart = split(spart[0], "..", false, false);
@@ -350,7 +352,7 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 		msb = strtoul(rpart[0].c_str(), nullptr, 10);
 		lsb = strtoul(rpart[1].c_str(), nullptr, 10);
 	} else {
-		std::cerr << "bit range " << bit_spec << " must be in form n..m=v" << std::endl;
+		printf("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 		exit(1);
 	}
 	if (spart[1].find("0x") == 0) {
@@ -366,7 +368,7 @@ std::string riscv_inst_set::decode_meta(std::string mc_spec)
 {
 	std::vector<std::string> spart = split(mc_spec, "=", false, false);
 	if (spart.size() != 2) {
-		std::cerr << "meta data " << mc_spec << " must be in form mc=value" << std::endl;
+		printf("meta data %s must be in form mc=value\n", mc_spec.c_str());
 		exit(1);
 	}
 	return spart[1];
@@ -487,7 +489,7 @@ bool riscv_inst_set::read_opcodes(std::string filename)
 	std::string line;
 	std::ifstream in(filename.c_str());
 	if (!in.is_open()) {
-		std::cerr << "error opening " << filename << std::endl;
+		printf("error opening %s\n", filename.c_str());
 		return false;
 	}
 	while (in.good())
@@ -528,44 +530,41 @@ void riscv_inst_set::generate_decoder()
 void riscv_inst_set::print_map()
 {
 	for (auto &opcode : opcodes) {
-		std::cout << "// " << std::left << std::setw(20) << opcode->name;
+		printf("// %-20s", opcode->name.c_str());
 		for (ssize_t bit = 31; bit >= 0; bit--) {
-			std::cout << ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : ((opcode->done & (1 << bit)) ? 'X' : '?'));
+			printf("%c", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : ((opcode->done & (1 << bit)) ? 'X' : '?')) );
 		}
-		std::cout << std::endl;
+		printf("\n");
 	}
 }
 
 void riscv_inst_set::print_enum()
 {
-	std::cout << "enum riscv_op {" << std::endl;
+	printf("enum riscv_op {\n");
 	for (auto &opcode : opcodes) {
-		std::cout << "\t" << opcode_name("riscv_op_", opcode, '_') << "," << std::endl;
+		printf("\t%s,\n", opcode_name("riscv_op_", opcode, '_').c_str());
 	}
-	std::cout << "};" << std::endl;
+	printf("};\n");
 }
 
 void riscv_inst_set::print_meta()
 {
-	std::cout << "{" << std::endl;
+	printf("{\n");
 	for (auto &opcode : opcodes) {
-		std::cout << "\t{ "
-			<< std::left << std::setw(20)
-			<< format_string("%s,", opcode_name("riscv_op_", opcode, '_').c_str())
-			<< std::left << std::setw(30)
-			<< format_string("riscv_inst_type_%s, ", opcode->meta_type.c_str())
-			<< " }," << std::endl;
+		printf("\t{ %-20s%-30s },\n",
+			format_string("%s,", opcode_name("riscv_op_", opcode, '_').c_str()).c_str(),
+			format_string("riscv_inst_type_%s, ", opcode->meta_type.c_str()).c_str());
 	}
-	std::cout << "};" << std::endl;
+	printf("};\n");
 }
 
 void riscv_inst_set::print_strings()
 {
-	std::cout << "const char* riscv_instructions[] = {" << std::endl;
+	printf("const char* riscv_instructions[] = {\n");
 	for (auto &opcode : opcodes) {
-		std::cout << "\t\"" << opcode_name("", opcode, '.') << "\"," << std::endl;
+		printf("\t\"%s\",\n", opcode_name("", opcode, '.').c_str());
 	}
-	std::cout << "};" << std::endl;
+	printf("};\n");
 }
 
 void riscv_inst_set::print_switch()
@@ -580,14 +579,14 @@ void riscv_inst_set::print_dsm()
 
 	for (size_t i = 0; i < decoder.size(); i++) {
 		riscv_dsm_entry &ent = decoder[i];
-		std::cout << "/* " << std::left << std::setw(5) << i << "*/";
+		printf("/* %-5lu */", i);
 		switch (ent.dsm_op) {
-			case riscv_dsm_break: std::cout << "{ riscv_dsm_break, " << ent.dsm_val << " }," << std::endl; break;
-			case riscv_dsm_table_brk: std::cout << "{ riscv_dsm_table_brk, " << ent.dsm_val << " }," << std::endl; break;
-			case riscv_dsm_table_dfl: std::cout << "{ riscv_dsm_table_dfl, " << ent.dsm_val << " }," << std::endl; break;
-			case riscv_dsm_match: std::cout << "{ riscv_dsm_match, " << ent.dsm_val << " }," << std::endl; break;
-			case riscv_dsm_jump: std::cout << "{ riscv_dsm_jump, " << ent.dsm_val << " }," << std::endl; break;
-			case riscv_dsm_select: std::cout << "{ riscv_dsm_select, " << opcode_name("riscv_op_", opcodes[ent.dsm_val], '_') << " }," << std::endl; break;
+			case riscv_dsm_break: printf("{ riscv_dsm_break, %d },\n", ent.dsm_val); break;
+			case riscv_dsm_table_brk: printf("{ riscv_dsm_table_brk, %d },\n", ent.dsm_val); break;
+			case riscv_dsm_table_dfl: printf("{ riscv_dsm_table_dfl, %d },\n", ent.dsm_val); break;
+			case riscv_dsm_match: printf("{ riscv_dsm_match, %d },\n", ent.dsm_val); break;
+			case riscv_dsm_jump: printf("{ riscv_dsm_jump, %d },\n", ent.dsm_val); break;
+			case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", opcode_name("riscv_op_", opcodes[ent.dsm_val], '_').c_str()); break;
 			case riscv_dsm_mask_srl0:
 			case riscv_dsm_mask_srl1:
 			case riscv_dsm_mask_srl2:
@@ -620,7 +619,7 @@ void riscv_inst_set::print_dsm()
 			case riscv_dsm_mask_srl29:
 			case riscv_dsm_mask_srl30:
 			case riscv_dsm_mask_srl31:
-				std::cout << "{ riscv_dsm_mask_srl" << (ent.dsm_op - riscv_dsm_mask_srl0) << ", " << ent.dsm_val << " }," << std::endl;
+				printf("{ riscv_dsm_mask_srl%d, %d },\n", (ent.dsm_op - riscv_dsm_mask_srl0), ent.dsm_val); break;
 				break;
 		}
 	}
@@ -704,53 +703,53 @@ void riscv_inst_set::generate_decoder_node(riscv_decoder_node &node, riscv_opcod
 
 void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t indent)
 {
-	for (size_t i = 0; i < indent; i++) std::cout << "\t";
-	std::cout << "switch (" << format_bitmask(node.bits, "inst", true) << ") {" << std::endl;
+	for (size_t i = 0; i < indent; i++) printf("\t");
+	printf("switch (%s) {\n", format_bitmask(node.bits, "inst", true).c_str());
 	for (auto &val : node.vals) {
 		if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
-			for (size_t i = 0; i < indent; i++) std::cout << "\t";
+			for (size_t i = 0; i < indent; i++) printf("\t");
 			if (val == DEFAULT) {
-				std::cout << "\tdefault: ";
+				printf("\tdefault: ");
 			} else {
-				std::cout << "\tcase " << val << ": ";
+				printf("\tcase %lu: ", val);
 			}
 			// if ambiguous (@pseudo opcode), chooses first opcode
 			auto opcode = node.val_opcodes[val].front();
-			std::cout << "dec.op = " << opcode_name("riscv_op_", opcode, '_') << "; break;";
+			printf("dec.op = %s; break;", opcode_name("riscv_op_", opcode, '_').c_str());
 			// if ambiguous, add comment
 			if (node.val_opcodes[val].size() > 1) {
-				std::cout << " //";
+				printf(" //");
 				for (auto &opcode : node.val_opcodes[val]) {
-					std::cout << " " << opcode->name;
+					printf(" %s", opcode->name.c_str());
 				}
 			}
-			std::cout << std::endl;
+			printf("\n");
 		} else {
-			for (size_t i = 0; i < indent; i++) std::cout << "\t";
+			for (size_t i = 0; i < indent; i++) printf("\t");
 			if (val == DEFAULT) {
-				std::cout << "\tdefault:" << std::endl;
+				printf("\tdefault: ");
 			} else {
-				std::cout << "\tcase " << val << ":" << std::endl;
+				printf("\tcase %lu:\n", val);
 			}
-			for (size_t i = 0; i < indent; i++) std::cout << "\t";
-			std::cout << "\t\t//";
+			for (size_t i = 0; i < indent; i++) printf("\t");
+			printf("\t\t//");
 			int count = 0;
 			for (auto &opcode : node.val_opcodes[val]) {
 				if (count++ == 12) {
-					std::cout << " ..."; break;
+					printf(" ..."); break;
 				}
-				std::cout << " " << opcode->name;
+					printf(" %s", opcode->name.c_str());
 			}
-			std::cout << std::endl;
+			printf("\n");
 			if (node.val_decodes[val].bits.size() > 0) {
 				print_switch_decoder_node(node.val_decodes[val], indent + 2);
 			}
-			for (size_t i = 0; i < indent; i++) std::cout << "\t";
-			std::cout << "\t\tbreak;" << std::endl;
+			for (size_t i = 0; i < indent; i++) printf("\t");
+			printf("\t\tbreak;\n");
 		}
 	}
-	for (size_t i = 0; i < indent; i++) std::cout << "\t";
-	std::cout << "}" << std::endl;
+	for (size_t i = 0; i < indent; i++) printf("\t");
+	printf("}\n");
 }
 
 void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_entry_list &decoder)
@@ -894,15 +893,16 @@ int main(int argc, const char *argv[])
 	if (!result.second) {
 		help_or_error = true;
 	} else if (result.first.size() != 0) {
-		std::cerr << argv[0] << ": wrong number of arguments" << std::endl;
+		printf("%s: wrong number of arguments\n", argv[0]);
 		help_or_error = true;
 	}
 
-	help_or_error |= !print_map && !print_switch && !print_enum &&
-		!print_strings && !print_dsm && !print_meta;
+	help_or_error |= !print_map && !print_switch &&
+		!print_enum && !print_strings &&
+		!print_dsm && !print_meta;
 
 	if (help_or_error) {
-		std::cerr << "usage: " << argv[0] << std::endl;
+		printf("usage: %s\n", argv[0]);
 		cmdline_option::print_options(options);
 		return false;
 	}

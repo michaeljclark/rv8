@@ -2,12 +2,8 @@
 //  riscv-mc.h
 //
 
-std::string format_string(const char* fmt, ...);
-extern void log_prefix(const char* prefix, const char* fmt, va_list arg);
-extern void log_fatal_exit(const char* fmt, ...);
-extern void log_error(const char* fmt, ...);
-extern void log_info(const char* fmt, ...);
-extern void log_debug(const char* fmt, ...);
+#ifndef riscv_mc_h
+#define riscv_mc_h
 
 template <typename T, unsigned B>
 inline T sign_extend(const T x)
@@ -410,6 +406,7 @@ struct riscv_decode
 	riscv_bu  rd;
 	riscv_bu  rs1;
 	riscv_bu  rs2;
+	riscv_bu  rs3;
 };
 
 /* CSR Permissions */
@@ -480,44 +477,44 @@ struct riscv_inst_type_metadata
 
 enum riscv_dsm
 {
-	riscv_dsm_break = 0,      /* break with no opcode */
-	riscv_dsm_table_brk = 1,  /* jump table, break if no entry */
-	riscv_dsm_table_dfl = 2,  /* jump table, last entry is default */
-	riscv_dsm_match = 3,      /* match predicate for next entry */
-	riscv_dsm_jump = 4,       /* jump and clear match */
-	riscv_dsm_select = 5,     /* select opcode and break */
-	riscv_dsm_mask_srl0 = 6,  /* load match |= (inst >> 0) & val */
-	riscv_dsm_mask_srl1 = 7,  /* load match |= (inst >> 1) & val */
-	riscv_dsm_mask_srl2 = 8,
-	riscv_dsm_mask_srl3 = 9,
-	riscv_dsm_mask_srl4 = 10,
-	riscv_dsm_mask_srl5 = 11,
-	riscv_dsm_mask_srl6 = 12,
-	riscv_dsm_mask_srl7 = 13,
-	riscv_dsm_mask_srl8 = 14,
-	riscv_dsm_mask_srl9 = 15,
-	riscv_dsm_mask_srl10 = 16,
-	riscv_dsm_mask_srl11 = 17,
-	riscv_dsm_mask_srl12 = 18,
-	riscv_dsm_mask_srl13 = 19,
-	riscv_dsm_mask_srl14 = 20,
-	riscv_dsm_mask_srl15 = 21,
-	riscv_dsm_mask_srl16 = 22,
-	riscv_dsm_mask_srl17 = 23,
-	riscv_dsm_mask_srl18 = 24,
-	riscv_dsm_mask_srl19 = 25,
-	riscv_dsm_mask_srl20 = 26,
-	riscv_dsm_mask_srl21 = 27,
-	riscv_dsm_mask_srl22 = 28,
-	riscv_dsm_mask_srl23 = 29,
-	riscv_dsm_mask_srl24 = 30,
-	riscv_dsm_mask_srl25 = 31,
-	riscv_dsm_mask_srl26 = 32,
-	riscv_dsm_mask_srl27 = 33,
-	riscv_dsm_mask_srl28 = 34,
-	riscv_dsm_mask_srl29 = 35,
-	riscv_dsm_mask_srl30 = 36,
-	riscv_dsm_mask_srl31 = 37
+	riscv_dsm_break = 0,       /* break with no opcode */
+	riscv_dsm_table_brk = 1,   /* jump table, break if no entry */
+	riscv_dsm_table_dfl = 2,   /* jump table, last entry is default */
+	riscv_dsm_match = 3,       /* match predicate for next entry */
+	riscv_dsm_jump = 4,        /* jump and clear match */
+	riscv_dsm_select = 5,      /* select opcode and break */
+	riscv_dsm_mask_srl0 = 6,   /* load match |= (inst >> 0) & val */
+	riscv_dsm_mask_srl1 = 7,   /* load match |= (inst >> 1) & val */
+	riscv_dsm_mask_srl2 = 8,   /* load match |= (inst >> 2) & val */
+	riscv_dsm_mask_srl3 = 9,   /* load match |= (inst >> 3) & val */
+	riscv_dsm_mask_srl4 = 10,  /* load match |= (inst >> 4) & val */
+	riscv_dsm_mask_srl5 = 11,  /* load match |= (inst >> 5) & val */
+	riscv_dsm_mask_srl6 = 12,  /* load match |= (inst >> 6) & val */
+	riscv_dsm_mask_srl7 = 13,  /* load match |= (inst >> 7) & val */
+	riscv_dsm_mask_srl8 = 14,  /* load match |= (inst >> 8) & val */
+	riscv_dsm_mask_srl9 = 15,  /* load match |= (inst >> 9) & val */
+	riscv_dsm_mask_srl10 = 16, /* load match |= (inst >> 10) & val */
+	riscv_dsm_mask_srl11 = 17, /* load match |= (inst >> 11) & val */
+	riscv_dsm_mask_srl12 = 18, /* load match |= (inst >> 12) & val */
+	riscv_dsm_mask_srl13 = 19, /* load match |= (inst >> 13) & val */
+	riscv_dsm_mask_srl14 = 20, /* load match |= (inst >> 14) & val */
+	riscv_dsm_mask_srl15 = 21, /* load match |= (inst >> 15) & val */
+	riscv_dsm_mask_srl16 = 22, /* load match |= (inst >> 16) & val */
+	riscv_dsm_mask_srl17 = 23, /* load match |= (inst >> 17) & val */
+	riscv_dsm_mask_srl18 = 24, /* load match |= (inst >> 18) & val */
+	riscv_dsm_mask_srl19 = 25, /* load match |= (inst >> 19) & val */
+	riscv_dsm_mask_srl20 = 26, /* load match |= (inst >> 20) & val */
+	riscv_dsm_mask_srl21 = 27, /* load match |= (inst >> 21) & val */
+	riscv_dsm_mask_srl22 = 28, /* load match |= (inst >> 22) & val */
+	riscv_dsm_mask_srl23 = 29, /* load match |= (inst >> 23) & val */
+	riscv_dsm_mask_srl24 = 30, /* load match |= (inst >> 24) & val */
+	riscv_dsm_mask_srl25 = 31, /* load match |= (inst >> 25) & val */
+	riscv_dsm_mask_srl26 = 32, /* load match |= (inst >> 26) & val */
+	riscv_dsm_mask_srl27 = 33, /* load match |= (inst >> 27) & val */
+	riscv_dsm_mask_srl28 = 34, /* load match |= (inst >> 28) & val */
+	riscv_dsm_mask_srl29 = 35, /* load match |= (inst >> 29) & val */
+	riscv_dsm_mask_srl30 = 36, /* load match |= (inst >> 30) & val */
+	riscv_dsm_mask_srl31 = 37  /* load match |= (inst >> 31) & val */
 };
 
 struct riscv_dsm_entry
@@ -724,7 +721,7 @@ inline void riscv_decode_cb(riscv_decode &dec, riscv_wu inst)
 	) << 1);
 }
 
-/* Decode CJ */
+/* Decode CJ - imm */
 inline void riscv_decode_cj(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_cj;
@@ -738,13 +735,23 @@ inline void riscv_decode_cj(riscv_decode &dec, riscv_wu inst)
 	) << 1);
 }
 
-/* Decode R Register */
+/* Decode R Register - rd, rs1, rs2 */
 inline void riscv_decode_r(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_r;
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
 	dec.rs2 = (inst >> 20) & 0b11111;
+}
+
+/* Decode R Register - rd, rs1, rs2, rs3 */
+inline void riscv_decode_r_ffff(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_r_ffff;
+	dec.rd = (inst >> 7) & 0b11111;
+	dec.rs1 = (inst >> 15) & 0b11111;
+	dec.rs2 = (inst >> 20) & 0b11111;
+	dec.rs3 = (inst >> 27) & 0b11111;
 }
 
 /* Decode I */
@@ -1410,26 +1417,14 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 
 void riscv_print_dsm_entry(const riscv_dsm_entry *pc)
 {
-	std::cout << "/* " << std::left << std::setw(5) << pc << "*/";
+	printf("/* %p */", pc);
 	switch (pc->dsm_op) {
-		case riscv_dsm_break:
-			std::cout << "{ riscv_dsm_break, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_table_brk:
-			std::cout << "{ riscv_dsm_table_brk, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_table_dfl:
-			std::cout << "{ riscv_dsm_table_dfl, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_match:
-			std::cout << "{ riscv_dsm_match, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_jump:
-			std::cout << "{ riscv_dsm_jump, " << pc->dsm_val << " }," << std::endl;
-			break;
-		case riscv_dsm_select:
-			std::cout << "{ riscv_dsm_select, " << riscv_instructions[pc->dsm_val] << " }," << std::endl;
-			break;
+		case riscv_dsm_break: printf("{ riscv_dsm_break, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_table_brk: printf("{ riscv_dsm_table_brk, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_table_dfl: printf("{ riscv_dsm_table_dfl, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_match: printf("{ riscv_dsm_match, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_jump: printf("{ riscv_dsm_jump, %d },\n", pc->dsm_val); break;
+		case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", riscv_instructions[pc->dsm_val]); break;
 		case riscv_dsm_mask_srl0:
 		case riscv_dsm_mask_srl1:
 		case riscv_dsm_mask_srl2:
@@ -1462,7 +1457,7 @@ void riscv_print_dsm_entry(const riscv_dsm_entry *pc)
 		case riscv_dsm_mask_srl29:
 		case riscv_dsm_mask_srl30:
 		case riscv_dsm_mask_srl31:
-			std::cout << "{ riscv_dsm_mask_srl" << (pc->dsm_op - riscv_dsm_mask_srl0) << ", " << pc->dsm_val << " }," << std::endl;
+			printf("{ riscv_dsm_mask_srl%d, %d },\n", (pc->dsm_op - riscv_dsm_mask_srl0), pc->dsm_val);
 			break;
 	}
 }
@@ -1484,7 +1479,7 @@ void riscv_decode_instruction_dsm(riscv_decode &dec, riscv_proc_state *proc)
 	const riscv_dsm_entry *pc = riscv_dsm_table;
 	while (true) {
 
-		if (false) riscv_print_dsm_entry(pc);
+		if (true) riscv_print_dsm_entry(pc);
 
 		switch (pc->dsm_op) {
 			case riscv_dsm_break:
@@ -1589,9 +1584,8 @@ const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value)
 	return (csr_i != csr_map.end()) ? csr_i->second : nullptr;
 }
 
-std::string riscv_format_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_ptr pc, riscv_ptr pc_offset)
+void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_ptr pc, riscv_ptr pc_offset)
 {
-	std::stringstream ss;
 #if 1
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
 	if (comp) {
@@ -1602,37 +1596,39 @@ std::string riscv_format_instruction(riscv_decode &dec, riscv_proc_state *proc, 
 	const riscv_inst_type_metadata *inst_meta = riscv_lookup_inst_metadata((riscv_inst_type)dec.type);
 	const rvf *fmt = inst_meta ? inst_meta->fmt : rvf_none;
 
-	ss << format_string("%016tx: \t", pc - pc_offset);
+	printf("%s", format_string("%016tx: \t", pc - pc_offset).c_str());
 	switch (dec.sz) {
-		case 2: ss << format_string("%04x\t\t", *(riscv_hu*)pc); break;
-		case 4: ss << format_string("%08x\t", *(riscv_wu*)pc); break;
+		case 2: printf("%s", format_string("%04x\t\t", *(riscv_hu*)pc).c_str()); break;
+		case 4: printf("%s", format_string("%08x\t", *(riscv_wu*)pc).c_str()); break;
 	}
-	ss << riscv_instructions[dec.op] << "\t";
+	printf("%s\t", riscv_instructions[dec.op]);
 
 	while (*fmt != rvf_z) {
 		switch (*fmt) {
-			case rvf_b: ss << "("; break;
-			case rvf_c: ss << ","; break;
-			case rvf_d: ss << ")"; break;
-			case rvf_rd: ss << riscv_i_registers[dec.rd]; break;
-			case rvf_rs1: ss << riscv_i_registers[dec.rs1]; break;
-			case rvf_rs2: ss << riscv_i_registers[dec.rs2]; break;
-			case rvf_frd: ss << riscv_f_registers[dec.rd]; break;
-			case rvf_frs1: ss << riscv_f_registers[dec.rs1]; break;
-			case rvf_frs2: ss << riscv_f_registers[dec.rs2]; break;
-			case rvf_frs3: ss << "BOOM"; break;
-			case rvf_srs1: ss << format_string("%d", dec.rs1); break;
-			case rvf_i: ss << format_string("%lld", dec.imm, dec.imm); break;
-			case rvf_ipc: ss << format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm); break;
+			case rvf_b: printf("("); break;
+			case rvf_c: printf(","); break;
+			case rvf_d: printf(")"); break;
+			case rvf_rd: printf("%s", riscv_i_registers[dec.rd]); break;
+			case rvf_rs1: printf("%s", riscv_i_registers[dec.rs1]); break;
+			case rvf_rs2: printf("%s", riscv_i_registers[dec.rs2]); break;
+			case rvf_frd: printf("%s", riscv_f_registers[dec.rd]); break;
+			case rvf_frs1: printf("%s", riscv_f_registers[dec.rs1]); break;
+			case rvf_frs2: printf("%s", riscv_f_registers[dec.rs2]); break;
+			case rvf_frs3: printf("%s", riscv_f_registers[dec.rs3]); break;
+			case rvf_srs1: printf("%s", format_string("%d", dec.rs1).c_str()); break;
+			case rvf_i: printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
+			case rvf_ipc: printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
 			case rvf_icsr:
 			{
 				const riscv_csr_metadata *csr = riscv_lookup_csr_metadata(dec.imm);
-				ss << (csr ? csr->csr_name : format_string("%llu", dec.imm));
+				printf("%s", (csr ? csr->csr_name : format_string("%llu", dec.imm)).c_str());
 				break;
 			}
 			case rvf_z: break;
 		}
 		fmt++;
 	}
-	return ss.str();
+	printf("\n");
 }
+
+#endif
