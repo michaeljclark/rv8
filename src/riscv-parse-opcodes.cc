@@ -15,6 +15,8 @@
 #include <map>
 #include <set>
 
+#include "riscv-types.h"
+#include "riscv-opcodes.h"
 #include "riscv-util.h"
 
 
@@ -165,16 +167,6 @@ struct riscv_decoder_node
 	riscv_decoder_node() : jump_slot(-1) {}
 };
 
-struct riscv_dsm_entry
-{
-	short dsm_op;
-	int dsm_val;
-
-	riscv_dsm_entry() : dsm_op(0), dsm_val(0) {}
-	riscv_dsm_entry(int dsm_op) : dsm_op(dsm_op), dsm_val(0) {}
-	riscv_dsm_entry(int dsm_op, int dsm_val) : dsm_op(dsm_op), dsm_val(dsm_val) {}
-};
-
 enum riscv_dsm
 {
 	riscv_dsm_break = 0,       /* break with no opcode */
@@ -199,7 +191,7 @@ enum riscv_dsm
 	riscv_dsm_mask_srl13 = 19, /* load match |= (inst >> 13) & val */
 	riscv_dsm_mask_srl14 = 20, /* load match |= (inst >> 14) & val */
 	riscv_dsm_mask_srl15 = 21, /* load match |= (inst >> 15) & val */
-	riscv_dsm_mask_srl16 = 22, /* load match |= (inst >> 16) & val */
+	riscv_dsm_mask_srl16 = 22, /* lriscv_print_dsm_entryriscv_print_dsm_entryoad match |= (inst >> 16) & val */
 	riscv_dsm_mask_srl17 = 23, /* load match |= (inst >> 17) & val */
 	riscv_dsm_mask_srl18 = 24, /* load match |= (inst >> 18) & val */
 	riscv_dsm_mask_srl19 = 25, /* load match |= (inst >> 19) & val */
@@ -215,6 +207,16 @@ enum riscv_dsm
 	riscv_dsm_mask_srl29 = 35, /* load match |= (inst >> 29) & val */
 	riscv_dsm_mask_srl30 = 36, /* load match |= (inst >> 30) & val */
 	riscv_dsm_mask_srl31 = 37  /* load match |= (inst >> 31) & val */
+};
+
+struct riscv_dsm_entry
+{
+	short dsm_op;
+	int dsm_val;
+
+	riscv_dsm_entry() : dsm_op(0), dsm_val(0) {}
+	riscv_dsm_entry(int dsm_op) : dsm_op(dsm_op), dsm_val(0) {}
+	riscv_dsm_entry(int dsm_op, int dsm_val) : dsm_op(dsm_op), dsm_val(dsm_val) {}
 };
 
 struct riscv_inst_set
