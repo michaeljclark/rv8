@@ -31,7 +31,7 @@ enum riscv_dsm
 	riscv_dsm_mask_srl13 = 19, /* load match |= (inst >> 13) & val */
 	riscv_dsm_mask_srl14 = 20, /* load match |= (inst >> 14) & val */
 	riscv_dsm_mask_srl15 = 21, /* load match |= (inst >> 15) & val */
-	riscv_dsm_mask_srl16 = 22, /* lriscv_print_dsm_entryriscv_print_dsm_entryoad match |= (inst >> 16) & val */
+	riscv_dsm_mask_srl16 = 22, /* load match |= (inst >> 16) & val */
 	riscv_dsm_mask_srl17 = 23, /* load match |= (inst >> 17) & val */
 	riscv_dsm_mask_srl18 = 24, /* load match |= (inst >> 18) & val */
 	riscv_dsm_mask_srl19 = 25, /* load match |= (inst >> 19) & val */
@@ -53,6 +53,10 @@ struct riscv_dsm_entry
 {
 	riscv_hu dsm_op;
 	riscv_wu dsm_val;
+
+	riscv_dsm_entry() : dsm_op(0), dsm_val(0) {}
+	riscv_dsm_entry(int dsm_op) : dsm_op(dsm_op), dsm_val(0) {}
+	riscv_dsm_entry(int dsm_op, int dsm_val) : dsm_op(dsm_op), dsm_val(dsm_val) {}
 };
 
 void riscv_print_dsm_entry(const riscv_dsm_entry *pc);
