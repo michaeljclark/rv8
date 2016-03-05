@@ -5,15 +5,6 @@
 #ifndef riscv_decode_h
 #define riscv_decode_h
 
-template <typename T, unsigned B>
-inline T sign_extend(const T x)
-{
-	struct {
-		T x:B;
-	} s;
-	return s.x = x;
-}
-
 /* Decoded Instruction */
 
 struct riscv_decode

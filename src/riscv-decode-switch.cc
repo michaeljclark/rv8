@@ -4,12 +4,12 @@
 
 #include <cstring>
 
-#include "endian.h"
-
+#include "riscv-endian.h"
 #include "riscv-opcodes.h"
 #include "riscv-types.h"
 #include "riscv-regs.h"
 #include "riscv-processor.h"
+#include "riscv-imm.h"
 #include "riscv-decode.h"
 
 /* Decode instruction */

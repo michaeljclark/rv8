@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <chrono>
 
-#include "endian.h"
+#include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-opcodes.h"
 #include "riscv-dsm.h"

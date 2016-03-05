@@ -4,6 +4,7 @@
 
 #include "riscv-opcodes.h"
 #include "riscv-types.h"
+#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-compression.h"
 

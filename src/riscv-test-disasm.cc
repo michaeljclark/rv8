@@ -9,8 +9,7 @@
 
 #include <sys/stat.h>
 
-#include "endian.h"
-
+#include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-regs.h"
 #include "riscv-processor.h"
@@ -18,6 +17,7 @@
 #include "riscv-util.h"
 #include "riscv-dsm.h"
 #include "riscv-dsm-table.h"
+#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-decode-dsm.h"
 #include "riscv-decode-switch.h"
