@@ -2,7 +2,7 @@
 
 # C0 encoding space
 c.addi4spn 1..0=0 15..13=0 12=ignore 11..2=ignore mc=ciw_addi4spn
-c.fld      1..0=0 15..13=1 12=ignore 11..2=ignore mc=c_fld
+c.fld      1..0=0 15..13=1 12=ignore 11..2=ignore mc=c_fld proc=rv32,rv64
 c.lw       1..0=0 15..13=2 12=ignore 11..2=ignore mc=cl_lw
 c.flw      1..0=0 15..13=3 12=ignore 11..2=ignore mc=cl_lw # c.ld for RV64
 c.fsd      1..0=0 15..13=5 12=ignore 11..2=ignore mc=cs_sd

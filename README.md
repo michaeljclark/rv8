@@ -36,6 +36,11 @@ decode_spike_cache            c_j     32000000         2.08        RV64C
 make
 ```
 
+To run the decoder benchmarks:
+```
+make bench
+```
+
 To print an opcode map:
 ```
 make map
@@ -56,7 +61,12 @@ To print decoder meta data table:
 make meta
 ```
 
-To run the decoder benchmarks:
+To print decoder opcode enum
 ```
-make bench
+make enum
+```
+
+To print decoder opcode strings
+```
+make strings
 ```
