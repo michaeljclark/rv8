@@ -708,7 +708,6 @@ void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_e
 		decoder[node.jump_slot] = riscv_dsm_entry(riscv_dsm_jump, decoder.size() - node.jump_slot);
 	}
 
-	ssize_t total_length = node.bits.size();
 	ssize_t range_start = node.bits.size();
 	for (riscv_bitrange &r : bitmask_to_bitrange(node.bits)) {
 		ssize_t shift = r.msb - range_start + 1;
@@ -744,7 +743,7 @@ void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_e
 				decoder[table_start + table_size - 1] = riscv_dsm_entry(riscv_dsm_jump, -1);
 				node.val_decodes[DEFAULT].jump_slot = table_start + table_size - 1;
 			}
-			for (size_t i = 0; i < table_size - 1; i++) {
+			for (ssize_t i = 0; i < table_size - 1; i++) {
 				decoder[table_start + i] = riscv_dsm_entry(riscv_dsm_jump, table_start + table_size - 1);
 			}
 		}
