@@ -1,6 +1,8 @@
+//
+//  riscv-endian.h
+//
+
 /*
- *   endian.h
- *
  *   This header defines the following endian macros as defined here:
  *   http://austingroupbugs.net/view.php?id=162
  *
