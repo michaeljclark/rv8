@@ -72,27 +72,27 @@ inline riscv_bu riscv_decode_funct7(riscv_wu inst) { return (inst >> 25) & 0b111
 
 /* Decode immediate */
 
-typedef imm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                          IMM_CI;
-typedef imm_t<18, S<12,12, B<17>>, S<6,2, B<16,12>>>                      IMM_CI_lui;
-typedef imm_t<8, S<12,12, B<5>>, S<6,2, B<4,2>,B<7,6>>>                   IMM_CI_lwsp;
-typedef imm_t<9, S<12,12, B<5>>, S<6,2, B<4,3>,B<8,6>>>                   IMM_CI_ldsp;
-typedef imm_t<10, S<12,12, B<9>>, S<6,2, B<4>,B<6>,B<8,7>,B<5>>>          IMM_CI_addi16sp;
-typedef imm_t<8, S<12,7, B<5,2>,B<7,6>>>                                  IMM_CSS_swsp;
-typedef imm_t<9, S<12,7, B<5,3>,B<8,6>>>                                  IMM_CSS_sdsp;
-typedef imm_t<10, S<12,7, B<5,4>,B<9,6>>>                                 IMM_CSS_sqsp;
-typedef imm_t<7, S<12,10, B<5,3>>, S<6,5, B<2>,B<6>>>                     IMM_CL_lw;
-typedef imm_t<8, S<12,10, B<5,3>>, S<6,5, B<7,6>>>                        IMM_CL_ld;
-typedef imm_t<9, S<12,10, B<5,4>,B<8>>, S<6,5, B<7,6>>>                   IMM_CL_lq;
-typedef imm_t<7, S<12,10, B<5,3>>, S<6,5, B<2>,B<6>>>                     IMM_CS_sw;
-typedef imm_t<8, S<12,10, B<5,3>>, S<6,5, B<7,6>>>                        IMM_CS_sd;
-typedef imm_t<9, S<12,10, B<5,4>,B<8>>, S<6,5, B<7,6>>>                   IMM_CS_sq;
-typedef imm_t<9, S<12,10, B<8>,B<4,3>>, S<6,2, B<7,6>,B<2,1>,B<5>>>       IMM_CB;
-typedef imm_t<12, S<12,2, B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>> IMM_CJ;
-typedef imm_t<12, S<31,20, B<11,0>>>                                      IMM_I;
-typedef imm_t<12, S<31,25, B<11,5>>, S<11,7, B<4,0>>>                     IMM_S;
-typedef imm_t<13, S<31,25, B<12>,B<10,5>>, S<11,7, B<4,1>,B<11>>>         IMM_SB;
-typedef imm_t<32, S<31,12, B<31,12>>>                                     IMM_U;
-typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                 IMM_UJ;
+typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_CI;
+typedef imm_t<18, S<12,12, B<17>>,          S<6,2,  B<16,12>>>              IMM_CI_lui;
+typedef imm_t<8,  S<12,12, B<5>>,           S<6,2,  B<4,2>,B<7,6>>>         IMM_CI_lwsp;
+typedef imm_t<9,  S<12,12, B<5>>,           S<6,2,  B<4,3>,B<8,6>>>         IMM_CI_ldsp;
+typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> IMM_CI_addi16sp;
+typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  IMM_CSS_swsp;
+typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  IMM_CSS_sdsp;
+typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  IMM_CSS_sqsp;
+typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             IMM_CL_lw;
+typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                IMM_CL_ld;
+typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                IMM_CL_lq;
+typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             IMM_CS_sw;
+typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                IMM_CS_sd;
+typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                IMM_CS_sq;
+typedef imm_t<9,  S<12,10, B<8>,B<4,3>>,    S<6,2,  B<7,6>,B<2,1>,B<5>>>    IMM_CB;
+typedef imm_t<12, S<12,2,  B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>>  IMM_CJ;
+typedef imm_t<12, S<31,20, B<11,0>>>                                        IMM_I;
+typedef imm_t<12, S<31,25, B<11,5>>,        S<11,7, B<4,0>>>                IMM_S;
+typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          IMM_SB;
+typedef imm_t<32, S<31,12, B<31,12>>>                                       IMM_U;
+typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   IMM_UJ;
 
 /* Decode CR */
 inline void riscv_decode_cr(riscv_decode &dec, riscv_wu inst)
