@@ -184,7 +184,7 @@ inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CL_ld::decode(inst);
 }
 
-/* Decode CR */
+/* Decode CS f */
 inline void riscv_decode_cs_f(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_cs_x;
