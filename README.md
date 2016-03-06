@@ -61,12 +61,12 @@ To print decoder meta data table:
 make meta
 ```
 
-To print decoder opcode enum
+To print decoder opcode enum:
 ```
 make enum
 ```
 
-To print decoder opcode strings
+To print decoder opcode strings:
 ```
 make strings
 ```
