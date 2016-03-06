@@ -185,7 +185,7 @@ inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_wu inst)
 }
 
 /* Decode CR */
-inline void riscv_decode_cs_x(riscv_decode &dec, riscv_wu inst)
+inline void riscv_decode_cs_f(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_cs_x;
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;

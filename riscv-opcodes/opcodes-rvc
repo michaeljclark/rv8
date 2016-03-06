@@ -17,12 +17,12 @@ c.lui      1..0=1 15..13=3 12=ignore 11..2=ignore mc=ci_lui # c.addi16sp when rd
 c.srli     1..0=1 15..13=4 12=ignore 11..10=0 9..2=ignore mc=cb
 c.srai     1..0=1 15..13=4 12=ignore 11..10=1 9..2=ignore mc=cb
 c.andi     1..0=1 15..13=4 12=ignore 11..10=2 9..2=ignore mc=cb
-c.sub      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=0 4..2=ignore mc=cs_x
-c.xor      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=1 4..2=ignore mc=cs_x
-c.or       1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=2 4..2=ignore mc=cs_x
-c.and      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=3 4..2=ignore mc=cs_x
-c.subw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=0 4..2=ignore mc=cs_x
-c.addw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=1 4..2=ignore mc=cs_x
+c.sub      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=0 4..2=ignore mc=cs_f
+c.xor      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=1 4..2=ignore mc=cs_f
+c.or       1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=2 4..2=ignore mc=cs_f
+c.and      1..0=1 15..13=4 12=0      11..10=3 9..7=ignore 6..5=3 4..2=ignore mc=cs_f
+c.subw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=0 4..2=ignore mc=cs_f
+c.addw     1..0=1 15..13=4 12=1      11..10=3 9..7=ignore 6..5=1 4..2=ignore mc=cs_f
 c.j        1..0=1 15..13=5 12=ignore 11..2=ignore mc=cj
 c.beqz     1..0=1 15..13=6 12=ignore 11..2=ignore mc=cb
 c.bnez     1..0=1 15..13=7 12=ignore 11..2=ignore mc=cb
