@@ -159,7 +159,7 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 							break;
 						case 3:
 							riscv_decode_cs_x(dec, inst);
-							switch (dec.imm) {
+							switch (((inst >> 10) & 0b11100) | ((inst >> 5)  & 0b00011)) {
 								case 0:
 									dec.op = riscv_op_c_sub;
 									break;
