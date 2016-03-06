@@ -154,8 +154,6 @@ $(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RISCV_MC_LIB) ; $(call cmd, LD $@,
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RISCV_MC_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DISASM_BIN): $(TEST_DISASM_OBJS) $(RISCV_MC_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(PARSE_OPCODES_ASM): 
-
 # build recipes
 ifdef V
 cmd = $2
