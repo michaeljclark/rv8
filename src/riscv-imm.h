@@ -27,7 +27,6 @@ struct B
 	enum { n = N };
 	enum { m = M };
 	enum { width = N - M + 1 };
-	enum { mask = ((1 << (N + 1)) - 1) ^ ((1 << M) - 1) };
 };
 
 /*
@@ -58,7 +57,10 @@ struct S<K,L,H,T...> : S<K,L,T...>
 	enum { shift = offset + L - H::width - H::m };
 
 	static inline constexpr int64_t decode(uint64_t inst) {
-		return ((shift < 0 ? inst << -shift : inst >> shift) & H::mask) |
+		const uint64_t mask =
+			((uint64_t(1) << (H::n + 1)) - 1) ^
+			((uint64_t(1) << H::m) - 1);
+		return ((shift < 0 ? inst << -shift : inst >> shift) & mask) |
 			I::decode(inst);
 	}
 };
@@ -98,22 +100,5 @@ struct imm_t : imm_impl_t<W,Args...>
 		return sign_extend<int64_t,W>(I::decode(inst));
 	}
 };
-
-/*
- * immediate bit range notation template examples
- * from riscv-compressed-spec-v1.9, page 9
- */
-
-/*
- *      12         10  6               2
- * CB   offset[8|4:3]  offset[7:6|2:1|5]
- */
-typedef imm_t<9, S<12,10, B<8>,B<4,3>>, S<6,2, B<7,6>,B<2,1>,B<5>>> CB;
-
-/*
- *      12                          2
- * CJ   offset[11|4|9:8|10|6|7|3:1|5]
- */
-typedef imm_t<12, S<12,2, B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>> CJ;
 
 #endif
