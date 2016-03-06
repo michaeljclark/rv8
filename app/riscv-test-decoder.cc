@@ -68,7 +68,7 @@ void processor_t::build_opcode_map()
 void processor_t::register_base_instructions()
 {
 	#define DECLARE_INSN(name, match, mask) \
-		insn_bits_t name##_match = (match), name##_mask = (mask);
+		[[gnu::unused]] insn_bits_t name##_match = (match), name##_mask = (mask);
 	#include "encoding.h"
 	#undef DECLARE_INSN
 
