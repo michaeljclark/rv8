@@ -114,25 +114,25 @@ RISCV_MC_LIB = $(LIB_DIR)/libriscv_mc.a
 
 PARSE_OPCODES_SRCS = $(APP_SRC_DIR)/riscv-parse-opcodes.cc
 PARSE_OPCODES_OBJS = $(call src_objs, $(PARSE_OPCODES_SRCS))
-PARSE_OPCODES_ASM = $(call src_asm, $(PARSE_OPCODES_SRCS))
 PARSE_OPCODES_BIN = $(BIN_DIR)/riscv-parse-opcodes
 
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
 TEST_DECODER_OBJS = $(call src_objs, $(TEST_DECODER_SRCS))
-TEST_DECODER_ASM = $(call src_asm, $(TEST_DECODER_SRCS))
 TEST_DECODER_BIN = $(BIN_DIR)/riscv-test-decoder
 
 TEST_DISASM_SRCS = $(APP_SRC_DIR)/riscv-test-disasm.cc
 TEST_DISASM_OBJS = $(call src_objs, $(TEST_DISASM_SRCS))
-TEST_DISASM_ASM = $(call src_asm, $(TEST_DISASM_SRCS))
 TEST_DISASM_BIN = $(BIN_DIR)/riscv-test-disasm
 
+TEST_DECODER_ASM = $(call src_asm, $(APP_SRC_DIR)/riscv-test-decoder.cc)
+SWITCH_DECODER_ASM = $(call src_asm, $(LIB_SRC_DIR)/riscv-decode-switch.cc)
+
 ALL_SRCS = $(RISCV_MC_SRCS) $(PARSE_OPCODES_SRCS) $(TEST_DECODER_SRCS) $(TEST_DISASM_SRCS)
-BINARIES = $(PARSE_OPCODES_BIN) $(TEST_DECODER_BIN) $(TEST_DISASM_BIN) \
-           $(PARSE_OPCODES_ASM) $(TEST_DECODER_ASM) $(TEST_DISASM_ASM)
+BINARIES = $(PARSE_OPCODES_BIN) $(TEST_DECODER_BIN) $(TEST_DISASM_BIN)
+ASSEMBLY = $(TEST_DECODER_ASM) $(SWITCH_DECODER_ASM)
 
 # build rules
-all: dirs $(LIBS) $(BINARIES)
+all: dirs $(LIBS) $(BINARIES) $(ASSEMBLY)
 .PHONY: dirs
 dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
@@ -162,6 +162,7 @@ cmd = @echo "$1"; $2
 endif
 
 $(ASM_DIR)/%.s : $(APP_SRC_DIR)/%.cc ; $(call cmd, ASM $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(ASM_FLAGS) -c $< -o $@)
+$(ASM_DIR)/%.s : $(LIB_SRC_DIR)/%.cc ; $(call cmd, ASM $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(ASM_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(LIB_SRC_DIR)/%.cc : $(LIB_SRC_DIR)/%.rl ; $(call cmd, RAGEL $@, $(RAGEL) $< -o $@)
