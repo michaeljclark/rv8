@@ -7,8 +7,6 @@
 #include <map>
 #include <string>
 
-#include <sys/stat.h>
-
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-regs.h"
@@ -96,30 +94,6 @@ riscv_hu test_code_2[] = {
 	0x0073, 0x1020,
 	0xbff5
 };
-
-static std::vector<char> read_file(std::string filename)
-{
-	std::vector<char> buf;
-	struct stat stat_buf;
-
-	FILE *file = fopen(filename.c_str(), "r");
-	if (!file) {
-		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
-	}
-
-	if (fstat(fileno(file), &stat_buf) < 0) {
-		panic("error fstat: %s: %s", filename.c_str(), strerror(errno));
-	}
-
-	buf.resize(stat_buf.st_size);
-	size_t bytes_read = fread(buf.data(), 1, stat_buf.st_size, file);
-	if (bytes_read != (size_t)stat_buf.st_size) {
-		panic("error fread: %s", filename.c_str());
-	}
-	fclose(file);
-
-	return buf;
-}
 
 void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 {

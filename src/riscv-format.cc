@@ -3,6 +3,7 @@
 //
 
 #include <map>
+#include <vector>
 #include <string>
 
 #include "riscv-opcodes.h"
