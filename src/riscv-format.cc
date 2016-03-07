@@ -82,46 +82,46 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 
 /* Metadata Tables */
 
+struct riscv_inst_type_map : std::map<riscv_inst_type,const riscv_inst_type_metadata*>
+{
+	riscv_inst_type_map() {
+		for (const auto *ent = riscv_inst_type_table; ent->fmt; ent++)
+			(*this)[ent->type] = ent;
+	}
+};
+
+struct riscv_inst_comp_map : std::map<riscv_op,const riscv_inst_comp_metadata*>
+{
+	riscv_inst_comp_map() {
+		for (const auto *ent = riscv_comp_table; ent->cop; ent++)
+			(*this)[ent->cop] = ent;
+	}
+};
+
+struct riscv_csr_map : std::map<riscv_hu,const riscv_csr_metadata*>
+{
+	riscv_csr_map() {
+		for (const auto *ent = riscv_csr_table; ent->csr_value; ent++)
+			(*this)[ent->csr_value] = ent;
+	}
+};
+
 const riscv_inst_type_metadata* riscv_lookup_inst_metadata(riscv_inst_type type)
 {
-	static std::map<riscv_inst_type,const riscv_inst_type_metadata*> type_map;
-	if (type_map.size() == 0) {
-		const riscv_inst_type_metadata *ent = riscv_inst_type_table;
-		while (ent->fmt) {
-			type_map[ent->type] = ent;
-			ent++;
-		}
-	}
-	std::map<riscv_inst_type,const riscv_inst_type_metadata*>::iterator type_i = type_map.find(type);
-	return (type_i != type_map.end()) ? type_i->second : nullptr;
+	static riscv_inst_type_map type_map;
+	return type_map[type];
 }
 
 const riscv_inst_comp_metadata* riscv_lookup_comp_metadata(riscv_op op)
 {
-	static std::map<riscv_op,const riscv_inst_comp_metadata*> comp_map;
-	if (comp_map.size() == 0) {
-		const riscv_inst_comp_metadata *ent = riscv_comp_table;
-		while (ent->cop) {
-			comp_map[ent->cop] = ent;
-			ent++;
-		}
-	}
-	std::map<riscv_op,const riscv_inst_comp_metadata*>::iterator type_i = comp_map.find(op);
-	return (type_i != comp_map.end()) ? type_i->second : nullptr;
+	static riscv_inst_comp_map comp_map;
+	return comp_map[op];
 }
 
 const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value)
 {
-	static std::map<riscv_hu,const riscv_csr_metadata*> csr_map;
-	if (csr_map.size() == 0) {
-		const riscv_csr_metadata *ent = riscv_csr_table;
-		while (ent->csr_value) {
-			csr_map[ent->csr_value] = ent;
-			ent++;
-		}
-	}
-	std::map<riscv_hu,const riscv_csr_metadata*>::iterator csr_i = csr_map.find(csr_value);
-	return (csr_i != csr_map.end()) ? csr_i->second : nullptr;
+	static riscv_csr_map csr_map;
+	return csr_map[csr_value];
 }
 
 void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_ptr pc, riscv_ptr pc_offset)
