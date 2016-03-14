@@ -131,12 +131,21 @@ struct riscv_opcode
 	riscv_tag_list tags;
 	riscv_opcode_mask_list masks;
 	std::string meta_type;
+	std::vector<std::string> isa_list;
 
 	size_t mask;
 	size_t match;
 	size_t done;
 
 	riscv_opcode(std::string name) : name(name), mask(0), match(0), done(0) {}
+
+	bool match_isa(std::vector<std::string> isa_subset) {
+		if (isa_subset.size() == 0) return true;
+		for (auto s : isa_subset) {
+			if (std::find(isa_list.begin(), isa_list.end(), s) != isa_list.end()) return true;
+		}
+		return false;
+	}
 };
 
 struct riscv_tag
@@ -176,9 +185,11 @@ struct riscv_inst_set
 	riscv_tag_list tags;
 	riscv_tag_map tags_byname;
 	riscv_decoder_node node;
+	std::vector<std::string> isa_subset;
 
 	static bool is_mask(std::string tag);
 	static bool is_meta(std::string tag);
+	static bool is_isa(std::string tag);
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string decode_meta(std::string mc_spec);
 
@@ -285,6 +296,11 @@ bool riscv_inst_set::is_mask(std::string tag)
 bool riscv_inst_set::is_meta(std::string tag)
 {
 	return (tag.find("mc=") == 0);
+}
+
+bool riscv_inst_set::is_isa(std::string tag)
+{
+	return (tag.find("rv") == 0);
 }
 
 riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
@@ -430,6 +446,8 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 			opcode->masks.push_back(decode_mask(part[i]));
 		} else if (is_meta(part[i])) {
 			opcode->meta_type = decode_meta(part[i]);
+		} else if (is_isa(part[i])) {
+			opcode->isa_list.push_back(part[i]);
 		}
 	}
 }
@@ -480,7 +498,8 @@ void riscv_inst_set::generate_decoder()
 void riscv_inst_set::print_map()
 {
 	for (auto &opcode : opcodes) {
-		printf("// %-20s", opcode->name.c_str());
+		if (!opcode->match_isa(isa_subset)) continue;
+		printf("// %-16s", opcode->name.c_str());
 		for (ssize_t bit = 31; bit >= 0; bit--) {
 			printf("%c", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : ((opcode->done & (1 << bit)) ? 'X' : '?')) );
 		}
@@ -811,6 +830,9 @@ int main(int argc, const char *argv[])
 
 	cmdline_option options[] =
 	{
+		{ "-I", "--isa-subset", cmdline_arg_type_string,
+			"ISA subset (rv32i, rv32m, rv32a, rv32f, rv32d, rv64i, rv64m, rv64a, rv64f, rv64d)",
+			[&](std::string s) { inst_set.isa_subset.push_back(s); return true; } },
 		{ "-r", "--read-opcodes", cmdline_arg_type_string,
 			"Read opcodes",
 			[&](std::string s) { return inst_set.read_opcodes(s); } },
