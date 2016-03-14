@@ -140,12 +140,12 @@ clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-map: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
-meta: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -c -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
-enum: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -e -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
-strings: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -i -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
-switch: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -s -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
-dsm: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -d -r $(OPCODES_DIR)/opcodes -r $(OPCODES_DIR)/opcodes-rvc
+map: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)/opcodes
+meta: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -c -r $(OPCODES_DIR)/opcodes
+enum: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -e -r $(OPCODES_DIR)/opcodes
+strings: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -i -r $(OPCODES_DIR)/opcodes
+switch: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -s -r $(OPCODES_DIR)/opcodes
+dsm: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -d -r $(OPCODES_DIR)/opcodes
 bench: $(TEST_DECODER_BIN) ; $(TEST_DECODER_BIN)
 
 # build targets
