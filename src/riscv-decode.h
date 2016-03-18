@@ -44,9 +44,9 @@ enum riscv_inst_type
 	riscv_inst_type_r_ff,
 	riscv_inst_type_r_rf,
 	riscv_inst_type_r_fr,
-	riscv_inst_type_r_fff,
+	riscv_inst_type_r_3f,
 	riscv_inst_type_r_rff,
-	riscv_inst_type_r_ffff,
+	riscv_inst_type_r_4f,
 	riscv_inst_type_i,
 	// riscv_inst_type_i_fence,
 	// riscv_inst_type_i_shamt,
@@ -235,9 +235,9 @@ inline void riscv_decode_r(riscv_decode &dec, riscv_wu inst)
 }
 
 /* Decode R Register - rd, rs1, rs2, rs3 */
-inline void riscv_decode_r_ffff(riscv_decode &dec, riscv_wu inst)
+inline void riscv_decode_r_4f(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_r_ffff;
+	dec.type = riscv_inst_type_r_4f;
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
 	dec.rs2 = (inst >> 20) & 0b11111;
