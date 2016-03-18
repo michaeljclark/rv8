@@ -127,20 +127,26 @@ sc.d        rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3 mc=
 
 # RV32S
 
-scall     11..7=0 19..15=0 31..20=0x000 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-sbreak    11..7=0 19..15=0 31..20=0x001 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-sret      11..7=0 19..15=0 31..20=0x100 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-sfence.vm 11..7=0 rs1      31..20=0x101 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-wfi       11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-mrth      11..7=0 19..15=0 31..20=0x306 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-mrts      11..7=0 19..15=0 31..20=0x305 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-hrts      11..7=0 19..15=0 31..20=0x205 14..12=0 6..2=0x1C 1..0=3 mc=i_s          rv32s rv64s
-csrrw     rd      rs1      imm12        14..12=1 6..2=0x1C 1..0=3 mc=i_csr        rv32s rv64s
-csrrs     rd      rs1      imm12        14..12=2 6..2=0x1C 1..0=3 mc=i_csr        rv32s rv64s
-csrrc     rd      rs1      imm12        14..12=3 6..2=0x1C 1..0=3 mc=i_csr        rv32s rv64s
-csrrwi    rd      rs1      imm12        14..12=5 6..2=0x1C 1..0=3 mc=i_csri       rv32s rv64s
-csrrsi    rd      rs1      imm12        14..12=6 6..2=0x1C 1..0=3 mc=i_csri       rv32s rv64s
-csrrci    rd      rs1      imm12        14..12=7 6..2=0x1C 1..0=3 mc=i_csri       rv32s rv64s
+scall      11..7=0 19..15=0 31..20=0x000 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+sbreak     11..7=0 19..15=0 31..20=0x001 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+sret       11..7=0 19..15=0 31..20=0x100 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+sfence.vm  11..7=0 rs1      31..20=0x101 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+wfi        11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+mrth       11..7=0 19..15=0 31..20=0x306 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+mrts       11..7=0 19..15=0 31..20=0x305 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+hrts       11..7=0 19..15=0 31..20=0x205 14..12=0 6..2=0x1C 1..0=3 mc=i_s         rv32s rv64s
+rdcycle    rd      19..15=0 31..20=0xC00 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+rdtime     rd      19..15=0 31..20=0xC01 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+rdinstret  rd      19..15=0 31..20=0xC02 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+rdcycleh   rd      19..15=0 31..20=0xC80 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+rdtimeh    rd      19..15=0 31..20=0xC81 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+rdinstreth rd      19..15=0 31..20=0xC82 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+csrrw      rd      rs1      imm12        14..12=1 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+csrrs      rd      rs1      imm12        14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+csrrc      rd      rs1      imm12        14..12=3 6..2=0x1C 1..0=3 mc=i_csr       rv32s rv64s
+csrrwi     rd      rs1      imm12        14..12=5 6..2=0x1C 1..0=3 mc=i_csri      rv32s rv64s
+csrrsi     rd      rs1      imm12        14..12=6 6..2=0x1C 1..0=3 mc=i_csri      rv32s rv64s
+csrrci     rd      rs1      imm12        14..12=7 6..2=0x1C 1..0=3 mc=i_csri      rv32s rv64s
 
 # F/D EXTENSIONS
 
@@ -217,6 +223,15 @@ fmadd.d   rd rs1 rs2 rs3 rm 26..25=1 6..2=0x10 1..0=3             mc=r_ffff     
 fmsub.d   rd rs1 rs2 rs3 rm 26..25=1 6..2=0x11 1..0=3             mc=r_ffff       rv32d rv64d
 fnmsub.d  rd rs1 rs2 rs3 rm 26..25=1 6..2=0x12 1..0=3             mc=r_ffff       rv32d rv64d
 fnmadd.d  rd rs1 rs2 rs3 rm 26..25=1 6..2=0x13 1..0=3             mc=r_ffff       rv32d rv64d
+
+frcsr      rd      19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+frrm       rd      19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+frflags    rd      19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+fscsr      rd      rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+fsrm       rd      rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+fsflags    rd      rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3 mc=i_csr       rv32f rv64f
+fsrmi      rd      zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3 mc=i_csri      rv32f rv64f
+fsflagsi   rd      zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3 mc=i_csri      rv32f rv64f
 
 # RVC C0 encoding space
 
