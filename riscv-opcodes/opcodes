@@ -58,8 +58,8 @@ sb         imm12hi rs1 rs2 imm12lo   14..12=0 6..2=0x08 1..0=3            c=s   
 sh         imm12hi rs1 rs2 imm12lo   14..12=1 6..2=0x08 1..0=3            c=s     rv32i rv64i
 sw         imm12hi rs1 rs2 imm12lo   14..12=2 6..2=0x08 1..0=3            c=s     rv32i rv64i
 
-fence      pred succ        31..28=0 14..12=0 6..2=0x03 1..0=3            c=i     rv32i rv64i
-fence.i                     31..20=0 14..12=1 6..2=0x03 1..0=3            c=i     rv32i rv64i
+fence      pred succ 31..28=0 19..15=0 14..12=0 11..7=0 6..2=0x03 1..0=3  c=i     rv32i rv64i
+fence.i              31..20=0 19..15=0 14..12=1 11..7=0 6..2=0x03 1..0=3  c=i     rv32i rv64i
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
 
