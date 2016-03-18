@@ -4,15 +4,15 @@ Experiment with a tiny solver that writes C code and simple
 state machine tables to decode RISC-V instructions.
 
  * Static switch decoder (suitable for compile time generation)
- * Dynamic state machine decoder (suitable for runtime generation)
- * Dynamic state machine decoder with native JIT - TODO
+ * State machine decoder (suitable for runtime generation)
+ * State machine decoder with native JIT - TODO
 
 Note: the riscv-isa-sim decoder is included (with and without caching
 enabled). Pre-decode caching will eventually be added to all of the
-experimental decoders. The dynamic state machine decoder table is
-statically embedded in the demo decoder however the decoder generator
-supports creating decoder tables at runtime. The decoder numbers should
-be compared to spike_nocache for a fair comparison.
+experimental decoders. The state machine decoder table is statically
+embedded in the decoder benchmark demo however the decoder generator
+supports creating decoder tables at runtime. The decoder performance
+should be compared to spike_nocache for a fair comparison.
 
 This is the starting point of a RISC-V binary translation investigation.
 
