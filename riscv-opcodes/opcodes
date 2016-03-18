@@ -238,62 +238,62 @@ fcvt.d.lu rd rs1 24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3  c=r_fr
 
 # RV32FD
 
-frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-frflags   rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-fscsr     rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-fsrm      rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-fsflags   rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3 c=i_csr       rv32f rv64f
-fsrmi     rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3 c=i_csri      rv32f rv64f
-fsflagsi  rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3 c=i_csri      rv32f rv64f
+frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+frflags   rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+fscsr     rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+fsrm      rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+fsflags   rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3    c=i_csr    rv32f rv64f
+fsrmi     rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3    c=i_csri   rv32f rv64f
+fsflagsi  rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3    c=i_csri   rv32f rv64f
 
 # RVC C0 encoding space
 
-c.addi4spn 1..0=0 15..13=0                                        c=ciw_addi4spn rv32c rv64c
-c.fld      1..0=0 15..13=1                                        c=c_fld        rv32c rv64c
-c.lw       1..0=0 15..13=2                                        c=cl_lw        rv32c rv64c
-c.flw      1..0=0 15..13=3                                        c=cl_lw              rv32c
-c.ld       1..0=0 15..13=3                                        c=cs_sd              rv64c 
-c.fsd      1..0=0 15..13=5                                        c=cs_sd        rv32c rv64c
-c.sw       1..0=0 15..13=6                                        c=cs_sw        rv32c rv64c
-c.fsw      1..0=0 15..13=7                                        c=cs_sw              rv32c
-c.sd       1..0=0 15..13=7                                        c=cs_sd              rv64c
+c.addi4spn 1..0=0 15..13=0                                            c=ciw_4spn rv32c rv64c
+c.fld      1..0=0 15..13=1                                            c=c_fld    rv32c rv64c
+c.lw       1..0=0 15..13=2                                            c=cl_lw    rv32c rv64c
+c.flw      1..0=0 15..13=3                                            c=cl_lw          rv32c
+c.ld       1..0=0 15..13=3                                            c=cs_sd          rv64c
+c.fsd      1..0=0 15..13=5                                            c=cs_sd    rv32c rv64c
+c.sw       1..0=0 15..13=6                                            c=cs_sw    rv32c rv64c
+c.fsw      1..0=0 15..13=7                                            c=cs_sw          rv32c
+c.sd       1..0=0 15..13=7                                            c=cs_sd          rv64c
 
 # RVC C1 encoding space
 
-c.addi     1..0=1 15..13=0                                        c=ci           rv32c rv64c
-c.nop      1..0=1 15..13=0 12=0 11..7=0 6..2=0                    c=c_none       rv32c rv64c
-c.jal      1..0=1 15..13=1                                        c=cj                 rv32c
-c.addiw    1..0=1 15..13=1                                        c=ci                 rv64c
-c.li       1..0=1 15..13=2                                        c=ci           rv32c rv64c
-c.lui      1..0=1 15..13=3                                        c=ci_lui       rv32c rv64c
-c.addi16sp 1..0=1 15..13=3 11..7=2                                c=ci_addi16sp  rv32c rv64c
-c.srli     1..0=1 15..13=4 11..10=0                               c=cb           rv32c rv64c
-c.srai     1..0=1 15..13=4 11..10=1                               c=cb           rv32c rv64c
-c.andi     1..0=1 15..13=4 11..10=2                               c=cb           rv32c rv64c
-c.sub      1..0=1 15..13=4 12=0 11..10=3 6..5=0                   c=cs_f         rv32c rv64c
-c.xor      1..0=1 15..13=4 12=0 11..10=3 6..5=1                   c=cs_f         rv32c rv64c
-c.or       1..0=1 15..13=4 12=0 11..10=3 6..5=2                   c=cs_f         rv32c rv64c
-c.and      1..0=1 15..13=4 12=0 11..10=3 6..5=3                   c=cs_f         rv32c rv64c
-c.subw     1..0=1 15..13=4 12=1 11..10=3 6..5=0                   c=cs_f         rv32c rv64c
-c.addw     1..0=1 15..13=4 12=1 11..10=3 6..5=1                   c=cs_f         rv32c rv64c
-c.j        1..0=1 15..13=5                                        c=cj           rv32c rv64c
-c.beqz     1..0=1 15..13=6                                        c=cb           rv32c rv64c
-c.bnez     1..0=1 15..13=7                                        c=cb           rv32c rv64c
+c.addi     1..0=1 15..13=0                                            c=ci       rv32c rv64c
+c.nop      1..0=1 15..13=0 12=0 11..7=0 6..2=0                        c=c_none   rv32c rv64c
+c.jal      1..0=1 15..13=1                                            c=cj             rv32c
+c.addiw    1..0=1 15..13=1                                            c=ci             rv64c
+c.li       1..0=1 15..13=2                                            c=ci       rv32c rv64c
+c.lui      1..0=1 15..13=3                                            c=ci_lui   rv32c rv64c
+c.addi16sp 1..0=1 15..13=3 11..7=2                                    c=ci_16sp  rv32c rv64c
+c.srli     1..0=1 15..13=4 11..10=0                                   c=cb       rv32c rv64c
+c.srai     1..0=1 15..13=4 11..10=1                                   c=cb       rv32c rv64c
+c.andi     1..0=1 15..13=4 11..10=2                                   c=cb       rv32c rv64c
+c.sub      1..0=1 15..13=4 12=0 11..10=3 6..5=0                       c=cs_f     rv32c rv64c
+c.xor      1..0=1 15..13=4 12=0 11..10=3 6..5=1                       c=cs_f     rv32c rv64c
+c.or       1..0=1 15..13=4 12=0 11..10=3 6..5=2                       c=cs_f     rv32c rv64c
+c.and      1..0=1 15..13=4 12=0 11..10=3 6..5=3                       c=cs_f     rv32c rv64c
+c.subw     1..0=1 15..13=4 12=1 11..10=3 6..5=0                       c=cs_f     rv32c rv64c
+c.addw     1..0=1 15..13=4 12=1 11..10=3 6..5=1                       c=cs_f     rv32c rv64c
+c.j        1..0=1 15..13=5                                            c=cj       rv32c rv64c
+c.beqz     1..0=1 15..13=6                                            c=cb       rv32c rv64c
+c.bnez     1..0=1 15..13=7                                            c=cb       rv32c rv64c
 
 # RVC C2 encoding space
 
-c.slli     1..0=2 15..13=0                                        c=ci           rv32c rv64c
-c.fldsp    1..0=2 15..13=1                                        c=ci_ldsp      rv32c rv64c
-c.lwsp     1..0=2 15..13=2                                        c=ci_lwsp      rv32c rv64c
-c.flwsp    1..0=2 15..13=3                                        c=ci_lwsp            rv32c
-c.ldsp     1..0=2 15..13=3                                        c=ci_ldsp            rv64c
-c.jr       1..0=2 15..13=4 12=0 6..2=0                            c=ci           rv32c rv64c
-c.jalr     1..0=2 15..13=4 12=1 6..2=0                            c=ci           rv32c rv64c
-c.ebreak   1..0=2 15..13=4 12=1 11..7=0 6..2=0                    c=c_none       rv32c rv64c
-c.mv       1..0=2 15..13=4 12=0                                   c=cr           rv32c rv64c
-c.add      1..0=2 15..13=4 12=1                                   c=cr           rv32c rv64c
-c.fsdsp    1..0=2 15..13=5                                        c=css_sdsp     rv32c rv64c
-c.swsp     1..0=2 15..13=6                                        c=css_swsp     rv32c rv64c
-c.fswsp    1..0=2 15..13=7                                        c=css_swsp           rv32c
-c.sdsp     1..0=2 15..13=7                                        c=c_sdsp             rv64c
+c.slli     1..0=2 15..13=0                                            c=ci       rv32c rv64c
+c.fldsp    1..0=2 15..13=1                                            c=ci_ldsp  rv32c rv64c
+c.lwsp     1..0=2 15..13=2                                            c=ci_lwsp  rv32c rv64c
+c.flwsp    1..0=2 15..13=3                                            c=ci_lwsp        rv32c
+c.ldsp     1..0=2 15..13=3                                            c=ci_ldsp        rv64c
+c.jr       1..0=2 15..13=4 12=0 6..2=0                                c=ci       rv32c rv64c
+c.jalr     1..0=2 15..13=4 12=1 6..2=0                                c=ci       rv32c rv64c
+c.ebreak   1..0=2 15..13=4 12=1 11..7=0 6..2=0                        c=c_none   rv32c rv64c
+c.mv       1..0=2 15..13=4 12=0                                       c=cr       rv32c rv64c
+c.add      1..0=2 15..13=4 12=1                                       c=cr       rv32c rv64c
+c.fsdsp    1..0=2 15..13=5                                            c=css_sdsp rv32c rv64c
+c.swsp     1..0=2 15..13=6                                            c=css_swsp rv32c rv64c
+c.fswsp    1..0=2 15..13=7                                            c=css_swsp       rv32c
+c.sdsp     1..0=2 15..13=7                                            c=c_sdsp         rv64c
