@@ -130,7 +130,7 @@ struct riscv_opcode
 	std::string name;
 	riscv_tag_list tags;
 	riscv_opcode_mask_list masks;
-	std::string meta_type;
+	std::string isa_class;
 	std::vector<std::string> isa_list;
 
 	size_t mask;
@@ -188,10 +188,10 @@ struct riscv_inst_set
 	std::vector<std::string> isa_subset;
 
 	static bool is_mask(std::string tag);
-	static bool is_meta(std::string tag);
+	static bool is_class(std::string tag);
 	static bool is_isa(std::string tag);
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
-	static std::string decode_meta(std::string mc_spec);
+	static std::string decode_class(std::string mc_spec);
 
 	static std::string opcode_spec(riscv_opcode_ptr opcode);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
@@ -210,7 +210,7 @@ struct riscv_inst_set
 
 	void print_map();
 	void print_enum();
-	void print_meta();
+	void print_class();
 	void print_strings();
 	void print_switch();
 	void print_dsm();
@@ -290,12 +290,12 @@ bool riscv_inst_set::is_mask(std::string tag)
 {
 	return ((tag.find("=") != std::string::npos) &&
 		(tag.find("=ignore") == std::string::npos) &&
-		(tag.find("mc=") == std::string::npos));
+		(tag.find("c=") == std::string::npos));
 }
 
-bool riscv_inst_set::is_meta(std::string tag)
+bool riscv_inst_set::is_class(std::string tag)
 {
-	return (tag.find("mc=") == 0);
+	return (tag.find("c=") == 0);
 }
 
 bool riscv_inst_set::is_isa(std::string tag)
@@ -330,11 +330,11 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 	return riscv_opcode_mask(riscv_bitrange(msb, lsb), val);
 }
 
-std::string riscv_inst_set::decode_meta(std::string mc_spec)
+std::string riscv_inst_set::decode_class(std::string mc_spec)
 {
 	std::vector<std::string> spart = split(mc_spec, "=", false, false);
 	if (spart.size() != 2) {
-		printf("meta data %s must be in form mc=value\n", mc_spec.c_str());
+		printf("class%s must be in form c=value\n", mc_spec.c_str());
 		exit(1);
 	}
 	return spart[1];
@@ -444,8 +444,8 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 		opcode->tags.push_back(lookup_tag(part[i]));
 		if (is_mask(part[i])) {
 			opcode->masks.push_back(decode_mask(part[i]));
-		} else if (is_meta(part[i])) {
-			opcode->meta_type = decode_meta(part[i]);
+		} else if (is_class(part[i])) {
+			opcode->isa_class = decode_class(part[i]);
 		} else if (is_isa(part[i])) {
 			opcode->isa_list.push_back(part[i]);
 		}
@@ -516,13 +516,13 @@ void riscv_inst_set::print_enum()
 	printf("};\n");
 }
 
-void riscv_inst_set::print_meta()
+void riscv_inst_set::print_class()
 {
 	printf("{\n");
 	for (auto &opcode : opcodes) {
 		printf("\t{ %-20s%-30s },\n",
 			format_string("%s,", opcode_name("riscv_op_", opcode, '_').c_str()).c_str(),
-			format_string("riscv_inst_type_%s, ", opcode->meta_type.c_str()).c_str());
+			format_string("riscv_inst_type_%s, ", opcode->isa_class.c_str()).c_str());
 	}
 	printf("};\n");
 }
@@ -824,7 +824,7 @@ int main(int argc, const char *argv[])
 	bool print_switch = false;
 	bool print_dsm = false;
 	bool print_enum = false;
-	bool print_meta = false;
+	bool print_class = false;
 	bool print_strings = false;
 	bool help_or_error = false;
 
@@ -848,9 +848,9 @@ int main(int argc, const char *argv[])
 		{ "-e", "--print-enum", cmdline_arg_type_none,
 			"Print enum",
 			[&](std::string s) { return (print_enum = true); } },
-		{ "-c", "--print-meta", cmdline_arg_type_none,
-			"Print meta compiler data",
-			[&](std::string s) { return (print_meta = true); } },
+		{ "-c", "--print-class", cmdline_arg_type_none,
+			"Print instruction classes",
+			[&](std::string s) { return (print_class = true); } },
 		{ "-i", "--print-strings", cmdline_arg_type_none,
 			"Print strings",
 			[&](std::string s) { return (print_strings = true); } },
@@ -870,7 +870,7 @@ int main(int argc, const char *argv[])
 
 	help_or_error |= !print_map && !print_switch &&
 		!print_enum && !print_strings &&
-		!print_dsm && !print_meta;
+		!print_dsm && !print_class;
 
 	if (help_or_error) {
 		printf("usage: %s\n", argv[0]);
@@ -888,8 +888,8 @@ int main(int argc, const char *argv[])
 		inst_set.print_enum();
 	}
 
-	if (print_meta) {
-		inst_set.print_meta();
+	if (print_class) {
+		inst_set.print_class();
 	}
 
 	if (print_strings) {
