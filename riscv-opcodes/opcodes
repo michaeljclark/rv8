@@ -7,9 +7,9 @@
 # <args> is one of rd, rs1, rs2, rs3, imm20, imm12, imm12lo, imm12hi,
 # shamtw, shamt, rm
 #
-# <class> is one of c=r, c=i, c=s, c=sb, c=uj, ...
+# <class> is one of c=r, c=i, c=s, c=sb, c=u, c=uj, ...
 #
-# <isa> is one of { rv32, rv64, rv128 } • { i, m, a, f, d, s, c }
+# <isa> is one of { rv32, rv64, rv128 } · { i, m, a, f, d, s, c }
 
 # RV32I
 
