@@ -37,6 +37,8 @@ enum riscv_inst_type
 	riscv_inst_type_cl_d,
 	riscv_inst_type_cl_w,
 	riscv_inst_type_cr,
+	riscv_inst_type_cr_jalr,
+	riscv_inst_type_cr_jr,
 	riscv_inst_type_cs_f,
 	riscv_inst_type_cs_d,
 	riscv_inst_type_cs_w,
@@ -98,6 +100,24 @@ inline void riscv_decode_cr(riscv_decode &dec, riscv_wu inst)
 	dec.type = riscv_inst_type_cr;
 	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
 	dec.rs2 = (inst >> 2) & 0b11111;
+}
+
+/* Decode CR jalr */
+inline void riscv_decode_cr_jalr(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_cr_jalr;
+	dec.rd = riscv_ireg_ra;
+	dec.rs1 = (inst >> 7) & 0b11111;
+	dec.imm = IMM_CI_lui::decode(inst);
+}
+
+/* Decode CR jr */
+inline void riscv_decode_cr_jr(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_cr_jr;
+	dec.rd = riscv_ireg_zero;
+	dec.rs1 = (inst >> 7) & 0b11111;
+	dec.imm = IMM_CI_lui::decode(inst);
 }
 
 /* Decode CI */
