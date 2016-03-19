@@ -228,31 +228,31 @@ fsflagsi   rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3    c=i_csri 
 
 # RV32C    "RV32C Standard Extension for Compressed Instructions"
 
-c.addi4spn crd'       cimm4spn 1..0=0 15..13=0                         c=ciw_4spn rv32c rv64c
-c.fld      crd'  crs1'   cimmd 1..0=0 15..13=1                         c=cl_ld    rv32c rv64c
-c.lw       crd'  crs1'   cimmw 1..0=0 15..13=2                         c=cl_lw    rv32c rv64c
-c.flw      crd'  crs1'   cimmw 1..0=0 15..13=3                         c=cl_lw          rv32c
-c.fsd      crs1' crs2'   cimmd 1..0=0 15..13=5                         c=cs_sd    rv32c rv64c
-c.sw       crs1' crs2'   cimmw 1..0=0 15..13=6                         c=cs_sw    rv32c rv64c
-c.fsw      crs1' crs2'   cimmw 1..0=0 15..13=7                         c=cs_sw          rv32c
+c.addi4spn crdq       cimm4spn 1..0=0 15..13=0                         c=ciw_4spn rv32c rv64c
+c.fld      crdq  crs1q   cimmd 1..0=0 15..13=1                         c=cl_ld    rv32c rv64c
+c.lw       crdq  crs1q   cimmw 1..0=0 15..13=2                         c=cl_lw    rv32c rv64c
+c.flw      crdq  crs1q   cimmw 1..0=0 15..13=3                         c=cl_lw          rv32c
+c.fsd      crs1q crs2q   cimmd 1..0=0 15..13=5                         c=cs_sd    rv32c rv64c
+c.sw       crs1q crs2q   cimmw 1..0=0 15..13=6                         c=cs_sw    rv32c rv64c
+c.fsw      crs1q crs2q   cimmw 1..0=0 15..13=7                         c=cs_sw          rv32c
 c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0     c=c_none   rv32c rv64c
 c.addi     crs1rd        cimmi 1..0=1 15..13=0                         c=ci       rv32c rv64c
 c.jal                    cimmj 1..0=1 15..13=1                         c=cj             rv32c
 c.li       crs1rd        cimmi 1..0=1 15..13=2                         c=ci       rv32c rv64c
 c.lui      crs1rd       cimmui 1..0=1 15..13=3                         c=ci_lui   rv32c rv64c
 c.addi16sp crs1rd     cimm16sp 1..0=1 15..13=3 11..7=2                 c=ci_16sp  rv32c rv64c
-c.srli     crs1rd' crs2' cimmb 1..0=1 15..13=4 11..10=0                c=cb       rv32c rv64c
-c.srai     crs1rd' crs2' cimmb 1..0=1 15..13=4 11..10=1                c=cb       rv32c rv64c
-c.andi     crs1rd' crs2' cimmb 1..0=1 15..13=4 11..10=2                c=cb       rv32c rv64c
-c.sub      crs1rd' crs2'       1..0=1 15..13=4 12=0 11..10=3 6..5=0    c=cs       rv32c rv64c
-c.xor      crs1rd' crs2'       1..0=1 15..13=4 12=0 11..10=3 6..5=1    c=cs       rv32c rv64c
-c.or       crs1rd' crs2'       1..0=1 15..13=4 12=0 11..10=3 6..5=2    c=cs       rv32c rv64c
-c.and      crs1rd' crs2'       1..0=1 15..13=4 12=0 11..10=3 6..5=3    c=cs       rv32c rv64c
-c.subw     crs1rd' crs2'       1..0=1 15..13=4 12=1 11..10=3 6..5=0    c=cs       rv32c rv64c
-c.addw     crs1rd' crs2'       1..0=1 15..13=4 12=1 11..10=3 6..5=1    c=cs       rv32c rv64c
+c.srli     crs1rdq crs2q cimmb 1..0=1 15..13=4 11..10=0                c=cb       rv32c rv64c
+c.srai     crs1rdq crs2q cimmb 1..0=1 15..13=4 11..10=1                c=cb       rv32c rv64c
+c.andi     crs1rdq crs2q cimmb 1..0=1 15..13=4 11..10=2                c=cb       rv32c rv64c
+c.sub      crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=0    c=cs       rv32c rv64c
+c.xor      crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=1    c=cs       rv32c rv64c
+c.or       crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=2    c=cs       rv32c rv64c
+c.and      crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=3    c=cs       rv32c rv64c
+c.subw     crs1rdq crs2q       1..0=1 15..13=4 12=1 11..10=3 6..5=0    c=cs       rv32c rv64c
+c.addw     crs1rdq crs2q       1..0=1 15..13=4 12=1 11..10=3 6..5=1    c=cs       rv32c rv64c
 c.j                      cimmj 1..0=1 15..13=5                         c=cj       rv32c rv64c
-c.beqz     crs1'         cimmb 1..0=1 15..13=6                         c=cb       rv32c rv64c
-c.bnez     crs1'         cimmb 1..0=1 15..13=7                         c=cb       rv32c rv64c
+c.beqz     crs1q         cimmb 1..0=1 15..13=6                         c=cb       rv32c rv64c
+c.bnez     crs1q         cimmb 1..0=1 15..13=7                         c=cb       rv32c rv64c
 c.slli     crd           cimmi 1..0=2 15..13=0                         c=ci       rv32c rv64c
 c.fldsp    crd        cimmldsp 1..0=2 15..13=1                         c=ci_ldsp  rv32c rv64c
 c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                         c=ci_lwsp  rv32c rv64c
@@ -268,8 +268,8 @@ c.fswsp    crs2       cimmswsp 1..0=2 15..13=7                         c=css_sws
 
 # RV64C    "RV64C Standard Extension for Compressed Instructions (in addition to RV32C)"
 
-c.ld       crd'  crs1'   cimmd 1..0=0 15..13=3                         c=cs_sd          rv64c
-c.sd       crs1' crs2'         1..0=0 15..13=7                         c=cs_sd          rv64c
+c.ld       crdq  crs1q   cimmd 1..0=0 15..13=3                         c=cs_sd          rv64c
+c.sd       crs1q crs2q         1..0=0 15..13=7                         c=cs_sd          rv64c
 c.addiw    crs1rd        cimmi 1..0=1 15..13=1                         c=ci             rv64c
 c.ldsp     crs1rd     cimmldsp 1..0=2 15..13=3                         c=ci_ldsp        rv64c
 c.sdsp     crs2       cimmsdsp 1..0=2 15..13=7                         c=css_sdsp       rv64c
