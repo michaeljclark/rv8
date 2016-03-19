@@ -559,14 +559,14 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 					switch (riscv_decode_funct3(inst)) {
 						case 0:
 							switch (dec.imm) {
-								case 0x000: dec.op = riscv_op_scall; dec.type = riscv_inst_type_i_s;     break;
-								case 0x001: dec.op = riscv_op_sbreak; dec.type = riscv_inst_type_i_s;    break;
-								case 0x100: dec.op = riscv_op_sret; dec.type = riscv_inst_type_i_s;      break;
-								case 0x101: dec.op = riscv_op_sfence_vm; dec.type = riscv_inst_type_i_s; break;
-								case 0x102: dec.op = riscv_op_wfi; dec.type = riscv_inst_type_i_s;       break;
-								case 0x306: dec.op = riscv_op_mrth; dec.type = riscv_inst_type_i_s;      break;
-								case 0x305: dec.op = riscv_op_mrts; dec.type = riscv_inst_type_i_s;      break;
-								case 0x205: dec.op = riscv_op_hrts; dec.type = riscv_inst_type_i_s;      break;
+								case 0x000: dec.op = riscv_op_scall; dec.type = riscv_inst_type_i_none;     break;
+								case 0x001: dec.op = riscv_op_sbreak; dec.type = riscv_inst_type_i_none;    break;
+								case 0x100: dec.op = riscv_op_sret; dec.type = riscv_inst_type_i_none;      break;
+								case 0x101: dec.op = riscv_op_sfence_vm; dec.type = riscv_inst_type_i_none; break;
+								case 0x102: dec.op = riscv_op_wfi; dec.type = riscv_inst_type_i_none;       break;
+								case 0x306: dec.op = riscv_op_mrth; dec.type = riscv_inst_type_i_none;      break;
+								case 0x305: dec.op = riscv_op_mrts; dec.type = riscv_inst_type_i_none;      break;
+								case 0x205: dec.op = riscv_op_hrts; dec.type = riscv_inst_type_i_none;      break;
 							}
 						 	break;
 						case 1: dec.op = riscv_op_csrrw;  dec.type = riscv_inst_type_i_csr; break;

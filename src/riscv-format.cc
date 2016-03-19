@@ -9,6 +9,7 @@
 #include "riscv-opcodes.h"
 #include "riscv-types.h"
 #include "riscv-imm.h"
+#include "riscv-regs.h"
 #include "riscv-decode.h"
 #include "riscv-regs.h"
 #include "riscv-csr.h"
@@ -42,20 +43,21 @@ const rvf rvf_rs1_rs2_imm_pc[] =     { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_ipc, 
 
 const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_unknown,      rvf_none },
+	{ riscv_inst_type_c_none,       rvf_none },
 	{ riscv_inst_type_cr,           rvf_rs1_rs2 },
 	{ riscv_inst_type_ci,           rvf_rd_imm },
 	{ riscv_inst_type_ci_lui,       rvf_rd_imm },
 	{ riscv_inst_type_ci_lwsp,      rvf_rd_imm },
 	{ riscv_inst_type_ci_ldsp,      rvf_rd_imm },
-	{ riscv_inst_type_ci_addi16sp,  rvf_rd_imm },
+	{ riscv_inst_type_ciw_4spn,     rvf_rd_imm },
 	{ riscv_inst_type_css_swsp,     rvf_rs2_imm },
 	{ riscv_inst_type_css_sdsp,     rvf_rs2_imm },
-	{ riscv_inst_type_ciw_addi4spn, rvf_rd_imm },
-	{ riscv_inst_type_cl_lw,        rvf_rd_imm },
-	{ riscv_inst_type_cl_ld,        rvf_rd_imm },
-	{ riscv_inst_type_cs_x,         rvf_rs1_rs2 },
-	{ riscv_inst_type_cs_sw,        rvf_rs1_rs2_imm },
-	{ riscv_inst_type_cs_sd,        rvf_rs1_rs2_imm },
+	{ riscv_inst_type_ci_16sp,      rvf_rd_imm },
+	{ riscv_inst_type_cl_w,         rvf_rd_imm },
+	{ riscv_inst_type_cl_d,         rvf_rd_imm },
+	{ riscv_inst_type_cs_f,         rvf_rs1_rs2 },
+	{ riscv_inst_type_cs_w,         rvf_rs1_rs2_imm },
+	{ riscv_inst_type_cs_d,         rvf_rs1_rs2_imm },
 	{ riscv_inst_type_cb,           rvf_imm_pc },
 	{ riscv_inst_type_cj,           rvf_imm_pc },
 	{ riscv_inst_type_r,            rvf_rd_rs1_rs2 },
@@ -66,7 +68,7 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_r_rff,        rvf_rd_frs1_frs2},
 	{ riscv_inst_type_r_4f,         rvf_frd_frs1_frs2_frs3},
 	{ riscv_inst_type_i,            rvf_rd_rs1_imm },
-	{ riscv_inst_type_i_s,          rvf_none },
+	{ riscv_inst_type_i_none,       rvf_none },
 	{ riscv_inst_type_i_l,          rvf_rd_bimm_rs1 },
 	{ riscv_inst_type_i_lf,         rvf_frd_bimm_rs1 },
 	{ riscv_inst_type_i_csr,        rvf_rd_csr_rs1 },
