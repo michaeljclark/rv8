@@ -257,7 +257,7 @@ c.slli     crd           cimmi 1..0=2 15..13=0                         c=ci     
 c.fldsp    crd        cimmldsp 1..0=2 15..13=1                         c=ci_ldsp  rv32c rv64c
 c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                         c=ci_lwsp  rv32c rv64c
 c.flwsp    crd        cimmlwsp 1..0=2 15..13=3                         c=ci_lwsp        rv32c
-c.jr       crs1          cimmi 1..0=2 15..13=4 12=0 6..2=0             c=cr_jr    rv32c rv64c
+c.jr       crs1                1..0=2 15..13=4 12=0 6..2=0             c=cr_jr    rv32c rv64c
 c.mv       crd crs2            1..0=2 15..13=4 12=0                    c=cr       rv32c rv64c
 c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0     c=c_none   rv32c rv64c
 c.jalr     crs1                1..0=2 15..13=4 12=1 6..2=0             c=cr_jalr  rv32c rv64c
