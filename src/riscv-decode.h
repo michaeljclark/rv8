@@ -157,7 +157,7 @@ inline void riscv_decode_ci_ldsp(riscv_decode &dec, riscv_wu inst)
 /* Decode CI addi16sp */
 inline void riscv_decode_ci_addi16sp(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_ciw_4spn;
+	dec.type = riscv_inst_type_ci_16sp;
 	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_sp;
 	dec.imm = IMM_CI_addi16sp::decode(inst);
@@ -277,7 +277,7 @@ inline void riscv_decode_i(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_I::decode(inst);
 }
 
-/* Decode I Special*/
+/* Decode I None */
 inline void riscv_decode_i_none(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_i_none;
