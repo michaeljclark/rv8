@@ -39,7 +39,7 @@ enum riscv_inst_type
 	riscv_inst_type_cr,
 	riscv_inst_type_cr_jalr,
 	riscv_inst_type_cr_jr,
-	riscv_inst_type_cs_f,
+	riscv_inst_type_cs,
 	riscv_inst_type_cs_d,
 	riscv_inst_type_cs_w,
 	riscv_inst_type_css_sdsp,
@@ -209,9 +209,9 @@ inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_wu inst)
 }
 
 /* Decode CS f */
-inline void riscv_decode_cs_f(riscv_decode &dec, riscv_wu inst)
+inline void riscv_decode_cs(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_cs_f;
+	dec.type = riscv_inst_type_cs;
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rd = dec.rs1 = ((inst >> 7) & 0b111) + 8;
 }
