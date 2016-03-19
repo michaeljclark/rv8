@@ -76,7 +76,7 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_i_csr,        rvf_rd_csr_rs1 },
 	{ riscv_inst_type_i_csri,       rvf_rd_csr_srs1 },
 	{ riscv_inst_type_s,            rvf_rs2_bimm_rs1 },
-	{ riscv_inst_type_sf,           rvf_frs2_bimm_rs1 },
+	{ riscv_inst_type_s_f,          rvf_frs2_bimm_rs1 },
 	{ riscv_inst_type_sb,           rvf_rs1_rs2_imm_pc },
 	{ riscv_inst_type_u,            rvf_rd_imm },
 	{ riscv_inst_type_uj,           rvf_rd_imm_pc },

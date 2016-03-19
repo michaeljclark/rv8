@@ -144,7 +144,7 @@ csrrci     rd      rs1      imm12             14..12=7 6..2=0x1C 1..0=3  c=i_csr
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
 flw        rd rs1 imm12                14..12=2          6..2=0x01 1..0=3 c=i_lf  rv32f rv64f
-fsw        imm12hi rs1 rs2 imm12lo     14..12=2          6..2=0x09 1..0=3 c=sf    rv32f rv64f
+fsw        imm12hi rs1 rs2 imm12lo     14..12=2          6..2=0x09 1..0=3 c=s_f   rv32f rv64f
 fmadd.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x10 1..0=3 c=r_4f  rv32f rv64f
 fmsub.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x11 1..0=3 c=r_4f  rv32f rv64f
 fnmsub.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x12 1..0=3 c=r_4f  rv32f rv64f
@@ -180,7 +180,7 @@ fcvt.s.lu  rd rs1 24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 c=r_fr
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 
 fld        rd rs1 imm12                14..12=3          6..2=0x01 1..0=3 c=i_lf  rv32d rv64d
-fsd        imm12hi rs1 rs2 imm12lo     14..12=3          6..2=0x09 1..0=3 c=sf    rv32d rv64d
+fsd        imm12hi rs1 rs2 imm12lo     14..12=3          6..2=0x09 1..0=3 c=s_f   rv32d rv64d
 fmadd.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x10 1..0=3 c=r_4f  rv32d rv64d
 fmsub.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x11 1..0=3 c=r_4f  rv32d rv64d
 fnmsub.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x12 1..0=3 c=r_4f  rv32d rv64d

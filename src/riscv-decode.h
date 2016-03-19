@@ -61,7 +61,7 @@ enum riscv_inst_type
 	riscv_inst_type_r_rff,
 	riscv_inst_type_s,
 	riscv_inst_type_sb,
-	riscv_inst_type_sf,
+	riscv_inst_type_s_f,
 	riscv_inst_type_u,
 	riscv_inst_type_uj
 };
