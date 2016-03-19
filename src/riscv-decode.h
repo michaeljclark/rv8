@@ -30,8 +30,9 @@ enum riscv_inst_type
 	riscv_inst_type_ci,
 	riscv_inst_type_ci_16sp,
 	riscv_inst_type_ci_ldsp,
-	riscv_inst_type_ci_lwsp,
+	riscv_inst_type_ci_li,
 	riscv_inst_type_ci_lui,
+	riscv_inst_type_ci_lwsp,
 	riscv_inst_type_ciw_4spn,
 	riscv_inst_type_cj,
 	riscv_inst_type_cl_d,
@@ -128,11 +129,21 @@ inline void riscv_decode_ci(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CI::decode(inst);
 }
 
+/* Decode CI li */
+inline void riscv_decode_ci_li(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_ci_li;
+	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
+	dec.rs1 = riscv_ireg_zero;
+	dec.imm = IMM_CI::decode(inst);
+}
+
 /* Decode CI lui */
 inline void riscv_decode_ci_lui(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_ci_lui;
-	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
+	dec.rd = (inst >> 7) & 0b11111;
+	dec.rs1 = riscv_ireg_zero;
 	dec.imm = IMM_CI_lui::decode(inst);
 }
 

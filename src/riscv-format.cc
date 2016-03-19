@@ -48,6 +48,8 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_cr_jalr,      rvf_rs1_rs2 },
 	{ riscv_inst_type_cr_jr,        rvf_rs1_rs2 },
 	{ riscv_inst_type_ci,           rvf_rd_imm },
+	{ riscv_inst_type_ci_16sp,      rvf_rd_imm },
+	{ riscv_inst_type_ci_li,        rvf_rd_imm },
 	{ riscv_inst_type_ci_lui,       rvf_rd_imm },
 	{ riscv_inst_type_ci_lwsp,      rvf_rd_imm },
 	{ riscv_inst_type_ci_ldsp,      rvf_rd_imm },

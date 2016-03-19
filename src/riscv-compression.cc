@@ -20,7 +20,7 @@ const riscv_inst_comp_metadata riscv_comp_table[] = {
     { riscv_op_c_ld,       riscv_inst_type_cl_d,          riscv_op_ld,         riscv_inst_type_i_l },
     { riscv_op_c_swsp,     riscv_inst_type_css_swsp,      riscv_op_sw,         riscv_inst_type_s },
     { riscv_op_c_lwsp,     riscv_inst_type_ci_lwsp,       riscv_op_lw,         riscv_inst_type_i_l },
-    { riscv_op_c_li,       riscv_inst_type_ci,            riscv_op_addi,       riscv_inst_type_i },
+    { riscv_op_c_li,       riscv_inst_type_ci_li,         riscv_op_addi,       riscv_inst_type_i },
     { riscv_op_c_add,      riscv_inst_type_cr,            riscv_op_add,        riscv_inst_type_r },
     { riscv_op_c_srli,     riscv_inst_type_cb,            riscv_op_srli,       riscv_inst_type_i },
     { riscv_op_c_jr,       riscv_inst_type_cr,            riscv_op_jalr,       riscv_inst_type_i },

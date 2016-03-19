@@ -129,7 +129,7 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 					}
 					break;
 				case 0x02:
-					riscv_decode_ci(dec, inst);
+					riscv_decode_ci_li(dec, inst);
 					dec.op = riscv_op_c_li;
 					dec.rs1 = riscv_ireg_zero;
 					break;
