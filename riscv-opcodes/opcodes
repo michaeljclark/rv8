@@ -131,9 +131,9 @@ hrts       11..7=0 19..15=0 31..20=0x205      14..12=0 6..2=0x1C 1..0=3  c=i_non
 rdcycle    rd      19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 rdtime     rd      19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 rdinstret  rd      19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
-rdcycleh   rd      19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
-rdtimeh    rd      19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
-rdinstreth rd      19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
+rdcycleh   rd      19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  c=i_csr        rv32s
+rdtimeh    rd      19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  c=i_csr        rv32s
+rdinstreth rd      19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  c=i_csr        rv32s
 csrrw      rd      rs1      imm12             14..12=1 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 csrrs      rd      rs1      imm12             14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 csrrc      rd      rs1      imm12             14..12=3 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
