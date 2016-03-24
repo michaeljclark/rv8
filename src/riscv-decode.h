@@ -169,7 +169,7 @@ inline void riscv_decode_ci_ldsp(riscv_decode &dec, riscv_wu inst)
 inline void riscv_decode_ci_addi16sp(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_ci_16sp;
-	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
+	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
 	dec.imm = IMM_CI_addi16sp::decode(inst);
 }
@@ -178,7 +178,7 @@ inline void riscv_decode_ci_addi16sp(riscv_decode &dec, riscv_wu inst)
 inline void riscv_decode_css_swsp(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_css_swsp;
-	dec.rd = riscv_ireg_sp;
+	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = (inst >> 2) & 0b11111;
 	dec.imm = IMM_CSS_swsp::decode(inst);
 }
@@ -187,7 +187,7 @@ inline void riscv_decode_css_swsp(riscv_decode &dec, riscv_wu inst)
 inline void riscv_decode_css_sdsp(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_css_sdsp;
-	dec.rd = riscv_ireg_sp;
+	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = (inst >> 2) & 0b11111;
 	dec.imm = IMM_CSS_sdsp::decode(inst);
 }
