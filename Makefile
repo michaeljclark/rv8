@@ -98,7 +98,8 @@ src_asm =       $(subst $(APP_SRC_DIR),$(ASM_DIR),$(subst $(LIB_SRC_DIR),$(ASM_D
 src_deps =      $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
 
 # target source and objects
-RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-compression.cc \
+RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
+                $(LIB_SRC_DIR)/riscv-compression.cc \
                 $(LIB_SRC_DIR)/riscv-csr.cc \
                 $(LIB_SRC_DIR)/riscv-decode-dsm.cc \
                 $(LIB_SRC_DIR)/riscv-decode-switch.cc \
