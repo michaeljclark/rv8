@@ -20,7 +20,7 @@ enum rvf
 	rvf_frs1,
 	rvf_frs2,
 	rvf_frs3,
-	rvf_srs1,
+	rvf_irs1,
 	rvf_imm,
 	rvf_ipc,
 	rvf_icsr,
