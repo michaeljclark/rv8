@@ -1,7 +1,7 @@
 # format of a line in this file:
-# <argname> <bitencoding>
+# <arg> <bit encoding>
 #
-# <bitencoding> contains a comma list of gather[scatter] bits. e.g.
+# <bit encoding> contains a comma list of gather[scatter] bits. e.g.
 #
 #     12:10[8|4:3],6:2[7:6|2:1|5]
 #

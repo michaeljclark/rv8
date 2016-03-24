@@ -1,0 +1,44 @@
+# format of a line in this file:
+# <type> <format> # description
+
+c_fld     frd_bimm_rs1
+c_none    none
+cb        imm_pc
+ci        rd_imm
+ci_16sp   rd_rs1_imm
+ci_ldsp   rd_imm
+ci_li     rd_imm
+ci_lui    rd_imm
+ci_lwsp   rd_imm
+ciw_4spn  rd_rs1_imm
+cj        imm_pc
+cl_d      rvf_rd_imm
+cl_w      rvf_rd_imm
+cr        rs1_rs2
+cr_jalr   rs1_rs2
+cr_jr     rs1_rs2
+cs        rs1_rs2   
+cs_d      rs1_rs2_imm
+cs_w      rs1_rs2_imm
+css_sdsp  rs2_bimm_rs1
+css_swsp  rs2_bimm_rs1
+i         rd_rs1_imm
+i_csr     rd_csr_rs1
+i_csri    rd_csr_irs1
+i_l       rd_bimm_rs1
+i_lf      frd_bimm_rs1
+i_none    none
+i_sh5     rd_rs1_imm
+i_sh6     rd_rs1_imm
+r         rd_rs1_rs2
+r_3f      frd_frs1_frs2
+r_4f      frd_frs1_frs2_frs3
+r_ff      frd_frs1
+r_fr      frd_rs1
+r_rf      rd_frs1
+r_rff     rd_frs1_frs2
+s         rs2_bimm_rs1
+sb        rs1_rs2_imm_pc
+s_f       frs2_bimm_rs1
+u         rd_imm
+uj        rd_imm_pc

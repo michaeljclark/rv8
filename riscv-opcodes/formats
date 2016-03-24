@@ -1,0 +1,25 @@
+# format of a line in this file:
+# <format_name> <format_args>
+
+none               
+imm_pc             ipc
+rs1_rs2            rs1,rs2
+rs2_imm            rs2,imm
+rd_imm             rd,imm
+rd_imm_pc          rd,ipc
+rd_rs1_rs2         rd,rs1,rs2
+frd_frs1_frs2      frd,frs1,frs2
+rd_frs1_frs2       frd,rs1,frs2
+frd_frs1_frs2_frs3 frd,frs1,frs2,frs3
+frd_rs1            frd,rs1
+frd_frs1           frd,frs1
+rd_frs1            rd,frs1
+rd_rs1_imm         rd,rs1,imm
+rd_bimm_rs1        rd,imm(rs1)
+frd_bimm_rs1       frd,imm(rs1)
+rd_csr_rs1         rd,icsr,rs1
+rd_csr_irs1        rd,icsr,irs1
+rs1_rs2_imm        rs1,rs2,imm
+rs2_bimm_rs1       rs2,imm(rs1)
+frs2_bimm_rs1      frs2,imm(rs1)
+rs1_rs2_imm_pc     rs1,rs2,ipc
