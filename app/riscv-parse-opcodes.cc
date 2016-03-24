@@ -182,27 +182,6 @@ std::string join(std::vector<T> list, std::string separator)
 	return ss.str();
 }
 
-std::string format_string(const char* fmt, ...)
-{
-    std::vector<char> buf(1024);
-    va_list ap;
-    
-    va_start(ap, fmt);
-    int len = vsnprintf(buf.data(), buf.capacity(), fmt, ap);
-    va_end(ap);
-    
-    std::string str;
-    if (len >= (int)buf.capacity()) {
-        buf.resize(len + 1);
-        va_start(ap, fmt);
-        vsnprintf(buf.data(), buf.capacity(), fmt, ap);
-        va_end(ap);
-    }
-    str = buf.data();
-    
-    return str;
-}
-
 bool riscv_inst_set::is_mask(std::string tag)
 {
 	return ((tag.find("=") != std::string::npos) &&
