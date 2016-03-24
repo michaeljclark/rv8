@@ -21,7 +21,6 @@
 const rvf rvf_none[] =               { rvf_z };
 const rvf rvf_imm_pc[] =             { rvf_ipc, rvf_z };
 const rvf rvf_rs1_rs2[] =            { rvf_rs1, rvf_c, rvf_rs2, rvf_z };
-const rvf rvf_rs2_imm[] =            { rvf_rs2, rvf_c, rvf_imm, rvf_z };
 const rvf rvf_rd_imm[] =             { rvf_rd, rvf_c, rvf_imm, rvf_z };
 const rvf rvf_rd_imm_pc[] =          { rvf_rd, rvf_c, rvf_ipc, rvf_z };
 const rvf rvf_rd_rs1_rs2[] =         { rvf_rd, rvf_c, rvf_rs1, rvf_c, rvf_rs2, rvf_z };

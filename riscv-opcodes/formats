@@ -4,7 +4,6 @@
 none               
 imm_pc             ipc
 rs1_rs2            rs1,rs2
-rs2_imm            rs2,imm
 rd_imm             rd,imm
 rd_imm_pc          rd,ipc
 rd_rs1_rs2         rd,rs1,rs2
