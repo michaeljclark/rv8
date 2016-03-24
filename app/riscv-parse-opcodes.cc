@@ -21,8 +21,6 @@
 #include "riscv-cmdline.h"
 
 
-/* riscv_opcode */
-
 struct riscv_opcode;
 struct riscv_tag;
 struct riscv_bitrange;
@@ -98,7 +96,7 @@ struct riscv_inst_set
 	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
 
 	riscv_opcode_list opcodes;
-	riscv_opcode_map opcodes_byname;
+	riscv_opcode_map opcodes_bykey;
 	riscv_tag_list tags;
 	riscv_tag_map tags_byname;
 	riscv_decoder_node node;
@@ -107,6 +105,7 @@ struct riscv_inst_set
 	static bool is_mask(std::string tag);
 	static bool is_class(std::string tag);
 	static bool is_isa(std::string tag);
+
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string decode_class(std::string mc_spec);
 
@@ -117,8 +116,9 @@ struct riscv_inst_set
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 
-	riscv_opcode_ptr lookup_opcode(std::string opcode);
+	riscv_opcode_ptr lookup_opcode(std::string opcode_key, std::string opcode_name);
 	riscv_tag_ptr lookup_tag(std::string tag);
+
 	void parse_opcode(std::vector<std::string> &part);
 	bool read_opcodes(std::string filename);
 
@@ -236,7 +236,6 @@ std::string riscv_inst_set::decode_class(std::string mc_spec)
 	return spart[1];
 }
 
-
 std::vector<riscv_bitrange> riscv_inst_set::bitmask_to_bitrange(std::vector<ssize_t> &bits)
 {	
 	std::vector<riscv_bitrange> ranges;
@@ -314,11 +313,11 @@ std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opc
 	return prefix + name;
 }
 
-riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode)
+riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode_key, std::string opcode_name)
 {
-	auto i = opcodes_byname.find(opcode);
-	if (i != opcodes_byname.end()) return i->second;
-	riscv_opcode_ptr p = opcodes_byname[opcode] = std::make_shared<riscv_opcode>(opcode);
+	auto i = opcodes_bykey.find(opcode_key);
+	if (i != opcodes_bykey.end()) return i->second;
+	riscv_opcode_ptr p = opcodes_bykey[opcode_key] = std::make_shared<riscv_opcode>(opcode_name);
 	p->num = opcodes.size();
 	opcodes.push_back(p);
 	return p;
@@ -335,7 +334,19 @@ riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag)
 
 void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 {
-	auto opcode = lookup_opcode(part[0]);
+	std::vector<std::string> isa_list;
+	for (size_t i = 1; i < part.size(); i++) {
+		if (is_isa(part[i])) {
+			isa_list.push_back(part[i]);
+		}
+	}
+
+	std::string opcode_name = part[0];
+	std::string opcode_key = isa_list.size() == 1 ?
+		opcode_name + std::string(".") + isa_list[0] : opcode_name;
+
+	auto opcode = lookup_opcode(opcode_key, opcode_name);
+
 	for (size_t i = 1; i < part.size(); i++) {
 		opcode->tags.push_back(lookup_tag(part[i]));
 		if (is_mask(part[i])) {
