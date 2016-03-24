@@ -21,8 +21,8 @@
 const rvf rvf_none[] =               { rvf_z };
 const rvf rvf_imm_pc[] =             { rvf_ipc, rvf_z };
 const rvf rvf_rs1_rs2[] =            { rvf_rs1, rvf_c, rvf_rs2, rvf_z };
-const rvf rvf_rs2_imm[] =            { rvf_rs2, rvf_c, rvf_i, rvf_z };
-const rvf rvf_rd_imm[] =             { rvf_rd, rvf_c, rvf_i, rvf_z };
+const rvf rvf_rs2_imm[] =            { rvf_rs2, rvf_c, rvf_imm, rvf_z };
+const rvf rvf_rd_imm[] =             { rvf_rd, rvf_c, rvf_imm, rvf_z };
 const rvf rvf_rd_imm_pc[] =          { rvf_rd, rvf_c, rvf_ipc, rvf_z };
 const rvf rvf_rd_rs1_rs2[] =         { rvf_rd, rvf_c, rvf_rs1, rvf_c, rvf_rs2, rvf_z };
 const rvf rvf_frd_frs1_frs2[] =      { rvf_frd, rvf_c, rvf_frs1, rvf_c, rvf_frs2, rvf_z };
@@ -31,14 +31,14 @@ const rvf rvf_frd_frs1_frs2_frs3[] = { rvf_frd, rvf_c, rvf_frs1, rvf_c, rvf_frs2
 const rvf rvf_frd_rs1[] =            { rvf_frd, rvf_c, rvf_rs1, rvf_z };
 const rvf rvf_frd_frs1[] =           { rvf_frd, rvf_c, rvf_frs1, rvf_z };
 const rvf rvf_rd_frs1[] =            { rvf_rd, rvf_c, rvf_frs1, rvf_z };
-const rvf rvf_rd_rs1_imm[] =         { rvf_rd, rvf_c, rvf_rs1, rvf_c, rvf_i, rvf_z };
-const rvf rvf_rd_bimm_rs1[] =        { rvf_rd, rvf_c, rvf_i, rvf_b, rvf_rs1, rvf_d, rvf_z };
-const rvf rvf_frd_bimm_rs1[] =       { rvf_frd, rvf_c, rvf_i, rvf_b, rvf_rs1, rvf_d, rvf_z };
+const rvf rvf_rd_rs1_imm[] =         { rvf_rd, rvf_c, rvf_rs1, rvf_c, rvf_imm, rvf_z };
+const rvf rvf_rd_bimm_rs1[] =        { rvf_rd, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
+const rvf rvf_frd_bimm_rs1[] =       { rvf_frd, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_rd_csr_rs1[] =         { rvf_rd, rvf_c, rvf_icsr, rvf_c, rvf_rs1, rvf_z };
 const rvf rvf_rd_csr_srs1[] =        { rvf_rd, rvf_c, rvf_icsr, rvf_c, rvf_srs1, rvf_z };
-const rvf rvf_rs1_rs2_imm[] =        { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_i, rvf_z };
-const rvf rvf_rs2_bimm_rs1[] =       { rvf_rs2, rvf_c, rvf_i, rvf_b, rvf_rs1, rvf_d, rvf_z };
-const rvf rvf_frs2_bimm_rs1[] =      { rvf_frs2, rvf_c, rvf_i, rvf_b, rvf_rs1, rvf_d, rvf_z };
+const rvf rvf_rs1_rs2_imm[] =        { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_imm, rvf_z };
+const rvf rvf_rs2_bimm_rs1[] =       { rvf_rs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
+const rvf rvf_frs2_bimm_rs1[] =      { rvf_frs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_rs1_rs2_imm_pc[] =     { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_ipc, rvf_z };
 
 const riscv_inst_type_metadata riscv_inst_type_table[] = {
@@ -164,7 +164,7 @@ void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_pt
 			case rvf_frs2: printf("%s", riscv_f_registers[dec.rs2]); break;
 			case rvf_frs3: printf("%s", riscv_f_registers[dec.rs3]); break;
 			case rvf_srs1: printf("%s", format_string("%d", dec.rs1).c_str()); break;
-			case rvf_i: printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
+			case rvf_imm: printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
 			case rvf_ipc: printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
 			case rvf_icsr:
 			{
