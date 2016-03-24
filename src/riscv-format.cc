@@ -34,8 +34,8 @@ const rvf rvf_rd_frs1[] =            { rvf_rd, rvf_c, rvf_frs1, rvf_z };
 const rvf rvf_rd_rs1_imm[] =         { rvf_rd, rvf_c, rvf_rs1, rvf_c, rvf_imm, rvf_z };
 const rvf rvf_rd_bimm_rs1[] =        { rvf_rd, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_frd_bimm_rs1[] =       { rvf_frd, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
-const rvf rvf_rd_csr_rs1[] =         { rvf_rd, rvf_c, rvf_icsr, rvf_c, rvf_rs1, rvf_z };
-const rvf rvf_rd_csr_irs1[] =        { rvf_rd, rvf_c, rvf_icsr, rvf_c, rvf_irs1, rvf_z };
+const rvf rvf_rd_csr_rs1[] =         { rvf_rd, rvf_c, rvf_csr, rvf_c, rvf_rs1, rvf_z };
+const rvf rvf_rd_csr_irs1[] =        { rvf_rd, rvf_c, rvf_csr, rvf_c, rvf_irs1, rvf_z };
 const rvf rvf_rs1_rs2_imm[] =        { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_imm, rvf_z };
 const rvf rvf_rs2_bimm_rs1[] =       { rvf_rs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_frs2_bimm_rs1[] =      { rvf_frs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
@@ -77,7 +77,7 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_r_4f,         rvf_frd_frs1_frs2_frs3 },
 	{ riscv_inst_type_r_ff,         rvf_frd_frs1 },
 	{ riscv_inst_type_r_fr,         rvf_frd_rs1 },
-	{ riscv_inst_type_r_rf,         rvf_rd_frs1},
+	{ riscv_inst_type_r_rf,         rvf_rd_frs1 },
 	{ riscv_inst_type_r_rff,        rvf_rd_frs1_frs2 },
 	{ riscv_inst_type_s,            rvf_rs2_bimm_rs1 },
 	{ riscv_inst_type_sb,           rvf_rs1_rs2_imm_pc },
@@ -166,7 +166,7 @@ void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_pt
 			case rvf_irs1: printf("%s", format_string("%d", dec.rs1).c_str()); break;
 			case rvf_imm: printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
 			case rvf_ipc: printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
-			case rvf_icsr:
+			case rvf_csr:
 			{
 				const riscv_csr_metadata *csr = riscv_lookup_csr_metadata(dec.imm);
 				printf("%s", (csr ? csr->csr_name : format_string("%llu", dec.imm)).c_str());

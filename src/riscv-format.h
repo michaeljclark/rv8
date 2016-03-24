@@ -23,7 +23,7 @@ enum rvf
 	rvf_irs1,
 	rvf_imm,
 	rvf_ipc,
-	rvf_icsr,
+	rvf_csr,
 };
 
 /* Instruction Type Table */
