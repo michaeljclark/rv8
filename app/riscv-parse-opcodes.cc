@@ -100,6 +100,7 @@ struct riscv_inst_set
 	riscv_tag_list tags;
 	riscv_tag_map tags_byname;
 	riscv_decoder_node node;
+	std::vector<std::string> isa_list;
 	std::set<std::string> isa_subset;
 
 	static bool is_mask(std::string tag);
@@ -114,6 +115,8 @@ struct riscv_inst_set
 	static std::string opcode_spec(riscv_opcode_ptr opcode);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
 	static std::string opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot);
+	static std::string opcode_isa_ext(riscv_opcode_ptr opcode);
+	static std::vector<size_t> opcode_isa_widths(riscv_opcode_ptr opcode);
 
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
@@ -131,6 +134,7 @@ struct riscv_inst_set
 	void print_enum();
 	void print_class();
 	void print_strings();
+	void print_switch_template_header();
 	void print_switch();
 	void print_dsm();
 
@@ -138,6 +142,9 @@ struct riscv_inst_set
 	void print_switch_decoder_node(riscv_decoder_node &node, size_t indent);
 	void calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_entry_list &decoder);
 };
+
+static std::vector<size_t> isa_width = { 32, 64, 128 };
+static std::vector<std::string> isa_width_str = { "rv32", "rv64", "rv128" };
 
 std::string ltrim(std::string s)
 {
@@ -204,15 +211,14 @@ bool riscv_inst_set::is_extension(std::string tag)
 std::vector<std::string> riscv_inst_set::decode_isa_extensions(std::string isa_spec)
 {
 	std::vector<std::string> list;
-	std::transform(isa_spec.begin(), isa_spec.end(),isa_spec.begin(), ::tolower);
+	std::transform(isa_spec.begin(), isa_spec.end(), isa_spec.begin(), ::tolower);
 	size_t ext_offset = 0;
-	if (isa_spec.find("rv32") == 0) {
-		ext_offset = 4;
-	} else if (isa_spec.find("rv64") == 0) {
-		ext_offset = 4;
-	} else if (isa_spec.find("rv128") == 0) {
-		ext_offset = 5;
-	} else {
+	for (std::string isa_width : isa_width_str) {
+		if (isa_spec.find(isa_width) == 0) {
+			ext_offset = isa_width.size();
+		}
+	}
+	if (ext_offset == 0) {
 		panic("illegal isa spec: %s", isa_spec.c_str());
 	}
 	size_t g_offset = isa_spec.find("g");
@@ -344,6 +350,38 @@ std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opc
 	return prefix + name;
 }
 
+std::string riscv_inst_set::opcode_isa_ext(riscv_opcode_ptr opcode)
+{
+	for (std::string mnem : opcode->isa_extensions) {
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+		size_t ext_offset = 0;
+		for (std::string isa_width : isa_width_str) {
+			if (mnem.find(isa_width) == 0) {
+				ext_offset = isa_width.size();
+			}
+		}
+		if (ext_offset == 0) {
+			panic("illegal isa spec: %s", mnem.c_str());
+		}
+		return std::string("rv") + mnem.substr(ext_offset);
+	}
+	return "rvi";
+}
+
+std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
+{
+	std::vector<size_t> widths;
+	for (std::string mnem : opcode->isa_extensions) {
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+		for (size_t i = 0; i < isa_width_str.size(); i++) {
+			if (mnem.find(isa_width_str[i]) == 0) {
+				widths.push_back(isa_width[i]);
+			}
+		}
+	}
+	return widths;
+}
+
 riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode_key, std::string opcode_name)
 {
 	auto i = opcodes_bykey.find(opcode_key);
@@ -367,8 +405,13 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 {
 	std::vector<std::string> isa_extensions;
 	for (size_t i = 1; i < part.size(); i++) {
-		if (is_extension(part[i])) {
-			isa_extensions.push_back(part[i]);
+		std::string mnem = part[i];
+		if (is_extension(mnem)) {
+			std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+			isa_extensions.push_back(mnem);
+			if (std::find(isa_list.begin(), isa_list.end(), mnem) == isa_list.end()) {
+				isa_list.push_back(mnem);
+			}
 		}
 	}
 
@@ -379,13 +422,14 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 	auto opcode = lookup_opcode(opcode_key, opcode_name);
 
 	for (size_t i = 1; i < part.size(); i++) {
-		opcode->tags.push_back(lookup_tag(part[i]));
-		if (is_mask(part[i])) {
-			opcode->masks.push_back(decode_mask(part[i]));
-		} else if (is_class(part[i])) {
-			opcode->isa_class = decode_class(part[i]);
-		} else if (is_extension(part[i])) {
-			opcode->isa_extensions.push_back(part[i]);
+		std::string mnem = part[i];
+		opcode->tags.push_back(lookup_tag(mnem));
+		if (is_mask(mnem)) {
+			opcode->masks.push_back(decode_mask(mnem));
+		} else if (is_class(mnem)) {
+			opcode->isa_class = decode_class(mnem);
+		} else if (is_extension(mnem)) {
+			opcode->isa_extensions.push_back(mnem);
 		}
 	}
 }
@@ -474,9 +518,46 @@ void riscv_inst_set::print_strings()
 	printf("};\n");
 }
 
+void riscv_inst_set::print_switch_template_header()
+{
+	std::vector<std::string> mnemonics;
+	for (std::string mnem : isa_list) {
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+		for (std::string isa_width : isa_width_str) {
+			if (mnem.find(isa_width) == 0) {
+				if (std::find(mnemonics.begin(), mnemonics.end(), isa_width) == mnemonics.end()) {
+					mnemonics.push_back(isa_width);
+				}
+			}
+		}
+	}
+	for (std::string mnem : isa_list) {
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+		size_t ext_offset = 0;
+		for (std::string isa_width : isa_width_str) {
+			if (mnem.find(isa_width) == 0) {
+				ext_offset = isa_width.size();
+			}
+		}
+		if (ext_offset == 0) {
+			panic("illegal isa spec: %s", mnem.c_str());
+		}
+		mnem = std::string("rv") + mnem.substr(ext_offset);
+		if (std::find(mnemonics.begin(), mnemonics.end(), mnem) == mnemonics.end()) {
+			mnemonics.push_back(mnem);
+		}
+	}
+	std::stringstream ss;
+	for (auto mi = mnemonics.begin(); mi != mnemonics.end(); mi++) {
+		if (mi != mnemonics.begin()) ss << ", ";
+		ss << "bool " << *mi;
+	}
+	printf("template <%s>\n", ss.str().c_str());
+}
+
 void riscv_inst_set::print_switch()
 {
-	// template <bool RV32, bool RV64, bool RVI, bool RVM, bool RVA, bool RVF, bool RVD, bool RVS, bool RVC>
+	print_switch_template_header();
 	print_switch_decoder_node(node, 0);
 }
 
@@ -614,24 +695,60 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 	for (size_t i = 0; i < indent; i++) printf("\t");
 	printf("switch (%s) {\n", format_bitmask(node.bits, "inst", true).c_str());
 	for (auto &val : node.vals) {
-		if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
+		auto opcode_list = node.val_opcodes[val];
+		if (node.val_decodes[val].bits.size() == 0 && opcode_list.size() >= 1) {
 			for (size_t i = 0; i < indent; i++) printf("\t");
 			if (val == DEFAULT) {
 				printf("\tdefault: ");
 			} else {
 				printf("\tcase %lu: ", val);
 			}
-			// if ambiguous (@pseudo opcode), chooses first opcode
-			auto opcode = node.val_opcodes[val].front();
-			printf("dec.op = %s; break;", opcode_name("riscv_op_", opcode, '_').c_str());
-			// if ambiguous, add comment
-			if (node.val_opcodes[val].size() > 1) {
-				printf(" //");
-				for (auto &opcode : node.val_opcodes[val]) {
-					printf(" %s", opcode->name.c_str());
+
+			// resolve distinct number of isa widths for this entry
+			std::vector<size_t> opcode_widths;
+			for (auto opcode : opcode_list) {
+				for (size_t width : opcode_isa_widths(opcode)) {
+					opcode_widths.push_back(width);
 				}
 			}
-			printf("\n");
+
+			// add conditional for different isa widths
+			if (opcode_list.size() > 1 &&
+				opcode_list.size() == opcode_widths.size()) {
+				printf("\n");
+				for (auto oi = opcode_list.begin(); oi != opcode_list.end(); oi++) {
+					auto opcode = *oi;
+					for (size_t i = 0; i < indent; i++) printf("\t");
+					printf("\t\t%sif (%s && rv%lu) dec.op = %s;\n",
+						oi != opcode_list.begin() ? "else " : "",
+						opcode_isa_ext(opcode).c_str(), opcode_isa_widths(opcode)[0],
+						opcode_name("riscv_op_", opcode, '_').c_str());
+				}
+				for (size_t i = 0; i < indent; i++) printf("\t");
+				printf("\t\tbreak;\n");
+			} else {
+				// if ambiguous (@pseudo opcode), chooses first opcode
+				auto opcode = opcode_list.front();
+				if (opcode_widths.size() == 1) {
+					printf("if (%s && rv%lu) dec.op = %s; break;",
+						opcode_isa_ext(opcode).c_str(), opcode_isa_widths(opcode)[0],
+						opcode_name("riscv_op_", opcode, '_').c_str());
+				} else {
+					printf("if (%s) dec.op = %s; break;",
+						opcode_isa_ext(opcode).c_str(),
+						opcode_name("riscv_op_", opcode, '_').c_str());
+				}
+
+				// if ambiguous, add comment
+				if (opcode_list.size() > 1) {
+					printf(" //");
+					for (auto &opcode : opcode_list) {
+						printf(" %s", opcode->name.c_str());
+					}
+				}
+				printf("\n");
+			}
+
 		} else {
 			for (size_t i = 0; i < indent; i++) printf("\t");
 			if (val == DEFAULT) {
@@ -642,7 +759,7 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 			for (size_t i = 0; i < indent; i++) printf("\t");
 			printf("\t\t//");
 			int count = 0;
-			for (auto &opcode : node.val_opcodes[val]) {
+			for (auto &opcode : opcode_list) {
 				if (count++ == 12) {
 					printf(" ..."); break;
 				}
