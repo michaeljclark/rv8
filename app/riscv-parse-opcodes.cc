@@ -47,6 +47,7 @@ struct riscv_opcode
 	riscv_opcode_mask_list masks;
 	std::string isa_class;
 	std::vector<std::string> isa_extensions;
+	riscv_opcode_list variants;
 
 	size_t mask;
 	size_t match;
@@ -58,6 +59,11 @@ struct riscv_opcode
 		if (isa_subset.size() == 0) return true;
 		for (auto isa : isa_extensions) {
 			if (isa_subset.find(isa) != isa_subset.end()) return true;
+		}
+		for (auto variant : variants) {
+			for (auto isa : variant->isa_extensions) {
+				if (isa_subset.find(isa) != isa_subset.end()) return true;
+			}
 		}
 		return false;
 	}
@@ -121,8 +127,8 @@ struct riscv_inst_set
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 
-	riscv_opcode_ptr lookup_opcode(std::string opcode_key, std::string opcode_name);
-	riscv_tag_ptr lookup_tag(std::string tag);
+	riscv_opcode_ptr lookup_opcode(std::string opcode_name, bool create = true);
+	riscv_tag_ptr lookup_tag(std::string tag, bool create = true);
 
 	void parse_opcode(std::vector<std::string> &part);
 	bool read_opcodes(std::string filename);
@@ -353,7 +359,6 @@ std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opc
 std::string riscv_inst_set::opcode_isa_ext(riscv_opcode_ptr opcode)
 {
 	for (std::string mnem : opcode->isa_extensions) {
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
 		size_t ext_offset = 0;
 		for (std::string isa_width : isa_width_str) {
 			if (mnem.find(isa_width) == 0) {
@@ -372,7 +377,6 @@ std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
 {
 	std::vector<size_t> widths;
 	for (std::string mnem : opcode->isa_extensions) {
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
 		for (size_t i = 0; i < isa_width_str.size(); i++) {
 			if (mnem.find(isa_width_str[i]) == 0) {
 				widths.push_back(isa_width[i]);
@@ -382,20 +386,22 @@ std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
 	return widths;
 }
 
-riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode_key, std::string opcode_name)
+riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode, bool create)
 {
-	auto i = opcodes_bykey.find(opcode_key);
+	auto i = opcodes_bykey.find(opcode);
 	if (i != opcodes_bykey.end()) return i->second;
-	riscv_opcode_ptr p = opcodes_bykey[opcode_key] = std::make_shared<riscv_opcode>(opcode_name);
+	if (!create) return riscv_opcode_ptr();
+	riscv_opcode_ptr p = opcodes_bykey[opcode] = std::make_shared<riscv_opcode>(opcode);
 	p->num = opcodes.size();
 	opcodes.push_back(p);
 	return p;
 }
 
-riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag)
+riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag, bool create)
 {
 	auto i = tags_byname.find(tag);
 	if (i != tags_byname.end()) return i->second;
+	if (!create) return riscv_tag_ptr();
 	riscv_tag_ptr p = tags_byname[tag] = std::make_shared<riscv_tag>(tag);
 	tags.push_back(p);
 	return p;
@@ -403,26 +409,19 @@ riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag)
 
 void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 {
-	std::vector<std::string> isa_extensions;
-	for (size_t i = 1; i < part.size(); i++) {
-		std::string mnem = part[i];
-		if (is_extension(mnem)) {
-			std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
-			isa_extensions.push_back(mnem);
-			if (std::find(isa_list.begin(), isa_list.end(), mnem) == isa_list.end()) {
-				isa_list.push_back(mnem);
-			}
-		}
+	std::string opcode_name = part[0];
+	auto opcode = lookup_opcode(opcode_name, false /* !create */);
+	if (opcode) {
+		auto variant = std::make_shared<riscv_opcode>(opcode_name);
+		opcode->variants.push_back(variant);
+		opcode = variant;
+	} else {
+		opcode = lookup_opcode(opcode_name, true /* create */);
 	}
 
-	std::string opcode_name = part[0];
-	std::string opcode_key = isa_extensions.size() == 1 ?
-		opcode_name + std::string(".") + isa_extensions.front() : opcode_name;
-
-	auto opcode = lookup_opcode(opcode_key, opcode_name);
-
 	for (size_t i = 1; i < part.size(); i++) {
 		std::string mnem = part[i];
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
 		opcode->tags.push_back(lookup_tag(mnem));
 		if (is_mask(mnem)) {
 			opcode->masks.push_back(decode_mask(mnem));
@@ -430,6 +429,9 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 			opcode->isa_class = decode_class(mnem);
 		} else if (is_extension(mnem)) {
 			opcode->isa_extensions.push_back(mnem);
+			if (std::find(isa_list.begin(), isa_list.end(), mnem) == isa_list.end()) {
+				isa_list.push_back(mnem);
+			}
 		}
 	}
 }
@@ -522,7 +524,6 @@ void riscv_inst_set::print_switch_template_header()
 {
 	std::vector<std::string> mnemonics;
 	for (std::string mnem : isa_list) {
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
 		for (std::string isa_width : isa_width_str) {
 			if (mnem.find(isa_width) == 0) {
 				if (std::find(mnemonics.begin(), mnemonics.end(), isa_width) == mnemonics.end()) {
@@ -532,7 +533,6 @@ void riscv_inst_set::print_switch_template_header()
 		}
 	}
 	for (std::string mnem : isa_list) {
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
 		size_t ext_offset = 0;
 		for (std::string isa_width : isa_width_str) {
 			if (mnem.find(isa_width) == 0) {
@@ -704,17 +704,24 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 				printf("\tcase %lu: ", val);
 			}
 
-			// resolve distinct number of isa widths for this entry
+			// resolve distinct number of isa widths for this opcode and its variants
 			std::vector<size_t> opcode_widths;
 			for (auto opcode : opcode_list) {
 				for (size_t width : opcode_isa_widths(opcode)) {
 					opcode_widths.push_back(width);
 				}
+				for (auto variant : opcode->variants) {
+					for (size_t width : opcode_isa_widths(opcode)) {
+						opcode_widths.push_back(width);
+					}
+				}
 			}
+			auto opcode = opcode_list.front();
 
-			// add conditional for different isa widths
-			if (opcode_list.size() > 1 &&
-				opcode_list.size() == opcode_widths.size()) {
+			// different opcodes that share encoding on different isa widths
+			if (opcode_list.size() > 1 && opcode_list.size() == opcode_widths.size())
+			{
+				// conditionals for different opcodes sharing encoding on different isa widths
 				printf("\n");
 				for (auto oi = opcode_list.begin(); oi != opcode_list.end(); oi++) {
 					auto opcode = *oi;
@@ -726,9 +733,10 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 				}
 				for (size_t i = 0; i < indent; i++) printf("\t");
 				printf("\t\tbreak;\n");
-			} else {
-				// if ambiguous (@pseudo opcode), chooses first opcode
-				auto opcode = opcode_list.front();
+			}
+			else
+			{
+				// if ambiguous, chooses first opcode
 				if (opcode_widths.size() == 1) {
 					printf("if (%s && rv%lu) dec.op = %s; break;",
 						opcode_isa_ext(opcode).c_str(), opcode_isa_widths(opcode)[0],
@@ -825,7 +833,7 @@ void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_e
 		for (auto &val : node.vals) {
 			if (val == DEFAULT) continue;
 			if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
-				// if ambiguous (@pseudo opcode), chooses first opcode
+				// if ambiguous, chooses first opcode
 				decoder[table_start + val] = riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[val].front()->num);
 			} else {
 				decoder[table_start + val] = riscv_dsm_entry(riscv_dsm_jump, -1);
@@ -841,7 +849,7 @@ void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_e
 		for (auto &val : node.vals) {
 			if (val == DEFAULT) continue;
 			if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
-				// if ambiguous (@pseudo opcode), chooses first opcode
+				// if ambiguous, chooses first opcode
 				decoder.push_back(riscv_dsm_entry(riscv_dsm_match, val));
 				decoder.push_back(riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[val].front()->num));
 			} else {
@@ -852,7 +860,7 @@ void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_e
 		}
 		if (has_default) {
 			if (node.val_decodes[DEFAULT].bits.size() == 0 && node.val_opcodes[DEFAULT].size() >= 1) {
-				// if ambiguous (@pseudo opcode), chooses first opcode
+				// if ambiguous, chooses first opcode
 				decoder.push_back(riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[DEFAULT].front()->num));
 			} else {
 				decoder.push_back(riscv_dsm_entry(riscv_dsm_jump, -1));

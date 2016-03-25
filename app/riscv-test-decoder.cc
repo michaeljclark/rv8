@@ -308,32 +308,23 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 				}
 				break;
 			case 4:
-				// addi slti sltiu xori ori andi slli srli srai slli srli srai
+				// addi slti sltiu xori ori andi slli srli srai
 				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 					case 0: if (rvi) dec.op = riscv_op_addi; break;
 					case 1:
-						// slli slli
+						// slli
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: 
-								if (rvi && rv32) dec.op = riscv_op_slli;
-								else if (rvi && rv64) dec.op = riscv_op_slli;
-								break;
+							case 0: if (rvi) dec.op = riscv_op_slli; break;
 						}
 						break;
 					case 2: if (rvi) dec.op = riscv_op_slti; break;
 					case 3: if (rvi) dec.op = riscv_op_sltiu; break;
 					case 4: if (rvi) dec.op = riscv_op_xori; break;
 					case 5:
-						// srli srai srli srai
+						// srli srai
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: 
-								if (rvi && rv32) dec.op = riscv_op_srli;
-								else if (rvi && rv64) dec.op = riscv_op_srli;
-								break;
-							case 16: 
-								if (rvi && rv32) dec.op = riscv_op_srai;
-								else if (rvi && rv64) dec.op = riscv_op_srai;
-								break;
+							case 0: if (rvi) dec.op = riscv_op_srli; break;
+							case 16: if (rvi) dec.op = riscv_op_srai; break;
 						}
 						break;
 					case 6: if (rvi) dec.op = riscv_op_ori; break;
