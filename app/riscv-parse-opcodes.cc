@@ -46,7 +46,7 @@ struct riscv_opcode
 	riscv_tag_list tags;
 	riscv_opcode_mask_list masks;
 	std::string isa_class;
-	std::vector<std::string> isa_list;
+	std::vector<std::string> isa_extensions;
 
 	size_t mask;
 	size_t match;
@@ -54,10 +54,10 @@ struct riscv_opcode
 
 	riscv_opcode(std::string name) : name(name), mask(0), match(0), done(0) {}
 
-	bool match_isa(std::vector<std::string> isa_subset) {
+	bool match_isa(std::set<std::string> &isa_subset) {
 		if (isa_subset.size() == 0) return true;
-		for (auto s : isa_subset) {
-			if (std::find(isa_list.begin(), isa_list.end(), s) != isa_list.end()) return true;
+		for (auto isa : isa_extensions) {
+			if (isa_subset.find(isa) != isa_subset.end()) return true;
 		}
 		return false;
 	}
@@ -100,11 +100,13 @@ struct riscv_inst_set
 	riscv_tag_list tags;
 	riscv_tag_map tags_byname;
 	riscv_decoder_node node;
-	std::vector<std::string> isa_subset;
+	std::set<std::string> isa_subset;
 
 	static bool is_mask(std::string tag);
 	static bool is_class(std::string tag);
-	static bool is_isa(std::string tag);
+	static bool is_extension(std::string tag);
+
+	static std::vector<std::string> decode_isa_extensions(std::string isa_spec);
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string decode_class(std::string mc_spec);
@@ -194,9 +196,38 @@ bool riscv_inst_set::is_class(std::string tag)
 	return (tag.find("c=") == 0);
 }
 
-bool riscv_inst_set::is_isa(std::string tag)
+bool riscv_inst_set::is_extension(std::string tag)
 {
 	return (tag.find("rv") == 0);
+}
+
+std::vector<std::string> riscv_inst_set::decode_isa_extensions(std::string isa_spec)
+{
+	std::vector<std::string> list;
+	std::transform(isa_spec.begin(), isa_spec.end(),isa_spec.begin(), ::tolower);
+	size_t ext_offset = 0;
+	if (isa_spec.find("rv32") == 0) {
+		ext_offset = 4;
+	} else if (isa_spec.find("rv64") == 0) {
+		ext_offset = 4;
+	} else if (isa_spec.find("rv128") == 0) {
+		ext_offset = 5;
+	} else {
+		panic("illegal isa spec: %s", isa_spec.c_str());
+	}
+	size_t g_offset = isa_spec.find("g");
+	if (g_offset != std::string::npos) {
+		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset, isa_spec.begin() + g_offset + 1, "imafd");
+	}
+	for (auto i = isa_spec.begin() + ext_offset; i != isa_spec.end(); i++) {
+		std::stringstream ss;
+		ss << isa_spec.substr(0, ext_offset) << *i;
+		if (std::find(list.begin(), list.end(), ss.str()) != list.end()) {
+			panic("illegal isa spec: %s: duplicate symbol: %c", isa_spec.c_str(), *i);
+		}
+		list.push_back(ss.str());
+	}
+	return list;
 }
 
 riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
@@ -334,16 +365,16 @@ riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag)
 
 void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 {
-	std::vector<std::string> isa_list;
+	std::vector<std::string> isa_extensions;
 	for (size_t i = 1; i < part.size(); i++) {
-		if (is_isa(part[i])) {
-			isa_list.push_back(part[i]);
+		if (is_extension(part[i])) {
+			isa_extensions.push_back(part[i]);
 		}
 	}
 
 	std::string opcode_name = part[0];
-	std::string opcode_key = isa_list.size() == 1 ?
-		opcode_name + std::string(".") + isa_list[0] : opcode_name;
+	std::string opcode_key = isa_extensions.size() == 1 ?
+		opcode_name + std::string(".") + isa_extensions.front() : opcode_name;
 
 	auto opcode = lookup_opcode(opcode_key, opcode_name);
 
@@ -353,8 +384,8 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 			opcode->masks.push_back(decode_mask(part[i]));
 		} else if (is_class(part[i])) {
 			opcode->isa_class = decode_class(part[i]);
-		} else if (is_isa(part[i])) {
-			opcode->isa_list.push_back(part[i]);
+		} else if (is_extension(part[i])) {
+			opcode->isa_extensions.push_back(part[i]);
 		}
 	}
 }
@@ -445,6 +476,7 @@ void riscv_inst_set::print_strings()
 
 void riscv_inst_set::print_switch()
 {
+	// template <bool RV32, bool RV64, bool RVI, bool RVM, bool RVA, bool RVF, bool RVD, bool RVS, bool RVC>
 	print_switch_decoder_node(node, 0);
 }
 
@@ -738,8 +770,12 @@ int main(int argc, const char *argv[])
 	cmdline_option options[] =
 	{
 		{ "-I", "--isa-subset", cmdline_arg_type_string,
-			"ISA subset (rv32i, rv32m, rv32a, rv32f, rv32d, rv64i, rv64m, rv64a, rv64f, rv64d)",
-			[&](std::string s) { inst_set.isa_subset.push_back(s); return true; } },
+			"ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)",
+			[&](std::string s) {
+				for (std::string isa : riscv_inst_set::decode_isa_extensions(s))
+					inst_set.isa_subset.insert(isa);
+				return true; }
+			},
 		{ "-r", "--read-opcodes", cmdline_arg_type_string,
 			"Read opcodes",
 			[&](std::string s) { return inst_set.read_opcodes(s); } },
