@@ -106,7 +106,8 @@ struct riscv_inst_set
 	riscv_tag_list tags;
 	riscv_tag_map tags_byname;
 	riscv_decoder_node node;
-	std::vector<std::string> isa_list;
+	std::vector<std::string> isa_class_list;
+	std::vector<std::string> isa_ext_list;
 	std::set<std::string> isa_subset;
 
 	static bool is_mask(std::string tag);
@@ -487,13 +488,17 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 			opcode->masks.push_back(decode_mask(mnem));
 		} else if (is_class(mnem)) {
 			opcode->isa_class = decode_class(mnem);
+			if (std::find(isa_class_list.begin(), isa_class_list.end(), opcode->isa_class) == isa_class_list.end()) {
+				isa_class_list.push_back(opcode->isa_class);
+			}
 		} else if (is_extension(mnem)) {
 			opcode->isa_extensions.push_back(mnem);
-			if (std::find(isa_list.begin(), isa_list.end(), mnem) == isa_list.end()) {
-				isa_list.push_back(mnem);
+			if (std::find(isa_ext_list.begin(), isa_ext_list.end(), mnem) == isa_ext_list.end()) {
+				isa_ext_list.push_back(mnem);
 			}
 		}
 	}
+	std::sort(isa_class_list.begin(), isa_class_list.end());
 }
 
 bool riscv_inst_set::read_opcodes(std::string filename)
@@ -553,9 +558,14 @@ void riscv_inst_set::print_map()
 
 void riscv_inst_set::print_enum()
 {
-	printf("enum riscv_op {\n");
+	printf("enum riscv_op\n{\n");
 	for (auto &opcode : opcodes) {
 		printf("\t%s,\n", opcode_name("riscv_op_", opcode, '_').c_str());
+	}
+	printf("};\n\n");
+	printf("enum riscv_inst_type\n{\n");
+	for (auto &isa_class : isa_class_list) {
+		printf("\triscv_inst_type_%s,\n", isa_class.c_str());
 	}
 	printf("};\n");
 }
@@ -583,7 +593,7 @@ void riscv_inst_set::print_strings()
 void riscv_inst_set::print_switch_template_header()
 {
 	std::vector<std::string> mnemonics;
-	for (std::string mnem : isa_list) {
+	for (std::string mnem : isa_ext_list) {
 		for (std::string isa_width : isa_width_str) {
 			if (mnem.find(isa_width) == 0) {
 				if (std::find(mnemonics.begin(), mnemonics.end(), isa_width) == mnemonics.end()) {
@@ -592,7 +602,7 @@ void riscv_inst_set::print_switch_template_header()
 			}
 		}
 	}
-	for (std::string mnem : isa_list) {
+	for (std::string mnem : isa_ext_list) {
 		size_t ext_offset = 0;
 		for (std::string isa_width : isa_width_str) {
 			if (mnem.find(isa_width) == 0) {
