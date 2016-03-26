@@ -149,8 +149,8 @@ struct riscv_inst_set
 	void calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_entry_list &decoder);
 };
 
-static std::vector<size_t> isa_width = { 32, 64, 128 };
-static std::vector<std::string> isa_width_str = { "rv32", "rv64", "rv128" };
+static std::vector<size_t>      isa_width_bits = { 32, 64, 128 };
+static std::vector<std::string> isa_width_str =  { "rv32", "rv64", "rv128" };
 
 std::string ltrim(std::string s)
 {
@@ -182,6 +182,67 @@ std::vector<std::string> split(std::string str, std::string separator,
 	}
 	if (includeEmpty || str.size() - last_index > 0) {
 		comps.push_back(str.substr(last_index, str.size() - last_index));
+	}
+	return comps;
+}
+
+std::vector<std::string> parse_line(std::string line)
+{
+	// simple parsing routine that handles tokens separated by whitespace, 
+	// double quoted tokens containing whitespace and # comments
+
+	std::vector<char> token;
+	std::vector<std::string> comps;
+	enum {
+		whitespace,
+		quoted_token,
+		unquoted_token,
+		comment
+	} state = whitespace;
+
+	size_t i = 0;
+	while (i < line.size()) {
+		char c = line[i];
+		switch (state) {
+			case whitespace:
+				if (::isspace(c)) {
+					i++;
+				} else if (c == '#') {
+					state = comment;
+				} else if (c == '"') {
+					state = quoted_token;
+					i++;
+				} else {
+					state = unquoted_token;
+				}
+				break;
+			case quoted_token:
+				if (c == '"') {
+					comps.push_back(std::string(token.begin(), token.end()));
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			case unquoted_token:
+				if (::isspace(c)) {
+					comps.push_back(std::string(token.begin(), token.end()));
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			case comment:
+				i++;
+				break;
+		}
+	}
+	if (token.size() > 0) {
+		comps.push_back(std::string(token.begin(), token.end()));
 	}
 	return comps;
 }
@@ -232,12 +293,11 @@ std::vector<std::string> riscv_inst_set::decode_isa_extensions(std::string isa_s
 		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset, isa_spec.begin() + g_offset + 1, "imafd");
 	}
 	for (auto i = isa_spec.begin() + ext_offset; i != isa_spec.end(); i++) {
-		std::stringstream ss;
-		ss << isa_spec.substr(0, ext_offset) << *i;
-		if (std::find(list.begin(), list.end(), ss.str()) != list.end()) {
+		std::string extension = isa_spec.substr(0, ext_offset) + *i;
+		if (std::find(list.begin(), list.end(), extension) != list.end()) {
 			panic("illegal isa spec: %s: duplicate symbol: %c", isa_spec.c_str(), *i);
 		}
-		list.push_back(ss.str());
+		list.push_back(extension);
 	}
 	return list;
 }
@@ -379,7 +439,7 @@ std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
 	for (std::string mnem : opcode->isa_extensions) {
 		for (size_t i = 0; i < isa_width_str.size(); i++) {
 			if (mnem.find(isa_width_str[i]) == 0) {
-				widths.push_back(isa_width[i]);
+				widths.push_back(isa_width_bits[i]);
 			}
 		}
 	}
@@ -450,8 +510,8 @@ bool riscv_inst_set::read_opcodes(std::string filename)
 		size_t hoffset = line.find("#");
 		if (hoffset != std::string::npos) {
 			line = ltrim(rtrim(line.substr(0, hoffset)));
-		} 
-		std::vector<std::string> part = split(line, " ", false, false);
+		}
+		std::vector<std::string> part = parse_line(line);
 		if (part.size() == 0) continue;
 		parse_opcode(part);
 	}
@@ -547,12 +607,12 @@ void riscv_inst_set::print_switch_template_header()
 			mnemonics.push_back(mnem);
 		}
 	}
-	std::stringstream ss;
+	printf("template <");
 	for (auto mi = mnemonics.begin(); mi != mnemonics.end(); mi++) {
-		if (mi != mnemonics.begin()) ss << ", ";
-		ss << "bool " << *mi;
+		if (mi != mnemonics.begin()) printf(", ");
+		printf("bool %s", mi->c_str());
 	}
-	printf("template <%s>\n", ss.str().c_str());
+	printf(">\n");
 }
 
 void riscv_inst_set::print_switch()
