@@ -92,31 +92,31 @@ remuw      rd rs1 rs2       31..25=1 14..12=7 6..2=0x0E 1..0=3            c=r   
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
-lr.w       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-sc.w       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amoswap.w  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amoadd.w   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amoxor.w   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amoor.w    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amoand.w   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amomin.w   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amomax.w   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amominu.w  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
-amomaxu.w  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=2 6..2=0x0B 1..0=3  c=r  rv32a rv64a
+lr.w       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=2 6..2=0x0B 1..0=3 c=r_l rv32a rv64a
+sc.w       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amoswap.w  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amoadd.w   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amoxor.w   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amoor.w    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amoand.w   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amomin.w   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amomax.w   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amominu.w  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
+amomaxu.w  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=2 6..2=0x0B 1..0=3 c=r_a rv32a rv64a
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
-lr.d       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-sc.d       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amoswap.d  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amoadd.d   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amoxor.d   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amoor.d    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amoand.d   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amomin.d   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amomax.d   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amominu.d  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
-amomaxu.d  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3  c=r        rv64a
+lr.d       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=3 6..2=0x0B 1..0=3 c=r_l       rv64a
+sc.d       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amoswap.d  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amoadd.d   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amoxor.d   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amoor.d    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amoand.d   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amomin.d   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amomax.d   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amominu.d  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
+amomaxu.d  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3 c=r_a       rv64a
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 

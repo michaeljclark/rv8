@@ -33,8 +33,10 @@ i_sh6     rd_rs1_imm
 r         rd_rs1_rs2
 r_3f      frd_frs1_frs2
 r_4f      frd_frs1_frs2_frs3
+r_a       rd_rs2_b_rs1
 r_ff      frd_frs1
 r_fr      frd_rs1
+r_l       rd_b_rs1
 r_rf      rd_frs1
 r_rff     rd_frs1_frs2
 s         rs2_bimm_rs1

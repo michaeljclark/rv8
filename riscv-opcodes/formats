@@ -22,3 +22,5 @@ rs1_rs2_imm        rs1,rs2,imm
 rs2_bimm_rs1       rs2,imm(rs1)
 frs2_bimm_rs1      frs2,imm(rs1)
 rs1_rs2_imm_pc     rs1,rs2,ipc
+rd_rs2_b_rs1       rd,rs2,(rs1)
+rd_b_rs1           rd,(rs1)

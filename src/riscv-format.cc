@@ -39,6 +39,8 @@ const rvf rvf_rs1_rs2_imm[] =        { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_imm, 
 const rvf rvf_rs2_bimm_rs1[] =       { rvf_rs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_frs2_bimm_rs1[] =      { rvf_frs2, rvf_c, rvf_imm, rvf_b, rvf_rs1, rvf_d, rvf_z };
 const rvf rvf_rs1_rs2_imm_pc[] =     { rvf_rs1, rvf_c, rvf_rs2, rvf_c, rvf_ipc, rvf_z };
+const rvf rvf_rd_rs2_b_rs1[] =       { rvf_rd, rvf_c, rvf_rs2, rvf_c, rvf_b, rvf_rs1, rvf_d, rvf_z };
+const rvf rvf_rd_b_rs1[] =           { rvf_rd, rvf_c, rvf_b, rvf_rs1, rvf_d, rvf_z };
 
 const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_unknown,      rvf_none },
@@ -74,8 +76,10 @@ const riscv_inst_type_metadata riscv_inst_type_table[] = {
 	{ riscv_inst_type_r,            rvf_rd_rs1_rs2 },
 	{ riscv_inst_type_r_3f,         rvf_frd_frs1_frs2 },
 	{ riscv_inst_type_r_4f,         rvf_frd_frs1_frs2_frs3 },
+	{ riscv_inst_type_r_a,          rvf_rd_rs2_b_rs1 },
 	{ riscv_inst_type_r_ff,         rvf_frd_frs1 },
 	{ riscv_inst_type_r_fr,         rvf_frd_rs1 },
+	{ riscv_inst_type_r_l,          rvf_rd_b_rs1 },
 	{ riscv_inst_type_r_rf,         rvf_rd_frs1 },
 	{ riscv_inst_type_r_rff,        rvf_rd_frs1_frs2 },
 	{ riscv_inst_type_s,            rvf_rs2_bimm_rs1 },
