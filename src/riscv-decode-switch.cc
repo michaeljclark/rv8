@@ -32,7 +32,7 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 			riscv_wu op2 = riscv_decode_c_funct3(inst);
 			switch (op2) {
 				case 0x00:
-					riscv_decode_ciw_addi4spn(dec, inst);
+					riscv_decode_ciw_4spn(dec, inst);
 					dec.op = riscv_op_c_addi4spn;
 					dec.rd = riscv_ireg_sp;
 					break;
@@ -135,7 +135,7 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 					break;
 				case 0x03:
 					if (dec.rd == 2) {
-						riscv_decode_ci_addi16sp(dec, inst);
+						riscv_decode_ci_16sp(dec, inst);
 						dec.op = riscv_op_c_addi16sp;
 						dec.rd = riscv_ireg_sp;
 					} else {

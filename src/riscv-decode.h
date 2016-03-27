@@ -142,7 +142,7 @@ inline void riscv_decode_ci(riscv_decode &dec, riscv_wu inst)
 inline void riscv_decode_ci_li(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_ci_li;
-	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
+	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_zero;
 	dec.imm = IMM_CI::decode(inst);
 }
@@ -174,13 +174,49 @@ inline void riscv_decode_ci_ldsp(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CI_ldsp::decode(inst);
 }
 
-/* Decode CI addi16sp */
-inline void riscv_decode_ci_addi16sp(riscv_decode &dec, riscv_wu inst)
+/* Decode CI fldsp */
+inline void riscv_decode_ci_fldsp(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_ci_fldsp;
+	dec.rd = (inst >> 7) & 0b11111;
+	dec.rs1 = riscv_ireg_sp;
+	dec.imm = IMM_CI_ldsp::decode(inst);
+}
+
+/* Decode CI flwsp */
+inline void riscv_decode_ci_flwsp(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_ci_flwsp;
+	dec.rd = (inst >> 7) & 0b11111;
+	dec.rs1 = riscv_ireg_sp;
+	dec.imm = IMM_CI_lwsp::decode(inst);
+}
+
+/* Decode CI 16sp */
+inline void riscv_decode_ci_16sp(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_ci_16sp;
 	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
 	dec.imm = IMM_CI_addi16sp::decode(inst);
+}
+
+/* Decode CSS fswsp */
+inline void riscv_decode_css_fswsp(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_css_fswsp;
+	dec.rs1 = riscv_ireg_sp;
+	dec.rs2 = (inst >> 2) & 0b11111;
+	dec.imm = IMM_CSS_swsp::decode(inst);
+}
+
+/* Decode CSS fsdsp */
+inline void riscv_decode_css_fsdsp(riscv_decode &dec, riscv_wu inst)
+{
+	dec.type = riscv_inst_type_css_fsdsp;
+	dec.rs1 = riscv_ireg_sp;
+	dec.rs2 = (inst >> 2) & 0b11111;
+	dec.imm = IMM_CSS_sdsp::decode(inst);
 }
 
 /* Decode CSS swsp */
@@ -201,8 +237,8 @@ inline void riscv_decode_css_sdsp(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CSS_sdsp::decode(inst);
 }
 
-/* Decode CIW addi4spn */
-inline void riscv_decode_ciw_addi4spn(riscv_decode &dec, riscv_wu inst)
+/* Decode CIW 4spn */
+inline void riscv_decode_ciw_4spn(riscv_decode &dec, riscv_wu inst)
 {
 	dec.type = riscv_inst_type_ciw_4spn;
 	dec.rd = ((inst >> 2) & 0b111) + 8;
