@@ -10,14 +10,14 @@
 
 void riscv_print_dsm_entry(const riscv_dsm_entry *pc)
 {
-	printf("/* %p */", pc);
+	printf("/* %p */", (void*)pc);
 	switch (pc->dsm_op) {
 		case riscv_dsm_break: printf("{ riscv_dsm_break, %d },\n", pc->dsm_val); break;
 		case riscv_dsm_table_brk: printf("{ riscv_dsm_table_brk, %d },\n", pc->dsm_val); break;
 		case riscv_dsm_table_dfl: printf("{ riscv_dsm_table_dfl, %d },\n", pc->dsm_val); break;
 		case riscv_dsm_match: printf("{ riscv_dsm_match, %d },\n", pc->dsm_val); break;
 		case riscv_dsm_jump: printf("{ riscv_dsm_jump, %d },\n", pc->dsm_val); break;
-		case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", riscv_instructions[pc->dsm_val]); break;
+		case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", riscv_instructions[pc->dsm_val].opcode); break;
 		case riscv_dsm_mask_srl0:
 		case riscv_dsm_mask_srl1:
 		case riscv_dsm_mask_srl2:

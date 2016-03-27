@@ -273,7 +273,6 @@ struct riscv_inst_set
 	void print_map();
 	void print_enum();
 	void print_class();
-	void print_strings();
 	void print_switch_template_header();
 	void print_switch();
 	void print_dsm();
@@ -908,17 +907,8 @@ void riscv_inst_set::print_class()
 	printf("{\n");
 	for (auto &opcode : opcodes) {
 		printf("\t{ %-20s%-30s },\n",
-			format_string("%s,", opcode_name("riscv_op_", opcode, '_').c_str()).c_str(),
-			format_string("riscv_inst_type_%s, ", opcode->type->name.c_str()).c_str());
-	}
-	printf("};\n");
-}
-
-void riscv_inst_set::print_strings()
-{
-	printf("const char* riscv_instructions[] = {\n");
-	for (auto &opcode : opcodes) {
-		printf("\t\"%s\",\n", opcode_name("", opcode, '.').c_str());
+			format_string("\"%s\",", opcode_name("", opcode, '.').c_str()).c_str(),
+			format_string("riscv_inst_type_%s ", opcode->type->name.c_str()).c_str());
 	}
 	printf("};\n");
 }
@@ -962,6 +952,14 @@ void riscv_inst_set::print_switch()
 {
 	print_switch_template_header();
 	print_switch_decoder_node(node, 0);
+
+	printf("\t switch (dec.type) {\n");
+	for (auto &type : types) {
+		printf("\t\tcase %-30s %-40s break;\n",
+			format_string("riscv_inst_type_%s:", type->name.c_str()).c_str(),
+			format_string("riscv_decode_%s(dec, inst);", type->name.c_str()).c_str());
+	}
+	printf("\t};\n");
 }
 
 void riscv_inst_set::print_dsm()
@@ -1287,7 +1285,6 @@ int main(int argc, const char *argv[])
 	bool print_dsm = false;
 	bool print_enum = false;
 	bool print_class = false;
-	bool print_strings = false;
 	bool help_or_error = false;
 
 	cmdline_option options[] =
@@ -1317,9 +1314,6 @@ int main(int argc, const char *argv[])
 		{ "-c", "--print-class", cmdline_arg_type_none,
 			"Print instruction classes",
 			[&](std::string s) { return (print_class = true); } },
-		{ "-i", "--print-strings", cmdline_arg_type_none,
-			"Print strings",
-			[&](std::string s) { return (print_strings = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1335,8 +1329,7 @@ int main(int argc, const char *argv[])
 	}
 
 	help_or_error |= !print_map && !print_switch &&
-		!print_enum && !print_strings &&
-		!print_dsm && !print_class;
+		!print_enum && !print_dsm && !print_class;
 
 	if (help_or_error) {
 		printf("usage: %s\n", argv[0]);
@@ -1356,10 +1349,6 @@ int main(int argc, const char *argv[])
 
 	if (print_class) {
 		inst_set.print_class();
-	}
-
-	if (print_strings) {
-		inst_set.print_strings();
 	}
 
 	if (print_switch) {

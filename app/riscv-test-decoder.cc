@@ -314,7 +314,7 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 					case 1:
 						// slli
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: if (rvi) dec.op = riscv_op_slli; break;
+							case 0: if (rvi) dec.op = riscv_op_slli_rv64i; break;
 						}
 						break;
 					case 2: if (rvi) dec.op = riscv_op_slti; break;
@@ -323,8 +323,8 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 					case 5:
 						// srli srai
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: if (rvi) dec.op = riscv_op_srli; break;
-							case 16: if (rvi) dec.op = riscv_op_srai; break;
+							case 0: if (rvi) dec.op = riscv_op_srli_rv64i; break;
+							case 16: if (rvi) dec.op = riscv_op_srai_rv64i; break;
 						}
 						break;
 					case 6: if (rvi) dec.op = riscv_op_ori; break;
@@ -888,7 +888,7 @@ void decode_dsm_sw(riscv_ptr start, riscv_ptr end, const char *code)
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	const char* last_insn = riscv_instructions[dec.op];
+	const char* last_insn = riscv_instructions[dec.op].opcode;
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
 	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }
@@ -908,7 +908,7 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	const char* last_insn = riscv_instructions[dec.op];
+	const char* last_insn = riscv_instructions[dec.op].opcode;
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
 	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }

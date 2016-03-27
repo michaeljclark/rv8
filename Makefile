@@ -102,7 +102,6 @@ RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/riscv-compression.cc \
                 $(LIB_SRC_DIR)/riscv-csr.cc \
                 $(LIB_SRC_DIR)/riscv-decode-dsm.cc \
-                $(LIB_SRC_DIR)/riscv-decode-switch.cc \
                 $(LIB_SRC_DIR)/riscv-dsm-table.cc \
                 $(LIB_SRC_DIR)/riscv-dsm.cc \
                 $(LIB_SRC_DIR)/riscv-format.cc \
@@ -126,11 +125,10 @@ TEST_DISASM_OBJS = $(call src_objs, $(TEST_DISASM_SRCS))
 TEST_DISASM_BIN = $(BIN_DIR)/riscv-test-disasm
 
 TEST_DECODER_ASM = $(call src_asm, $(APP_SRC_DIR)/riscv-test-decoder.cc)
-SWITCH_DECODER_ASM = $(call src_asm, $(LIB_SRC_DIR)/riscv-decode-switch.cc)
 
 ALL_SRCS = $(RISCV_MC_SRCS) $(PARSE_OPCODES_SRCS) $(TEST_DECODER_SRCS) $(TEST_DISASM_SRCS)
 BINARIES = $(PARSE_OPCODES_BIN) $(TEST_DECODER_BIN) $(TEST_DISASM_BIN)
-ASSEMBLY = $(TEST_DECODER_ASM) $(SWITCH_DECODER_ASM)
+ASSEMBLY = $(TEST_DECODER_ASM)
 
 # build rules
 all: dirs $(LIBS) $(BINARIES) $(ASSEMBLY)

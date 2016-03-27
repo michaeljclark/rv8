@@ -65,8 +65,3 @@ To print decoder opcode enum:
 ```
 make enum
 ```
-
-To print decoder opcode strings:
-```
-make strings
-```
