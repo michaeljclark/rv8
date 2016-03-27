@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <extension> <description>
+# <extension> "<extension description>"
 
 rv32i    "RV32I Base Integer Instruction Set"
 rv64i    "RV64I Base Integer Instruction Set (in addition to RV32I)"

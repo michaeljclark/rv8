@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <format_name> <format_args>
+# <format name> <format template>
 
 none
 ipc                ipc

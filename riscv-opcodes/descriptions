@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <instruction opcode> <instruction name> <instruction description>
+# <instruction name> "<instruction long name>" "<instruction description>"
 
 # RV32I    "RV32I Base Integer Instruction Set"
 
