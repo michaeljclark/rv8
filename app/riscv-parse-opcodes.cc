@@ -42,28 +42,23 @@ typedef std::vector<riscv_dsm_entry> riscv_dsm_entry_list;
 struct riscv_opcode
 {
 	ssize_t num;
+	std::string key;
 	std::string name;
 	riscv_tag_list tags;
 	riscv_opcode_mask_list masks;
 	std::string isa_class;
 	std::vector<std::string> isa_extensions;
-	riscv_opcode_list variants;
 
 	size_t mask;
 	size_t match;
 	size_t done;
 
-	riscv_opcode(std::string name) : name(name), mask(0), match(0), done(0) {}
+	riscv_opcode(std::string key, std::string name) : key(key), name(name), mask(0), match(0), done(0) {}
 
 	bool match_isa(std::set<std::string> &isa_subset) {
 		if (isa_subset.size() == 0) return true;
 		for (auto isa : isa_extensions) {
 			if (isa_subset.find(isa) != isa_subset.end()) return true;
-		}
-		for (auto variant : variants) {
-			for (auto isa : variant->isa_extensions) {
-				if (isa_subset.find(isa) != isa_subset.end()) return true;
-			}
 		}
 		return false;
 	}
@@ -128,7 +123,7 @@ struct riscv_inst_set
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 
-	riscv_opcode_ptr lookup_opcode(std::string opcode_name, bool create = true);
+	riscv_opcode_ptr lookup_opcode(std::string opcode_key, std::string opcode_name, bool create = true);
 	riscv_tag_ptr lookup_tag(std::string tag, bool create = true);
 
 	void parse_opcode(std::vector<std::string> &part);
@@ -411,7 +406,7 @@ std::string riscv_inst_set::opcode_mask(riscv_opcode_ptr opcode)
 
 std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot)
 {
-	std::string name = opcode->name;
+	std::string name = opcode->key;
 	if (name.find("@") == 0) name = name.substr(1);
 	std::replace(name.begin(), name.end(), '.', dot);
 	return prefix + name;
@@ -447,12 +442,12 @@ std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
 	return widths;
 }
 
-riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode, bool create)
+riscv_opcode_ptr riscv_inst_set::lookup_opcode(std::string opcode_key, std::string opcode_name, bool create)
 {
-	auto i = opcodes_bykey.find(opcode);
+	auto i = opcodes_bykey.find(opcode_key);
 	if (i != opcodes_bykey.end()) return i->second;
 	if (!create) return riscv_opcode_ptr();
-	riscv_opcode_ptr p = opcodes_bykey[opcode] = std::make_shared<riscv_opcode>(opcode);
+	riscv_opcode_ptr p = opcodes_bykey[opcode_key] = std::make_shared<riscv_opcode>(opcode_key, opcode_name);
 	p->num = opcodes.size();
 	opcodes.push_back(p);
 	return p;
@@ -470,14 +465,26 @@ riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag, bool create)
 
 void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 {
+	std::vector<std::string> extensions;
+	for (size_t i = 1; i < part.size(); i++) {
+		std::string mnem = part[i];
+		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
+		if (is_extension(mnem)) {
+			extensions.push_back(mnem);
+		}
+	}
+
 	std::string opcode_name = part[0];
-	auto opcode = lookup_opcode(opcode_name, false /* !create */);
+	auto opcode = lookup_opcode(opcode_name, opcode_name, false /* !create */);
 	if (opcode) {
-		auto variant = std::make_shared<riscv_opcode>(opcode_name);
-		opcode->variants.push_back(variant);
-		opcode = variant;
+		opcodes_bykey.erase(opcode_name);
+		std::string new_opcode_key = opcode_name + std::string(".") + extensions.front();
+		std::string old_opcode_key = opcode_name + std::string(".") + opcode->isa_extensions.front();
+		opcode->key = old_opcode_key;
+		opcodes_bykey[old_opcode_key] = opcode;
+		opcode = lookup_opcode(new_opcode_key, opcode_name, true /* create */);
 	} else {
-		opcode = lookup_opcode(opcode_name, true /* create */);
+		opcode = lookup_opcode(opcode_name, opcode_name, true /* create */);
 	}
 
 	for (size_t i = 1; i < part.size(); i++) {
@@ -774,16 +781,11 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 				printf("\tcase %lu: ", val);
 			}
 
-			// resolve distinct number of isa widths for this opcode and its variants
+			// resolve distinct number of isa widths for this opcode
 			std::vector<size_t> opcode_widths;
 			for (auto opcode : opcode_list) {
 				for (size_t width : opcode_isa_widths(opcode)) {
 					opcode_widths.push_back(width);
-				}
-				for (auto variant : opcode->variants) {
-					for (size_t width : opcode_isa_widths(opcode)) {
-						opcode_widths.push_back(width);
-					}
 				}
 			}
 			auto opcode = opcode_list.front();
