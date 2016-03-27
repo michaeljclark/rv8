@@ -48,10 +48,10 @@ const riscv_inst_comp_metadata riscv_comp_table[] = {
     { riscv_op_c_lui,      riscv_inst_type_ci_lui,        riscv_op_lui,        riscv_inst_type_u },
     { riscv_op_c_jalr,     riscv_inst_type_cr,            riscv_op_jalr,       riscv_inst_type_i },
     { riscv_op_c_subw,     riscv_inst_type_cs,            riscv_op_subw,       riscv_inst_type_r },
-    { riscv_op_c_ebreak,   riscv_inst_type_cr,            riscv_op_unknown,    riscv_inst_type_i_none },
+    { riscv_op_c_ebreak,   riscv_inst_type_cr,            riscv_op_sbreak,     riscv_inst_type_i_none },
     { riscv_op_c_flw,      riscv_inst_type_cl_w,          riscv_op_flw,        riscv_inst_type_i_lf },
-    { riscv_op_c_flwsp,    riscv_inst_type_ci_lwsp,       riscv_op_unknown,    riscv_inst_type_i_lf },
+    { riscv_op_c_flwsp,    riscv_inst_type_ci_lwsp,       riscv_op_flw,        riscv_inst_type_i_lf },
     { riscv_op_c_fsw,      riscv_inst_type_cs_w,          riscv_op_fsw,        riscv_inst_type_s_f },
-    { riscv_op_c_fswsp,    riscv_inst_type_css_swsp,      riscv_op_unknown,    riscv_inst_type_s_f },
+    { riscv_op_c_fswsp,    riscv_inst_type_css_swsp,      riscv_op_fsw,        riscv_inst_type_s_f },
     { riscv_op_unknown,    riscv_inst_type_unknown,       riscv_op_unknown,    riscv_inst_type_unknown }
 };
