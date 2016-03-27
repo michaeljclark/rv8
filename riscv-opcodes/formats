@@ -18,7 +18,6 @@ rd_bimm_rs1        rd,imm(rs1)
 frd_bimm_rs1       frd,imm(rs1)
 rd_csr_rs1         rd,csr,rs1
 rd_csr_irs1        rd,csr,irs1
-rs1_rs2_imm        rs1,rs2,imm
 rs2_bimm_rs1       rs2,imm(rs1)
 frs2_bimm_rs1      frs2,imm(rs1)
 rs1_rs2_imm_pc     rs1,rs2,ipc

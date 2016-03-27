@@ -24,25 +24,32 @@ struct riscv_decode
 enum riscv_inst_type
 {
 	riscv_inst_type_unknown,
-	riscv_inst_type_c_fld,
 	riscv_inst_type_c_none,
 	riscv_inst_type_cb,
 	riscv_inst_type_ci,
 	riscv_inst_type_ci_16sp,
+	riscv_inst_type_ci_fldsp,
+	riscv_inst_type_ci_flwsp,
 	riscv_inst_type_ci_ldsp,
 	riscv_inst_type_ci_li,
 	riscv_inst_type_ci_lui,
 	riscv_inst_type_ci_lwsp,
 	riscv_inst_type_ciw_4spn,
 	riscv_inst_type_cj,
-	riscv_inst_type_cl_d,
-	riscv_inst_type_cl_w,
+	riscv_inst_type_cl_fld,
+	riscv_inst_type_cl_flw,
+	riscv_inst_type_cl_ld,
+	riscv_inst_type_cl_lw,
 	riscv_inst_type_cr,
 	riscv_inst_type_cr_jalr,
 	riscv_inst_type_cr_jr,
 	riscv_inst_type_cs,
-	riscv_inst_type_cs_d,
-	riscv_inst_type_cs_w,
+	riscv_inst_type_cs_fsd,
+	riscv_inst_type_cs_fsw,
+	riscv_inst_type_cs_sd,
+	riscv_inst_type_cs_sw,
+	riscv_inst_type_css_fsdsp,
+	riscv_inst_type_css_fswsp,
 	riscv_inst_type_css_sdsp,
 	riscv_inst_type_css_swsp,
 	riscv_inst_type_i,
@@ -63,8 +70,8 @@ enum riscv_inst_type
 	riscv_inst_type_r_rf,
 	riscv_inst_type_r_rff,
 	riscv_inst_type_s,
-	riscv_inst_type_sb,
 	riscv_inst_type_s_f,
+	riscv_inst_type_sb,
 	riscv_inst_type_u,
 	riscv_inst_type_uj
 };
@@ -206,7 +213,7 @@ inline void riscv_decode_ciw_addi4spn(riscv_decode &dec, riscv_wu inst)
 /* Decode CL lw */
 inline void riscv_decode_cl_lw(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_cl_w;
+	dec.type = riscv_inst_type_cl_lw;
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
 	dec.imm = IMM_CW::decode(inst);
@@ -215,7 +222,7 @@ inline void riscv_decode_cl_lw(riscv_decode &dec, riscv_wu inst)
 /* Decode CL ld */
 inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_cl_d;
+	dec.type = riscv_inst_type_cl_ld;
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
 	dec.imm = IMM_CD::decode(inst);
@@ -232,7 +239,7 @@ inline void riscv_decode_cs(riscv_decode &dec, riscv_wu inst)
 /* Decode CS sw */
 inline void riscv_decode_cs_sw(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_cs_w;
+	dec.type = riscv_inst_type_cs_sw;
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
 	dec.imm = IMM_CW::decode(inst);
@@ -241,7 +248,7 @@ inline void riscv_decode_cs_sw(riscv_decode &dec, riscv_wu inst)
 /* Decode CS sd */
 inline void riscv_decode_cs_sd(riscv_decode &dec, riscv_wu inst)
 {
-	dec.type = riscv_inst_type_cs_d;
+	dec.type = riscv_inst_type_cs_sd;
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
 	dec.imm = IMM_CD::decode(inst);
