@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <arg> <bit encoding>
+# <arg> <bit encoding> <type> <description>
 #
 # <bit encoding> contains a comma list of gather[scatter] bits. e.g.
 #
@@ -11,44 +11,43 @@
 #     offset[8|4:3]  offset[7:6|2:1|5]
 #
 # when [scatter] is ommitted, bits are right justified from bit 0
+#
+# type is one of reg, arg, imm, ipc, zero
 
-rd         11:7
-rs1        19:15
-rs2        24:20
-rs3        31:27
-aqrl       26:25
-pred       27:24
-succ       23:20
-rm         14:12
-imm20      31:12
-jimm20     31:12
-imm12      31:20
-imm12hi    31:25
-bimm12hi   31:25
-imm12lo    11:7
-bimm12lo   11:7
-zimm       19:15
-shamt      25:20
-shamtw     24:20
-vseglen    31:29
-crdq       9:7
-crs1q      9:7
-crs1rdq    9:7
-crs2q      4:2
-crd        11:7
-crs1       11:7
-crs1rd     11:7
-crs2       6:2
-cimmi      12[5],6:2[4:0]
-cimmui     12[17],6:2[16:12]
-cimmlwsp   12[5],6:2[4:6|7:6]
-cimmldsp   12[5],6:2[4:3|8:6]
-cimm16sp   12[9],6:2[4|6|8:7|5]
-cimmj      12:2[11|4|9:8|10|6|7|3:1|5]
-cimmb      12:10[8|4:3],6:2[7:6|2:1|5]
-cimmswsp   12:7[5:2|7:6]
-cimmsdsp   12:7[5:3|8:6]
-cimmsqsp   12:7[5:4|9:6]
-cimmw      12:10[5:3],6:5[2|6]
-cimmd      12:10[5:3],6:5[7:6]
-cimmq      12:10[5:4,8],6:5[7:6]
+rd         11:7                         reg   "rd"
+rs1        19:15                        reg   "rs1"
+rs2        24:20                        reg   "rs2"
+rs3        31:27                        reg   "rs3"
+aqrl       26:25                        arg   "aqrl"
+pred       27:24                        arg   "pred"
+succ       23:20                        arg   "succ"
+rm         14:12                        arg   "rm"
+imm20      31:12                        imm   "imm"
+jimm20     31:12                        ipc   "imm"
+imm12      31:20                        imm   "imm"
+simm12     31:25[11:5],11:7[4:0]        imm   "imm"
+sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"
+zimm       19:15                        zero  "0"
+shamt5     24:20                        imm   "shamt"
+shamt6     25:20                        imm   "shamt"
+crdq       9:7                          reg   "rd'"
+crs1q      9:7                          reg   "rs1'"
+crs1rdq    9:7                          reg   "rs1'/rd'"
+crs2q      4:2                          reg   "rs2'"
+crd        11:7                         reg   "rd"
+crs1       11:7                         reg   "rs1"
+crs1rd     11:7                         reg   "rs1/rd"
+crs2       6:2                          reg   "rs2"
+cimmi      12[5],6:2[4:0]               imm   "imm"
+cimmui     12[17],6:2[16:12]            imm   "imm"
+cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"
+cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"
+cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"
+cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"
+cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"
+cimmswsp   12:7[5:2|7:6]                imm   "imm"
+cimmsdsp   12:7[5:3|8:6]                imm   "imm"
+cimmsqsp   12:7[5:4|9:6]                imm   "imm"
+cimmw      12:10[5:3],6:5[2|6]          imm   "imm"
+cimmd      12:10[5:3],6:5[7:6]          imm   "imm"
+cimmq      12:10[5:4,8],6:5[7:6]        imm   "imm"
