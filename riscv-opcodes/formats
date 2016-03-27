@@ -1,11 +1,11 @@
 # format of a line in this file:
 # <format_name> <format_args>
 
-none               
-imm_pc             ipc
+none
+ipc                ipc
 rs1_rs2            rs1,rs2
 rd_imm             rd,imm
-rd_imm_pc          rd,ipc
+rd_ipc             rd,ipc
 rd_rs1_rs2         rd,rs1,rs2
 frd_frs1_frs2      frd,frs1,frs2
 rd_frs1_frs2       frd,rs1,frs2
@@ -20,6 +20,6 @@ rd_csr_rs1         rd,csr,rs1
 rd_csr_irs1        rd,csr,irs1
 rs2_bimm_rs1       rs2,imm(rs1)
 frs2_bimm_rs1      frs2,imm(rs1)
-rs1_rs2_imm_pc     rs1,rs2,ipc
+rs1_rs2_ipc        rs1,rs2,ipc
 rd_rs2_b_rs1       rd,rs2,(rs1)
 rd_b_rs1           rd,(rs1)

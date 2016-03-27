@@ -3,7 +3,7 @@
 
 c_fld     frd_bimm_rs1
 c_none    none
-cb        imm_pc
+cb        ipc
 ci        rd_imm
 ci_16sp   rd_rs1_imm
 ci_ldsp   rd_imm
@@ -11,7 +11,7 @@ ci_li     rd_imm
 ci_lui    rd_imm
 ci_lwsp   rd_imm
 ciw_4spn  rd_rs1_imm
-cj        imm_pc
+cj        ipc
 cl_fld    frd_bimm_rs1
 cl_flw    frd_bimm_rs1
 cl_ld     rd_bimm_rs1
@@ -44,7 +44,7 @@ r_l       rd_b_rs1
 r_rf      rd_frs1
 r_rff     rd_frs1_frs2
 s         rs2_bimm_rs1
-sb        rs1_rs2_imm_pc
+sb        rs1_rs2_ipc
 s_f       frs2_bimm_rs1
 u         rd_imm
-uj        rd_imm_pc
+uj        rd_ipc

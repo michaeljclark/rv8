@@ -137,9 +137,9 @@ rdinstreth rd      19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  c=i_csr
 csrrw      rd      rs1      imm12             14..12=1 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 csrrs      rd      rs1      imm12             14..12=2 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
 csrrc      rd      rs1      imm12             14..12=3 6..2=0x1C 1..0=3  c=i_csr  rv32s rv64s
-csrrwi     rd      rs1      imm12             14..12=5 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
-csrrsi     rd      rs1      imm12             14..12=6 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
-csrrci     rd      rs1      imm12             14..12=7 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
+csrrwi     rd      zimm     imm12             14..12=5 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
+csrrsi     rd      zimm     imm12             14..12=6 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
+csrrci     rd      zimm     imm12             14..12=7 6..2=0x1C 1..0=3  c=i_csri rv32s rv64s
 
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
