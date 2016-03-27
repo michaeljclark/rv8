@@ -15,7 +15,6 @@
 #include <set>
 
 #include "riscv-types.h"
-#include "riscv-dsm.h"
 #include "riscv-opcodes.h"
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
@@ -46,7 +45,6 @@ struct riscv_opcode;
 struct riscv_tag;
 struct riscv_bitrange;
 struct riscv_decoder_node;
-struct riscv_dsm_entry;
 
 typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
 typedef std::vector<riscv_arg_ptr> riscv_arg_list;
@@ -77,7 +75,6 @@ typedef std::shared_ptr<riscv_tag> riscv_tag_ptr;
 typedef std::vector<riscv_tag_ptr> riscv_tag_list;
 typedef std::map<std::string,riscv_tag_ptr> riscv_tag_map;
 typedef std::set<riscv_tag_ptr> riscv_tag_set;
-typedef std::vector<riscv_dsm_entry> riscv_dsm_entry_list;
 
 struct riscv_bitrange
 {
@@ -275,11 +272,9 @@ struct riscv_inst_set
 	void print_class();
 	void print_switch_template_header();
 	void print_switch();
-	void print_dsm();
 
 	void generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_decoder_node &node, size_t indent);
-	void calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_entry_list &decoder);
 };
 
 static std::string ltrim(std::string s)
@@ -962,59 +957,6 @@ void riscv_inst_set::print_switch()
 	printf("\t};\n");
 }
 
-void riscv_inst_set::print_dsm()
-{
-	riscv_dsm_entry_list decoder;
-	calc_dsm_decoder_node(node, decoder);
-
-	for (size_t i = 0; i < decoder.size(); i++) {
-		riscv_dsm_entry &ent = decoder[i];
-		printf("/* %-5lu */", i);
-		switch (ent.dsm_op) {
-			case riscv_dsm_break: printf("{ riscv_dsm_break, %d },\n", ent.dsm_val); break;
-			case riscv_dsm_table_brk: printf("{ riscv_dsm_table_brk, %d },\n", ent.dsm_val); break;
-			case riscv_dsm_table_dfl: printf("{ riscv_dsm_table_dfl, %d },\n", ent.dsm_val); break;
-			case riscv_dsm_match: printf("{ riscv_dsm_match, %d },\n", ent.dsm_val); break;
-			case riscv_dsm_jump: printf("{ riscv_dsm_jump, %d },\n", ent.dsm_val); break;
-			case riscv_dsm_select: printf("{ riscv_dsm_select, %s },\n", opcode_name("riscv_op_", opcodes[ent.dsm_val], '_').c_str()); break;
-			case riscv_dsm_mask_srl0:
-			case riscv_dsm_mask_srl1:
-			case riscv_dsm_mask_srl2:
-			case riscv_dsm_mask_srl3:
-			case riscv_dsm_mask_srl4:
-			case riscv_dsm_mask_srl5:
-			case riscv_dsm_mask_srl6:
-			case riscv_dsm_mask_srl7:
-			case riscv_dsm_mask_srl8:
-			case riscv_dsm_mask_srl9:
-			case riscv_dsm_mask_srl10:
-			case riscv_dsm_mask_srl11:
-			case riscv_dsm_mask_srl12:
-			case riscv_dsm_mask_srl13:
-			case riscv_dsm_mask_srl14:
-			case riscv_dsm_mask_srl15:
-			case riscv_dsm_mask_srl16:
-			case riscv_dsm_mask_srl17:
-			case riscv_dsm_mask_srl18:
-			case riscv_dsm_mask_srl19:
-			case riscv_dsm_mask_srl20:
-			case riscv_dsm_mask_srl21:
-			case riscv_dsm_mask_srl22:
-			case riscv_dsm_mask_srl23:
-			case riscv_dsm_mask_srl24:
-			case riscv_dsm_mask_srl25:
-			case riscv_dsm_mask_srl26:
-			case riscv_dsm_mask_srl27:
-			case riscv_dsm_mask_srl28:
-			case riscv_dsm_mask_srl29:
-			case riscv_dsm_mask_srl30:
-			case riscv_dsm_mask_srl31:
-				printf("{ riscv_dsm_mask_srl%d, %d },\n", (ent.dsm_op - riscv_dsm_mask_srl0), ent.dsm_val); break;
-				break;
-		}
-	}
-}
-
 void riscv_inst_set::generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list)
 {
 	// calculate row coverage for each column
@@ -1181,99 +1123,6 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 	printf("}\n");
 }
 
-void riscv_inst_set::calc_dsm_decoder_node(riscv_decoder_node &node, riscv_dsm_entry_list &decoder)
-{
-	if (node.jump_slot != -1) {
-		decoder[node.jump_slot] = riscv_dsm_entry(riscv_dsm_jump, decoder.size() - node.jump_slot);
-	}
-
-	ssize_t range_start = node.bits.size();
-	for (riscv_bitrange &r : bitmask_to_bitrange(node.bits)) {
-		ssize_t shift = r.msb - range_start + 1;
-		ssize_t val = 0;
-		for (ssize_t i = range_start; i > 0; i--) {
-			val = (val << 1) | (i >= (range_start - (r.msb - r.lsb)) ? 1 : 0);
-		}
-		range_start -= (r.msb - r.lsb) + 1;
-		decoder.push_back(riscv_dsm_entry(riscv_dsm_mask_srl0 + shift, val));
-	}
-
-	bool has_default = false;
-	ssize_t max_val = 0;
-	for (auto &val : node.vals) {
-		if (val == DEFAULT) {
-			has_default = true;
-		} else {
-			max_val = val;
-		}
-	}
-
-	if (max_val < 512) {
-		ssize_t table_start = decoder.size() + 1;
-		ssize_t table_size = max_val + (has_default ? 2 : 1);
-		decoder.push_back(riscv_dsm_entry(has_default ? riscv_dsm_table_dfl : riscv_dsm_table_brk, table_size));
-		decoder.resize(decoder.size() + table_size);
-		if (has_default) {
-			if (node.val_decodes[DEFAULT].bits.size() == 0 &&
-				node.val_opcodes[DEFAULT].size() == 1)
-			{
-				decoder[table_start + table_size - 1] = riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[DEFAULT].front()->num);
-			} else {
-				decoder[table_start + table_size - 1] = riscv_dsm_entry(riscv_dsm_jump, -1);
-				node.val_decodes[DEFAULT].jump_slot = table_start + table_size - 1;
-			}
-			for (ssize_t i = 0; i < table_size - 1; i++) {
-				decoder[table_start + i] = riscv_dsm_entry(riscv_dsm_jump, table_start + table_size - 1);
-			}
-		}
-		for (auto &val : node.vals) {
-			if (val == DEFAULT) continue;
-			if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
-				// if ambiguous, chooses first opcode
-				decoder[table_start + val] = riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[val].front()->num);
-			} else {
-				decoder[table_start + val] = riscv_dsm_entry(riscv_dsm_jump, -1);
-				node.val_decodes[val].jump_slot = table_start + val;
-			}
-		}
-		for (auto &val : node.vals) {
-			if (node.val_decodes[val].bits.size() > 0) {
-				calc_dsm_decoder_node(node.val_decodes[val], decoder);
-			}
-		}
-	} else {
-		for (auto &val : node.vals) {
-			if (val == DEFAULT) continue;
-			if (node.val_decodes[val].bits.size() == 0 && node.val_opcodes[val].size() >= 1) {
-				// if ambiguous, chooses first opcode
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_match, val));
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[val].front()->num));
-			} else {
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_match, val));
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_jump, -1));
-				node.val_decodes[val].jump_slot = decoder.size() - 1;
-			}
-		}
-		if (has_default) {
-			if (node.val_decodes[DEFAULT].bits.size() == 0 && node.val_opcodes[DEFAULT].size() >= 1) {
-				// if ambiguous, chooses first opcode
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_select, node.val_opcodes[DEFAULT].front()->num));
-			} else {
-				decoder.push_back(riscv_dsm_entry(riscv_dsm_jump, -1));
-				node.val_decodes[DEFAULT].jump_slot = decoder.size() - 1;
-			}
-		} else {
-			decoder.push_back(riscv_dsm_entry(riscv_dsm_break));
-		}
-		for (auto &val : node.vals) {
-			if (node.val_decodes[val].bits.size() > 0) {
-				calc_dsm_decoder_node(node.val_decodes[val], decoder);
-			}
-		}
-	}
-}
-
-
 /* main */
 
 int main(int argc, const char *argv[])
@@ -1282,7 +1131,6 @@ int main(int argc, const char *argv[])
 
 	bool print_map = false;
 	bool print_switch = false;
-	bool print_dsm = false;
 	bool print_enum = false;
 	bool print_class = false;
 	bool help_or_error = false;
@@ -1305,9 +1153,6 @@ int main(int argc, const char *argv[])
 		{ "-s", "--print-switch", cmdline_arg_type_none,
 			"Print switch",
 			[&](std::string s) { return (print_switch = true); } },
-		{ "-d", "--print-dsm", cmdline_arg_type_none,
-			"Print decoder state machine",
-			[&](std::string s) { return (print_dsm = true); } },
 		{ "-e", "--print-enum", cmdline_arg_type_none,
 			"Print enum",
 			[&](std::string s) { return (print_enum = true); } },
@@ -1329,7 +1174,7 @@ int main(int argc, const char *argv[])
 	}
 
 	help_or_error |= !print_map && !print_switch &&
-		!print_enum && !print_dsm && !print_class;
+		!print_enum && !print_class;
 
 	if (help_or_error) {
 		printf("usage: %s\n", argv[0]);
@@ -1354,11 +1199,6 @@ int main(int argc, const char *argv[])
 	if (print_switch) {
 		inst_set.generate_decoder();
 		inst_set.print_switch();
-	}
-
-	if (print_dsm) {
-		inst_set.generate_decoder();
-		inst_set.print_dsm();
 	}
 
 	exit(0);

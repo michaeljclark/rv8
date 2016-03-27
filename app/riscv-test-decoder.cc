@@ -14,8 +14,6 @@
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-opcodes.h"
-#include "riscv-dsm.h"
-#include "riscv-dsm-table.h"
 
 
 /* Spike */
@@ -727,81 +725,6 @@ void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
 	}
 }
 
-void riscv_decode_instruction_dsm_sw(riscv_decode &dec, riscv_proc_state *proc)
-{
-	const riscv_dsm_entry *pc = riscv_dsm_table;
-	riscv_wu match = 0;
-	riscv_wu inst = htole16(*(riscv_hu*)proc->pc);
-	riscv_wu op1 = inst & 0b11;
-	if (op1 == 3) {
-		inst |= htole16(*(riscv_hu*)(proc->pc + 2)) << 16;
-		proc->pc += 4;
-	} else {
-		proc->pc += 2;
-	}
-
-	while (true) {
-		switch (pc->dsm_op) {
-			case riscv_dsm_break:
-				return;
-			case riscv_dsm_table_brk:
-				if (match < pc->dsm_val) {
-					pc += match + 1;
-					break;
-				}
-				return;
-			case riscv_dsm_table_dfl:
-				pc += (match < pc->dsm_val) ? match + 1 : pc->dsm_val;
-				break;
-			case riscv_dsm_match:
-				pc += (match == pc->dsm_val) ? 1 : 2;
-				break;
-			case riscv_dsm_jump:
-				match = 0;
-				pc += pc->dsm_val;
-				break;
-			case riscv_dsm_select:
-				dec.op = pc->dsm_val;
-				return;
-			case riscv_dsm_mask_srl0:
-			case riscv_dsm_mask_srl1:
-			case riscv_dsm_mask_srl2:
-			case riscv_dsm_mask_srl3:
-			case riscv_dsm_mask_srl4:
-			case riscv_dsm_mask_srl5:
-			case riscv_dsm_mask_srl6:
-			case riscv_dsm_mask_srl7:
-			case riscv_dsm_mask_srl8:
-			case riscv_dsm_mask_srl9:
-			case riscv_dsm_mask_srl10:
-			case riscv_dsm_mask_srl11:
-			case riscv_dsm_mask_srl12:
-			case riscv_dsm_mask_srl13:
-			case riscv_dsm_mask_srl14:
-			case riscv_dsm_mask_srl15:
-			case riscv_dsm_mask_srl16:
-			case riscv_dsm_mask_srl17:
-			case riscv_dsm_mask_srl18:
-			case riscv_dsm_mask_srl19:
-			case riscv_dsm_mask_srl20:
-			case riscv_dsm_mask_srl21:
-			case riscv_dsm_mask_srl22:
-			case riscv_dsm_mask_srl23:
-			case riscv_dsm_mask_srl24:
-			case riscv_dsm_mask_srl25:
-			case riscv_dsm_mask_srl26:
-			case riscv_dsm_mask_srl27:
-			case riscv_dsm_mask_srl28:
-			case riscv_dsm_mask_srl29:
-			case riscv_dsm_mask_srl30:
-			case riscv_dsm_mask_srl31:
-				match |= ((inst >> (pc->dsm_op - riscv_dsm_mask_srl0)) & pc->dsm_val);
-				pc++;
-				break;
-		}
-	}
-}
-
 riscv_wu decode_code_1[] = {
 	0x0026c197,
 	0xd7018193,
@@ -872,26 +795,6 @@ riscv_hu decode_code_2[] = {
 	0x0073, 0x1020,
 	0xbff5
 };
-
-template <const size_t count>
-void decode_dsm_sw(riscv_ptr start, riscv_ptr end, const char *code)
-{
-	riscv_decode dec;
-	riscv_proc_state proc = { 0 };
-	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
-	size_t decoded = 0;
-	for (size_t i = 0; i < count; i++) {
-		proc.pc = (riscv_ptr)start;
-		while (proc.pc < end) {
-			riscv_decode_instruction_dsm_sw(dec, &proc);
-			decoded++;
-		}
-	}
-	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	const char* last_insn = riscv_instructions[dec.op].opcode;
-	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
-}
 
 template <const size_t count>
 void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
@@ -968,12 +871,10 @@ int main()
 
 	printf("%-20s %12s %12s %12s %12s\n", "decoder", "last_insn", "insn_count", "nanoseconds", "code");
 
-	TEST_DECODER(decode_dsm_sw,decode_code_1,count, "RV64");
 	TEST_DECODER(decode_switch,decode_code_1,count, "RV64");
 	TEST_DECODER(decode_spike_nocache,decode_code_1,count, "RV64");
 	TEST_DECODER(decode_spike_cache,decode_code_1,count, "RV64");
 
-	TEST_DECODER(decode_dsm_sw,decode_code_2,count, "RV64C");
 	TEST_DECODER(decode_switch,decode_code_2,count, "RV64C");
 	TEST_DECODER(decode_spike_nocache,decode_code_2,count, "RV64C");
 	TEST_DECODER(decode_spike_cache,decode_code_2,count, "RV64C");

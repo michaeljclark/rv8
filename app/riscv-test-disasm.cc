@@ -13,11 +13,8 @@
 #include "riscv-processor.h"
 #include "riscv-opcodes.h"
 #include "riscv-util.h"
-#include "riscv-dsm.h"
-#include "riscv-dsm-table.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
-#include "riscv-decode-dsm.h"
 #include "riscv-decode-switch.h"
 #include "riscv-csr.h"
 #include "riscv-compression.h"
@@ -105,7 +102,6 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 	while (proc.pc < end) {
 		riscv_ptr pc = proc.pc;
 		riscv_decode_instruction_switch(dec, &proc);
-		//riscv_decode_instruction_dsm(dec, &proc);
 		riscv_print_instruction(dec, &proc, pc, pc_offset);
 	}
 }

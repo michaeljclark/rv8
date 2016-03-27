@@ -101,9 +101,6 @@ src_deps =      $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_D
 RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/riscv-compression.cc \
                 $(LIB_SRC_DIR)/riscv-csr.cc \
-                $(LIB_SRC_DIR)/riscv-decode-dsm.cc \
-                $(LIB_SRC_DIR)/riscv-dsm-table.cc \
-                $(LIB_SRC_DIR)/riscv-dsm.cc \
                 $(LIB_SRC_DIR)/riscv-format.cc \
                 $(LIB_SRC_DIR)/riscv-opcodes.cc \
                 $(LIB_SRC_DIR)/riscv-regs.cc \
@@ -144,7 +141,6 @@ meta: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -c -r $(OPCODES_DIR)
 enum: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -e -r $(OPCODES_DIR)
 strings: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -i -r $(OPCODES_DIR)
 switch: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -s -r $(OPCODES_DIR)
-dsm: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -d -r $(OPCODES_DIR)
 bench: $(TEST_DECODER_BIN) ; $(TEST_DECODER_BIN)
 
 # build targets
