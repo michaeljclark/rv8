@@ -3,10 +3,9 @@
 A meta compiler that generates a RISC-V decoder and disassembler from
 instruction set meta data.
 
-Note: the riscv-isa-sim decoder is included (with and without caching
-enabled). Pre-decode caching will eventually be added to the switch
-decoder. The switch decoder performance should be compared to
-spike_nocache for a fair comparison.
+Note: the riscv-isa-sim decoder is included with and without caching
+enabled. The switch decoder performance should be compared to
+spike_nocache for a fair comparison. Caching will be added soon.
 
 This is the starting point of a RISC-V binary translation investigation.
 
@@ -14,12 +13,12 @@ This is the starting point of a RISC-V binary translation investigation.
 
 ```
 decoder                 last_insn   insn_count  nanoseconds         code
-decode_switch                 jal     33000000         9.92         RV64
-decode_spike_nocache          jal     33000000        15.16         RV64
-decode_spike_cache            jal     33000000         2.48         RV64
-decode_switch                 c.j     32000000         7.55        RV64C
-decode_spike_nocache          c_j     32000000        22.72        RV64C
-decode_spike_cache            c_j     32000000         2.12        RV64C
+decode_switch                 jal     33000000        11.36         RV64
+decode_spike_nocache          jal     33000000        23.46         RV64
+decode_spike_cache            jal     33000000         3.69         RV64
+decode_switch                 c.j     32000000        10.14        RV64C
+decode_spike_nocache          c_j     32000000        33.45        RV64C
+decode_spike_cache            c_j     32000000         3.34        RV64C
 ```
 
 ## Build Instructions
