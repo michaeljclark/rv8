@@ -5,7 +5,7 @@
 #ifndef riscv_format_h
 #define riscv_format_h
 
-/* Instruction Formattings */
+/* Instruction Formatting */
 
 enum rvf
 {
