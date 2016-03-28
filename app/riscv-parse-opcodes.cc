@@ -60,6 +60,8 @@ static const char* DESCRIPTIONS_FILE   = "descriptions";
 #define OPCODE_END T_RESET
 #define BITS_BEGIN S_COLOR S_REVERSE F_GREEN B_BLACK
 #define BITS_END T_RESET
+#define FORMAT_BEGIN S_COLOR F_RED B_BLACK
+#define FORMAT_END T_RESET
 
 struct riscv_bitrange;
 struct riscv_bitrange_spec;
@@ -903,11 +905,12 @@ void riscv_inst_set::print_map()
 {
 	for (auto &opcode : opcodes) {
 		if (!opcode->match_extension(extension_subset)) continue;
-		printf("// %s%-16s%s", OPCODE_BEGIN, opcode->name.c_str(), OPCODE_END);
+		printf("// ");
 		for (ssize_t bit = 31; bit >= 0; bit--) {
 			printf("%s", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? BITS_BEGIN "1" BITS_END : BITS_BEGIN "0" BITS_END) : ((opcode->done & (1 << bit)) ? "X" : "?")) );
 		}
-		printf("\n");
+		auto format = formats_by_name[opcode->type->format];
+		printf(" %s%s%s %s%s%s\n", OPCODE_BEGIN, opcode->name.c_str(), OPCODE_END, FORMAT_BEGIN, format->args.c_str(), FORMAT_END);
 	}
 	printf("%s", T_RESET);
 }
