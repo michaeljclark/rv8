@@ -16,7 +16,7 @@
 #include "riscv-opcodes.h"
 
 
-/* Spike */
+/* riscv-isa-sim */
 
 #define unlikely(x) __builtin_expect(x, 0)
 #define REGISTER_INSN(proc, name, match, mask) proc->register_insn(match, mask, #name);
@@ -145,6 +145,9 @@ insn_desc_t processor_t::decode_insn(insn_bits_t bits)
 
   return desc;
 }
+
+
+/* riscv-mc */
 
 struct riscv_decode
 {

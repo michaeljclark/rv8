@@ -33,6 +33,34 @@ static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
+#define COLOR "\x1B["
+#define NORMAL     "0;"
+#define BOLD       "1;"
+#define UNDERSCORE "4;"
+#define REVERSE    "7;"
+#define F_BLACK    "30;"
+#define F_RED      "31;"
+#define F_GREEN    "32;"
+#define F_YELLOW   "33;"
+#define F_BLUE     "34;"
+#define F_MAGENTA  "35;"
+#define F_CYAN     "36;"
+#define F_WHITE    "37;"
+#define B_BLACK    "40m"
+#define B_RED      "41m"
+#define B_GREEN    "42m"
+#define B_YELLOW   "43m"
+#define B_BLUE     "44m"
+#define B_MAGENTA  "45m"
+#define B_CYAN     "46m"
+#define B_WHITE    "47m"
+#define T_RESET "\x1B[m"
+
+#define OPCODE_BEGIN COLOR UNDERSCORE F_YELLOW B_BLACK
+#define OPCODE_END T_RESET
+#define BITS_BEGIN COLOR REVERSE F_CYAN B_BLACK
+#define BITS_END T_RESET
+
 struct riscv_bitrange;
 struct riscv_bitrange_spec;
 struct riscv_arg;
@@ -875,12 +903,13 @@ void riscv_inst_set::print_map()
 {
 	for (auto &opcode : opcodes) {
 		if (!opcode->match_extension(extension_subset)) continue;
-		printf("// %-16s", opcode->name.c_str());
+		printf("// %s%-16s%s", OPCODE_BEGIN, opcode->name.c_str(), OPCODE_END);
 		for (ssize_t bit = 31; bit >= 0; bit--) {
-			printf("%c", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : ((opcode->done & (1 << bit)) ? 'X' : '?')) );
+			printf("%s", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? BITS_BEGIN "1" BITS_END : BITS_BEGIN "0" BITS_END) : ((opcode->done & (1 << bit)) ? "X" : "?")) );
 		}
 		printf("\n");
 	}
+	printf("%s", T_RESET);
 }
 
 void riscv_inst_set::print_enum()
