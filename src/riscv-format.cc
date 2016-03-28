@@ -143,13 +143,11 @@ const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value)
 
 void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_ptr pc, riscv_ptr pc_offset)
 {
-#if 1
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
 	if (comp) {
 		dec.op = comp->op;
 		dec.type = comp->type;
 	}
-#endif
 	const riscv_inst_type_metadata *inst_meta = riscv_lookup_inst_metadata((riscv_inst_type)dec.type);
 	const rvf *fmt = inst_meta ? inst_meta->fmt : fmt_none;
 
