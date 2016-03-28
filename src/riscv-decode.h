@@ -380,7 +380,7 @@ inline void riscv_decode_i_sh5(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
+	dec.imm = (inst >> 20) & 0b11111;
 }
 
 /* Decode I sh6 */
@@ -388,7 +388,7 @@ inline void riscv_decode_i_sh6(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
+	dec.imm = (inst >> 20) & 0b111111;
 }
 
 /* Decode S Store */
