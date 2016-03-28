@@ -6,7 +6,7 @@
 #define riscv_decode_switch_h
 
 template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
-void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
+void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
 	memset(&dec, 0, sizeof(dec));
 	riscv_wu inst = htole16(*(riscv_hu*)proc->pc);

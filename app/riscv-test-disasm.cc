@@ -101,7 +101,7 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 	proc.pc = start;
 	while (proc.pc < end) {
 		riscv_ptr pc = proc.pc;
-		riscv_decode_instruction_switch(dec, &proc);
+		riscv_decode_instruction(dec, &proc);
 		riscv_print_instruction(dec, &proc, pc, pc_offset);
 	}
 }

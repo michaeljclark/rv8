@@ -157,7 +157,7 @@ struct riscv_proc_state
 };
 
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
-void riscv_decode_instruction_switch(riscv_decode &dec, riscv_proc_state *proc)
+void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
 	riscv_wu inst = htole16(*(riscv_hu*)proc->pc);
 	riscv_wu op1 = inst & 0b11;
@@ -806,7 +806,7 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 	for (size_t i = 0; i < count; i++) {
 		proc.pc = (riscv_ptr)start;
 		while (proc.pc < end) {
-			riscv_decode_instruction_switch<false, true, true, true, true, true, true, true, true>(dec, &proc);
+			riscv_decode_instruction<false, true, true, true, true, true, true, true, true>(dec, &proc);
 			decoded++;
 		}
 	}
