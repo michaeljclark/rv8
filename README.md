@@ -32,7 +32,7 @@ To run the decoder benchmarks:
 make bench
 ```
 
-To print an opcode map:
+To print a colour opcode map:
 ```
 make map
 ```
