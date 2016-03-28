@@ -1,7 +1,7 @@
 # RISC-V Meta Compiler
 
-Experiment with a tiny solver that write a RISC-V decoder and
-disassembler using instruction set meta data.
+A meta compiler that generates a RISC-V decoder and disassembler from
+instruction set meta data.
 
 Note: the riscv-isa-sim decoder is included (with and without caching
 enabled). Pre-decode caching will eventually be added to the switch
