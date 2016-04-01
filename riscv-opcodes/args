@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <arg> <bit encoding> <type> <description> <fg color:bg color>
+# <arg> <bit encoding> <type> <description> <fg color> <bg color>
 #
 # <bit encoding> contains a comma list of gather[scatter] bits. e.g.
 #
@@ -12,48 +12,48 @@
 #
 # when [scatter] is ommitted, bits are right justified from bit 0
 #
-# type is one of ireg, freg, arg, imm, ipc, zero
+# type is one of ireg, freg, arg, imm, ipc
 #
 # color is one of black, red, green, yellow, blue, magenta, cyan, white
 
-rd         11:7                         ireg  "rd"        white   red
-rs1        19:15                        ireg  "rs1"       white   magenta
+rd         11:7                         ireg  "rd"        white   magenta
+rs1        19:15                        ireg  "rs1"       white   cyan
 rs2        24:20                        ireg  "rs2"       white   blue
-rs3        31:27                        ireg  "rs3"       white   cyan
-frd        11:7                         freg  "frd"       white   red
-frs1       19:15                        freg  "frs1"      white   magenta
+rs3        31:27                        ireg  "rs3"       white   yellow
+frd        11:7                         freg  "frd"       white   magenta
+frs1       19:15                        freg  "frs1"      white   cyan
 frs2       24:20                        freg  "frs2"      white   blue
-frs3       31:27                        freg  "frs3"      white   cyan
-aqrl       26:25                        arg   "aqrl"      yellow  black
-pred       27:24                        arg   "pred"      yellow  red
-succ       23:20                        arg   "succ"      yellow  blue
+frs3       31:27                        freg  "frs3"      white   yellow
+aqrl       26:25                        arg   "aqrl"      green   black
+pred       27:24                        arg   "pred"      green   black
+succ       23:20                        arg   "succ"      green   black
 rm         14:12                        arg   "rm"        white   cyan
-imm20      31:12                        imm   "imm"       black   green
-jimm20     31:12                        ipc   "imm"       black   green
-imm12      31:20                        imm   "imm"       black   green
-simm12     31:25[11:5],11:7[4:0]        imm   "imm"       black   green
-sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       black   green
-zimm       19:15                        imm   "imm"       black   green
-shamt5     24:20                        imm   "shamt"     black   green
-shamt6     25:20                        imm   "shamt"     black   green
-crdq       9:7                          ireg  "rd'"       white   red
-crs1q      9:7                          ireg  "rs1'"      white   red
-crs1rdq    9:7                          ireg  "rs1'/rd'"  white   red
-crs2q      4:2                          ireg  "rs2'"      white   red
-crd        11:7                         ireg  "rd"        white   red
-crs1       11:7                         ireg  "rs1"       white   red
-crs1rd     11:7                         ireg  "rs1/rd"    white   red
-crs2       6:2                          ireg  "rs2"       white   red
-cimmi      12[5],6:2[4:0]               imm   "imm"       black   green
-cimmui     12[17],6:2[16:12]            imm   "imm"       black   green
-cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       black   green
-cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"       black   green
-cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"       black   green
-cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"       black   green
-cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"       black   green
-cimmswsp   12:7[5:2|7:6]                imm   "imm"       black   green
-cimmsdsp   12:7[5:3|8:6]                imm   "imm"       black   green
-cimm4spn   12:7[5:4|9:6]                imm   "imm"       black   green
-cimmw      12:10[5:3],6:5[2|6]          imm   "imm"       black   green
-cimmd      12:10[5:3],6:5[7:6]          imm   "imm"       black   green
-cimmq      12:10[5:4|8],6:5[7:6]        imm   "imm"       black   green
+imm20      31:12                        imm   "imm"       green   black
+jimm20     31:12                        ipc   "imm"       green   black
+imm12      31:20                        imm   "imm"       green   black
+simm12     31:25[11:5],11:7[4:0]        imm   "imm"       green   black
+sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       green   black
+zimm       19:15                        imm   "imm"       green   black
+shamt5     24:20                        imm   "shamt"     green   black
+shamt6     25:20                        imm   "shamt"     green   black
+crdq       9:7                          ireg  "rd'"       white   magenta
+crs1q      9:7                          ireg  "rs1'"      white   magenta
+crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
+crs2q      4:2                          ireg  "rs2'"      white   magenta
+crd        11:7                         ireg  "rd"        white   magenta
+crs1       11:7                         ireg  "rs1"       white   magenta
+crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
+crs2       6:2                          ireg  "rs2"       white   magenta
+cimmi      12[5],6:2[4:0]               imm   "imm"       green   black
+cimmui     12[17],6:2[16:12]            imm   "imm"       green   black
+cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       green   black
+cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"       green   black
+cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"       green   black
+cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"       green   black
+cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"       green   black
+cimmswsp   12:7[5:2|7:6]                imm   "imm"       green   black
+cimmsdsp   12:7[5:3|8:6]                imm   "imm"       green   black
+cimm4spn   12:7[5:4|9:6]                imm   "imm"       green   black
+cimmw      12:10[5:3],6:5[2|6]          imm   "imm"       green   black
+cimmd      12:10[5:3],6:5[7:6]          imm   "imm"       green   black
+cimmq      12:10[5:4|8],6:5[7:6]        imm   "imm"       green   black

@@ -57,15 +57,11 @@ static const char* DESCRIPTIONS_FILE   = "descriptions";
 #define T_RESET      "\x1B[m"
 
 #define OPCODE_BEGIN S_COLOR S_UNDERSCORE F_YELLOW B_BLACK
-#define OPCODE_END   T_RESET
 #define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
-#define BITS_END     T_RESET
 #define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
-#define FORMAT_END   T_RESET
 #define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
-#define LEGEND_END   T_RESET
 
-const std::string ansi_color_names[] = {
+const char* ansi_color_names[] = {
 	"black",
 	"red",
 	"green",
@@ -73,7 +69,8 @@ const std::string ansi_color_names[] = {
 	"blue",
 	"magenta",
 	"cyan",
-	"white"
+	"white",
+	nullptr
 };
 
 struct riscv_bitrange;
@@ -85,7 +82,6 @@ struct riscv_format;
 struct riscv_register;
 struct riscv_csr;
 struct riscv_opcode;
-struct riscv_tag;
 struct riscv_bitrange;
 struct riscv_decoder_node;
 
@@ -114,10 +110,6 @@ typedef std::vector<riscv_opcode_ptr> riscv_opcode_list;
 typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
 typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
 typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
-typedef std::shared_ptr<riscv_tag> riscv_tag_ptr;
-typedef std::vector<riscv_tag_ptr> riscv_tag_list;
-typedef std::map<std::string,riscv_tag_ptr> riscv_tag_map;
-typedef std::set<riscv_tag_ptr> riscv_tag_set;
 
 struct riscv_bitrange
 {
@@ -139,6 +131,7 @@ struct riscv_bitrange_spec
 
 	riscv_bitrange_spec(std::string bitrange_spec);
 
+	bool matches_bit(ssize_t bit);
 	std::string to_string();
 	std::string to_template();
 };
@@ -154,6 +147,15 @@ struct riscv_arg
 
 	riscv_arg(std::string name, std::string bitrange_spec, std::string type, std::string label, std::string fg_color, std::string bg_color)
 		: name(name), bitrange_spec(bitrange_spec), type(type), label(label), fg_color(fg_color), bg_color(bg_color) {}
+
+	char char_code() {
+		if (type == "ireg") return 'R';
+		else if (type == "freg") return 'R';
+		else if (type == "arg") return 'A';
+		else if (type == "imm") return 'I';
+		else if (type == "ipc") return 'J';
+		else return '?';
+	}
 };
 
 struct riscv_type
@@ -228,14 +230,11 @@ struct riscv_opcode
 		}
 		return false;
 	}
-};
 
-struct riscv_tag
-{
-	std::string name;
-	riscv_opcode_set opcodes;
-
-	riscv_tag(std::string name) : name(name) {}
+	riscv_arg_ptr find_arg(ssize_t bit) {
+		for (auto arg: args) if (arg->bitrange_spec.matches_bit(bit)) return arg;
+		return riscv_arg_ptr();
+	}
 };
 
 struct riscv_decoder_node
@@ -282,6 +281,8 @@ struct riscv_inst_set
 	static std::vector<size_t> opcode_isa_widths(riscv_opcode_ptr opcode);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
+	static size_t color_to_ansi_index(std::string color);
+	static std::string colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color);
 
 	std::vector<std::string> parse_line(std::string line);
 	std::vector<std::vector<std::string>> read_file(std::string filename);
@@ -289,7 +290,6 @@ struct riscv_inst_set
 	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
 	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
 	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
-	riscv_tag_ptr lookup_tag(std::string tag);
 
 	bool is_arg(std::string mnem);
 	bool is_ignore(std::string mnem);
@@ -421,6 +421,14 @@ riscv_bitrange_spec::riscv_bitrange_spec(std::string bitrange_spec)
 			segments.push_back(riscv_bitrange_segment(gather, scatter));
 		}
 	}
+}
+
+bool riscv_bitrange_spec::matches_bit(ssize_t bit)
+{
+	for (auto si = segments.begin(); si != segments.end(); si++) {
+		if (bit <= si->first.msb && bit >= si->first.lsb) return true;
+	}
+	return false;
 }
 
 std::string riscv_bitrange_spec::to_string()
@@ -615,6 +623,27 @@ std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
 	return widths;
 }
 
+size_t riscv_inst_set::color_to_ansi_index(std::string color)
+{
+	const char** p = ansi_color_names;
+	size_t i = 0;
+	while (*p) {
+		if (color == *p) return i;
+		p++;
+		i++;
+	}
+	panic("color: %s not found", color.c_str());
+	return 0;
+}
+
+std::string riscv_inst_set::colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color)
+{
+	char buf[32];
+	size_t fg_color_num = 30 + color_to_ansi_index(fg_color);
+	size_t bg_color_num = 40 + color_to_ansi_index(bg_color);
+	snprintf(buf, sizeof(buf), "\x1B[%lu;%lum", fg_color_num, bg_color_num);
+	return buf;
+}
 
 std::vector<std::string> riscv_inst_set::parse_line(std::string line)
 {
@@ -923,13 +952,13 @@ void riscv_inst_set::print_map()
 				char c = (bit / 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", LEGEND_END);
+			printf("%s\n", T_RESET);
 			printf("// %s", LEGEND_BEGIN);
 			for (ssize_t bit = 31; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", LEGEND_END);
+			printf("%s\n", T_RESET);
 		}
 		if (!opcode->match_extension(extension_subset)) continue;
 		i++;
@@ -939,14 +968,26 @@ void riscv_inst_set::print_map()
 			switch (c) {
 				case '0':
 				case '1':
-					printf("%s%c%s", BITS_BEGIN, c, BITS_END);
+				{
+					printf("%s%c%s", BITS_BEGIN, c, T_RESET);
 					break;
+				}
 				default:
-					printf("%c", c);
+				{
+					riscv_arg_ptr arg = opcode->find_arg(bit);
+					if (arg) {
+						printf("%s%c%s", colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str(), arg->char_code(), T_RESET);
+					} else {
+						printf("%c", c);
+					}
+					break;
+				}
 			}
 		}
 		auto format = formats_by_name[opcode->type->format];
-		printf(" %s%s%s %s%s%s\n", OPCODE_BEGIN, opcode->name.c_str(), OPCODE_END, FORMAT_BEGIN, format->args.c_str(), FORMAT_END);
+		printf(" %s%s%s %s%s%s\n",
+			OPCODE_BEGIN, opcode->name.c_str(), T_RESET,
+			FORMAT_BEGIN, format->args.c_str(), T_RESET);
 	}
 	printf("%s", T_RESET);
 }
