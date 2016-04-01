@@ -24,18 +24,18 @@ frd        11:7                         freg  "frd"       white   magenta
 frs1       19:15                        freg  "frs1"      white   cyan
 frs2       24:20                        freg  "frs2"      white   blue
 frs3       31:27                        freg  "frs3"      white   yellow
-aqrl       26:25                        arg   "aqrl"      green   black
-pred       27:24                        arg   "pred"      green   black
-succ       23:20                        arg   "succ"      green   black
-rm         14:12                        arg   "rm"        white   cyan
+aqrl       26:25                        arg   "aqrl"      green   black    # Acquire / Release
+pred       27:24                        arg   "pred"      green   black    # Predecessor
+succ       23:20                        arg   "succ"      green   black    # Successor
+rm         14:12                        arg   "rm"        white   cyan     # Rounding Mode
 imm20      31:12                        imm   "imm"       green   black
-jimm20     31:12                        ipc   "imm"       green   black
+jimm20     31:12                        ipc   "imm"       green   black    # PC relative jump
 imm12      31:20                        imm   "imm"       green   black
 simm12     31:25[11:5],11:7[4:0]        imm   "imm"       green   black
-sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       green   black
+sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       green   black    # PC relative branch
 zimm       19:15                        imm   "imm"       green   black
-shamt5     24:20                        imm   "shamt"     green   black
-shamt6     25:20                        imm   "shamt"     green   black
+shamt5     24:20                        imm   "shamt"     green   black    # 32-bit shift amount
+shamt6     25:20                        imm   "shamt"     green   black    # 64-bit shift amount
 crdq       4:2                          ireg  "rd'"       white   magenta
 crs1q      9:7                          ireg  "rs1'"      white   cyan
 crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
@@ -49,8 +49,8 @@ cimmui     12[17],6:2[16:12]            imm   "imm"       green   black
 cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       green   black
 cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"       green   black
 cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"       green   black
-cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"       green   black
-cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"       green   black
+cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"       green   black    # PC relative jump
+cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"       green   black    # PC relative branch
 cimmswsp   12:7[5:2|7:6]                imm   "imm"       green   black
 cimmsdsp   12:7[5:3|8:6]                imm   "imm"       green   black
 cimmsqsp   12:7[5:4|9:6]                imm   "imm"       green   black
