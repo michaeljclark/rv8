@@ -65,6 +65,17 @@ static const char* DESCRIPTIONS_FILE   = "descriptions";
 #define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
 #define LEGEND_END   T_RESET
 
+const std::string ansi_color_names[] = {
+	"black",
+	"red",
+	"green",
+	"yellow",
+	"blue",
+	"magenta",
+	"cyan",
+	"white"
+};
+
 struct riscv_bitrange;
 struct riscv_bitrange_spec;
 struct riscv_arg;
@@ -138,9 +149,11 @@ struct riscv_arg
 	riscv_bitrange_spec bitrange_spec;
 	std::string type;
 	std::string label;
+	std::string fg_color;
+	std::string bg_color;
 
-	riscv_arg(std::string name, std::string bitrange_spec, std::string type, std::string label)
-		: name(name), bitrange_spec(bitrange_spec), type(type), label(label) {}
+	riscv_arg(std::string name, std::string bitrange_spec, std::string type, std::string label, std::string fg_color, std::string bg_color)
+		: name(name), bitrange_spec(bitrange_spec), type(type), label(label), fg_color(fg_color), bg_color(bg_color) {}
 };
 
 struct riscv_type
@@ -197,7 +210,7 @@ struct riscv_opcode
 	std::string name;
 	std::string long_name;
 	std::string description;
-	riscv_tag_list tags;
+	riscv_arg_list args;
 	riscv_opcode_mask_list masks;
 	riscv_type_ptr type;
 	riscv_extension_list extensions;
@@ -257,15 +270,12 @@ struct riscv_inst_set
 	riscv_opcode_map         opcodes_by_key;
 	riscv_opcode_list_map    opcodes_by_name;
 	riscv_opcode_list_map    opcodes_by_type;
-	riscv_tag_list           tags;
-	riscv_tag_map            tags_by_name;
 	std::set<std::string>    extension_subset;
 
 	riscv_decoder_node node;
 
 	static std::vector<std::string> decode_isa_extensions(std::string isa_spec);
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
-	static std::string opcode_spec(riscv_opcode_ptr opcode);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
 	static std::string opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot);
 	static std::string opcode_isa_extension(riscv_opcode_ptr opcode);
@@ -281,9 +291,11 @@ struct riscv_inst_set
 	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
 	riscv_tag_ptr lookup_tag(std::string tag);
 
-	bool is_mask(std::string tag);
-	bool is_type(std::string tag);
-	bool is_extension(std::string tag);
+	bool is_arg(std::string mnem);
+	bool is_ignore(std::string mnem);
+	bool is_mask(std::string mnem);
+	bool is_type(std::string mnem);
+	bool is_extension(std::string mnem);
 
 	void parse_arg(std::vector<std::string> &part);
 	void parse_type(std::vector<std::string> &part);
@@ -555,13 +567,6 @@ std::string riscv_inst_set::format_bitmask(std::vector<ssize_t> &bits, std::stri
 	return ss.str();
 }
 
-std::string riscv_inst_set::opcode_spec(riscv_opcode_ptr opcode)
-{
-	std::stringstream ss;
-	ss << std::left << std::setw(20) << opcode->name << " " << join(opcode->tags, " ");
-	return ss.str();
-}
-
 std::string riscv_inst_set::opcode_mask(riscv_opcode_ptr opcode)
 {
 	std::stringstream ss;
@@ -744,37 +749,37 @@ riscv_opcode_list riscv_inst_set::lookup_opcode_by_name(std::string opcode_name)
 	return riscv_opcode_list();
 }
 
-riscv_tag_ptr riscv_inst_set::lookup_tag(std::string tag)
+bool riscv_inst_set::is_arg(std::string mnem)
 {
-	auto i = tags_by_name.find(tag);
-	if (i != tags_by_name.end()) return i->second;
-	riscv_tag_ptr p = tags_by_name[tag] = std::make_shared<riscv_tag>(tag);
-	tags.push_back(p);
-	return p;
+	return (args_by_name.find(mnem) != args_by_name.end());
 }
 
-bool riscv_inst_set::is_mask(std::string tag)
+bool riscv_inst_set::is_ignore(std::string mnem)
 {
-	return ((tag.find("=") != std::string::npos) &&
-		(tag.find("=ignore") == std::string::npos));
+	return (mnem.find("=ignore") != std::string::npos);
 }
 
-bool riscv_inst_set::is_type(std::string tag)
+bool riscv_inst_set::is_mask(std::string mnem)
 {
-	return (types_by_name.find(tag) != types_by_name.end());
+	return (mnem.find("=") != std::string::npos);
 }
 
-bool riscv_inst_set::is_extension(std::string tag)
+bool riscv_inst_set::is_type(std::string mnem)
 {
-	return (extensions_by_name.find(tag) != extensions_by_name.end());
+	return (types_by_name.find(mnem) != types_by_name.end());
+}
+
+bool riscv_inst_set::is_extension(std::string mnem)
+{
+	return (extensions_by_name.find(mnem) != extensions_by_name.end());
 }
 
 void riscv_inst_set::parse_arg(std::vector<std::string> &part)
 {
-	if (part.size() < 4) {
-		panic("invalid args file requires 4 parameters: %s", join(part, " ").c_str());
+	if (part.size() < 6) {
+		panic("invalid args file requires 6 parameters: %s", join(part, " ").c_str());
 	}
-	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(part[0], part[1], part[2], part[3]);
+	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(part[0], part[1], part[2], part[3], part[4], part[5]);
 	args.push_back(arg);
 }
 
@@ -840,13 +845,18 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 	for (size_t i = 1; i < part.size(); i++) {
 		std::string mnem = part[i];
 		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
-		opcode->tags.push_back(lookup_tag(mnem));
-		if (is_mask(mnem)) {
+		if (is_arg(mnem)) {
+			opcode->args.push_back(args_by_name[mnem]);
+		} else if (is_ignore(mnem)) {
+			// presently we ignore masks labeled as ignore
+		} else if (is_mask(mnem)) {
 			opcode->masks.push_back(decode_mask(mnem));
 		} else if (is_type(mnem)) {
 			opcode->type = types_by_name[mnem];
 		} else if (is_extension(mnem)) {
 			opcode->extensions.push_back(extensions_by_name[mnem]);
+		} else {
+			debug("opcode %s: unknown arg: %s", opcode_name.c_str(), mnem.c_str());
 		}
 	}
 
@@ -925,7 +935,15 @@ void riscv_inst_set::print_map()
 		i++;
 		printf("// ");
 		for (ssize_t bit = 31; bit >= 0; bit--) {
-			printf("%s", ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? BITS_BEGIN "1" BITS_END : BITS_BEGIN "0" BITS_END) : ((opcode->done & (1 << bit)) ? "X" : "?")) );
+			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
+			switch (c) {
+				case '0':
+				case '1':
+					printf("%s%c%s", BITS_BEGIN, c, BITS_END);
+					break;
+				default:
+					printf("%c", c);
+			}
 		}
 		auto format = formats_by_name[opcode->type->format];
 		printf(" %s%s%s %s%s%s\n", OPCODE_BEGIN, opcode->name.c_str(), OPCODE_END, FORMAT_BEGIN, format->args.c_str(), FORMAT_END);
