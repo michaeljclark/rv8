@@ -37,13 +37,13 @@ zimm       19:15                        imm   "imm"       green   black
 shamt5     24:20                        imm   "shamt"     green   black
 shamt6     25:20                        imm   "shamt"     green   black
 crdq       4:2                          ireg  "rd'"       white   magenta
-crs1q      9:7                          ireg  "rs1'"      white   magenta
+crs1q      9:7                          ireg  "rs1'"      white   cyan
 crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
-crs2q      4:2                          ireg  "rs2'"      white   magenta
+crs2q      4:2                          ireg  "rs2'"      white   blue
 crd        11:7                         ireg  "rd"        white   magenta
-crs1       11:7                         ireg  "rs1"       white   magenta
+crs1       11:7                         ireg  "rs1"       white   cyan
 crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
-crs2       6:2                          ireg  "rs2"       white   magenta
+crs2       6:2                          ireg  "rs2"       white   blue
 cimmi      12[5],6:2[4:0]               imm   "imm"       green   black
 cimmui     12[17],6:2[16:12]            imm   "imm"       green   black
 cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       green   black
