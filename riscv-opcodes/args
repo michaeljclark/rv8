@@ -53,7 +53,8 @@ cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  ipc   "imm"       green   black
 cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  ipc   "imm"       green   black
 cimmswsp   12:7[5:2|7:6]                imm   "imm"       green   black
 cimmsdsp   12:7[5:3|8:6]                imm   "imm"       green   black
-cimm4spn   12:7[5:4|9:6]                imm   "imm"       green   black
+cimmsqsp   12:7[5:4|9:6]                imm   "imm"       green   black
+cimm4spn   12:5[5:4|9:6|2|3]            imm   "imm"       green   black
 cimmw      12:10[5:3],6:5[2|6]          imm   "imm"       green   black
 cimmd      12:10[5:3],6:5[7:6]          imm   "imm"       green   black
 cimmq      12:10[5:4|8],6:5[7:6]        imm   "imm"       green   black
