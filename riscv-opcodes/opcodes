@@ -269,7 +269,7 @@ c.fswsp    crs2       cimmswsp 1..0=2 15..13=7                        css_fswsp 
 # RV64C    "RV64C Standard Extension for Compressed Instructions (in addition to RV32C)"
 
 c.ld       crdq  crs1q   cimmd 1..0=0 15..13=3                        cl_ld           rv64c
-c.sd       crs1q crs2q         1..0=0 15..13=7                        cs_sd           rv64c
+c.sd       crs1q crs2q   cimmd 1..0=0 15..13=7                        cs_sd           rv64c
 c.addiw    crs1rd        cimmi 1..0=1 15..13=1                        ci              rv64c
 c.ldsp     crs1rd     cimmldsp 1..0=2 15..13=3                        ci_ldsp         rv64c
 c.sdsp     crs2       cimmsdsp 1..0=2 15..13=7                        css_sdsp        rv64c
