@@ -29,6 +29,7 @@ typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> IMM_
 typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  IMM_CSS_swsp;
 typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  IMM_CSS_sdsp;
 typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  IMM_CSS_sqsp;
+typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        IMM_CSS_addi4spn;
 typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             IMM_CW;
 typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                IMM_CD;
 typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                IMM_CQ;
@@ -167,7 +168,7 @@ inline void riscv_decode_ciw_4spn(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CSS_sqsp::decode(inst);
+	dec.imm = IMM_CSS_addi4spn::decode(inst);
 }
 
 /* Decode CL lw */
