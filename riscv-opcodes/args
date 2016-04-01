@@ -36,7 +36,7 @@ sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       green   black
 zimm       19:15                        imm   "imm"       green   black
 shamt5     24:20                        imm   "shamt"     green   black
 shamt6     25:20                        imm   "shamt"     green   black
-crdq       9:7                          ireg  "rd'"       white   magenta
+crdq       4:2                          ireg  "rd'"       white   magenta
 crs1q      9:7                          ireg  "rs1'"      white   magenta
 crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
 crs2q      4:2                          ireg  "rs2'"      white   magenta
