@@ -11,6 +11,8 @@ compiler decoder.
 
 This is the starting point of a RISC-V binary translation investigation.
 
+![ASCII ISA map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot.png)
+
 ## Performance Statistics
 
 ```
