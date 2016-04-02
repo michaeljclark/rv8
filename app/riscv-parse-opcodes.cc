@@ -1051,7 +1051,8 @@ R"LaTeX(\end{tabular}
 	// create list of opcodes ordered by extension, with blank entries between extension sections
 	std::vector<riscv_table_row> rows;
 	for (auto &extension : extensions) {
-		if (extension->opcodes.size() == 0) continue;
+		if (extension_subset.size() > 0 &&
+			extension_subset.find(extension->name) == extension_subset.end()) continue;
 		if (rows.size() != 0) rows.push_back(riscv_table_row{ riscv_extension_ptr(), riscv_opcode_ptr() });
 		rows.push_back(riscv_table_row{ extension, riscv_opcode_ptr() });
 		for (auto &opcode : extension->opcodes) {
