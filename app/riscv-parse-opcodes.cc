@@ -1124,6 +1124,7 @@ R"LaTeX(\end{tabular}
 				auto arg = std::get<0>(arg_parts[i]);
 				auto size = std::get<1>(arg_parts[i]);
 				auto str = std::get<2>(arg_parts[i]);
+				std::replace(str.begin(), str.end(), '?', '0');
 				if (arg) str = arg->label;
 				ls << (i != 0 ? " & " : "")
 				   << "\\multicolumn{" << size << "}"
