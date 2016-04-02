@@ -27,36 +27,16 @@ decode_spike_cache            c_j     32000000         3.34        RV64C
 
 ## Build Instructions
 
-```
-make
-```
+To run the decoder benchmarks: ```make bench```
 
-To run the decoder benchmarks:
-```
-make bench
-```
+To print a colour opcode map: ```make map```
 
-To print a colour opcode map:
-```
-make map
-```
+To output a LaTeX opcode tex: ```make latex```
 
-To output a LaTeX opcode table:
-```
-make latex
-```
+To output a LaTeX opcode pdf: ```make pdf```
 
-To print a static switch decoder:
-```
-make switch
-```
+To print a static switch decoder: ```make switch```
 
-To print decoder meta data table:
-```
-make meta
-```
+To print decoder meta data table: ```make meta```
 
-To print decoder opcode enum:
-```
-make enum
-```
+To print decoder opcode enum: ```make enum```
