@@ -1,7 +1,7 @@
 # RISC-V Meta Compiler
 
-A meta compiler that generates RISC-V decoder, disassembler,
-opcode map (and soon docs) from instruction set meta data.
+A meta compiler that generates RISC-V instruction decoders, disassembler
+meta data, opcode maps and documentation from instruction set meta data.
 
 Note: the riscv-isa-sim decoder is included in the decoder
 benchmark with and without caching enabled. The meta compiler
