@@ -28,8 +28,8 @@ aqrl       26:25                        arg   "aqrl"      green   black    # Acq
 pred       27:24                        arg   "pred"      green   black    # Predecessor
 succ       23:20                        arg   "succ"      green   black    # Successor
 rm         14:12                        arg   "rm"        green   black    # Rounding Mode
-imm20      31:12                        imm   "imm"       green   black
-jimm20     31:12                        ipc   "imm"       green   black    # PC relative jump
+imm20      31:12[31:12]                 imm   "imm"       green   black
+jimm20     31:12[20|10:1|11|19:12]      ipc   "imm"       green   black    # PC relative jump
 imm12      31:20                        imm   "imm"       green   black
 simm12     31:25[11:5],11:7[4:0]        imm   "imm"       green   black
 sbimm12    31:25[12|10:5],11:7[4:1|11]  ipc   "imm"       green   black    # PC relative branch
