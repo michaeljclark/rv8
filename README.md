@@ -39,6 +39,11 @@ To print a colour opcode map:
 make map
 ```
 
+To output a LaTeX opcode table:
+```
+make latex
+```
+
 To print a static switch decoder:
 ```
 make switch

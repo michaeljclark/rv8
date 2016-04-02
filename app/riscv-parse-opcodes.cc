@@ -33,7 +33,7 @@ static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
-static const bool EXPERIMENTAL_COLOR_ARGS = false;
+static const bool EXPERIMENTAL_COLOR_ARGS = true;
 
 #define S_COLOR      "\x1B["
 #define S_NORMAL     "0;"
@@ -178,6 +178,7 @@ struct riscv_extension
 {
 	std::string name;
 	std::string description;
+	riscv_opcode_list opcodes;
 
 	riscv_extension(std::string name, std::string description) : name(name), description(description) {}
 };
@@ -322,6 +323,7 @@ struct riscv_inst_set
 
 	std::string colorize_args(riscv_opcode_ptr opcode);
 
+	void print_latex();
 	void print_map();
 	void print_enum();
 	void print_class();
@@ -910,7 +912,11 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 		} else if (is_type(mnem)) {
 			opcode->type = types_by_name[mnem];
 		} else if (is_extension(mnem)) {
-			opcode->extensions.push_back(extensions_by_name[mnem]);
+			auto extension = extensions_by_name[mnem];
+			opcode->extensions.push_back(extension);
+			if (opcode->extensions.size() == 1) {
+				extension->opcodes.push_back(opcode);
+			}
 		} else {
 			debug("opcode %s: unknown arg: %s", opcode_name.c_str(), mnem.c_str());
 		}
@@ -1005,6 +1011,154 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 	}
 
 	return join(comps, "");
+}
+
+void riscv_inst_set::print_latex()
+{
+	static const char* kLatexDocumentBegin =
+R"LaTeX(\documentclass{report}
+\usepackage[letterpaper, portrait, margin=0.5in]{geometry}
+\usepackage[utf8]{inputenc}
+\begin{document}
+)LaTeX";
+
+	static const char* kLatexDocumentEnd =
+R"LaTeX(\end{document}
+)LaTeX";
+
+	static const char* kLatexTableBegin =
+R"LaTeX(\newpage
+\begin{table}[p]
+\begin{small}
+\begin{center}
+\begin{tabular})LaTeX";
+
+	static const char* kLatexTableEnd =
+R"LaTeX(\end{tabular}
+\end{center}
+\end{small}
+\end{table}
+)LaTeX";
+
+	// table row data
+	struct riscv_table_row
+	{
+		riscv_extension_ptr extension; // set if this is a title row
+		riscv_opcode_ptr opcode;       // set if this is an opcode row
+	};
+
+	// create list of opcodes ordered by extension, with blank entries between extension sections
+	std::vector<riscv_table_row> rows;
+	for (auto &extension : extensions) {
+		if (extension->opcodes.size() == 0) continue;
+		if (rows.size() != 0) rows.push_back(riscv_table_row{ riscv_extension_ptr(), riscv_opcode_ptr() });
+		rows.push_back(riscv_table_row{ extension, riscv_opcode_ptr() });
+		for (auto &opcode : extension->opcodes) {
+			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode });
+		}
+	}
+
+	// create the table width specification
+	std::stringstream ts;
+	ts << "{";
+	for (ssize_t bit = 31; bit >= 0; bit--) ts << "p{0.02in}";
+	ts << "p{2.0in}l}";
+	for (ssize_t bit = 31; bit >= 0; bit--) ts << "& ";
+	ts << "& \\\\\n";
+
+	// print document header
+	printf("%s", kLatexDocumentBegin);
+
+	// iterate through the table rows
+	size_t line = 0;
+	for (auto &row : rows) {
+
+		auto &extension = row.extension;
+		auto &opcode = row.opcode;
+
+		// print table header and page breaks
+		if (line % 64 == 0) {
+			if (line != 0) {
+				printf("%s", kLatexTableEnd);
+			}
+			printf("%s%s", kLatexTableBegin, ts.str().c_str());
+			if (opcode) {
+				printf("\\cline{1-32}\n");
+			}
+		}
+
+		// format an opcode line
+		if (opcode) {
+
+			// calculate the column spans for this row
+			riscv_arg_ptr arg, larg;
+			std::vector<std::tuple<riscv_arg_ptr,size_t,std::string>> arg_parts;
+			for (ssize_t bit = 31; bit >= 0; bit--) {
+				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
+				arg = opcode->find_arg(bit);
+				if (arg_parts.size() == 0 || std::get<0>(arg_parts.back()) != arg) {
+					std::string str;
+					str += c;
+					arg_parts.push_back(std::tuple<riscv_arg_ptr,size_t,std::string>(arg, 1, str));
+				} else {
+					auto &sz = std::get<1>(arg_parts.back());
+					auto &str = std::get<2>(arg_parts.back());
+					char lastc = str[str.length()-1];
+					if ((lastc == '?' && (c == '1' || c == '0')) ||
+						((lastc == '1' || lastc == '0') && c == '?'))
+					{
+						std::string str;
+						str += c;
+						arg_parts.push_back(std::tuple<riscv_arg_ptr,size_t,std::string>(arg, 1, str));
+					} else {
+						sz++;
+						str += c;
+					}
+				}
+				larg = arg;
+			}
+
+			// construct the LaTeX for this row
+			std::stringstream ls;
+			for (size_t i = 0; i < arg_parts.size(); i++) {
+				auto arg = std::get<0>(arg_parts[i]);
+				auto size = std::get<1>(arg_parts[i]);
+				auto str = std::get<2>(arg_parts[i]);
+				if (arg) str = arg->label;
+				ls << (i != 0 ? " & " : "")
+				   << "\\multicolumn{" << size << "}"
+				   << "{" << (i == 0 ? "|" : "") << "c|}"
+				   << "{" << str << "}";
+			}
+
+			// format the opcode name and arguments
+			auto name = opcode->name;
+			auto format = formats_by_name[opcode->type->format];
+			auto arg_comps = split(format->args, ",", false, false);
+			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+
+			// print this row
+			printf("%s & %s %s \\\\\n\\cline{1-32}\n",
+				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str());
+		}
+
+		// format an extension heading
+		else if (extension) {
+			printf("\\multicolumn{32}{c}{\\bf %s} & \\\\\n\\cline{1-32}\n",
+				extension->description.c_str());
+		}
+
+		// format an empty line
+		else {
+			printf("\\multicolumn{32}{c}{} & \\\\\n");
+		}
+
+		line++;
+	}
+
+	// print table and document trailer
+	printf("%s", kLatexTableEnd);
+	printf("%s", kLatexDocumentEnd);
 }
 
 void riscv_inst_set::print_map()
@@ -1308,6 +1462,7 @@ int main(int argc, const char *argv[])
 {
 	riscv_inst_set inst_set;
 
+	bool print_latex = false;
 	bool print_map = false;
 	bool print_switch = false;
 	bool print_enum = false;
@@ -1326,6 +1481,9 @@ int main(int argc, const char *argv[])
 		{ "-r", "--read-isa", cmdline_arg_type_string,
 			"Read instruction set metadata from directory",
 			[&](std::string s) { return inst_set.read_metadata(s); } },
+		{ "-l", "--print-latex", cmdline_arg_type_none,
+			"Print LaTeX",
+			[&](std::string s) { return (print_latex = true); } },
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
@@ -1352,7 +1510,7 @@ int main(int argc, const char *argv[])
 		help_or_error = true;
 	}
 
-	help_or_error |= !print_map && !print_switch &&
+	help_or_error |= !print_latex && !print_map && !print_switch &&
 		!print_enum && !print_class;
 
 	if (help_or_error) {
@@ -1362,6 +1520,10 @@ int main(int argc, const char *argv[])
 	}
 
 	inst_set.generate_map();
+
+	if (print_latex) {
+		inst_set.print_latex();
+	}
 
 	if (print_map) {
 		inst_set.print_map();
