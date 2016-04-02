@@ -62,6 +62,7 @@ static const bool EXPERIMENTAL_COLOR_ARGS = true;
 #define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
 #define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
 #define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
+#define EXT_BEGIN    S_COLOR F_RED B_BLACK
 
 const char* ansi_color_names[] = {
 	"black",
@@ -1206,13 +1207,17 @@ void riscv_inst_set::print_map()
 		}
 		auto format = formats_by_name[opcode->type->format];
 		if (EXPERIMENTAL_COLOR_ARGS) {
-			printf(" %s%s%s %s\n",
+			printf(" %s%s%s %s",
 				OPCODE_BEGIN, opcode->name.c_str(), T_RESET, colorize_args(opcode).c_str());
 		} else {
-			printf(" %s%s%s %s%s%s\n",
+			printf(" %s%s%s %s%s%s",
 				OPCODE_BEGIN, opcode->name.c_str(), T_RESET,
 				FORMAT_BEGIN, format->args.c_str(), T_RESET);
 		}
+		ssize_t len = 34 - (opcode->name.length() + format->args.length());
+		std::string ws;
+		for (ssize_t i = 0; i < len; i++) ws += ' ';
+		printf("%s%s# %s%s\n", ws.c_str(), EXT_BEGIN, opcode->extensions.front()->name.c_str(), T_RESET);
 	}
 	printf("%s", T_RESET);
 }
