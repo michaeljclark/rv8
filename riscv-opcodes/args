@@ -18,11 +18,11 @@
 
 rd         11:7                         ireg  "rd"        white   magenta
 rs1        19:15                        ireg  "rs1"       white   cyan
-rs2        24:20                        ireg  "rs2"       white   blue
+rs2        24:20                        ireg  "rs2"       white   green
 rs3        31:27                        ireg  "rs3"       white   yellow
 frd        11:7                         freg  "frd"       white   magenta
 frs1       19:15                        freg  "frs1"      white   cyan
-frs2       24:20                        freg  "frs2"      white   blue
+frs2       24:20                        freg  "frs2"      white   green
 frs3       31:27                        freg  "frs3"      white   yellow
 aqrl       26:25                        arg   "aqrl"      green   black    # Acquire / Release
 pred       27:24                        arg   "pred"      green   black    # Predecessor
@@ -39,11 +39,11 @@ shamt6     25:20                        imm   "shamt"     green   black    # 64-
 crdq       4:2                          ireg  "rd'"       white   magenta
 crs1q      9:7                          ireg  "rs1'"      white   cyan
 crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
-crs2q      4:2                          ireg  "rs2'"      white   blue
+crs2q      4:2                          ireg  "rs2'"      white   green
 crd        11:7                         ireg  "rd"        white   magenta
 crs1       11:7                         ireg  "rs1"       white   cyan
 crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
-crs2       6:2                          ireg  "rs2"       white   blue
+crs2       6:2                          ireg  "rs2"       white   green
 cimmi      12[5],6:2[4:0]               imm   "imm"       green   black
 cimmui     12[17],6:2[16:12]            imm   "imm"       green   black
 cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       green   black
