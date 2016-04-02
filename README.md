@@ -2,18 +2,16 @@
 
 A meta compiler that generates RISC-V instruction decoders, disassembler
 meta data, opcode maps and documentation from instruction set meta data.
-
-Note: the riscv-isa-sim decoder is included in the decoder
-benchmark with and without caching enabled. The meta compiler
-switch decoder performance should be compared to spike_nocache
-for a fair comparison. Caching will be added to the meta
-compiler decoder.
-
 This is the starting point of a RISC-V binary translation investigation.
 
-![ASCII ISA map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot.png)
+![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot.png)
+
+*Example ASCII map output from make map*
 
 ## Performance Statistics
+
+The follow table shows the performance of the switch based instruction
+decoder compared to the riscv_isa_simulator instruction decoder.
 
 ```
 decoder                 last_insn   insn_count  nanoseconds         code
@@ -26,6 +24,8 @@ decode_spike_cache            c_j     32000000         3.34        RV64C
 ```
 
 ## Build Instructions
+
+The meta compiler has been tested on Linux, Darwin and FreeBSD.
 
 To run the decoder benchmarks: ```make bench```
 
