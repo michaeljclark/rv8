@@ -964,7 +964,7 @@ void riscv_inst_set::print_map()
 		i++;
 		printf("// ");
 		for (ssize_t bit = 31; bit >= 0; bit--) {
-			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
+			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '.');
 			switch (c) {
 				case '0':
 				case '1':
