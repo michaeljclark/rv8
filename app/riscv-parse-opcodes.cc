@@ -33,6 +33,8 @@ static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
+static const bool EXPERIMENTAL_COLOR_ARGS = false;
+
 #define S_COLOR      "\x1B["
 #define S_NORMAL     "0;"
 #define S_BOLD       "1;"
@@ -71,6 +73,12 @@ const char* ansi_color_names[] = {
 	"cyan",
 	"white",
 	nullptr
+};
+
+enum ansi_color_spec {
+	ansi_color_keep,
+	ansi_color_normal,
+	ansi_color_reverse
 };
 
 struct riscv_bitrange;
@@ -282,7 +290,8 @@ struct riscv_inst_set
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 	static size_t color_to_ansi_index(std::string color);
-	static std::string colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color);
+	static std::string colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
+		ansi_color_spec spec = ansi_color_keep);
 
 	std::vector<std::string> parse_line(std::string line);
 	std::vector<std::vector<std::string>> read_file(std::string filename);
@@ -310,6 +319,8 @@ struct riscv_inst_set
 
 	void generate_map();
 	void generate_decoder();
+
+	std::string colorize_args(riscv_opcode_ptr opcode);
 
 	void print_map();
 	void print_enum();
@@ -636,12 +647,28 @@ size_t riscv_inst_set::color_to_ansi_index(std::string color)
 	return 0;
 }
 
-std::string riscv_inst_set::colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color)
+std::string riscv_inst_set::colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color, ansi_color_spec spec)
 {
 	char buf[32];
-	size_t fg_color_num = 30 + color_to_ansi_index(fg_color);
-	size_t bg_color_num = 40 + color_to_ansi_index(bg_color);
-	snprintf(buf, sizeof(buf), "\x1B[%lu;%lum", fg_color_num, bg_color_num);
+	size_t fg_color_num = color_to_ansi_index(fg_color);
+	size_t bg_color_num = color_to_ansi_index(bg_color);
+	switch (spec) {
+		case ansi_color_keep:
+			break;
+		case ansi_color_normal:
+			if (bg_color_num != 0 /* black */) {
+				fg_color_num = bg_color_num;
+				bg_color_num = 0;
+			}
+			break;
+		case ansi_color_reverse:
+			if (bg_color_num != 7 /* white */) {
+				bg_color_num = fg_color_num;
+				fg_color_num = 7;
+			}
+			break;
+	}
+	snprintf(buf, sizeof(buf), "\x1B[%lu;%lum", 30 + fg_color_num, 40 + bg_color_num);
 	return buf;
 }
 
@@ -942,6 +969,44 @@ void riscv_inst_set::generate_decoder()
 	generate_decoder_node(node, opcodes);
 }
 
+std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
+{
+	auto format = formats_by_name[opcode->type->format];
+	auto args = format->args;
+
+	std::vector<char> token;
+	std::vector<std::string> comps;
+
+	for (size_t i = 0; i < args.length(); i++) {
+		char c = args[i];
+		if (::isalnum(c)) {
+			token.push_back(c);
+		} else {
+			comps.push_back(std::string(token.begin(), token.end()));
+			token.resize(0);
+			token.push_back(c);
+			comps.push_back(std::string(token.begin(), token.end()));
+			token.resize(0);
+		}
+	}
+	if (token.size() > 0) {
+		comps.push_back(std::string(token.begin(), token.end()));
+	}
+
+	for (size_t i = 0; i < comps.size(); i++) {
+		auto comp = comps[i];
+		auto arg = args_by_name[comp];
+		if (arg) {
+			auto new_comp = colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color, ansi_color_normal);
+			new_comp.append(comp);
+			new_comp.append(T_RESET);
+			comps[i] = new_comp;
+		}
+	}
+
+	return join(comps, "");
+}
+
 void riscv_inst_set::print_map()
 {
 	int i = 0;
@@ -985,9 +1050,14 @@ void riscv_inst_set::print_map()
 			}
 		}
 		auto format = formats_by_name[opcode->type->format];
-		printf(" %s%s%s %s%s%s\n",
-			OPCODE_BEGIN, opcode->name.c_str(), T_RESET,
-			FORMAT_BEGIN, format->args.c_str(), T_RESET);
+		if (EXPERIMENTAL_COLOR_ARGS) {
+			printf(" %s%s%s %s\n",
+				OPCODE_BEGIN, opcode->name.c_str(), T_RESET, colorize_args(opcode).c_str());
+		} else {
+			printf(" %s%s%s %s%s%s\n",
+				OPCODE_BEGIN, opcode->name.c_str(), T_RESET,
+				FORMAT_BEGIN, format->args.c_str(), T_RESET);
+		}
 	}
 	printf("%s", T_RESET);
 }
