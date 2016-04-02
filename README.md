@@ -40,3 +40,29 @@ To print a static switch decoder: ```make switch```
 To print decoder meta data table: ```make meta```
 
 To print decoder opcode enum: ```make enum```
+
+## Parse Opcodes Examples
+
+To print a colour opcode map for the RV32IMA ISA subset:
+
+```
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32IMA -m -r riscv-opcodes
+```
+
+To print a colour opcode map for the RV64IMAFDS ISA subset:
+
+```
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64IMAFDS -m -r riscv-opcodes
+```
+
+To output LaTeX for the RV32C ISA subset:
+
+```
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32C -l -r riscv-opcodes
+```
+
+To output LaTeX for the RV64G ISA subset:
+
+```
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64G -l -r riscv-opcodes
+```
