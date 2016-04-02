@@ -1093,24 +1093,25 @@ R"LaTeX(\end{tabular}
 
 			// calculate the column spans for this row
 			riscv_arg_ptr arg, larg;
-			std::vector<std::tuple<riscv_arg_ptr,size_t,std::string>> arg_parts;
+			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
+			std::vector<arg_tuple> arg_parts;
 			for (ssize_t bit = 31; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
 				arg = opcode->find_arg(bit);
-				if (arg_parts.size() == 0 || std::get<0>(arg_parts.back()) != arg) {
+				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg) {
 					std::string str;
 					str += c;
-					arg_parts.push_back(std::tuple<riscv_arg_ptr,size_t,std::string>(arg, 1, str));
+					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
 				} else {
-					auto &sz = std::get<1>(arg_parts.back());
-					auto &str = std::get<2>(arg_parts.back());
+					auto &sz = std::get<2>(arg_parts.back());
+					auto &str = std::get<3>(arg_parts.back());
 					char lastc = str[str.length()-1];
 					if ((lastc == '?' && (c == '1' || c == '0')) ||
 						((lastc == '1' || lastc == '0') && c == '?'))
 					{
 						std::string str;
 						str += c;
-						arg_parts.push_back(std::tuple<riscv_arg_ptr,size_t,std::string>(arg, 1, str));
+						arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
 					} else {
 						sz++;
 						str += c;
@@ -1119,17 +1120,46 @@ R"LaTeX(\end{tabular}
 				larg = arg;
 			}
 
+			// update labels for segments with args
+			ssize_t msb = 31;
+			for (size_t i = 0; i < arg_parts.size(); i++) {
+				auto &arg = std::get<1>(arg_parts[i]);
+				auto size = std::get<2>(arg_parts[i]);
+				auto &str = std::get<3>(arg_parts[i]);
+				if (arg) {
+					str = arg->label;
+					if (str == "imm") {
+						auto spec = arg->bitrange_spec;
+						for (auto &seg : spec.segments) {
+							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+								str += "[";
+								for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+									if (ri != seg.second.begin()) str += "$\\vert$";
+									str += ri->to_string(":");
+								}
+								str += "]";
+								break;
+							}
+						}
+					}
+				} else {
+					std::replace(str.begin(), str.end(), '?', '0');
+				}
+				msb -= size;
+			}
+
 			// construct the LaTeX for this row
 			std::stringstream ls;
 			for (size_t i = 0; i < arg_parts.size(); i++) {
-				auto arg = std::get<0>(arg_parts[i]);
-				auto size = std::get<1>(arg_parts[i]);
-				auto str = std::get<2>(arg_parts[i]);
-				std::replace(str.begin(), str.end(), '?', '0');
-				if (arg) str = arg->label;
-				ls << (i != 0 ? " & " : "")
-				   << "\\multicolumn{" << size << "}"
-				   << "{" << (i == 0 ? "|" : "") << "c|}"
+				auto &opcode = std::get<0>(arg_parts[i]);
+				auto size = std::get<2>(arg_parts[i]);
+				auto &str = std::get<3>(arg_parts[i]);
+				auto &extname = opcode->extensions[0]->name;
+				bool rvc = (extname == "rv32c" || extname == "rv64c");
+				if (i == 0 && rvc) continue;
+				ls << (i != (rvc ? 1 : 0) ? " & " : "")
+				   << "\\multicolumn{" << (size * (rvc ? 2 : 1)) << "}"
+				   << "{" << (i == (rvc ? 1 : 0) ? "|" : "") << "c|}"
 				   << "{" << str << "}";
 			}
 
