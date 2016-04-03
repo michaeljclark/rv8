@@ -20,10 +20,6 @@
 #include "riscv-cmdline.h"
 
 
-static std::string isa_prefix                  = "rv";
-static std::vector<size_t> isa_width_bits      = { 32, 64, 128 };
-static std::vector<std::string> isa_width_str =  { "rv32", "rv64", "rv128" };
-
 static const char* ARGS_FILE           = "args";
 static const char* TYPES_FILE          = "types";
 static const char* EXTENSIONS_FILE     = "extensions";
@@ -178,10 +174,19 @@ struct riscv_type
 struct riscv_extension
 {
 	std::string name;
+	std::string prefix;
+	ssize_t isa_width;
+	char alpha_code;
+	ssize_t insn_width;
 	std::string description;
 	riscv_opcode_list opcodes;
 
-	riscv_extension(std::string name, std::string description) : name(name), description(description) {}
+	riscv_extension(std::string prefix, std::string isa_width, std::string alpha_code, std::string insn_width, std::string description) :
+		name(prefix + isa_width + alpha_code), prefix(prefix),
+		isa_width(strtoull(isa_width.c_str(), NULL, 10)),
+		alpha_code(alpha_code.length() > 0 ? alpha_code[0] : '?'),
+		insn_width(strtoull(insn_width.c_str(), NULL, 10)),
+		description(description) {}
 };
 
 struct riscv_format
@@ -233,16 +238,18 @@ struct riscv_opcode
 
 	riscv_opcode(std::string key, std::string name) : key(key), name(name), mask(0), match(0), done(0) {}
 
-	bool match_extension(std::set<std::string> &extension_subset) {
-		if (extension_subset.size() == 0) return true;
-		for (auto extension : extensions) {
-			if (extension_subset.find(extension->name) != extension_subset.end()) return true;
+	bool match_extension(riscv_extension_list &ext_subset) {
+		if (ext_subset.size() == 0) return true;
+		for (auto ext : extensions) {
+			if (std::find(ext_subset.begin(), ext_subset.end(), ext) != ext_subset.end()) return true;
 		}
 		return false;
 	}
 
 	riscv_arg_ptr find_arg(ssize_t bit) {
-		for (auto arg: args) if (arg->bitrange_spec.matches_bit(bit)) return arg;
+		for (auto arg: args) {
+			if (arg->bitrange_spec.matches_bit(bit)) return arg;
+		}
 		return riscv_arg_ptr();
 	}
 };
@@ -279,16 +286,14 @@ struct riscv_inst_set
 	riscv_opcode_map         opcodes_by_key;
 	riscv_opcode_list_map    opcodes_by_name;
 	riscv_opcode_list_map    opcodes_by_type;
-	std::set<std::string>    extension_subset;
+	riscv_extension_list     ext_subset;
 
 	riscv_decoder_node node;
 
-	static std::vector<std::string> decode_isa_extensions(std::string isa_spec);
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
 	static std::string opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot);
-	static std::string opcode_isa_extension(riscv_opcode_ptr opcode);
-	static std::vector<size_t> opcode_isa_widths(riscv_opcode_ptr opcode);
+	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 	static size_t color_to_ansi_index(std::string color);
@@ -297,7 +302,7 @@ struct riscv_inst_set
 
 	std::vector<std::string> parse_line(std::string line);
 	std::vector<std::vector<std::string>> read_file(std::string filename);
-
+	riscv_extension_list decode_isa_extensions(std::string isa_spec);
 	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
 	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
 	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
@@ -483,33 +488,6 @@ std::string riscv_bitrange_spec::to_template()
 	return ss.str();
 }
 
-std::vector<std::string> riscv_inst_set::decode_isa_extensions(std::string isa_spec)
-{
-	std::vector<std::string> list;
-	std::transform(isa_spec.begin(), isa_spec.end(), isa_spec.begin(), ::tolower);
-	size_t ext_offset = 0;
-	for (std::string isa_width : isa_width_str) {
-		if (isa_spec.find(isa_width) == 0) {
-			ext_offset = isa_width.size();
-		}
-	}
-	if (ext_offset == 0) {
-		panic("illegal isa spec: %s", isa_spec.c_str());
-	}
-	size_t g_offset = isa_spec.find("g");
-	if (g_offset != std::string::npos) {
-		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset, isa_spec.begin() + g_offset + 1, "imafd");
-	}
-	for (auto i = isa_spec.begin() + ext_offset; i != isa_spec.end(); i++) {
-		std::string extension = isa_spec.substr(0, ext_offset) + *i;
-		if (std::find(list.begin(), list.end(), extension) != list.end()) {
-			panic("illegal isa spec: %s: duplicate symbol: %c", isa_spec.c_str(), *i);
-		}
-		list.push_back(extension);
-	}
-	return list;
-}
-
 riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=", false, false);
@@ -607,34 +585,12 @@ std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opc
 	return prefix + name;
 }
 
-std::string riscv_inst_set::opcode_isa_extension(riscv_opcode_ptr opcode)
+std::string riscv_inst_set::opcode_isa_shortname(riscv_opcode_ptr opcode)
 {
-	for (auto &extension : opcode->extensions) {
-		size_t ext_offset = 0;
-		for (std::string isa_width : isa_width_str) {
-			if (extension->name.find(isa_width) == 0) {
-				ext_offset = isa_width.size();
-			}
-		}
-		if (ext_offset == 0) {
-			panic("illegal extension name: %s", extension->name.c_str());
-		}
-		return isa_prefix + extension->name.substr(ext_offset);
-	}
-	return "unknown";
-}
-
-std::vector<size_t> riscv_inst_set::opcode_isa_widths(riscv_opcode_ptr opcode)
-{
-	std::vector<size_t> widths;
-	for (auto &extension : opcode->extensions) {
-		for (size_t i = 0; i < isa_width_str.size(); i++) {
-			if (extension->name.find(isa_width_str[i]) == 0) {
-				widths.push_back(isa_width_bits[i]);
-			}
-		}
-	}
-	return widths;
+	auto &ext = opcode->extensions.front();
+	std::string short_name = ext->prefix;
+	short_name += ext->alpha_code;
+	return short_name;
 }
 
 size_t riscv_inst_set::color_to_ansi_index(std::string color)
@@ -759,6 +715,57 @@ std::vector<std::vector<std::string>> riscv_inst_set::read_file(std::string file
 	return data;
 }
 
+
+riscv_extension_list riscv_inst_set::decode_isa_extensions(std::string isa_spec)
+{
+	riscv_extension_list list;
+	if (isa_spec.size() == 0) {
+		return list;
+	}
+
+	// canonicalise isa spec to lower case
+	std::transform(isa_spec.begin(), isa_spec.end(), isa_spec.begin(), ::tolower);
+
+	// find isa prefix and width
+	ssize_t ext_isa_width = 0;
+	std::string ext_prefix, ext_isa_width_str;
+	for (auto &ext : extensions) {
+		if (isa_spec.find(ext->prefix) == 0) {
+			ext_prefix = ext->prefix;
+		}
+		if (ext_prefix.size() > 0) {
+			ext_isa_width_str = std::to_string(ext->isa_width);
+			if (isa_spec.find(ext_isa_width_str) == ext_prefix.size()) {
+				ext_isa_width = ext->isa_width;
+			}
+		}
+	}
+	if (ext_prefix.size() == 0 || ext_isa_width == 0) {
+		panic("illegal isa spec: %s", isa_spec.c_str());
+	}
+
+	// replace 'g' with 'imafd'
+	size_t g_offset = isa_spec.find("g");
+	if (g_offset != std::string::npos) {
+		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset, isa_spec.begin() + g_offset + 1, "imafd");
+	}
+
+	// lookup extensions
+	ssize_t ext_offset = ext_prefix.length() + ext_isa_width_str.length();
+	for (auto i = isa_spec.begin() + ext_offset; i != isa_spec.end(); i++) {
+		std::string ext_name = isa_spec.substr(0, ext_offset) + *i;
+		auto ext = extensions_by_name[ext_name];
+		if (!ext) {
+			panic("illegal isa spec: %s: missing extension: %s", isa_spec.c_str(), ext_name.c_str());
+		}
+		if (std::find(list.begin(), list.end(), ext) != list.end()) {
+			panic("illegal isa spec: %s: duplicate extension: %s", isa_spec.c_str(), ext_name.c_str());
+		}
+		list.push_back(ext);
+	}
+	return list;
+}
+
 riscv_opcode_ptr riscv_inst_set::create_opcode(std::string opcode_name, std::string extension)
 {
 	// create key for the opcode
@@ -853,10 +860,10 @@ void riscv_inst_set::parse_type(std::vector<std::string> &part)
 
 void riscv_inst_set::parse_extension(std::vector<std::string> &part)
 {
-	if (part.size() < 2) {
-		panic("invalid extensions file requires 2 parameters: %s", join(part, " ").c_str());
+	if (part.size() < 5) {
+		panic("invalid extensions file requires 5 parameters: %s", join(part, " ").c_str());
 	}
-	auto extension = extensions_by_name[part[0]] = std::make_shared<riscv_extension>(part[0], part[1]);
+	auto extension = extensions_by_name[part[0]+part[1]+part[2]] = std::make_shared<riscv_extension>(part[0], part[1], part[2], part[3], part[4]);
 	extensions.push_back(extension);
 }
 
@@ -899,6 +906,9 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 	}
 
 	std::string opcode_name = part[0];
+	if (extensions.size() == 0) {
+		panic("no extension assigned for opcode: %s", opcode_name.c_str());
+	}
 	auto opcode = create_opcode(opcode_name, extensions.front());
 
 	for (size_t i = 1; i < part.size(); i++) {
@@ -1050,12 +1060,12 @@ R"LaTeX(\end{tabular}
 
 	// create list of opcodes ordered by extension, with blank entries between extension sections
 	std::vector<riscv_table_row> rows;
-	for (auto &extension : extensions) {
-		if (extension_subset.size() > 0 &&
-			extension_subset.find(extension->name) == extension_subset.end()) continue;
+	for (auto &ext : extensions) {
+		if (ext_subset.size() > 0 && std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end()) continue;
+		if (ext->opcodes.size() == 0) continue;
 		if (rows.size() != 0) rows.push_back(riscv_table_row{ riscv_extension_ptr(), riscv_opcode_ptr() });
-		rows.push_back(riscv_table_row{ extension, riscv_opcode_ptr() });
-		for (auto &opcode : extension->opcodes) {
+		rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr() });
+		for (auto &opcode : ext->opcodes) {
 			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode });
 		}
 	}
@@ -1155,8 +1165,7 @@ R"LaTeX(\end{tabular}
 				auto &opcode = std::get<0>(arg_parts[i]);
 				auto size = std::get<2>(arg_parts[i]);
 				auto &str = std::get<3>(arg_parts[i]);
-				auto &extname = opcode->extensions[0]->name;
-				bool rvc = (extname == "rv32c" || extname == "rv64c");
+				bool rvc = (opcode->extensions[0]->insn_width == 16); // FIX ME
 				if (i == 0 && rvc) continue;
 				ls << (i != (rvc ? 1 : 0) ? " & " : "")
 				   << "\\multicolumn{" << (size * (rvc ? 2 : 1)) << "}"
@@ -1212,7 +1221,7 @@ void riscv_inst_set::print_map()
 			}
 			printf("%s\n", T_RESET);
 		}
-		if (!opcode->match_extension(extension_subset)) continue;
+		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
 		printf("// ");
 		for (ssize_t bit = 31; bit >= 0; bit--) {
@@ -1281,30 +1290,25 @@ void riscv_inst_set::print_class()
 void riscv_inst_set::print_switch_template_header()
 {
 	std::vector<std::string> mnemonics;
-	for (auto &extension : extensions) {
-		for (std::string isa_width : isa_width_str) {
-			if (extension->name.find(isa_width) == 0) {
-				if (std::find(mnemonics.begin(), mnemonics.end(), isa_width) == mnemonics.end()) {
-					mnemonics.push_back(isa_width);
-				}
-			}
+
+	// create mnemonics for instruction set widths
+	for (auto &ext : extensions) {
+		std::string mnem = ext->prefix + std::to_string(ext->isa_width);
+		if (std::find(mnemonics.begin(), mnemonics.end(), mnem) == mnemonics.end()) {
+			mnemonics.push_back(mnem);
 		}
 	}
-	for (auto &extension : extensions) {
-		size_t ext_offset = 0;
-		for (std::string isa_width : isa_width_str) {
-			if (extension->name.find(isa_width) == 0) {
-				ext_offset = isa_width.size();
-			}
-		}
-		if (ext_offset == 0) {
-			panic("illegal isa spec: %s", extension->name.c_str());
-		}
-		std::string extension_mnem = std::string("rv") + extension->name.substr(ext_offset);
-		if (std::find(mnemonics.begin(), mnemonics.end(), extension_mnem) == mnemonics.end()) {
-			mnemonics.push_back(extension_mnem);
+
+	// create mnemonics for instruction set extensions
+	for (auto &ext : extensions) {
+		std::string mnem = ext->prefix;
+		mnem += ext->alpha_code;
+		if (std::find(mnemonics.begin(), mnemonics.end(), mnem) == mnemonics.end()) {
+			mnemonics.push_back(mnem);
 		}
 	}
+
+	// create template header
 	printf("template <");
 	for (auto mi = mnemonics.begin(); mi != mnemonics.end(); mi++) {
 		if (mi != mnemonics.begin()) printf(", ");
@@ -1420,8 +1424,10 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 			// resolve distinct number of isa widths for this opcode
 			std::vector<size_t> opcode_widths;
 			for (auto opcode : opcode_list) {
-				for (size_t width : opcode_isa_widths(opcode)) {
-					opcode_widths.push_back(width);
+				for (auto &ext : opcode->extensions) {
+					if (std::find(opcode_widths.begin(), opcode_widths.end(), ext->isa_width) == opcode_widths.end()) {
+						opcode_widths.push_back(ext->isa_width);
+					}
 				}
 			}
 			auto opcode = opcode_list.front();
@@ -1436,7 +1442,7 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 					for (size_t i = 0; i < indent; i++) printf("\t");
 					printf("\t\t%sif (%s && rv%lu) dec.op = %s;\n",
 						oi != opcode_list.begin() ? "else " : "",
-						opcode_isa_extension(opcode).c_str(), opcode_isa_widths(opcode)[0],
+						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
 						opcode_name("riscv_op_", opcode, '_').c_str());
 				}
 				for (size_t i = 0; i < indent; i++) printf("\t");
@@ -1447,11 +1453,11 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 				// if ambiguous, chooses first opcode
 				if (opcode_widths.size() == 1) {
 					printf("if (%s && rv%lu) dec.op = %s; break;",
-						opcode_isa_extension(opcode).c_str(), opcode_isa_widths(opcode)[0],
+						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
 						opcode_name("riscv_op_", opcode, '_').c_str());
 				} else {
 					printf("if (%s) dec.op = %s; break;",
-						opcode_isa_extension(opcode).c_str(),
+						opcode_isa_shortname(opcode).c_str(),
 						opcode_name("riscv_op_", opcode, '_').c_str());
 				}
 
@@ -1505,16 +1511,13 @@ int main(int argc, const char *argv[])
 	bool print_enum = false;
 	bool print_class = false;
 	bool help_or_error = false;
+	std::string isa_spec = "";
 
 	cmdline_option options[] =
 	{
 		{ "-I", "--isa-subset", cmdline_arg_type_string,
 			"ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)",
-			[&](std::string s) {
-				for (std::string isa : riscv_inst_set::decode_isa_extensions(s))
-					inst_set.extension_subset.insert(isa);
-				return true; }
-			},
+			[&](std::string s) { isa_spec = s; return true; } },
 		{ "-r", "--read-isa", cmdline_arg_type_string,
 			"Read instruction set metadata from directory",
 			[&](std::string s) { return inst_set.read_metadata(s); } },
@@ -1555,6 +1558,8 @@ int main(int argc, const char *argv[])
 		cmdline_option::print_options(options);
 		return false;
 	}
+
+	inst_set.ext_subset = inst_set.decode_isa_extensions(isa_spec);
 
 	inst_set.generate_map();
 
