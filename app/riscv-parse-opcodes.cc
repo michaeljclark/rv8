@@ -31,6 +31,9 @@ static const char* DESCRIPTIONS_FILE   = "descriptions";
 
 static const bool EXPERIMENTAL_COLOR_ARGS = true;
 
+// TODO - make this variable based on extension metadata
+static const ssize_t INSN_WIDTH = 32;
+
 #define S_COLOR      "\x1B["
 #define S_NORMAL     "0;"
 #define S_BOLD       "1;"
@@ -1073,9 +1076,9 @@ R"LaTeX(\end{tabular}
 	// create the table width specification
 	std::stringstream ts;
 	ts << "{";
-	for (ssize_t bit = 31; bit >= 0; bit--) ts << "p{0.02in}";
+	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) ts << "p{0.02in}";
 	ts << "p{2.0in}l}";
-	for (ssize_t bit = 31; bit >= 0; bit--) ts << "& ";
+	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) ts << "& ";
 	ts << "& \\\\\n";
 
 	// print document header
@@ -1106,7 +1109,7 @@ R"LaTeX(\end{tabular}
 			riscv_arg_ptr arg, larg;
 			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
 			std::vector<arg_tuple> arg_parts;
-			for (ssize_t bit = 31; bit >= 0; bit--) {
+			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
 				arg = opcode->find_arg(bit);
 				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg) {
@@ -1132,7 +1135,7 @@ R"LaTeX(\end{tabular}
 			}
 
 			// update labels for segments with args
-			ssize_t msb = 31;
+			ssize_t msb = INSN_WIDTH-1;
 			for (size_t i = 0; i < arg_parts.size(); i++) {
 				auto &arg = std::get<1>(arg_parts[i]);
 				auto size = std::get<2>(arg_parts[i]);
@@ -1165,11 +1168,11 @@ R"LaTeX(\end{tabular}
 				auto &opcode = std::get<0>(arg_parts[i]);
 				auto size = std::get<2>(arg_parts[i]);
 				auto &str = std::get<3>(arg_parts[i]);
-				bool rvc = (opcode->extensions[0]->insn_width == 16); // FIX ME
-				if (i == 0 && rvc) continue;
-				ls << (i != (rvc ? 1 : 0) ? " & " : "")
-				   << "\\multicolumn{" << (size * (rvc ? 2 : 1)) << "}"
-				   << "{" << (i == (rvc ? 1 : 0) ? "|" : "") << "c|}"
+				bool insn16 = (opcode->extensions[0]->insn_width == INSN_WIDTH/2);
+				if (i == 0 && insn16) continue;
+				ls << (i != (insn16 ? 1 : 0) ? " & " : "")
+				   << "\\multicolumn{" << (size * (insn16 ? 2 : 1)) << "}"
+				   << "{" << (i == (insn16 ? 1 : 0) ? "|" : "") << "c|}"
 				   << "{" << str << "}";
 			}
 
@@ -1209,13 +1212,13 @@ void riscv_inst_set::print_map()
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
 			printf("// %s", LEGEND_BEGIN);
-			for (ssize_t bit = 31; bit >= 0; bit--) {
+			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit / 10) + '0';
 				printf("%c", c);
 			}
 			printf("%s\n", T_RESET);
 			printf("// %s", LEGEND_BEGIN);
-			for (ssize_t bit = 31; bit >= 0; bit--) {
+			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
@@ -1224,7 +1227,7 @@ void riscv_inst_set::print_map()
 		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
 		printf("// ");
-		for (ssize_t bit = 31; bit >= 0; bit--) {
+		for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '.');
 			switch (c) {
 				case '0':
@@ -1337,21 +1340,21 @@ void riscv_inst_set::generate_decoder_node(riscv_decoder_node &node, riscv_opcod
 	std::vector<ssize_t> sum;
 	sum.resize(32);
 	for (auto &opcode : opcode_list) {
-		for (ssize_t bit = 31; bit >= 0; bit--) {
+		for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 			if ((opcode->mask & (1 << bit)) && !(opcode->done & (1 << bit))) sum[bit]++;
 		}
 	}
 
 	// find column with maximum row coverage
 	ssize_t max_rows = 0;
-	for (ssize_t bit = 31; bit >= 0; bit--) {
+	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 		if (sum[bit] > max_rows) max_rows = sum[bit];
 	}
 
 	if (max_rows == 0) return; // no bits to match
 
 	// select bits that cover maximum number of rows
-	for (ssize_t bit = 31; bit >= 0; bit--) {
+	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 		if (sum[bit] == max_rows) node.bits.push_back(bit);
 	}
 
