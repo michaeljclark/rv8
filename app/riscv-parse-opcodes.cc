@@ -263,10 +263,6 @@ struct riscv_decoder_node
 	std::vector<ssize_t> vals;
 	std::map<ssize_t,riscv_opcode_list> val_opcodes;
 	std::map<ssize_t,riscv_decoder_node> val_decodes;
-	riscv_opcode_list less_specific_opcodes;
-	ssize_t jump_slot;
-
-	riscv_decoder_node() : jump_slot(-1) {}
 };
 
 struct riscv_inst_set
