@@ -19,6 +19,7 @@
 #include "riscv-csr.h"
 #include "riscv-compression.h"
 #include "riscv-format.h"
+#include "riscv-elf.h"
 
 
 riscv_wu test_code_1[] = {
