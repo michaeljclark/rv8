@@ -100,6 +100,7 @@ src_deps =      $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_D
 RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/riscv-compression.cc \
                 $(LIB_SRC_DIR)/riscv-csr.cc \
+                $(LIB_SRC_DIR)/riscv-disasm.cc \
                 $(LIB_SRC_DIR)/riscv-elf.cc \
                 $(LIB_SRC_DIR)/riscv-elf-file.cc \
                 $(LIB_SRC_DIR)/riscv-elf-format.cc \

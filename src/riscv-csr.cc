@@ -2,6 +2,8 @@
 //  riscv-csr.cc
 //
 
+#include <map>
+
 #include "riscv-types.h"
 #include "riscv-csr.h"
 
@@ -76,3 +78,18 @@ const riscv_csr_metadata riscv_csr_table[] = {
 	{ 0x781, riscv_csr_perm_mrw, "mfromhost", "Input register from host" },
 	{ 0x000, riscv_csr_perm_none, nullptr,    nullptr }
 };
+
+
+struct riscv_csr_map : std::map<riscv_hu,const riscv_csr_metadata*>
+{
+	riscv_csr_map() {
+		for (const auto *ent = riscv_csr_table; ent->csr_value; ent++)
+			(*this)[ent->csr_value] = ent;
+	}
+};
+
+const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value)
+{
+	static riscv_csr_map csr_map;
+	return csr_map[csr_value];
+}

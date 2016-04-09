@@ -19,6 +19,7 @@
 #include "riscv-csr.h"
 #include "riscv-compression.h"
 #include "riscv-format.h"
+#include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
@@ -33,7 +34,7 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 	while (proc.pc < end) {
 		riscv_ptr pc = proc.pc;
 		riscv_decode_instruction(dec, &proc);
-		riscv_print_instruction(dec, &proc, pc, pc_offset);
+		riscv_disasm_instruction(dec, &proc, pc, pc_offset);
 	}
 }
 

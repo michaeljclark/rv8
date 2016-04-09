@@ -5,7 +5,7 @@
 #ifndef riscv_compression_h
 #define riscv_compression_h
 
-/* Compressed Instruction Mapping table */
+/* Compression Metadata table */
 
 struct riscv_inst_comp_metadata
 {
@@ -16,5 +16,7 @@ struct riscv_inst_comp_metadata
 };
 
 extern const riscv_inst_comp_metadata riscv_comp_table[];
+
+const riscv_inst_comp_metadata* riscv_lookup_comp_metadata(riscv_op op);
 
 #endif

@@ -20,7 +20,7 @@ enum riscv_csr_perm
 	riscv_csr_perm_mro
 };
 
-/* CSR Table */
+/* CSR Metadata Table */
 
 struct riscv_csr_metadata
 {
@@ -31,5 +31,7 @@ struct riscv_csr_metadata
 };
 
 extern const riscv_csr_metadata riscv_csr_table[];
+
+const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value);
 
 #endif

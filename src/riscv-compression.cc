@@ -1,6 +1,7 @@
 //
 //  riscv-compression.h
 //
+#include <map>
 
 #include "riscv-types.h"
 #include "riscv-opcodes.h"
@@ -55,3 +56,17 @@ const riscv_inst_comp_metadata riscv_comp_table[] = {
     { riscv_op_c_fswsp,    riscv_inst_type_css_swsp,      riscv_op_fsw,        riscv_inst_type_s_f },
     { riscv_op_unknown,    riscv_inst_type_unknown,       riscv_op_unknown,    riscv_inst_type_unknown }
 };
+
+struct riscv_inst_comp_map : std::map<riscv_op,const riscv_inst_comp_metadata*>
+{
+    riscv_inst_comp_map() {
+        for (const auto *ent = riscv_comp_table; ent->cop; ent++)
+            (*this)[ent->cop] = ent;
+    }
+};
+
+const riscv_inst_comp_metadata* riscv_lookup_comp_metadata(riscv_op op)
+{
+    static riscv_inst_comp_map comp_map;
+    return comp_map[op];
+}
