@@ -20,9 +20,12 @@ enum riscv_proc_type
 struct riscv_proc_state
 {
 	riscv_ptr pc;
-	riscv_i_reg i_reg[31];
+	riscv_i_reg i_reg[32];
 	riscv_f_reg f_reg[32];
 	riscv_proc_type p_type;
+
+	riscv_ptr mem;
+	riscv_lu vaddr;
 };
 
 #endif
