@@ -211,6 +211,8 @@ enum {
 	SHT_REL = 9,                     /* Contains "Rel" type relocation entries */
 	SHT_SHLIB = 10,                  /* Reserved */
 	SHT_DYNSYM = 11,                 /* Contains a dynamic loader symbol table */
+	SHT_INIT_ARRAY = 14,             /* Contains initialization functions */
+	SHT_FINI_ARRAY = 15,             /* Contains finalization functions */
 	SHT_LOOS = 0x60000000,           /* Environment-specific use */
 	SHT_HIOS = 0x6fffffff,
 	SHT_LOPROC = 0x70000000,         /* Processor-specific use */
