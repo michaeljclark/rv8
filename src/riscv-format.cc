@@ -6,8 +6,8 @@
 #include <vector>
 #include <string>
 
-#include "riscv-opcodes.h"
 #include "riscv-types.h"
+#include "riscv-opcodes.h"
 #include "riscv-imm.h"
 #include "riscv-regs.h"
 #include "riscv-decode.h"
@@ -156,7 +156,7 @@ void riscv_print_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_pt
 		case 2: printf("%s", format_string("%04x\t\t", *(riscv_hu*)pc).c_str()); break;
 		case 4: printf("%s", format_string("%08x\t", *(riscv_wu*)pc).c_str()); break;
 	}
-	printf("%s\t", riscv_instructions[dec.op].opcode);
+	printf("%s\t", riscv_instruction_name[dec.op]);
 
 	while (*fmt != rvf_z) {
 		switch (*fmt) {

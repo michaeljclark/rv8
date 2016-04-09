@@ -7,8 +7,8 @@
 #include <map>
 #include <string>
 
-#include "riscv-endian.h"
 #include "riscv-types.h"
+#include "riscv-endian.h"
 #include "riscv-regs.h"
 #include "riscv-processor.h"
 #include "riscv-opcodes.h"

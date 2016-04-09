@@ -2,8 +2,8 @@
 //  riscv-opcodes.h
 //
 
-#ifndef riscv_ops_h
-#define riscv_ops_h
+#ifndef riscv_opcodes_h
+#define riscv_opcodes_h
 
 /* Instruction types */
 
@@ -34,10 +34,10 @@ enum riscv_inst_type
 	riscv_inst_type_cs_fsw,
 	riscv_inst_type_cs_sd,
 	riscv_inst_type_cs_sw,
-	riscv_inst_type_css_fsdsp,
-	riscv_inst_type_css_fswsp,
 	riscv_inst_type_css_sdsp,
 	riscv_inst_type_css_swsp,
+	riscv_inst_type_css_fsdsp,
+	riscv_inst_type_css_fswsp,
 	riscv_inst_type_i,
 	riscv_inst_type_i_csr,
 	riscv_inst_type_i_csri,
@@ -56,15 +56,14 @@ enum riscv_inst_type
 	riscv_inst_type_r_rf,
 	riscv_inst_type_r_rff,
 	riscv_inst_type_s,
-	riscv_inst_type_s_f,
 	riscv_inst_type_sb,
+	riscv_inst_type_s_f,
 	riscv_inst_type_u,
-	riscv_inst_type_uj
+	riscv_inst_type_uj,
 };
 
-/* Instruction opcodes */
-
-enum riscv_op {
+enum riscv_op
+{
 	riscv_op_unknown,
 	riscv_op_lui,
 	riscv_op_auipc,
@@ -286,14 +285,12 @@ enum riscv_op {
 	riscv_op_c_sd,
 	riscv_op_c_addiw,
 	riscv_op_c_ldsp,
-	riscv_op_c_sdsp
+	riscv_op_c_sdsp,
 };
 
-struct riscv_opcode_metadata {
-	const char* opcode;
-	riscv_inst_type type;
-};
-
-extern const riscv_opcode_metadata riscv_instructions[];
+extern const char* riscv_instruction_name[];
+extern const riscv_inst_type riscv_instruction_type[];
+extern const riscv_wu riscv_instruction_match[];
+extern const riscv_wu riscv_instruction_mask[];
 
 #endif

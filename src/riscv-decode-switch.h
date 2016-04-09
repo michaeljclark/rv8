@@ -590,7 +590,7 @@ void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 			}
 			break;
 	}
-	dec.type = riscv_instructions[dec.op].type;
+	dec.type = riscv_instruction_type[dec.op];
 	switch (dec.type) {
 		case riscv_inst_type_c_none:        riscv_decode_c_none(dec, inst);          break;
 		case riscv_inst_type_cb:            riscv_decode_cb(dec, inst);              break;

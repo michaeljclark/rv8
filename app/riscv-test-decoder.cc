@@ -11,8 +11,8 @@
 #include <iomanip>
 #include <chrono>
 
-#include "riscv-endian.h"
 #include "riscv-types.h"
+#include "riscv-endian.h"
 #include "riscv-opcodes.h"
 
 
@@ -814,7 +814,7 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	const char* last_insn = riscv_instructions[dec.op].opcode;
+	const char* last_insn = riscv_instruction_name[dec.op];
 	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
 	printf("%-20s %12s %12lu %12.2lf %12s\n", __func__, last_insn, decoded, insn_ns, code);
 }
