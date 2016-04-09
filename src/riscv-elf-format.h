@@ -15,8 +15,9 @@ const char* elf_sh_type_name(int v);
 const std::string elf_sh_flags_name(int v);
 const char* elf_st_info_name(int v);
 const std::string elf_file_info(elf_file &elf);
-const std::string elf_phdr_info(Elf64_Phdr &phdr);
-const std::string elf_shdr_info(Elf64_Shdr &shdr);
+const std::string elf_phdr_info(elf_file &elf, int i);
+const char* elf_shdr_name(elf_file &elf, int i);
+const std::string elf_shdr_info(elf_file &elf, int i);
 void elf_print_info(elf_file &elf);
 
 #endif

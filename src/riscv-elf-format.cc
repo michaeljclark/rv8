@@ -89,6 +89,8 @@ const char* elf_sh_type_name(int v)
 		case SHT_REL: return "REL";
 		case SHT_SHLIB: return "SHLIB";
 		case SHT_DYNSYM: return "DYNSYM";
+		case SHT_INIT_ARRAY: return "INIT_ARRAY";
+		case SHT_FINI_ARRAY: return "FINI_ARRAY";
 		default: return "UNKNOWN";
 	}
 };
@@ -124,11 +126,13 @@ const std::string elf_file_info(elf_file &elf)
 		elf_e_type_name(elf.ehdr.e_type));
 }
 
-const std::string elf_phdr_info(Elf64_Phdr &phdr)
+const std::string elf_phdr_info(elf_file &elf, int i)
 {
-	return format_string("%10s %20s 0x%016x 0x%016x 0x%016x 0x%016x %lu",
+	Elf64_Phdr &phdr = elf.phdrs[i];
+	return format_string("[%2lu] %-12s %-12s 0x%016x 0x%016x 0x%016x 0x%016x 0x%016x %5lu", i,
 		elf_p_type_name(phdr.p_type),
 		elf_p_flags_name(phdr.p_flags).c_str(),
+		phdr.p_offset,
 		phdr.p_vaddr,
 		phdr.p_paddr,
 		phdr.p_filesz,
@@ -136,9 +140,25 @@ const std::string elf_phdr_info(Elf64_Phdr &phdr)
 		phdr.p_align);
 }
 
-const std::string elf_shdr_info(Elf64_Shdr &shdr)
+const char* elf_shdr_name(elf_file &elf, int i)
 {
-	return format_string("%10s %20s 0x%016x 0x%016x 0x%016x",
+	Elf64_Shdr &shdr = elf.shdrs[i];
+	Elf64_Shdr *strtab = nullptr;
+	for (size_t i = 0; i < elf.shdrs.size(); i++) {
+		if (elf.shdrs[i].sh_type == SHT_STRTAB) {
+			strtab = &elf.shdrs[i];
+			break;
+		}
+	}
+	if (!strtab) return "";
+	return (const char*)(elf.buf.data() + strtab->sh_offset + shdr.sh_name);
+}
+
+const std::string elf_shdr_info(elf_file &elf, int i)
+{
+	Elf64_Shdr &shdr = elf.shdrs[i];
+	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x", i,
+		elf_shdr_name(elf, i),
 		elf_sh_type_name(shdr.sh_type),
 		elf_sh_flags_name(shdr.sh_flags).c_str(),
 		shdr.sh_addr,
@@ -148,18 +168,24 @@ const std::string elf_shdr_info(Elf64_Shdr &shdr)
 
 void elf_print_info(elf_file &elf)
 {
-	printf("%s\n\n", elf_file_info(elf).c_str());
-	printf("                   %10s %20s %18s %18s %18s\n",
-		"Type", "Flags", "Addr", "Offset", "Size");
+	printf("\n");
+	printf("File       %s\n", elf.filename.c_str());
+	printf("Class      %s\n", elf_ei_class_name(elf.ei_class));
+	printf("Machine    %s\n", elf_e_machine_name(elf.ehdr.e_machine));
+	printf("Type       %s\n", elf_e_type_name(elf.ehdr.e_type));
+	printf("Data       %s\n", elf_ei_data_name(elf.ei_data));
+	printf("EntryAddr  0x%016llx\n", elf.ehdr.e_entry);
+	printf("\n");
+	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s\n",
+		"Name", "Type", "Flags", "Addr", "Offset", "Size");
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
-		printf("section header[%02lu] %s\n", i, elf_shdr_info(elf.shdrs[i]).c_str());
+		printf("%s\n", elf_shdr_info(elf, i).c_str());
 	}
 	printf("\n");
-	printf("                   %10s %20s %18s %18s %18s %18s %s\n",
-		"Type", "Flags", "VirtAddr", "PhysAddr", "FileSize", "MemSize", "Align");
+	printf("Phdr %-12s %-12s %-18s %-18s %-18s %-18s %-18s %-5s\n",
+		"Type", "Flags", "Offset", "VirtAddr", "PhysAddr", "FileSize", "MemSize", "Align");
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
-		printf("program header[%02lu] %s\n", i, elf_phdr_info(elf.phdrs[i]).c_str());
+		printf("%s\n", elf_phdr_info(elf, i).c_str());
 	}
 	printf("\n");
-	printf("EntryAddr: 0x%016llx\n\n", elf.ehdr.e_entry);
 }
