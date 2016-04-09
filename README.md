@@ -35,11 +35,11 @@ To output a LaTeX opcode tex: ```make latex```
 
 To output a LaTeX opcode pdf: ```make pdf```
 
-To print a static switch decoder: ```make switch```
+To print decoder C switch: ```make c_switch```
 
-To print decoder meta data table: ```make meta```
+To print opcodes C header: ```make c_header```
 
-To print decoder opcode enum: ```make enum```
+To print opcodes C source: ```make c_source```
 
 ## Parse Opcodes Examples
 

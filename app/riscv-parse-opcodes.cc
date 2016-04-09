@@ -330,10 +330,9 @@ struct riscv_inst_set
 
 	void print_latex();
 	void print_map();
-	void print_enum();
-	void print_class();
-	void print_switch_template_header();
-	void print_switch();
+	void print_c_header();
+	void print_c_source();
+	void print_c_switch();
 
 	void generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_decoder_node &node, size_t indent);
@@ -1261,67 +1260,104 @@ void riscv_inst_set::print_map()
 	printf("%s", T_RESET);
 }
 
-void riscv_inst_set::print_enum()
+void riscv_inst_set::print_c_header()
 {
+	printf("//\n");
+	printf("//  riscv-opcodes.h\n");
+	printf("//\n");
+	printf("\n");
+	printf("#ifndef riscv_opcodes_h\n");
+	printf("#define riscv_opcodes_h\n");
+	printf("\n");
+	printf("/* Instruction types */\n");
+	printf("\n");
 	printf("enum riscv_inst_type\n{\n");
+	printf("\triscv_inst_type_unknown,\n");
 	for (auto &type : types) {
 		printf("\triscv_inst_type_%s,\n", type->name.c_str());
 	}
-	printf("};\n");
+	printf("};\n\n");
 	printf("enum riscv_op\n{\n");
+	printf("\triscv_op_unknown,\n");
 	for (auto &opcode : opcodes) {
 		printf("\t%s,\n", opcode_name("riscv_op_", opcode, '_').c_str());
 	}
 	printf("};\n\n");
+	printf("extern const char* riscv_instruction_name[];\n");
+	printf("extern const riscv_inst_type riscv_instruction_type[];\n");
+	printf("extern const riscv_wu riscv_instruction_match[];\n");
+	printf("extern const riscv_wu riscv_instruction_mask[];\n");
+	printf("\n");
+	printf("#endif\n");
 }
 
-void riscv_inst_set::print_class()
+void riscv_inst_set::print_c_source()
 {
-	printf("{\n");
+	printf("//\n");
+	printf("//  riscv-opcodes.cc\n");
+	printf("//\n");
+	printf("\n");
+	printf("#include \"riscv-types.h\"\n");
+	printf("#include \"riscv-opcodes.h\"\n");
+	printf("\n");
+	printf("const char* riscv_instruction_name[] = {\n");
+	printf("\t%s,\n", "\"unknown\"");
 	for (auto &opcode : opcodes) {
-		printf("\t{ %-20s%-30s },\n",
-			format_string("\"%s\",", opcode_name("", opcode, '.').c_str()).c_str(),
-			format_string("riscv_inst_type_%s ", opcode->type->name.c_str()).c_str());
+		printf("\t\"%s\",\n", opcode_name("", opcode, '.').c_str());
 	}
-	printf("};\n");
+	printf("};\n\n");
+	printf("const riscv_inst_type riscv_instruction_type[] = {\n");
+	printf("\triscv_inst_type_unknown,\n");
+	for (auto &opcode : opcodes) {
+		printf("\triscv_inst_type_%s,\n", opcode->type->name.c_str());
+	}
+	printf("};\n\n");
+	printf("const riscv_wu riscv_instruction_match[] = {\n");
+	printf("\t0x%08x,\n", 0);
+	for (auto &opcode : opcodes) {
+		printf("\t0x%08x,\n", (uint32_t)opcode->match);
+	}
+	printf("};\n\n");
+	printf("const riscv_wu riscv_instruction_mask[] = {\n");
+	printf("\t0x%08x,\n", 0);
+	for (auto &opcode : opcodes) {
+		printf("\t0x%08x,\n", (uint32_t)opcode->mask);
+	}
+	printf("};\n\n");
 }
 
-void riscv_inst_set::print_switch_template_header()
+void riscv_inst_set::print_c_switch()
 {
-	std::vector<std::string> mnemonics;
+	std::vector<std::string> mnems;
 
 	// create mnemonics for instruction set widths
 	for (auto &ext : extensions) {
 		std::string mnem = ext->prefix + std::to_string(ext->isa_width);
-		if (std::find(mnemonics.begin(), mnemonics.end(), mnem) == mnemonics.end()) {
-			mnemonics.push_back(mnem);
-		}
+		if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+			mnems.push_back(mnem);
 	}
 
 	// create mnemonics for instruction set extensions
 	for (auto &ext : extensions) {
-		std::string mnem = ext->prefix;
-		mnem += ext->alpha_code;
-		if (std::find(mnemonics.begin(), mnemonics.end(), mnem) == mnemonics.end()) {
-			mnemonics.push_back(mnem);
-		}
+		std::string mnem = ext->prefix + ext->alpha_code;
+		if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+			mnems.push_back(mnem);
 	}
 
-	// create template header
+	// print template header
 	printf("template <");
-	for (auto mi = mnemonics.begin(); mi != mnemonics.end(); mi++) {
-		if (mi != mnemonics.begin()) printf(", ");
+	for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {
+		if (mi != mnems.begin()) printf(", ");
 		printf("bool %s", mi->c_str());
 	}
-	printf(">\n");
-}
+	printf(">\n\n");
 
-void riscv_inst_set::print_switch()
-{
-	print_switch_template_header();
-	print_switch_decoder_node(node, 0);
+	// print opcode decoder
+	print_switch_decoder_node(node, 1);
 
-	printf("\t switch (dec.type) {\n");
+	// print type decoder
+	printf("\tdec.type = riscv_instruction_type[dec.op];\n");
+	printf("\tswitch (dec.type) {\n");
 	for (auto &type : types) {
 		printf("\t\tcase %-30s %-40s break;\n",
 			format_string("riscv_inst_type_%s:", type->name.c_str()).c_str(),
@@ -1506,9 +1542,9 @@ int main(int argc, const char *argv[])
 
 	bool print_latex = false;
 	bool print_map = false;
-	bool print_switch = false;
-	bool print_enum = false;
-	bool print_class = false;
+	bool print_c_switch = false;
+	bool print_c_header = false;
+	bool print_c_source = false;
 	bool help_or_error = false;
 	std::string isa_spec = "";
 
@@ -1526,15 +1562,15 @@ int main(int argc, const char *argv[])
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
-		{ "-s", "--print-switch", cmdline_arg_type_none,
-			"Print switch",
-			[&](std::string s) { return (print_switch = true); } },
-		{ "-e", "--print-enum", cmdline_arg_type_none,
-			"Print enum",
-			[&](std::string s) { return (print_enum = true); } },
-		{ "-c", "--print-class", cmdline_arg_type_none,
-			"Print instruction classes",
-			[&](std::string s) { return (print_class = true); } },
+		{ "-H", "--print-c-header", cmdline_arg_type_none,
+			"Print C header",
+			[&](std::string s) { return (print_c_header = true); } },
+		{ "-C", "--print-c-source", cmdline_arg_type_none,
+			"Print C source",
+			[&](std::string s) { return (print_c_source = true); } },
+		{ "-S", "--print-c-switch", cmdline_arg_type_none,
+			"Print C switch",
+			[&](std::string s) { return (print_c_switch = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1549,8 +1585,8 @@ int main(int argc, const char *argv[])
 		help_or_error = true;
 	}
 
-	help_or_error |= !print_latex && !print_map && !print_switch &&
-		!print_enum && !print_class;
+	help_or_error |= !print_latex && !print_map &&
+		!print_c_switch && !print_c_header && !print_c_source;
 
 	if (help_or_error) {
 		printf("usage: %s\n", argv[0]);
@@ -1570,17 +1606,17 @@ int main(int argc, const char *argv[])
 		inst_set.print_map();
 	}
 
-	if (print_enum) {
-		inst_set.print_enum();
+	if (print_c_header) {
+		inst_set.print_c_header();
 	}
 
-	if (print_class) {
-		inst_set.print_class();
+	if (print_c_source) {
+		inst_set.print_c_source();
 	}
 
-	if (print_switch) {
+	if (print_c_switch) {
 		inst_set.generate_decoder();
-		inst_set.print_switch();
+		inst_set.print_c_switch();
 	}
 
 	exit(0);

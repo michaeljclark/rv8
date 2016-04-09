@@ -138,11 +138,10 @@ dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir
 
 latex: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -l -r $(OPCODES_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
-map: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)
-meta: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -c -r $(OPCODES_DIR)
-enum: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -e -r $(OPCODES_DIR)
-strings: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -i -r $(OPCODES_DIR)
-switch: $(PARSE_OPCODES_BIN) ; $(PARSE_OPCODES_BIN) -s -r $(OPCODES_DIR)
+map: $(PARSE_OPCODES_BIN) ; @$(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)
+c_switch: $(PARSE_OPCODES_BIN) ; @$(PARSE_OPCODES_BIN) -S -r $(OPCODES_DIR)
+c_header: $(PARSE_OPCODES_BIN) ; @$(PARSE_OPCODES_BIN) -H -r $(OPCODES_DIR)
+c_source: $(PARSE_OPCODES_BIN) ; @$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR)
 bench: $(TEST_DECODER_BIN) ; $(TEST_DECODER_BIN)
 
 # build targets
