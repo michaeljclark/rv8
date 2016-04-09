@@ -1344,18 +1344,21 @@ void riscv_inst_set::print_c_switch()
 			mnems.push_back(mnem);
 	}
 
-	// print template header
+	// print opcode decoder
 	printf("template <");
 	for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {
 		if (mi != mnems.begin()) printf(", ");
 		printf("bool %s", mi->c_str());
 	}
-	printf(">\n\n");
-
-	// print opcode decoder
+	printf(">\n");
+	printf("void riscv_decode_opcode(riscv_decode &dec, riscv_wu inst)\n");
+	printf("{\n");
 	print_switch_decoder_node(node, 1);
+	printf("}\n\n");
 
 	// print type decoder
+	printf("void riscv_decode_type(riscv_decode &dec, riscv_wu inst)\n");
+	printf("{\n");
 	printf("\tdec.type = riscv_instruction_type[dec.op];\n");
 	printf("\tswitch (dec.type) {\n");
 	for (auto &type : types) {
@@ -1364,6 +1367,7 @@ void riscv_inst_set::print_c_switch()
 			format_string("riscv_decode_%s(dec, inst);", type->name.c_str()).c_str());
 	}
 	printf("\t};\n");
+	printf("}\n");
 }
 
 void riscv_inst_set::generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list)
