@@ -48,6 +48,7 @@ To run concept emulator: ```make emulate```
 To run the disassembler:
 
 ```
+# Requires RISC-V GNU Compiler Toolchain to build tests
 make tests
 ./build/darwin_x86_64/bin/riscv-test-disasm test/hello-world-asm
 ```
