@@ -41,12 +41,15 @@ To print opcodes C header: ```make c_header```
 
 To print opcodes C source: ```make c_source```
 
+To run concept emulator: ```make emulate```
+
 ## Disassembler
 
 To run the disassembler:
 
 ```
-./build/darwin_x86_64/bin/riscv-test-disasm test-program
+make tests
+./build/darwin_x86_64/bin/riscv-test-disasm test/hello-world-asm
 ```
 
 ## Parse Opcodes Utility

@@ -150,7 +150,8 @@ c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(OPCODES_DIR)
 c_header: all ; @$(PARSE_OPCODES_BIN) -H -r $(OPCODES_DIR)
 c_source: all ; @$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR)
 bench: all ; $(TEST_DECODER_BIN)
-emulate: all ; (cd test && make) && $(TEST_EMULATE_BIN) test/hello-world-asm
+tests: ; (cd test && make)
+emulate: all tests ; $(TEST_EMULATE_BIN) test/hello-world-asm
 
 # build targets
 $(RISCV_MC_LIB): $(RISCV_MC_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
