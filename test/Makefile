@@ -7,11 +7,11 @@ all: hello-world-libc hello-world-asm
 clean:
 	rm -f hello-world-asm hello-world-asm.o hello-world-libc
 
-hello-world-libc: hello_world.c
-	riscv64-unknown-elf-gcc hello_world.c -o hello-world-libc
+hello-world-libc: hello-world.c
+	riscv64-unknown-elf-gcc hello-world.c -o hello-world-libc
 
 hello-world-asm.o:
-	riscv64-unknown-elf-as hello_world.S -o hello-world-asm.o
+	riscv64-unknown-elf-as hello-world.S -o hello-world-asm.o
 
 hello-world-asm: hello-world-asm.o
 	riscv64-unknown-elf-ld hello-world-asm.o -o hello-world-asm
