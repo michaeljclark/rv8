@@ -2,39 +2,12 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdarg>
-#include <cerrno>
 #include <vector>
 #include <string>
-
-#include <sys/stat.h>
 
 #include "riscv-util.h"
 
 static const int INITIAL_BUFFER_SIZE = 256;
-
-std::vector<char> read_file(std::string filename)
-{
-	std::vector<char> buf;
-	struct stat stat_buf;
-
-	FILE *file = fopen(filename.c_str(), "r");
-	if (!file) {
-		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
-	}
-
-	if (fstat(fileno(file), &stat_buf) < 0) {
-		panic("error fstat: %s: %s", filename.c_str(), strerror(errno));
-	}
-
-	buf.resize(stat_buf.st_size);
-	size_t bytes_read = fread(buf.data(), 1, stat_buf.st_size, file);
-	if (bytes_read != (size_t)stat_buf.st_size) {
-		panic("error fread: %s", filename.c_str());
-	}
-	fclose(file);
-
-	return buf;
-}
 
 std::string format_string(const char* fmt, ...)
 {

@@ -97,7 +97,7 @@ enum {
 
 // Elf32_Ehdr
 typedef struct {
-	Elf64_Byte  e_ident[EI_NIDENT];  /* ELF identification */
+	Elf32_Byte  e_ident[EI_NIDENT];  /* ELF identification */
 	Elf32_Half  e_type;              /* Object file type */
 	Elf32_Half  e_machine;           /* Machine type */
 	Elf32_Word  e_version;           /* Object file version */
@@ -147,6 +147,15 @@ enum {
 	PT_HIOS = 0x6fffffff,
 	PT_LOPROC = 0x70000000,          /* Processor-specific use */
 	PT_HIPROC = 0x7fffffff
+};
+
+// p_flags
+enum {
+	PF_X = 0x1,                      /* Execute permission */
+	PF_W = 0x2,                      /* Write permission */
+	PF_R = 0x4,                      /* Read permission */
+	PF_MASKOS = 0x00FF0000,          /* Environment-specific use */
+	PF_MASKPROC = 0xFF000000,        /* Processor-specific use */
 };
 
 // Elf32_Phdr
@@ -485,5 +494,16 @@ typedef struct {
 		Elf64_Addr  d_ptr;           /* Program virtual address */
 	} d_un;
 } Elf64_Dyn;
+
+bool elf_check_magic(uint8_t *e_ident);
+void elf_bswap_ehdr32(Elf32_Ehdr *ehdr32, int ei_data);
+void elf_bswap_phdr32(Elf32_Phdr *phdr32, int ei_data);
+void elf_bswap_shdr32(Elf32_Shdr *shdr32, int ei_data);
+void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data);
+void elf_bswap_phdr64(Elf64_Phdr *phdr64, int ei_data);
+void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data);
+void elf_convert_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32);
+void elf_convert_to_phdr64(Elf64_Phdr *phdr64, Elf32_Phdr *phdr32);
+void elf_convert_to_shdr64(Elf64_Shdr *shdr64, Elf32_Shdr *shdr32);
 
 #endif

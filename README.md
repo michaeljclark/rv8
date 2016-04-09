@@ -41,7 +41,15 @@ To print opcodes C header: ```make c_header```
 
 To print opcodes C source: ```make c_source```
 
-## Parse Opcodes Examples
+## Disassembler
+
+To run the disassembler:
+
+```
+./build/darwin_x86_64/bin/riscv-test-disasm test-program
+```
+
+## Parse Opcodes Utility
 
 To print a colour opcode map for the RV32IMA ISA subset:
 
