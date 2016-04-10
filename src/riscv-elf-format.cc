@@ -95,6 +95,16 @@ const char* elf_sh_type_name(int v)
 	}
 };
 
+const std::string elf_sh_shndx_name(int v)
+{
+	switch (v) {
+		case SHN_UNDEF: return "UNDEF";
+		case SHN_ABS: return "ABS";
+		case SHN_COMMON: return "COMMON";
+		default: return format_string("%d", v);
+	}
+}
+
 const std::string elf_sh_flags_name(int v)
 {
 	std::string s;
@@ -104,7 +114,17 @@ const std::string elf_sh_flags_name(int v)
 	return s;
 };
 
-const char* elf_st_info_name(int v)
+const char* elf_st_bind_name(int v)
+{
+	switch (v) {
+		case STB_LOCAL: return "LOCAL";
+		case STB_GLOBAL: return "GLOBAL";
+		case STB_WEAK: return "WEAK";
+		default: return "UNKNOWN";
+	}
+};
+
+const char* elf_st_type_name(int v)
 {
 	switch (v) {
 		case STT_NOTYPE: return "NOTYPE";
@@ -115,6 +135,17 @@ const char* elf_st_info_name(int v)
 		default: return "UNKNOWN";
 	}
 };
+
+const char* elf_st_other_name(int v)
+{
+	switch (v) {
+		case STV_DEFAULT: return "DEFAULT";
+		case STV_INTERNAL: return "INTERNAL";
+		case STV_HIDDEN: return "HIDDEN";
+		case STV_PROTECTED: return "PROTECTED";
+		default: return "UNKNOWN";
+	}
+}
 
 const std::string elf_file_info(elf_file &elf)
 {
@@ -140,21 +171,41 @@ const std::string elf_phdr_info(elf_file &elf, int i)
 		phdr.p_align);
 }
 
-const char* elf_shdr_name(elf_file &elf, int i)
-{
-	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + elf.shdrs[i].sh_name) : "";
-}
-
 const std::string elf_shdr_info(elf_file &elf, int i)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x", i,
+	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x %7d %7d %7d", i,
 		elf_shdr_name(elf, i),
 		elf_sh_type_name(shdr.sh_type),
 		elf_sh_flags_name(shdr.sh_flags).c_str(),
 		shdr.sh_addr,
 		shdr.sh_offset,
-		shdr.sh_size);
+		shdr.sh_size,
+		shdr.sh_entsize,
+		shdr.sh_link,
+		shdr.sh_info);
+}
+
+const std::string elf_sym_info(elf_file &elf, int i)
+{
+	Elf64_Sym &sym = elf.symbols[i];
+	return format_string("[%4lu] 0x%016x %5d %-8s %-8s %-8s %6s %s",
+		i, sym.st_value, sym.st_size,
+		elf_st_type_name(ELF64_ST_TYPE(sym.st_info)),
+		elf_st_bind_name(ELF64_ST_BIND(sym.st_info)),
+		elf_st_other_name(sym.st_other),
+		elf_sh_shndx_name(sym.st_shndx).c_str(),
+		elf_sym_name(elf, i));
+}
+
+const char* elf_shdr_name(elf_file &elf, int i)
+{
+	return elf.shstrtab ? (const char*)(elf.buf.data() + elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
+}
+
+const char* elf_sym_name(elf_file &elf, int i)
+{
+	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
 }
 
 void elf_print_info(elf_file &elf)
@@ -167,8 +218,8 @@ void elf_print_info(elf_file &elf)
 	printf("Data       %s\n", elf_ei_data_name(elf.ei_data));
 	printf("EntryAddr  0x%016llx\n", elf.ehdr.e_entry);
 	printf("\n");
-	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s\n",
-		"Name", "Type", "Flags", "Addr", "Offset", "Size");
+	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s %7s %7s %7s\n",
+		"Name", "Type", "Flags", "Addr", "Offset", "Size", "Entries", "Link", "Info");
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
 		printf("%s\n", elf_shdr_info(elf, i).c_str());
 	}
@@ -177,6 +228,11 @@ void elf_print_info(elf_file &elf)
 		"Type", "Flags", "Offset", "VirtAddr", "PhysAddr", "FileSize", "MemSize", "Align");
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
 		printf("%s\n", elf_phdr_info(elf, i).c_str());
+	}
+	printf("\n");
+	printf("Symbol %-18s %-5s %-8s %-8s %-8s %6s %s\n", "Value", "Size", "Type", "Bind", "Vis", "Index", "Name");
+	for (size_t i = 0; i < elf.symbols.size(); i++) {
+		printf("%s\n", elf_sym_info(elf, i).c_str());
 	}
 	printf("\n");
 }

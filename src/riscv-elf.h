@@ -293,13 +293,21 @@ enum {
 	STT_HIPROC = 15
 };
 
+// st_other visibility
+enum {
+	STV_DEFAULT = 0,
+	STV_INTERNAL = 1,
+	STV_HIDDEN = 2,
+	STV_PROTECTED = 3
+};
+
 // Elf32_Sym
 typedef struct {
 	Elf32_Word  st_name;             /* Symbol name */
 	Elf32_Addr  st_value;            /* Symbol value */
 	Elf32_Word  st_size;             /* Size of object */
 	Elf32_Byte  st_info;             /* Type and Binding attributes */
-	Elf32_Byte  st_other;            /* Reserved */
+	Elf32_Byte  st_other;            /* Visibility */
 	Elf32_Half  st_shndx;            /* Section table index */
 } Elf32_Sym;
 
@@ -307,7 +315,7 @@ typedef struct {
 typedef struct {
 	Elf64_Word  st_name;             /* Symbol name */
 	Elf64_Byte  st_info;             /* Type and Binding attributes */
-	Elf64_Byte  st_other;            /* Reserved */
+	Elf64_Byte  st_other;            /* Visibility */
 	Elf64_Half  st_shndx;            /* Section table index */
 	Elf64_Addr  st_value;            /* Symbol value */
 	Elf64_Xword st_size;             /* Size of object */
@@ -501,11 +509,14 @@ bool elf_check_magic(uint8_t *e_ident);
 void elf_bswap_ehdr32(Elf32_Ehdr *ehdr32, int ei_data);
 void elf_bswap_phdr32(Elf32_Phdr *phdr32, int ei_data);
 void elf_bswap_shdr32(Elf32_Shdr *shdr32, int ei_data);
+void elf_bswap_sym32(Elf32_Sym *sym32, int ei_data);
 void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data);
 void elf_bswap_phdr64(Elf64_Phdr *phdr64, int ei_data);
 void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data);
+void elf_bswap_sym64(Elf64_Sym *sym64, int ei_data);
 void elf_convert_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32);
 void elf_convert_to_phdr64(Elf64_Phdr *phdr64, Elf32_Phdr *phdr32);
 void elf_convert_to_shdr64(Elf64_Shdr *shdr64, Elf32_Shdr *shdr32);
+void elf_convert_to_sym64(Elf64_Sym *sym64, Elf32_Sym *sym32);
 
 #endif

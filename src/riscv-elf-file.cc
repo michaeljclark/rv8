@@ -106,14 +106,38 @@ elf_file::elf_file(std::string filename) : filename(filename)
 	}
 
 	// Find strtab and symtab
-	strtab = symtab = nullptr;
+	shstrtab = symtab = strtab = nullptr;
 	for (size_t i = 0; i < shdrs.size(); i++) {
-		if (strtab == nullptr && shdrs[i].sh_type == SHT_STRTAB) {
-			strtab = &shdrs[i];
-		}
-		if (symtab == nullptr && shdrs[i].sh_type == SHT_SYMTAB) {
+		if (shstrtab == nullptr && shdrs[i].sh_type == SHT_STRTAB) {
+			shstrtab = &shdrs[i];
+		} else if (symtab == nullptr && shdrs[i].sh_type == SHT_SYMTAB) {
 			symtab = &shdrs[i];
+			if (shdrs[i].sh_link > 0) {
+				strtab = &shdrs[shdrs[i].sh_link];
+			}
 		}
 	}
 
+	if (!symtab) return;
+
+	// byteswap and normalize symbol table entries
+	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
+	switch (ei_class) {
+		case ELFCLASS32:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf32_Sym *sym32 = (Elf32_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf32_Sym));
+				Elf64_Sym sym64;
+				elf_bswap_sym32(sym32, ei_data);
+				elf_convert_to_sym64(&sym64, sym32);
+				symbols.push_back(sym64);
+			}
+			break;
+		case ELFCLASS64:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
+				elf_bswap_sym64(sym64, ei_data);
+				symbols.push_back(*sym64);
+			}
+			break;
+	}
 }

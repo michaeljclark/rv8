@@ -112,6 +112,26 @@ void elf_bswap_shdr32(Elf32_Shdr *shdr32, int ei_data)
 	}
 }
 
+void elf_bswap_sym32(Elf32_Sym *sym32, int ei_data)
+{
+	switch (ei_data) {
+		case ELFDATA2LSB:
+			sym32->st_name = le32toh(sym32->st_name);
+			sym32->st_value= le32toh(sym32->st_value);
+			sym32->st_size = le32toh(sym32->st_size);
+			sym32->st_shndx = le16toh(sym32->st_shndx);
+			break;
+		case ELFDATA2MSB:
+			sym32->st_name = be32toh(sym32->st_name);
+			sym32->st_value= be32toh(sym32->st_value);
+			sym32->st_size = be32toh(sym32->st_size);
+			sym32->st_shndx = be16toh(sym32->st_shndx);
+			break;
+		default:
+			break;
+	}
+}
+
 void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data)
 {
 	switch (ei_data) {
@@ -208,6 +228,26 @@ void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data)
 	}
 }
 
+void elf_bswap_sym64(Elf64_Sym *sym64, int ei_data)
+{
+	switch (ei_data) {
+		case ELFDATA2LSB:
+			sym64->st_name = le32toh(sym64->st_name);
+			sym64->st_shndx = le32toh(sym64->st_shndx);
+			sym64->st_value= le64toh(sym64->st_value);
+			sym64->st_size = le64toh(sym64->st_size);
+			break;
+		case ELFDATA2MSB:
+			sym64->st_name = be32toh(sym64->st_name);
+			sym64->st_shndx = be32toh(sym64->st_shndx);
+			sym64->st_value= be64toh(sym64->st_value);
+			sym64->st_size = be64toh(sym64->st_size);
+			break;
+		default:
+			break;
+	}
+}
+
 void elf_convert_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32)
 {
 	memcpy(ehdr64->e_ident, ehdr32->e_ident, EI_NIDENT);
@@ -250,4 +290,14 @@ void elf_convert_to_shdr64(Elf64_Shdr *shdr64, Elf32_Shdr *shdr32)
 	shdr64->sh_info = shdr32->sh_info;
 	shdr64->sh_addralign = shdr32->sh_addralign;
 	shdr64->sh_entsize = shdr32->sh_entsize;
+}
+
+void elf_convert_to_sym64(Elf64_Sym *sym64, Elf32_Sym *sym32)
+{
+	sym64->st_name = sym32->st_name;
+	sym64->st_value = sym32->st_value;
+	sym64->st_size = sym32->st_size;
+	sym64->st_info = sym32->st_info;
+	sym64->st_other = sym32->st_other;
+	sym64->st_shndx = sym32->st_shndx;
 }
