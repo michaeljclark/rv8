@@ -230,7 +230,8 @@ void elf_print_info(elf_file &elf)
 		printf("%s\n", elf_phdr_info(elf, i).c_str());
 	}
 	printf("\n");
-	printf("Symbol %-18s %-5s %-8s %-8s %-8s %6s %s\n", "Value", "Size", "Type", "Bind", "Vis", "Index", "Name");
+	printf("Symbol %-18s %-5s %-8s %-8s %-8s %6s %s\n",
+		"Value", "Size", "Type", "Bind", "Vis", "Index", "Name");
 	for (size_t i = 0; i < elf.symbols.size(); i++) {
 		printf("%s\n", elf_sym_info(elf, i).c_str());
 	}
