@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
 		Elf64_Shdr &shdr = elf.shdrs[i];
 		if (shdr.sh_flags & SHF_EXECINSTR) {
-			printf("section[%2lu] %s\n\n", i, elf_shdr_name(elf, i));
+			printf("Section[%2lu] %s\n", i, elf_shdr_name(elf, i));
 			decode_rv64(elf.buf.data() + shdr.sh_offset,
 				elf.buf.data() + shdr.sh_offset + shdr.sh_size,
 				elf.buf.data() + shdr.sh_offset - shdr.sh_addr);
