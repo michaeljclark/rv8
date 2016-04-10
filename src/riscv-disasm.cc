@@ -1,5 +1,5 @@
 //
-//  riscv-format.cc
+//  riscv-disasm.cc
 //
 
 #include <map>
