@@ -38,19 +38,19 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_p
 
 	while (*fmt != rvf_z) {
 		switch (*fmt) {
-			case rvf_b: printf("("); break;
-			case rvf_c: printf(","); break;
-			case rvf_d: printf(")"); break;
-			case rvf_rd: printf("%s", riscv_i_registers[dec.rd]); break;
-			case rvf_rs1: printf("%s", riscv_i_registers[dec.rs1]); break;
-			case rvf_rs2: printf("%s", riscv_i_registers[dec.rs2]); break;
-			case rvf_frd: printf("%s", riscv_f_registers[dec.rd]); break;
+			case rvf_b:    printf("("); break;
+			case rvf_c:    printf(","); break;
+			case rvf_d:    printf(")"); break;
+			case rvf_rd:   printf("%s", riscv_i_registers[dec.rd]); break;
+			case rvf_rs1:  printf("%s", riscv_i_registers[dec.rs1]); break;
+			case rvf_rs2:  printf("%s", riscv_i_registers[dec.rs2]); break;
+			case rvf_frd:  printf("%s", riscv_f_registers[dec.rd]); break;
 			case rvf_frs1: printf("%s", riscv_f_registers[dec.rs1]); break;
 			case rvf_frs2: printf("%s", riscv_f_registers[dec.rs2]); break;
 			case rvf_frs3: printf("%s", riscv_f_registers[dec.rs3]); break;
 			case rvf_irs1: printf("%s", format_string("%d", dec.rs1).c_str()); break;
-			case rvf_imm: printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
-			case rvf_ipc: printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
+			case rvf_imm:  printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
+			case rvf_ipc:  printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
 			case rvf_csr:
 			{
 				const riscv_csr_metadata *csr = riscv_lookup_csr_metadata(dec.imm);
