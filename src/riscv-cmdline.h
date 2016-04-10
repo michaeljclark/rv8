@@ -5,7 +5,6 @@
 #ifndef riscv_cmdline_h
 #define riscv_cmdline_h
 
-
 enum cmdline_arg_type
 {
 	cmdline_arg_type_none,

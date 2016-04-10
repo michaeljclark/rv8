@@ -9,7 +9,6 @@
 
 #include "riscv-cmdline.h"
 
-
 const char* cmdline_option::arg_types[] =
 {
 	"",
