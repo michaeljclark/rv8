@@ -160,7 +160,7 @@ const std::string elf_file_info(elf_file &elf)
 const std::string elf_phdr_info(elf_file &elf, int i)
 {
 	Elf64_Phdr &phdr = elf.phdrs[i];
-	return format_string("[%2lu] %-12s %-12s 0x%016x 0x%016x 0x%016x 0x%016x 0x%016x %5lu", i,
+	return format_string("[%2lu] %-7s %-9s 0x%016x 0x%016x 0x%016x 0x%016x 0x%016x %5lu", i,
 		elf_p_type_name(phdr.p_type),
 		elf_p_flags_name(phdr.p_flags).c_str(),
 		phdr.p_offset,
@@ -174,7 +174,7 @@ const std::string elf_phdr_info(elf_file &elf, int i)
 const std::string elf_shdr_info(elf_file &elf, int i)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x %7d %7d %7d", i,
+	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x %4d %4d %4d", i,
 		elf_shdr_name(elf, i),
 		elf_sh_type_name(shdr.sh_type),
 		elf_sh_flags_name(shdr.sh_flags).c_str(),
@@ -218,13 +218,13 @@ void elf_print_info(elf_file &elf)
 	printf("Data       %s\n", elf_ei_data_name(elf.ei_data));
 	printf("EntryAddr  0x%016llx\n", elf.ehdr.e_entry);
 	printf("\n");
-	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s %7s %7s %7s\n",
-		"Name", "Type", "Flags", "Addr", "Offset", "Size", "Entries", "Link", "Info");
+	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s %4s %4s %4s\n",
+		"Name", "Type", "Flags", "Addr", "Offset", "Size", "Ents", "Link", "Info");
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
 		printf("%s\n", elf_shdr_info(elf, i).c_str());
 	}
 	printf("\n");
-	printf("Phdr %-12s %-12s %-18s %-18s %-18s %-18s %-18s %-5s\n",
+	printf("Phdr %-7s %-9s %-18s %-18s %-18s %-18s %-18s %-5s\n",
 		"Type", "Flags", "Offset", "VirtAddr", "PhysAddr", "FileSize", "MemSize", "Align");
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
 		printf("%s\n", elf_phdr_info(elf, i).c_str());
