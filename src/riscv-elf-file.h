@@ -16,6 +16,8 @@ struct elf_file
 	Elf64_Ehdr ehdr;
 	std::vector<Elf64_Phdr> phdrs;
 	std::vector<Elf64_Shdr> shdrs;
+	Elf64_Shdr *strtab;
+	Elf64_Shdr *symtab;
 
 	elf_file(std::string filename);
 };

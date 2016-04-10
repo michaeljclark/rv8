@@ -142,16 +142,7 @@ const std::string elf_phdr_info(elf_file &elf, int i)
 
 const char* elf_shdr_name(elf_file &elf, int i)
 {
-	Elf64_Shdr &shdr = elf.shdrs[i];
-	Elf64_Shdr *strtab = nullptr;
-	for (size_t i = 0; i < elf.shdrs.size(); i++) {
-		if (elf.shdrs[i].sh_type == SHT_STRTAB) {
-			strtab = &elf.shdrs[i];
-			break;
-		}
-	}
-	if (!strtab) return "";
-	return (const char*)(elf.buf.data() + strtab->sh_offset + shdr.sh_name);
+	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + elf.shdrs[i].sh_name) : "";
 }
 
 const std::string elf_shdr_info(elf_file &elf, int i)

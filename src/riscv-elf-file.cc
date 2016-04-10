@@ -104,4 +104,16 @@ elf_file::elf_file(std::string filename) : filename(filename)
 			}
 			break;
 	}
+
+	// Find strtab and symtab
+	strtab = symtab = nullptr;
+	for (size_t i = 0; i < shdrs.size(); i++) {
+		if (strtab == nullptr && shdrs[i].sh_type == SHT_STRTAB) {
+			strtab = &shdrs[i];
+		}
+		if (symtab == nullptr && shdrs[i].sh_type == SHT_SYMTAB) {
+			symtab = &shdrs[i];
+		}
+	}
+
 }
