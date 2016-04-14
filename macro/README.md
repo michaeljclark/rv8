@@ -1,0 +1,1 @@
+Fast to write code
