@@ -1,1 +1,0 @@
-Fast to read code
