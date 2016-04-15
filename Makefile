@@ -104,7 +104,7 @@ RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/riscv-elf.cc \
                 $(LIB_SRC_DIR)/riscv-elf-file.cc \
                 $(LIB_SRC_DIR)/riscv-elf-format.cc \
-                $(LIB_SRC_DIR)/riscv-format.cc \
+		$(LIB_SRC_DIR)/riscv-format.cc \
                 $(LIB_SRC_DIR)/riscv-opcodes.cc \
                 $(LIB_SRC_DIR)/riscv-regs.cc \
                 $(LIB_SRC_DIR)/riscv-util.cc
@@ -152,6 +152,10 @@ c_source: all ; @$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 tests: ; (cd test && make)
 emulate: all tests ; $(TEST_EMULATE_BIN) test/hello-world-asm
+
+danger: all
+	$(PARSE_OPCODES_BIN) -H -r $(OPCODES_DIR) > src/riscv-opcodes.h
+	$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR) > src/riscv-opcodes.cc
 
 # build targets
 $(RISCV_MC_LIB): $(RISCV_MC_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
