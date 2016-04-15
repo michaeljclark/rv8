@@ -7,6 +7,7 @@
 #include <string>
 
 #include "riscv-types.h"
+#include "riscv-format.h"
 #include "riscv-opcodes.h"
 #include "riscv-imm.h"
 #include "riscv-regs.h"
@@ -26,8 +27,7 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_p
 		dec.op = comp->op;
 		dec.type = comp->type;
 	}
-	const riscv_inst_format_metadata *inst_meta = riscv_lookup_inst_metadata((riscv_inst_type)dec.type);
-	const rvf *fmt = inst_meta ? inst_meta->fmt : fmt_none;
+	const rvf *fmt = riscv_instruction_format[dec.op];
 
 	printf("%s", format_string("%016tx: \t", pc - pc_offset).c_str());
 	switch (dec.sz) {

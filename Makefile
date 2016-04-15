@@ -104,7 +104,6 @@ RISCV_MC_SRCS = $(LIB_SRC_DIR)/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/riscv-elf.cc \
                 $(LIB_SRC_DIR)/riscv-elf-file.cc \
                 $(LIB_SRC_DIR)/riscv-elf-format.cc \
-		$(LIB_SRC_DIR)/riscv-format.cc \
                 $(LIB_SRC_DIR)/riscv-opcodes.cc \
                 $(LIB_SRC_DIR)/riscv-regs.cc \
                 $(LIB_SRC_DIR)/riscv-util.cc

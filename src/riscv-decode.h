@@ -25,11 +25,11 @@ typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_
 typedef imm_t<18, S<12,12, B<17>>,          S<6,2,  B<16,12>>>              IMM_CI_lui;
 typedef imm_t<8,  S<12,12, B<5>>,           S<6,2,  B<4,2>,B<7,6>>>         IMM_CI_lwsp;
 typedef imm_t<9,  S<12,12, B<5>>,           S<6,2,  B<4,3>,B<8,6>>>         IMM_CI_ldsp;
-typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> IMM_CI_addi16sp;
+typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> IMM_CI_16sp;
 typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  IMM_CSS_swsp;
 typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  IMM_CSS_sdsp;
 typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  IMM_CSS_sqsp;
-typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        IMM_CSS_addi4spn;
+typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        IMM_CSS_4spn;
 typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             IMM_CW;
 typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                IMM_CD;
 typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                IMM_CQ;
@@ -42,8 +42,8 @@ typedef imm_t<32, S<31,12, B<31,12>>>                                       IMM_
 typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   IMM_UJ;
 
 
-/* Decode C none */
-inline void riscv_decode_c_none(riscv_decode &dec, riscv_wu inst) {}
+/* Decode none */
+inline void riscv_decode_none(riscv_decode &dec, riscv_wu inst) {}
 
 /* Decode CR */
 inline void riscv_decode_cr(riscv_decode &dec, riscv_wu inst)
@@ -107,44 +107,12 @@ inline void riscv_decode_ci_ldsp(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CI_ldsp::decode(inst);
 }
 
-/* Decode CI fldsp */
-inline void riscv_decode_ci_fldsp(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_ldsp::decode(inst);
-}
-
-/* Decode CI flwsp */
-inline void riscv_decode_ci_flwsp(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_lwsp::decode(inst);
-}
-
 /* Decode CI 16sp */
 inline void riscv_decode_ci_16sp(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_addi16sp::decode(inst);
-}
-
-/* Decode CSS fswsp */
-inline void riscv_decode_css_fswsp(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = (inst >> 2) & 0b11111;
-	dec.imm = IMM_CSS_swsp::decode(inst);
-}
-
-/* Decode CSS fsdsp */
-inline void riscv_decode_css_fsdsp(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = (inst >> 2) & 0b11111;
-	dec.imm = IMM_CSS_sdsp::decode(inst);
+	dec.imm = IMM_CI_16sp::decode(inst);
 }
 
 /* Decode CSS swsp */
@@ -168,19 +136,11 @@ inline void riscv_decode_ciw_4spn(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CSS_addi4spn::decode(inst);
+	dec.imm = IMM_CSS_4spn::decode(inst);
 }
 
 /* Decode CL lw */
 inline void riscv_decode_cl_lw(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = ((inst >> 2) & 0b111) + 8;
-	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CW::decode(inst);
-}
-
-/* Decode CL flw */
-inline void riscv_decode_cl_flw(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
@@ -195,35 +155,11 @@ inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_wu inst)
 	dec.imm = IMM_CD::decode(inst);
 }
 
-/* Decode CL fld */
-inline void riscv_decode_cl_fld(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = ((inst >> 2) & 0b111) + 8;
-	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CD::decode(inst);
-}
-
 /* Decode CS f */
 inline void riscv_decode_cs(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rd = dec.rs1 = ((inst >> 7) & 0b111) + 8;
-}
-
-/* Decode CS fsd */
-inline void riscv_decode_cs_fsd(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rs2 = ((inst >> 2) & 0b111) + 8;
-	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CD::decode(inst);
-}
-
-/* Decode CS fsw */
-inline void riscv_decode_cs_fsw(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rs2 = ((inst >> 2) & 0b111) + 8;
-	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CW::decode(inst);
 }
 
 /* Decode CS sd */
@@ -263,62 +199,6 @@ inline void riscv_decode_r(riscv_decode &dec, riscv_wu inst)
 	dec.rs2 = (inst >> 20) & 0b11111;
 }
 
-/* Decode R a */
-inline void riscv_decode_r_a(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R ff */
-inline void riscv_decode_r_ff(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R fr */
-inline void riscv_decode_r_fr(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R l */
-inline void riscv_decode_r_l(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R rf */
-inline void riscv_decode_r_rf(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R rff */
-inline void riscv_decode_r_rff(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
-/* Decode R 3f */
-inline void riscv_decode_r_3f(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-}
-
 /* Decode R 4f */
 inline void riscv_decode_r_4f(riscv_decode &dec, riscv_wu inst)
 {
@@ -330,46 +210,6 @@ inline void riscv_decode_r_4f(riscv_decode &dec, riscv_wu inst)
 
 /* Decode I */
 inline void riscv_decode_i(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
-}
-
-/* Decode I None */
-inline void riscv_decode_i_none(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
-}
-
-/* Decode I Load */
-inline void riscv_decode_i_l(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
-}
-
-/* Decode I csr */
-inline void riscv_decode_i_csr(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
-}
-
-/* Decode I csri */
-inline void riscv_decode_i_csri(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rd = (inst >> 7) & 0b11111;
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
-}
-
-/* Decode I lf */
-inline void riscv_decode_i_lf(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
@@ -394,14 +234,6 @@ inline void riscv_decode_i_sh6(riscv_decode &dec, riscv_wu inst)
 
 /* Decode S Store */
 inline void riscv_decode_s(riscv_decode &dec, riscv_wu inst)
-{
-	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.rs2 = (inst >> 20) & 0b11111;
-	dec.imm = IMM_S::decode(inst);
-}
-
-/* Decode S Store Float */
-inline void riscv_decode_s_f(riscv_decode &dec, riscv_wu inst)
 {
 	dec.rs1 = (inst >> 15) & 0b11111;
 	dec.rs2 = (inst >> 20) & 0b11111;

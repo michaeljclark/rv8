@@ -1,63 +1,42 @@
 //
 //  riscv-opcodes.h
 //
+//  DANGER - This is machine generated code
+//
 
 #ifndef riscv_opcodes_h
 #define riscv_opcodes_h
 
-/* Instruction types */
-
 enum riscv_inst_type
 {
 	riscv_inst_type_unknown,
-	riscv_inst_type_c_none,
+	riscv_inst_type_none,
 	riscv_inst_type_cb,
 	riscv_inst_type_ci,
 	riscv_inst_type_ci_16sp,
-	riscv_inst_type_ci_fldsp,
-	riscv_inst_type_ci_flwsp,
+	riscv_inst_type_ci_lwsp,
 	riscv_inst_type_ci_ldsp,
 	riscv_inst_type_ci_li,
 	riscv_inst_type_ci_lui,
-	riscv_inst_type_ci_lwsp,
 	riscv_inst_type_ciw_4spn,
 	riscv_inst_type_cj,
-	riscv_inst_type_cl_fld,
-	riscv_inst_type_cl_flw,
-	riscv_inst_type_cl_ld,
 	riscv_inst_type_cl_lw,
+	riscv_inst_type_cl_ld,
 	riscv_inst_type_cr,
 	riscv_inst_type_cr_jalr,
 	riscv_inst_type_cr_jr,
 	riscv_inst_type_cs,
-	riscv_inst_type_cs_fsd,
-	riscv_inst_type_cs_fsw,
-	riscv_inst_type_cs_sd,
 	riscv_inst_type_cs_sw,
-	riscv_inst_type_css_sdsp,
+	riscv_inst_type_cs_sd,
 	riscv_inst_type_css_swsp,
-	riscv_inst_type_css_fsdsp,
-	riscv_inst_type_css_fswsp,
+	riscv_inst_type_css_sdsp,
 	riscv_inst_type_i,
-	riscv_inst_type_i_csr,
-	riscv_inst_type_i_csri,
-	riscv_inst_type_i_l,
-	riscv_inst_type_i_lf,
-	riscv_inst_type_i_none,
 	riscv_inst_type_i_sh5,
 	riscv_inst_type_i_sh6,
 	riscv_inst_type_r,
-	riscv_inst_type_r_3f,
 	riscv_inst_type_r_4f,
-	riscv_inst_type_r_a,
-	riscv_inst_type_r_ff,
-	riscv_inst_type_r_fr,
-	riscv_inst_type_r_l,
-	riscv_inst_type_r_rf,
-	riscv_inst_type_r_rff,
 	riscv_inst_type_s,
 	riscv_inst_type_sb,
-	riscv_inst_type_s_f,
 	riscv_inst_type_u,
 	riscv_inst_type_uj,
 };
@@ -292,5 +271,6 @@ extern const char* riscv_instruction_name[];
 extern const riscv_inst_type riscv_instruction_type[];
 extern const riscv_wu riscv_instruction_match[];
 extern const riscv_wu riscv_instruction_mask[];
+extern const rvf* riscv_instruction_format[];
 
 #endif

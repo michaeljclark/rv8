@@ -15,6 +15,7 @@
 #include <set>
 
 #include "riscv-types.h"
+#include "riscv-format.h"
 #include "riscv-opcodes.h"
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
@@ -291,7 +292,7 @@ struct riscv_inst_set
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
-	static std::string opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot);
+	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key = true);
 	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
@@ -327,6 +328,7 @@ struct riscv_inst_set
 	void generate_decoder();
 
 	std::string colorize_args(riscv_opcode_ptr opcode);
+	std::vector<std::string> get_unique_types();
 
 	void print_latex();
 	void print_map();
@@ -575,9 +577,9 @@ std::string riscv_inst_set::opcode_mask(riscv_opcode_ptr opcode)
 	return ss.str();
 }
 
-std::string riscv_inst_set::opcode_name(std::string prefix, riscv_opcode_ptr opcode, char dot)
+std::string riscv_inst_set::opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key)
 {
-	std::string name = opcode->key;
+	std::string name = key ? opcode->key : opcode->name;
 	if (name.find("@") == 0) name = name.substr(1);
 	std::replace(name.begin(), name.end(), '.', dot);
 	return prefix + name;
@@ -1022,6 +1024,19 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 	return join(comps, "");
 }
 
+
+std::vector<std::string> riscv_inst_set::get_unique_types()
+{
+	std::vector<std::string> type_names;
+	for (auto &type : types) {
+		std::string type_name = split(type->name, "+", false, false)[0];
+		if (std::find(type_names.begin(), type_names.end(), type_name) == type_names.end()) {
+			type_names.push_back(type_name);
+		}
+	}
+	return type_names;
+}
+
 void riscv_inst_set::print_latex()
 {
 	static const char* kLatexDocumentBegin =
@@ -1265,28 +1280,29 @@ void riscv_inst_set::print_c_header()
 	printf("//\n");
 	printf("//  riscv-opcodes.h\n");
 	printf("//\n");
+	printf("//  DANGER - This is machine generated code\n");
+	printf("//\n");
 	printf("\n");
 	printf("#ifndef riscv_opcodes_h\n");
 	printf("#define riscv_opcodes_h\n");
 	printf("\n");
-	printf("/* Instruction types */\n");
-	printf("\n");
 	printf("enum riscv_inst_type\n{\n");
 	printf("\triscv_inst_type_unknown,\n");
-	for (auto &type : types) {
-		printf("\triscv_inst_type_%s,\n", type->name.c_str());
+	for (auto &type : get_unique_types()) {
+		printf("\triscv_inst_type_%s,\n", type.c_str());
 	}
 	printf("};\n\n");
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown,\n");
 	for (auto &opcode : opcodes) {
-		printf("\t%s,\n", opcode_name("riscv_op_", opcode, '_').c_str());
+		printf("\t%s,\n", opcode_format("riscv_op_", opcode, '_').c_str());
 	}
 	printf("};\n\n");
 	printf("extern const char* riscv_instruction_name[];\n");
 	printf("extern const riscv_inst_type riscv_instruction_type[];\n");
 	printf("extern const riscv_wu riscv_instruction_match[];\n");
 	printf("extern const riscv_wu riscv_instruction_mask[];\n");
+	printf("extern const rvf* riscv_instruction_format[];\n");
 	printf("\n");
 	printf("#endif\n");
 }
@@ -1296,32 +1312,49 @@ void riscv_inst_set::print_c_source()
 	printf("//\n");
 	printf("//  riscv-opcodes.cc\n");
 	printf("//\n");
+	printf("//  DANGER - This is machine generated code\n");
+	printf("//\n");
 	printf("\n");
 	printf("#include \"riscv-types.h\"\n");
+	printf("#include \"riscv-format.h\"\n");
 	printf("#include \"riscv-opcodes.h\"\n");
 	printf("\n");
 	printf("const char* riscv_instruction_name[] = {\n");
-	printf("\t%s,\n", "\"unknown\"");
+	printf("\t/*              unknown */ \"unknown\",\n");
 	for (auto &opcode : opcodes) {
-		printf("\t\"%s\",\n", opcode_name("", opcode, '.').c_str());
+		std::string opcode_key = opcode_format("", opcode, '.');
+		std::string opcode_name = opcode_format("", opcode, '.', false);
+		printf("\t/* %20s */ \"%s\",\n", opcode_key.c_str(), opcode_name.c_str());
 	}
 	printf("};\n\n");
 	printf("const riscv_inst_type riscv_instruction_type[] = {\n");
-	printf("\triscv_inst_type_unknown,\n");
+	printf("\t/*              unknown */ riscv_inst_type_unknown,\n");
 	for (auto &opcode : opcodes) {
-		printf("\triscv_inst_type_%s,\n", opcode->type->name.c_str());
+		std::string opcode_key = opcode_format("", opcode, '.');
+		std::string type_name = split(opcode->type->name, "+", false, false)[0];
+		printf("\t/* %20s */ riscv_inst_type_%s,\n", opcode_key.c_str(), type_name.c_str());
 	}
 	printf("};\n\n");
 	printf("const riscv_wu riscv_instruction_match[] = {\n");
-	printf("\t0x%08x,\n", 0);
+	printf("\t/*              unknown */ 0x%08x,\n", 0);
 	for (auto &opcode : opcodes) {
-		printf("\t0x%08x,\n", (uint32_t)opcode->match);
+		std::string opcode_key = opcode_format("", opcode, '.');
+		printf("\t/* %20s */ 0x%08x,\n", opcode_key.c_str(), (uint32_t)opcode->match);
 	}
 	printf("};\n\n");
 	printf("const riscv_wu riscv_instruction_mask[] = {\n");
-	printf("\t0x%08x,\n", 0);
+	printf("\t/*              unknown */ 0x%08x,\n", 0);
 	for (auto &opcode : opcodes) {
-		printf("\t0x%08x,\n", (uint32_t)opcode->mask);
+		std::string opcode_key = opcode_format("", opcode, '.');
+		printf("\t/* %20s */ 0x%08x,\n", opcode_key.c_str(), (uint32_t)opcode->mask);
+	}
+	printf("};\n\n");
+	printf("const rvf* riscv_instruction_format[] = {\n");
+	printf("\t/*              unknown */ riscv_fmt_none,\n");
+	for (auto &opcode : opcodes) {
+		std::string opcode_key = opcode_format("", opcode, '.');
+		auto format = formats_by_name[opcode->type->format];
+		printf("\t/* %20s */ riscv_fmt_%s,\n", opcode_key.c_str(), format->name.c_str());
 	}
 	printf("};\n\n");
 }
@@ -1361,10 +1394,10 @@ void riscv_inst_set::print_c_switch()
 	printf("{\n");
 	printf("\tdec.type = riscv_instruction_type[dec.op];\n");
 	printf("\tswitch (dec.type) {\n");
-	for (auto &type : types) {
+	for (auto &type : get_unique_types()) {
 		printf("\t\tcase %-30s %-40s break;\n",
-			format_string("riscv_inst_type_%s:", type->name.c_str()).c_str(),
-			format_string("riscv_decode_%s(dec, inst);", type->name.c_str()).c_str());
+			format_string("riscv_inst_type_%s:", type.c_str()).c_str(),
+			format_string("riscv_decode_%s(dec, inst);", type.c_str()).c_str());
 	}
 	printf("\t};\n");
 	printf("}\n");
@@ -1482,7 +1515,7 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 					printf("\t\t%sif (%s && rv%lu) dec.op = %s;\n",
 						oi != opcode_list.begin() ? "else " : "",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
-						opcode_name("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, '_').c_str());
 				}
 				for (size_t i = 0; i < indent; i++) printf("\t");
 				printf("\t\tbreak;\n");
@@ -1493,11 +1526,11 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 				if (opcode_widths.size() == 1) {
 					printf("if (%s && rv%lu) dec.op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
-						opcode_name("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, '_').c_str());
 				} else {
 					printf("if (%s) dec.op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(),
-						opcode_name("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, '_').c_str());
 				}
 
 				// if ambiguous, add comment
