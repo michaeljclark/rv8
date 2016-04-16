@@ -2,6 +2,7 @@
 //  riscv-disasm.cc
 //
 
+#include <cstdio>
 #include <map>
 #include <vector>
 #include <string>
@@ -15,7 +16,6 @@
 #include "riscv-csr.h"
 #include "riscv-processor.h"
 #include "riscv-compression.h"
-#include "riscv-util.h"
 #include "riscv-format.h"
 #include "riscv-disasm.h"
 
@@ -28,10 +28,10 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_p
 	}
 	const rvf *fmt = riscv_instruction_format[dec.op];
 
-	printf("%s", format_string("%016tx: \t", pc - pc_offset).c_str());
+	printf("%016tx: \t", pc - pc_offset);
 	switch (dec.sz) {
-		case 2: printf("%s", format_string("%04x\t\t", *(riscv_hu*)pc).c_str()); break;
-		case 4: printf("%s", format_string("%08x\t", *(riscv_wu*)pc).c_str()); break;
+		case 2: printf("%04x\t\t", *(riscv_hu*)pc); break;
+		case 4: printf("%08x\t", *(riscv_wu*)pc); break;
 	}
 	printf("%s\t", riscv_instruction_name[dec.op]);
 
@@ -47,13 +47,14 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc, riscv_p
 			case rvf_frs1: printf("%s", riscv_f_registers[dec.rs1]); break;
 			case rvf_frs2: printf("%s", riscv_f_registers[dec.rs2]); break;
 			case rvf_frs3: printf("%s", riscv_f_registers[dec.rs3]); break;
-			case rvf_irs1: printf("%s", format_string("%d", dec.rs1).c_str()); break;
-			case rvf_imm:  printf("%s", format_string("%lld", dec.imm, dec.imm).c_str()); break;
-			case rvf_ipc:  printf("%s", format_string("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm).c_str()); break;
+			case rvf_irs1: printf("%d", dec.rs1); break;
+			case rvf_imm:  printf("%lld", dec.imm); break;
+			case rvf_ipc:  printf("%lld \t# 0x%016tx", dec.imm, pc - pc_offset + dec.imm); break;
 			case rvf_csr:
 			{
 				const riscv_csr_metadata *csr = riscv_lookup_csr_metadata(dec.imm);
-				printf("%s", (csr ? csr->csr_name : format_string("%llu", dec.imm)).c_str());
+				if (csr) printf("%s", csr->csr_name);
+				else printf("%llu", dec.imm);
 				break;
 			}
 			case rvf_z: break;
