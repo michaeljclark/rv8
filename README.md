@@ -43,8 +43,6 @@ To print opcodes C source: ```make c_source```
 
 To run concept emulator: ```make emulate```
 
-Please do not run this once: ```make danger ; make danger```
-
 ## Disassembler
 
 To run the disassembler:
