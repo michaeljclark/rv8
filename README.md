@@ -13,14 +13,36 @@ This is the starting point for a RISC-V binary translation investigation.
 The follow table shows the performance of the switch based instruction
 decoder compared to the riscv_isa_simulator instruction decoder.
 
+### Micro benchmark 33 RV64 instructions (1000000 iterations)
 ```
-decoder                 last_insn   insn_count  nanoseconds         code
-decode_switch                 jal     33000000        11.36         RV64
-decode_spike_nocache          jal     33000000        23.46         RV64
-decode_spike_cache            jal     33000000         3.69         RV64
-decode_switch                 c.j     32000000        10.14        RV64C
-decode_spike_nocache          c_j     32000000        33.45        RV64C
-decode_spike_cache            c_j     32000000         3.34        RV64C
+#decoder                  insn_count     nanoseconds            code
+decode_switch               33000000            2.22            RV64
+decode_spike_nocache        33000000           15.98            RV64
+decode_spike_cache          33000000            3.06            RV64
+```
+
+### Micro benchmark 32 RV64C instructions (1000000 iterations)
+```
+#decoder                  insn_count     nanoseconds            code
+decode_switch               32000000            2.30           RV64C
+decode_spike_nocache        32000000           25.20           RV64C
+decode_spike_cache          32000000            2.91           RV64C
+```
+
+### ELF benchmark vmlinux RV64C .init.text (10 iterations)
+```
+#decoder                  insn_count     nanoseconds            code
+decode_switch                 158550            3.34           RV64C
+decode_spike_nocache          158550           52.22           RV64C
+decode_spike_cache            158550           20.45           RV64C
+```
+
+### ELF benchmark vmlinux RV64C .text (10 iterations)
+```
+#decoder                  insn_count     nanoseconds            code
+decode_switch                4848690            2.48           RV64C
+decode_spike_nocache         4848690           51.57           RV64C
+decode_spike_cache           4848690           24.40           RV64C
 ```
 
 ## Build Instructions
