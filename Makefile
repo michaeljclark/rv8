@@ -109,6 +109,7 @@ RV_META_DATA =  $(OPCODES_DIR$)/args \
 
 # libriscv_util
 RV_UTIL_SRCS =	$(LIB_SRC_DIR)/riscv-cmdline.cc \
+                $(LIB_SRC_DIR)/riscv-color.cc \
                 $(LIB_SRC_DIR)/riscv-util.cc
 RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a

@@ -16,6 +16,7 @@
 
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
+#include "riscv-color.h"
 
 
 static const char* ARGS_FILE           = "args";
@@ -31,53 +32,6 @@ static const bool EXPERIMENTAL_COLOR_ARGS = true;
 
 // TODO - make this variable based on extension metadata
 static const ssize_t INSN_WIDTH = 32;
-
-#define S_COLOR      "\x1B["
-#define S_NORMAL     "0;"
-#define S_BOLD       "1;"
-#define S_UNDERSCORE "4;"
-#define S_REVERSE    "7;"
-#define F_BLACK      "30;"
-#define F_RED        "31;"
-#define F_GREEN      "32;"
-#define F_YELLOW     "33;"
-#define F_BLUE       "34;"
-#define F_MAGENTA    "35;"
-#define F_CYAN       "36;"
-#define F_WHITE      "37;"
-#define B_BLACK      "40m"
-#define B_RED        "41m"
-#define B_GREEN      "42m"
-#define B_YELLOW     "43m"
-#define B_BLUE       "44m"
-#define B_MAGENTA    "45m"
-#define B_CYAN       "46m"
-#define B_WHITE      "47m"
-#define T_RESET      "\x1B[m"
-
-#define OPCODE_BEGIN S_COLOR S_UNDERSCORE F_YELLOW B_BLACK
-#define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
-#define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
-#define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
-#define EXT_BEGIN    S_COLOR F_RED B_BLACK
-
-const char* ansi_color_names[] = {
-	"black",
-	"red",
-	"green",
-	"yellow",
-	"blue",
-	"magenta",
-	"cyan",
-	"white",
-	nullptr
-};
-
-enum ansi_color_spec {
-	ansi_color_keep,
-	ansi_color_normal,
-	ansi_color_reverse
-};
 
 struct riscv_bitrange;
 struct riscv_bitrange_spec;
@@ -293,9 +247,6 @@ struct riscv_inst_set
 	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
-	static size_t color_to_ansi_index(std::string color);
-	static std::string colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
-		ansi_color_spec spec = ansi_color_keep);
 
 	std::vector<std::string> parse_line(std::string line);
 	std::vector<std::vector<std::string>> read_file(std::string filename);
@@ -588,44 +539,6 @@ std::string riscv_inst_set::opcode_isa_shortname(riscv_opcode_ptr opcode)
 	std::string short_name = ext->prefix;
 	short_name += ext->alpha_code;
 	return short_name;
-}
-
-size_t riscv_inst_set::color_to_ansi_index(std::string color)
-{
-	const char** p = ansi_color_names;
-	size_t i = 0;
-	while (*p) {
-		if (color == *p) return i;
-		p++;
-		i++;
-	}
-	panic("color: %s not found", color.c_str());
-	return 0;
-}
-
-std::string riscv_inst_set::colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color, ansi_color_spec spec)
-{
-	char buf[32];
-	size_t fg_color_num = color_to_ansi_index(fg_color);
-	size_t bg_color_num = color_to_ansi_index(bg_color);
-	switch (spec) {
-		case ansi_color_keep:
-			break;
-		case ansi_color_normal:
-			if (bg_color_num != 0 /* black */) {
-				fg_color_num = bg_color_num;
-				bg_color_num = 0;
-			}
-			break;
-		case ansi_color_reverse:
-			if (bg_color_num != 7 /* white */) {
-				bg_color_num = fg_color_num;
-				fg_color_num = 7;
-			}
-			break;
-	}
-	snprintf(buf, sizeof(buf), "\x1B[%lu;%lum", 30 + fg_color_num, 40 + bg_color_num);
-	return buf;
 }
 
 std::vector<std::string> riscv_inst_set::parse_line(std::string line)
@@ -1011,7 +924,7 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 		auto comp = comps[i];
 		auto arg = args_by_name[comp];
 		if (arg) {
-			auto new_comp = colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color, ansi_color_normal);
+			auto new_comp = riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color, ansi_color_normal);
 			new_comp.append(comp);
 			new_comp.append(T_RESET);
 			comps[i] = new_comp;
@@ -1247,7 +1160,7 @@ void riscv_inst_set::print_map()
 				{
 					riscv_arg_ptr arg = opcode->find_arg(bit);
 					if (arg) {
-						printf("%s%c%s", colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str(), arg->char_code(), T_RESET);
+						printf("%s%c%s", riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str(), arg->char_code(), T_RESET);
 					} else {
 						printf("%c", c);
 					}
