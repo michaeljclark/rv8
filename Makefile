@@ -84,7 +84,7 @@ endif
 APP_SRC_DIR =   app
 LIB_SRC_DIR =   src
 BUILD_DIR =     build
-OPCODES_DIR =   riscv-opcodes
+OPCODES_DIR =   opcodes
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
 ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
