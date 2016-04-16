@@ -4,7 +4,7 @@
 # RV32I    "RV32I Base Integer Instruction Set"
 
 lui        "Load Upper Immediate"                           "Set and sign extend the 20-bit immediate (shited 12 bits left) and zero the bottom 12 bits into rd" 
-auipc      "Add Upper Immediate to PC                       "Place the PC plus the 20-bit signed immediate (shited 12 bits left) into rd (used before JALR)"
+auipc      "Add Upper Immediate to PC"                      "Place the PC plus the 20-bit signed immediate (shited 12 bits left) into rd (used before JALR)"
 jal        "Jump and Link"                                  "Jump to the PC plus 20-bit signed immediate while saving PC+4 into rd"
 jalr       "Jump and Link Register"                         "Jump to rs1 plus the 12-bit signed immediate while saving PC+4 into rd"
 beq        "Branch Equal"                                   "Branch to PC relative 12-bit signed immediate (shifted 1 bit left) if rs1 == rs2"
