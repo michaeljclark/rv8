@@ -3,6 +3,7 @@
 //
 
 #include <cstdint>
+#include <cinttypes>
 #include <vector>
 #include <string>
 
@@ -216,7 +217,7 @@ void elf_print_info(elf_file &elf)
 	printf("Machine    %s\n", elf_e_machine_name(elf.ehdr.e_machine));
 	printf("Type       %s\n", elf_e_type_name(elf.ehdr.e_type));
 	printf("Data       %s\n", elf_ei_data_name(elf.ei_data));
-	printf("EntryAddr  0x%016llx\n", elf.ehdr.e_entry);
+	printf("EntryAddr  0x%016" PRIx64 "\n", elf.ehdr.e_entry);
 	printf("\n");
 	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s %4s %4s %4s\n",
 		"Name", "Type", "Flags", "Addr", "Offset", "Size", "Ents", "Link", "Info");
