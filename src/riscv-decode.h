@@ -11,8 +11,7 @@ struct riscv_decode
 {
 	riscv_l   imm;
 	riscv_hu  op;
-	riscv_bu  sz;
-	riscv_bu  type;
+	riscv_hu  type;
 	riscv_bu  rd;
 	riscv_bu  rs1;
 	riscv_bu  rs2;

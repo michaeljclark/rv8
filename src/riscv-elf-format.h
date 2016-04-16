@@ -23,6 +23,8 @@ const std::string elf_shdr_info(elf_file &elf, int i);
 const std::string elf_sym_info(elf_file &elf, int i);
 const char* elf_shdr_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, int i);
+const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym);
+const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr);
 void elf_print_info(elf_file &elf);
 
 #endif

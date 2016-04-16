@@ -619,27 +619,28 @@ void riscv_decode_type(riscv_decode &dec, riscv_lu inst)
 	};
 }
 
-riscv_lu riscv_get_instruction(unsigned char **pc)
+riscv_lu riscv_get_instruction(unsigned char *pc, unsigned char **next_pc)
 {
-	riscv_lu inst = htole16(*(unsigned short*)*pc);
+	riscv_lu inst = htole16(*(unsigned short*)pc);
 	unsigned int op1 = inst & 0b11;
 	if (op1 == 3) {
-		inst |= htole16(*(unsigned short*)(*pc + 2)) << 16;
-		*pc += 4;
+		inst |= htole16(*(unsigned short*)(pc + 2)) << 16;
+		*next_pc = pc + 4;
 	} else {
-		*pc += 2;
+		*next_pc = pc + 2;
 	}
 	return inst;
 }
 
 template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
-void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
+riscv_ptr riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
+	riscv_ptr next_pc;
 	memset(&dec, 0, sizeof(dec));
-	riscv_lu inst = riscv_get_instruction(&proc->pc);
+	riscv_lu inst = riscv_get_instruction(proc->pc, &next_pc);
 	riscv_decode_opcode<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, inst);
 	riscv_decode_type(dec, inst);
-	proc->pc += dec.sz;
+	return next_pc;
 }
 
 #endif

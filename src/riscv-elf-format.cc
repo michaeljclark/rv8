@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cinttypes>
 #include <vector>
+#include <map>
 #include <string>
 
 #include "riscv-elf.h"
@@ -207,6 +208,18 @@ const char* elf_shdr_name(elf_file &elf, int i)
 const char* elf_sym_name(elf_file &elf, int i)
 {
 	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
+}
+
+const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
+{
+	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + sym->st_name) : "";
+}
+
+const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr)
+{
+	size_t i = elf.addr_symbol_map[addr];
+	if (i == 0 || i >= elf.symbols.size()) return nullptr;
+	return &elf.symbols[i];
 }
 
 void elf_print_info(elf_file &elf)

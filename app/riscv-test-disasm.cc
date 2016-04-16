@@ -24,15 +24,16 @@
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
-void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
+void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_symbol_name_fn symlookup)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
 	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = start;
 	while (proc.pc < end) {
-		riscv_decode_instruction(dec, &proc);
-		riscv_disasm_instruction(dec, &proc, proc.pc, pc_offset);
+		riscv_ptr next_pc = riscv_decode_instruction(dec, &proc);
+		riscv_disasm_instruction(dec, &proc, proc.pc, next_pc, pc_offset, symlookup);
+		proc.pc = next_pc;
 	}
 }
 
@@ -41,13 +42,21 @@ int main(int argc, char *argv[])
 	if (argc != 2) panic("usage: %s <elf_file>", argv[0]);
 	elf_file elf(argv[1]);
 	elf_print_info(elf);
+
+	auto symloopup = [&elf] (riscv_ptr addr)->const char* {
+		auto sym = elf_sym(elf, (Elf64_Addr)addr);
+		if (!sym) return nullptr;
+		return elf_sym_name(elf, sym);
+	};
+
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
 		Elf64_Shdr &shdr = elf.shdrs[i];
 		if (shdr.sh_flags & SHF_EXECINSTR) {
 			printf("Section[%2lu] %s\n", i, elf_shdr_name(elf, i));
 			decode_rv64(elf.buf.data() + shdr.sh_offset,
 				elf.buf.data() + shdr.sh_offset + shdr.sh_size,
-				elf.buf.data() + shdr.sh_offset - shdr.sh_addr);
+				elf.buf.data() + shdr.sh_offset - shdr.sh_addr,
+				symloopup);
 			printf("\n");
 		}
 	}

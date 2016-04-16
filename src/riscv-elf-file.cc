@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <sys/stat.h>
 
@@ -130,6 +131,7 @@ elf_file::elf_file(std::string filename) : filename(filename)
 				elf_bswap_sym32(sym32, ei_data);
 				elf_convert_to_sym64(&sym64, sym32);
 				symbols.push_back(sym64);
+				addr_symbol_map[sym64.st_value] = symbols.size() - 1;
 			}
 			break;
 		case ELFCLASS64:
@@ -137,6 +139,7 @@ elf_file::elf_file(std::string filename) : filename(filename)
 				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data);
 				symbols.push_back(*sym64);
+				addr_symbol_map[sym64->st_value] = symbols.size() - 1;
 			}
 			break;
 	}

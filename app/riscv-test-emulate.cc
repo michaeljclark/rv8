@@ -27,25 +27,19 @@
 
 void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
+	riscv_ptr next_pc;
 	memset(&dec, 0, sizeof(dec));
-	riscv_lu inst = htole16(*(riscv_hu*)proc->pc);
-	riscv_wu op1 = inst & 0b11;
-	if (op1 == 3) {
-		inst |= htole16(*(riscv_hu*)(proc->pc + 2)) << 16;
-		dec.sz = 4;
-	} else {
-		dec.sz = 2;
-	}
+	riscv_lu inst = riscv_get_instruction(proc->pc, &next_pc);
 	riscv_decode_opcode(dec, inst);
 	riscv_decode_type(dec, inst);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;
-			proc->pc += dec.sz;
+			proc->pc = next_pc;
 			break;
 		case riscv_op_lui:
 			proc->i_reg[dec.rd].lu = dec.imm;
-			proc->pc += dec.sz;
+			proc->pc = next_pc;
 			break;
 		case riscv_op_scall:
 			switch (proc->i_reg[riscv_ireg_a7].lu) {
@@ -59,7 +53,7 @@ void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
 				default:
 					panic("illegal syscall: %d", proc->i_reg[riscv_ireg_a7].lu);
 			}
-			proc->pc += dec.sz;
+			proc->pc = next_pc;
 			break;
 		default:
 			panic("illegal instruciton: %s", riscv_instruction_name[dec.op]);
