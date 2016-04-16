@@ -1424,13 +1424,13 @@ void riscv_inst_set::print_switch_c()
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("void riscv_decode_opcode(riscv_decode &dec, riscv_wu inst)\n");
+	printf("void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)\n");
 	printf("{\n");
 	print_switch_decoder_node(node, 1);
 	printf("}\n\n");
 
 	// print type decoder
-	printf("void riscv_decode_type(riscv_decode &dec, riscv_wu inst)\n");
+	printf("void riscv_decode_type(riscv_decode &dec, riscv_lu inst)\n");
 	printf("{\n");
 	printf("\tdec.type = riscv_instruction_type[dec.op];\n");
 	printf("\tswitch (dec.type) {\n");

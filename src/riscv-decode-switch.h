@@ -6,7 +6,7 @@
 #define riscv_decode_switch_h
 
 template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
-void riscv_decode_opcode(riscv_decode &dec, riscv_wu inst)
+void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 {
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
 		case 0:
@@ -583,7 +583,7 @@ void riscv_decode_opcode(riscv_decode &dec, riscv_wu inst)
 	}
 }
 
-void riscv_decode_type(riscv_decode &dec, riscv_wu inst)
+void riscv_decode_type(riscv_decode &dec, riscv_lu inst)
 {
 	dec.type = riscv_instruction_type[dec.op];
 	switch (dec.type) {
@@ -619,18 +619,24 @@ void riscv_decode_type(riscv_decode &dec, riscv_wu inst)
 	};
 }
 
+riscv_lu riscv_get_instruction(unsigned char **pc)
+{
+	riscv_lu inst = htole16(*(unsigned short*)*pc);
+	unsigned int op1 = inst & 0b11;
+	if (op1 == 3) {
+		inst |= htole16(*(unsigned short*)(*pc + 2)) << 16;
+		*pc += 4;
+	} else {
+		*pc += 2;
+	}
+	return inst;
+}
+
 template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
 void riscv_decode_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
 	memset(&dec, 0, sizeof(dec));
-	riscv_wu inst = htole16(*(riscv_hu*)proc->pc);
-	riscv_wu op1 = inst & 0b11;
-	if (op1 == 3) {
-		inst |= htole16(*(riscv_hu*)(proc->pc + 2)) << 16;
-		dec.sz = 4;
-	} else {
-		dec.sz = 2;
-	}
+	riscv_lu inst = riscv_get_instruction(&proc->pc);
 	riscv_decode_opcode<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, inst);
 	riscv_decode_type(dec, inst);
 	proc->pc += dec.sz;
