@@ -12,7 +12,6 @@
 #include "riscv-imm.h"
 #include "riscv-regs.h"
 #include "riscv-decode.h"
-#include "riscv-regs.h"
 #include "riscv-csr.h"
 #include "riscv-processor.h"
 #include "riscv-compression.h"

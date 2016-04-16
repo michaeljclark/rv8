@@ -129,8 +129,7 @@ RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 # libriscv_asm
 RV_ASM_SRCS =   $(LIB_SRC_DIR)/riscv-compression.cc \
                 $(LIB_SRC_DIR)/riscv-csr.cc \
-                $(LIB_SRC_DIR)/riscv-disasm.cc \
-                $(LIB_SRC_DIR)/riscv-regs.cc
+                $(LIB_SRC_DIR)/riscv-disasm.cc
 RV_ASM_OBJS =   $(call lib_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
@@ -208,9 +207,9 @@ $(ASM_DIR)/%.s : $(LIB_SRC_DIR)/%.cc ; $(call cmd, ASM $@, $(CXX) $(CXXFLAGS) $(
 $(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(DEP_DIR)/%.cc.P : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(DEP_DIR) ;
-	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
+	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
 $(DEP_DIR)/%.cc.P : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(DEP_DIR) ;
-	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
+	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
 
 # make dependencies
 include $(call all_src_deps,$(ALL_SRCS))

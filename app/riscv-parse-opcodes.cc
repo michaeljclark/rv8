@@ -329,9 +329,9 @@ struct riscv_inst_set
 
 	void print_latex();
 	void print_map();
-	void print_c_header();
-	void print_c_source();
-	void print_c_switch();
+	void print_opcodes_h();
+	void print_opcodes_c();
+	void print_switch_c();
 
 	void generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_decoder_node &node, size_t indent);
@@ -1272,7 +1272,7 @@ void riscv_inst_set::print_map()
 	printf("%s", T_RESET);
 }
 
-void riscv_inst_set::print_c_header()
+void riscv_inst_set::print_opcodes_h()
 {
 	printf("//\n");
 	printf("//  riscv-opcodes.h\n");
@@ -1283,6 +1283,35 @@ void riscv_inst_set::print_c_header()
 	printf("#ifndef riscv_opcodes_h\n");
 	printf("#define riscv_opcodes_h\n");
 	printf("\n");
+	printf("enum riscv_csr\n{\n");
+	for (auto &csr : csrs) {
+		printf("\triscv_csr_%s = %s,\n", csr->name.c_str(), csr->number.c_str());
+	}
+	printf("};\n\n");
+	printf("enum riscv_ireg_name\n{\n");
+	for (auto &reg : registers) {
+		if (reg->type != "ireg") continue;
+		printf("\triscv_ireg_%s,\n", reg->name.c_str());
+	}
+	printf("};\n\n");
+	printf("enum riscv_ireg_alias\n{\n");
+	for (auto &reg : registers) {
+		if (reg->type != "ireg") continue;
+		printf("\triscv_ireg_%s,\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+	printf("enum riscv_freg_name\n{\n");
+	for (auto &reg : registers) {
+		if (reg->type != "freg") continue;
+		printf("\triscv_freg_%s,\n", reg->name.c_str());
+	}
+	printf("};\n\n");
+	printf("enum riscv_freg_alias\n{\n");
+	for (auto &reg : registers) {
+		if (reg->type != "freg") continue;
+		printf("\triscv_freg_%s,\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
 	printf("enum riscv_inst_type\n{\n");
 	printf("\triscv_inst_type_unknown,\n");
 	for (auto &type : get_unique_types()) {
@@ -1300,11 +1329,13 @@ void riscv_inst_set::print_c_header()
 	printf("extern const riscv_wu riscv_instruction_match[];\n");
 	printf("extern const riscv_wu riscv_instruction_mask[];\n");
 	printf("extern const rvf* riscv_instruction_format[];\n");
+	printf("extern const char* riscv_i_registers[];\n");
+	printf("extern const char* riscv_f_registers[];\n");
 	printf("\n");
 	printf("#endif\n");
 }
 
-void riscv_inst_set::print_c_source()
+void riscv_inst_set::print_opcodes_c()
 {
 	printf("//\n");
 	printf("//  riscv-opcodes.cc\n");
@@ -1354,9 +1385,21 @@ void riscv_inst_set::print_c_source()
 		printf("\t/* %20s */ riscv_fmt_%s,\n", opcode_key.c_str(), format->name.c_str());
 	}
 	printf("};\n\n");
+	printf("const char* riscv_i_registers[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "ireg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+	printf("const char* riscv_f_registers[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "freg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
 }
 
-void riscv_inst_set::print_c_switch()
+void riscv_inst_set::print_switch_c()
 {
 	std::vector<std::string> mnems;
 
@@ -1576,9 +1619,9 @@ int main(int argc, const char *argv[])
 
 	bool print_latex = false;
 	bool print_map = false;
-	bool print_c_switch = false;
-	bool print_c_header = false;
-	bool print_c_source = false;
+	bool print_switch_c = false;
+	bool print_opcodes_h = false;
+	bool print_opcodes_c = false;
 	bool help_or_error = false;
 	std::string isa_spec = "";
 
@@ -1596,15 +1639,15 @@ int main(int argc, const char *argv[])
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
-		{ "-H", "--print-c-header", cmdline_arg_type_none,
+		{ "-H", "--print-opcodes-h", cmdline_arg_type_none,
 			"Print C header",
-			[&](std::string s) { return (print_c_header = true); } },
-		{ "-C", "--print-c-source", cmdline_arg_type_none,
+			[&](std::string s) { return (print_opcodes_h = true); } },
+		{ "-C", "--print-opcodes-c", cmdline_arg_type_none,
 			"Print C source",
-			[&](std::string s) { return (print_c_source = true); } },
-		{ "-S", "--print-c-switch", cmdline_arg_type_none,
+			[&](std::string s) { return (print_opcodes_c = true); } },
+		{ "-S", "--print-switch-c", cmdline_arg_type_none,
 			"Print C switch",
-			[&](std::string s) { return (print_c_switch = true); } },
+			[&](std::string s) { return (print_switch_c = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1620,7 +1663,7 @@ int main(int argc, const char *argv[])
 	}
 
 	help_or_error |= !print_latex && !print_map &&
-		!print_c_switch && !print_c_header && !print_c_source;
+		!print_switch_c && !print_opcodes_h && !print_opcodes_c;
 
 	if (help_or_error) {
 		printf("usage: %s\n", argv[0]);
@@ -1640,17 +1683,17 @@ int main(int argc, const char *argv[])
 		inst_set.print_map();
 	}
 
-	if (print_c_header) {
-		inst_set.print_c_header();
+	if (print_opcodes_h) {
+		inst_set.print_opcodes_h();
 	}
 
-	if (print_c_source) {
-		inst_set.print_c_source();
+	if (print_opcodes_c) {
+		inst_set.print_opcodes_c();
 	}
 
-	if (print_c_switch) {
+	if (print_switch_c) {
 		inst_set.generate_decoder();
-		inst_set.print_c_switch();
+		inst_set.print_switch_c();
 	}
 
 	exit(0);
