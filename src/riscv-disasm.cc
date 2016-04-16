@@ -20,9 +20,11 @@
 #include "riscv-disasm.h"
 
 const char* riscv_null_symbol_lookup(riscv_ptr) { return nullptr; }
+const char* riscv_null_symbol_colorizer(char *buf, size_t buflen, const char *symbol, const char *type) { return symbol; }
 
 void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
-	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_symbol_name_fn symlookup)
+	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset,
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorizer_fn colorizer)
 {
 	// decompress opcode if compressed
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
@@ -38,7 +40,7 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 	printf("%30s%s %016tx: \t", symbol_name ? symbol_name : "", symbol_name ? ":" : " ", addr);
 
 	// print instruction bytes
-	switch (pc - next_pc) {
+	switch (next_pc - pc) {
 		case 2: printf("%04x\t\t", *(riscv_hu*)pc); break;
 		case 4: printf("%08x\t", *(riscv_wu*)pc); break;
 	}

@@ -28,12 +28,6 @@
 #define B_WHITE      "47m"
 #define T_RESET      "\x1B[m"
 
-#define OPCODE_BEGIN S_COLOR S_UNDERSCORE F_YELLOW B_BLACK
-#define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
-#define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
-#define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
-#define EXT_BEGIN    S_COLOR F_RED B_BLACK
-
 extern const char* ansi_color_names[];
 
 enum ansi_color_spec {
@@ -42,8 +36,8 @@ enum ansi_color_spec {
 	ansi_color_reverse
 };
 
-size_t riscv_color_to_ansi_index(std::string color);
-std::string riscv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
+extern size_t riscv_color_to_ansi_index(std::string color);
+extern std::string riscv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
 	ansi_color_spec spec = ansi_color_keep);
 
 #endif

@@ -18,6 +18,11 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 
+#define OPCODE_BEGIN S_COLOR S_UNDERSCORE F_YELLOW B_BLACK
+#define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
+#define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
+#define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
+#define EXT_BEGIN    S_COLOR F_RED B_BLACK
 
 static const char* ARGS_FILE           = "args";
 static const char* TYPES_FILE          = "types";

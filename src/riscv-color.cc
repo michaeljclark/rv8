@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "riscv-util.h"
 #include "riscv-color.h"
