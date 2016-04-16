@@ -28,7 +28,7 @@
 void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
 	memset(&dec, 0, sizeof(dec));
-	riscv_wu inst = htole16(*(riscv_hu*)proc->pc);
+	riscv_lu inst = htole16(*(riscv_hu*)proc->pc);
 	riscv_wu op1 = inst & 0b11;
 	if (op1 == 3) {
 		inst |= htole16(*(riscv_hu*)(proc->pc + 2)) << 16;
