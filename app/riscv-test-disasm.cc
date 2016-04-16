@@ -31,9 +31,8 @@ void decode_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = start;
 	while (proc.pc < end) {
-		riscv_ptr pc = proc.pc;
 		riscv_decode_instruction(dec, &proc);
-		riscv_disasm_instruction(dec, &proc, pc, pc_offset);
+		riscv_disasm_instruction(dec, &proc, proc.pc, pc_offset);
 	}
 }
 
