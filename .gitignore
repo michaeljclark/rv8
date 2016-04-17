@@ -1,6 +1,4 @@
 build
-src/riscv-opcodes.h
-src/riscv-opcodes.cc
 riscv-instructions.tex
 riscv-instructions.log
 riscv-instructions.aux
