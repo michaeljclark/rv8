@@ -13,6 +13,8 @@
 #include "riscv-elf-format.h"
 #include "riscv-util.h"
 
+const char* elf_null_symbol_colorize(const char *type) { return ""; }
+
 const char* elf_ei_class_name(int v)
 {
 	switch (v) {
@@ -159,60 +161,81 @@ const std::string elf_file_info(elf_file &elf)
 		elf_e_type_name(elf.ehdr.e_type));
 }
 
-const std::string elf_phdr_info(elf_file &elf, int i)
+const std::string elf_phdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Phdr &phdr = elf.phdrs[i];
-	return format_string("[%2lu] %-7s %-9s 0x%016x 0x%016x 0x%016x 0x%016x 0x%016x %5lu", i,
+	return format_string("%s[%2lu]%s %-7s %-9s %s0x%016x 0x%016x 0x%016x 0x%016x 0x%016x%s %5lu",
+		colorize("legend"),
+		i,
+		colorize("reset"),
 		elf_p_type_name(phdr.p_type),
 		elf_p_flags_name(phdr.p_flags).c_str(),
+		colorize("address"),
 		phdr.p_offset,
 		phdr.p_vaddr,
 		phdr.p_paddr,
 		phdr.p_filesz,
 		phdr.p_memsz,
+		colorize("reset"),
 		phdr.p_align);
 }
 
-const std::string elf_shdr_info(elf_file &elf, int i)
+const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("[%2lu] %-20s %-12s %-12s 0x%016x 0x%016x 0x%016x %4d %4d %4d", i,
+	return format_string("%s[%2lu]%s %-20s %-12s %-12s %s0x%016x 0x%016x 0x%016x%s %4d %4d %4d",
+		colorize("legend"),
+		i,
+		colorize("reset"),
 		elf_shdr_name(elf, i),
 		elf_sh_type_name(shdr.sh_type),
 		elf_sh_flags_name(shdr.sh_flags).c_str(),
+		colorize("address"),
 		shdr.sh_addr,
 		shdr.sh_offset,
 		shdr.sh_size,
+		colorize("reset"),
 		shdr.sh_entsize,
 		shdr.sh_link,
 		shdr.sh_info);
 }
 
-const std::string elf_sym_info(elf_file &elf, int i)
+const std::string elf_sym_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Sym &sym = elf.symbols[i];
-	return format_string("[%4lu] 0x%016x %5d %-8s %-8s %-8s %6s %s",
-		i, sym.st_value, sym.st_size,
+	return format_string("%s[%4lu]%s %s0x%016x%s %5d %-8s %-8s %-8s %6s %s%s%s",
+		colorize("legend"),
+		i,
+		colorize("reset"),
+		colorize("address"),
+		sym.st_value,
+		colorize("reset"),
+		sym.st_size,
 		elf_st_type_name(ELF64_ST_TYPE(sym.st_info)),
 		elf_st_bind_name(ELF64_ST_BIND(sym.st_info)),
 		elf_st_other_name(sym.st_other),
 		elf_sh_shndx_name(sym.st_shndx).c_str(),
-		elf_sym_name(elf, i));
+		colorize("symbol"),
+		elf_sym_name(elf, i),
+		colorize("reset"));
 }
 
 const char* elf_shdr_name(elf_file &elf, int i)
 {
-	return elf.shstrtab ? (const char*)(elf.buf.data() + elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
+	return elf.shstrtab ? (const char*)(elf.buf.data() +
+		elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
 }
 
 const char* elf_sym_name(elf_file &elf, int i)
 {
-	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
+	return elf.strtab ? (const char*)(elf.buf.data() +
+		elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
 }
 
 const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
 {
-	return elf.strtab ? (const char*)(elf.buf.data() + elf.strtab->sh_offset + sym->st_name) : "";
+	return elf.strtab ? (const char*)(elf.buf.data() +
+		elf.strtab->sh_offset + sym->st_name) : "";
 }
 
 const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr)
@@ -222,32 +245,42 @@ const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr)
 	return &elf.symbols[i];
 }
 
-void elf_print_info(elf_file &elf)
+void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	printf("\n");
-	printf("File       %s\n", elf.filename.c_str());
-	printf("Class      %s\n", elf_ei_class_name(elf.ei_class));
-	printf("Machine    %s\n", elf_e_machine_name(elf.ehdr.e_machine));
-	printf("Type       %s\n", elf_e_type_name(elf.ehdr.e_type));
-	printf("Data       %s\n", elf_ei_data_name(elf.ei_data));
-	printf("EntryAddr  0x%016" PRIx64 "\n", elf.ehdr.e_entry);
-	printf("\n");
-	printf("Shdr %-20s %-12s %-12s %-18s %-18s %-18s %4s %4s %4s\n",
-		"Name", "Type", "Flags", "Addr", "Offset", "Size", "Ents", "Link", "Info");
+	printf("%sFile       %s%s\n", colorize("legend"), colorize("reset"), elf.filename.c_str());
+	printf("%sClass      %s%s\n", colorize("legend"), colorize("reset"), elf_ei_class_name(elf.ei_class));
+	printf("%sMachine    %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
+	printf("%sType       %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
+	printf("%sData       %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
+	printf("%sEntryAddr  %s0x%016" PRIx64 "\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);
+}
+
+void elf_print_section_headers(elf_file &elf, elf_symbol_colorize_fn colorize)
+{
+	printf("%sShdr %-20s %-12s %-12s %-18s %-18s %-18s %4s %4s %4s%s\n",
+		colorize("title"), "Name", "Type", "Flags", "Addr", "Offset", "Size",
+		"Ents", "Link", "Info", colorize("reset"));
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
-		printf("%s\n", elf_shdr_info(elf, i).c_str());
+		printf("%s\n", elf_shdr_info(elf, i, colorize).c_str());
 	}
-	printf("\n");
-	printf("Phdr %-7s %-9s %-18s %-18s %-18s %-18s %-18s %-5s\n",
-		"Type", "Flags", "Offset", "VirtAddr", "PhysAddr", "FileSize", "MemSize", "Align");
+}
+
+void elf_print_program_headers(elf_file &elf, elf_symbol_colorize_fn colorize)
+{
+	printf("%sPhdr %-7s %-9s %-18s %-18s %-18s %-18s %-18s %-5s%s\n",
+		colorize("title"), "Type", "Flags", "Offset", "VirtAddr", "PhysAddr",
+		"FileSize", "MemSize", "Align", colorize("reset"));
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
-		printf("%s\n", elf_phdr_info(elf, i).c_str());
+		printf("%s\n", elf_phdr_info(elf, i, colorize).c_str());
 	}
-	printf("\n");
-	printf("Symbol %-18s %-5s %-8s %-8s %-8s %6s %s\n",
-		"Value", "Size", "Type", "Bind", "Vis", "Index", "Name");
+}
+
+void elf_print_symbol_table(elf_file &elf, elf_symbol_colorize_fn colorize)
+{
+	printf("%sSymbol %-18s %-5s %-8s %-8s %-8s %6s %-57s%s\n",
+		colorize("title"), "Value", "Size", "Type", "Bind", "Vis", "Index",
+		"Name", colorize("reset"));
 	for (size_t i = 0; i < elf.symbols.size(); i++) {
-		printf("%s\n", elf_sym_info(elf, i).c_str());
+		printf("%s\n", elf_sym_info(elf, i, colorize).c_str());
 	}
-	printf("\n");
 }

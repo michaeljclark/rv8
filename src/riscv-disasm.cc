@@ -21,7 +21,7 @@
 #include "riscv-disasm.h"
 
 const char* riscv_null_symbol_lookup(riscv_ptr) { return nullptr; }
-const char* riscv_null_symbol_colorizer(char *buf, size_t buflen, const char *symbol, const char *type) { return symbol; }
+const char* riscv_null_symbol_colorize(const char *type) { return ""; }
 
 const void print_add(size_t &offset, const char *str)
 {
@@ -64,7 +64,7 @@ const void print_pad(size_t &offset, size_t pad_to, const char *str)
 
 void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorizer_fn colorizer)
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	// decompress opcode if compressed
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
@@ -80,26 +80,31 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 
 	// print symbol name if present
 	if (symbol_name) {
-		printf("%30s: ", symbol_name);
-		offset += std::max(strlen(symbol_name), 30UL) + 2;
+		printf("%s", colorize("symbol"));
+		print_fmt(offset, "%30s", symbol_name);
+		print_add(offset, ": ");
+		printf("%s", colorize("reset"));
 	} else {
-		printf("%30s  ", "");
-		offset += 32;
+		print_fmt(offset, "%30s", "");
+		print_add(offset, "  ");
 	}
 
 	// print address
-	printf("%016tx:   ", addr);
-	offset += 20;
+	printf("%s", colorize("address"));
+	print_fmt(offset, "%016tx:   ", addr);
+	printf("%s", colorize("reset"));
 
 	// print instruction bytes
 	switch (next_pc - pc) {
-		case 2: printf("%04x", *(riscv_hu*)pc); offset += 4; break;
-		case 4: printf("%08x", *(riscv_wu*)pc); offset += 8; break;
+		case 2: print_fmt(offset, "%04x", *(riscv_hu*)pc); break;
+		case 4: print_fmt(offset, "%08x", *(riscv_wu*)pc); break;
 	}
 	print_pad(offset, 64);
 
 	// print opcode
+	printf("%s", colorize("opcode"));
 	print_pad(offset, 74, riscv_instruction_name[dec.op]);
+	printf("%s", colorize("reset"));
 
 	// print arguments
 	while (*fmt != rvf_z) {
@@ -121,10 +126,15 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 				uint64_t addr = pc - pc_offset + dec.imm;
 				print_fmt(offset, "%lld", dec.imm);
 				print_pad(offset, 90);
-				print_fmt(offset, "# 0x%016tx", addr);
+				printf("%s", colorize("address"));
+				print_add(offset, "# ");
+				print_fmt(offset, "0x%016tx", addr);
+				printf("%s", colorize("reset"));
 				const char* symbol_name = symlookup((riscv_ptr)addr);
 				if (symbol_name) {
+					printf("%s", colorize("symbol"));
 					print_fmt(offset, " <%s>", symbol_name);
+					printf("%s", colorize("reset"));
 				}
 				break;
 			}

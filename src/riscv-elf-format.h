@@ -5,6 +5,9 @@
 #ifndef riscv_elf_format_h
 #define riscv_elf_format_h
 
+typedef std::function<const char*(const char *type)> elf_symbol_colorize_fn;
+
+const char* elf_null_symbol_colorize(const char *type);
 const char* elf_ei_class_name(int v);
 const char* elf_ei_data_name(int v);
 const char* elf_e_type_name(int v);
@@ -18,13 +21,23 @@ const char* elf_st_bind_name(int v);
 const char* elf_st_type_name(int v);
 const char* elf_st_other_name(int v);
 const std::string elf_file_info(elf_file &elf);
-const std::string elf_phdr_info(elf_file &elf, int i);
-const std::string elf_shdr_info(elf_file &elf, int i);
-const std::string elf_sym_info(elf_file &elf, int i);
+const std::string elf_phdr_info(elf_file &elf, int i,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
+const std::string elf_shdr_info(elf_file &elf, int i,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
+const std::string elf_sym_info(elf_file &elf, int i,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
 const char* elf_shdr_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym);
 const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr);
-void elf_print_info(elf_file &elf);
+void elf_print_header_info(elf_file &elf,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
+void elf_print_section_headers(elf_file &elf,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
+void elf_print_program_headers(elf_file &elf,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
+void elf_print_symbol_table(elf_file &elf,
+	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
 
 #endif
