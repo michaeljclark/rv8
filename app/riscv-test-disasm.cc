@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 
+#include <unistd.h>
+
 #include "riscv-types.h"
 #include "riscv-endian.h"
 #include "riscv-regs.h"
@@ -34,7 +36,9 @@
 
 const char* disasm_colorize(const char *type)
 {
-	if (strcmp(type, "header") == 0) {
+	if (!isatty(fileno(stdout))) {
+		return "";
+	} else if (strcmp(type, "header") == 0) {
 		return HEADER_BEGIN;
 	} else if (strcmp(type, "legend") == 0) {
 		return LEGEND_BEGIN;
