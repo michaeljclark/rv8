@@ -37,9 +37,9 @@ sltiu      rd rs1 imm12              14..12=3 6..2=0x04 1..0=3            i     
 xori       rd rs1 imm12              14..12=4 6..2=0x04 1..0=3            i     rv32i rv64i
 ori        rd rs1 imm12              14..12=6 6..2=0x04 1..0=3            i     rv32i rv64i
 andi       rd rs1 imm12              14..12=7 6..2=0x04 1..0=3            i     rv32i rv64i
-slli       rd rs1 shamt5   31..25=0  14..12=1 6..2=0x04 1..0=3            i_sh5       rv32i
-srli       rd rs1 shamt5   31..25=0  14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
-srai       rd rs1 shamt5   31..25=32 14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
+slli       rd rs1 shamt5   31..26=0  14..12=1 6..2=0x04 1..0=3            i_sh5       rv32i
+srli       rd rs1 shamt5   31..26=0  14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
+srai       rd rs1 shamt5   31..26=16 14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
 add        rd rs1 rs2      31..25=0  14..12=0 6..2=0x0C 1..0=3            r     rv32i rv64i
 sub        rd rs1 rs2      31..25=32 14..12=0 6..2=0x0C 1..0=3            r     rv32i rv64i
 sll        rd rs1 rs2      31..25=0  14..12=1 6..2=0x0C 1..0=3            r     rv32i rv64i

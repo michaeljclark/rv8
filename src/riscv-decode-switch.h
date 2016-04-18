@@ -5,7 +5,7 @@
 #ifndef riscv_decode_switch_h
 #define riscv_decode_switch_h
 
-template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
+template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
 void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 {
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
@@ -152,12 +152,9 @@ void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 						case 1:
 							// slli slli
 							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-								case 0:
-									// slli slli
-									switch (((inst >> 25) & 0b1) /* inst[25] */) {
-										case 0: if (rvi && rv32) dec.op = riscv_op_slli_rv32i; break;
-										default: if (rvi && rv64) dec.op = riscv_op_slli_rv64i; break;
-									}
+								case 0: 
+									if (rvi && rv32) dec.op = riscv_op_slli_rv32i;
+									else if (rvi && rv64) dec.op = riscv_op_slli_rv64i;
 									break;
 							}
 							break;
@@ -167,19 +164,13 @@ void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 						case 5:
 							// srli srai srli srai
 							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-								case 0:
-									// srli srli
-									switch (((inst >> 25) & 0b1) /* inst[25] */) {
-										case 0: if (rvi && rv32) dec.op = riscv_op_srli_rv32i; break;
-										default: if (rvi && rv64) dec.op = riscv_op_srli_rv64i; break;
-									}
+								case 0: 
+									if (rvi && rv32) dec.op = riscv_op_srli_rv32i;
+									else if (rvi && rv64) dec.op = riscv_op_srli_rv64i;
 									break;
-								case 16:
-									// srai srai
-									switch (((inst >> 25) & 0b1) /* inst[25] */) {
-										case 0: if (rvi && rv32) dec.op = riscv_op_srai_rv32i; break;
-										default: if (rvi && rv64) dec.op = riscv_op_srai_rv64i; break;
-									}
+								case 16: 
+									if (rvi && rv32) dec.op = riscv_op_srai_rv32i;
+									else if (rvi && rv64) dec.op = riscv_op_srai_rv64i;
 									break;
 							}
 							break;
