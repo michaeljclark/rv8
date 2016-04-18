@@ -61,6 +61,7 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	riscv_proc_state proc = { 0 };
 	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = start;
+	uint64_t addr = 0;
 	while (proc.pc < end) {
 		riscv_ptr next_pc = riscv_decode_instruction(dec, &proc);
 		const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
@@ -72,7 +73,7 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 			case riscv_inst_type_sb:
 			case riscv_inst_type_uj:
 			{
-				uint64_t addr = proc.pc - pc_offset + dec.imm;
+				addr = proc.pc - pc_offset + dec.imm;
 				snprintf(branch_label_buf, sizeof(branch_label_buf), "label_%06lu", branch_label_num++);
 				branch_labels[(riscv_ptr)addr] = branch_label_buf;
 				break;
@@ -87,15 +88,16 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 void disasm_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	riscv_symbol_name_fn symlookup)
 {
-	riscv_decode dec;
+	riscv_decode dec, last_dec;
 	riscv_proc_state proc = { 0 };
 	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = start;
 	while (proc.pc < end) {
 		riscv_ptr next_pc = riscv_decode_instruction(dec, &proc);
-		riscv_disasm_instruction(dec, &proc, proc.pc, next_pc, pc_offset,
+		riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset,
 			symlookup, disasm_colorize);
 		proc.pc = next_pc;
+		last_dec = dec;
 	}
 }
 

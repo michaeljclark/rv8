@@ -62,8 +62,24 @@ const void print_pad(size_t &offset, size_t pad_to, const char *str)
 	print_pad(offset, pad_to);
 }
 
-void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
-	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset,
+const void print_addr(size_t &offset, uint64_t addr,
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
+{
+	print_pad(offset, 90);
+	printf("%s", colorize("address"));
+	print_add(offset, "# ");
+	print_fmt(offset, "0x%016tx", addr);
+	printf("%s", colorize("reset"));
+	const char* symbol_name = symlookup((riscv_ptr)addr);
+	if (symbol_name) {
+		printf("%s", colorize("symbol"));
+		print_fmt(offset, " <%s>", symbol_name);
+		printf("%s", colorize("reset"));
+	}
+}
+
+void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
+	riscv_proc_state *proc, riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	// decompress opcode if compressed
@@ -125,17 +141,7 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 			{
 				uint64_t addr = pc - pc_offset + dec.imm;
 				print_fmt(offset, "%lld", dec.imm);
-				print_pad(offset, 90);
-				printf("%s", colorize("address"));
-				print_add(offset, "# ");
-				print_fmt(offset, "0x%016tx", addr);
-				printf("%s", colorize("reset"));
-				const char* symbol_name = symlookup((riscv_ptr)addr);
-				if (symbol_name) {
-					printf("%s", colorize("symbol"));
-					print_fmt(offset, " <%s>", symbol_name);
-					printf("%s", colorize("reset"));
-				}
+				print_addr(offset, addr, symlookup, colorize);
 				break;
 			}
 			case rvf_csr:
@@ -149,5 +155,36 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_proc_state *proc,
 		}
 		fmt++;
 	}
+
+	// handle lui and auipc combos
+	switch (last_dec.op) {
+		case riscv_op_lui:
+			switch (dec.op) {
+				case riscv_op_addi:
+					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
+						uint64_t addr = last_dec.imm + dec.imm;
+						print_addr(offset, addr, symlookup, colorize);
+					}
+					break;
+			}
+			break;
+		case riscv_op_auipc:
+			switch (dec.op) {
+				case riscv_op_addi:
+					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+						print_addr(offset, addr, symlookup, colorize);
+					}
+					break;
+				case riscv_op_jalr:
+					if (last_dec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+						print_addr(offset, addr, symlookup, colorize);
+					}
+					break;
+			}
+			break;
+	}
+
 	printf("\n");
 }
