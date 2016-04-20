@@ -1,4 +1,4 @@
-# RISC-V Meta Compiler
+# RISC-V Meta
 
 A meta compiler that generates RISC-V instruction decoders, disassembler
 meta data, opcode maps and documentation from instruction set meta data.
