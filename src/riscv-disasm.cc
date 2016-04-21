@@ -68,7 +68,7 @@ const void print_pad(size_t &offset, size_t pad_to, const char *str)
 const void print_addr(size_t &offset, uint64_t addr,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
-	print_pad(offset, 90);
+	print_pad(offset, 56);
 	printf("%s", colorize("address"));
 	print_add(offset, "# ");
 	print_fmt(offset, "0x%016tx", addr);
@@ -99,13 +99,10 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 
 	// print symbol name if present
 	if (symbol_name) {
-		printf("%s", colorize("symbol"));
-		print_fmt(offset, "%30s", symbol_name);
-		print_add(offset, ": ");
-		printf("%s", colorize("reset"));
-	} else {
-		print_fmt(offset, "%30s", "");
-		print_add(offset, "  ");
+		printf("\n%s", colorize("symbol"));
+		print_fmt(offset, "%s:", symbol_name);
+		printf("%s\n", colorize("reset"));
+		offset = 0;
 	}
 
 	// print address
@@ -118,11 +115,11 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 		case 2: print_fmt(offset, "%04x", *(riscv_hu*)pc); break;
 		case 4: print_fmt(offset, "%08x", *(riscv_wu*)pc); break;
 	}
-	print_pad(offset, 64);
+	print_pad(offset, 30);
 
 	// print opcode
 	printf("%s", colorize("opcode"));
-	print_pad(offset, 74, riscv_instruction_name[dec.op]);
+	print_pad(offset, 40, riscv_instruction_name[dec.op]);
 	printf("%s", colorize("reset"));
 
 	// print arguments
