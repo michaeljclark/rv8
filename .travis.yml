@@ -1,0 +1,2 @@
+script: make && make test && make emulate
+compiler: clang
