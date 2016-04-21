@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstdint>
+#include <cstring>
 #include <cerrno>
 #include <string>
 #include <vector>
