@@ -1,5 +1,7 @@
 # RISC-V Meta
 
+[![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
+
 A meta compiler that generates RISC-V instruction decoders, disassembler
 meta data, opcode maps and documentation from instruction set meta data.
 This is the starting point for a RISC-V binary translation investigation.
