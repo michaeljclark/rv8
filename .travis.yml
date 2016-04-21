@@ -3,8 +3,8 @@ language: cpp
 script: make
 
 compiler:
-  - clang
-  - gcc
+  - clang-3.7
+  - gcc-5
 
 matrix:
   include:
