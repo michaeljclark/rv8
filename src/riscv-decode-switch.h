@@ -5,7 +5,7 @@
 #ifndef riscv_decode_switch_h
 #define riscv_decode_switch_h
 
-template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
+template <bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
 void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 {
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
