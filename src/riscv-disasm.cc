@@ -4,7 +4,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <cstdlib>
+#include <cstdarg>
 #include <map>
 #include <algorithm>
 #include <functional>
