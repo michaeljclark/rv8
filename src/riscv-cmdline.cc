@@ -2,6 +2,7 @@
 //  riscv-cmdline.cc
 //
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <deque>
