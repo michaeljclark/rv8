@@ -14,6 +14,8 @@
 #include <map>
 #include <set>
 
+#include <unistd.h>
+
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
@@ -32,8 +34,6 @@ static const char* REGISTERS_FILE      = "registers";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
-
-static const bool EXPERIMENTAL_COLOR_ARGS = true;
 
 // TODO - make this variable based on extension metadata
 static const ssize_t INSN_WIDTH = 32;
@@ -1133,21 +1133,23 @@ R"LaTeX(\end{tabular}
 
 void riscv_inst_set::print_map()
 {
+	bool enable_colorize = isatty(fileno(stdout));
+
 	int i = 0;
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
-			printf("// %s", LEGEND_BEGIN);
+			printf("// %s", enable_colorize ? LEGEND_BEGIN : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit / 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", T_RESET);
-			printf("// %s", LEGEND_BEGIN);
+			printf("%s\n", enable_colorize ? T_RESET : "");
+			printf("// %s", enable_colorize ? LEGEND_BEGIN : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", T_RESET);
+			printf("%s\n", enable_colorize ? T_RESET : "");
 		}
 		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
@@ -1158,14 +1160,16 @@ void riscv_inst_set::print_map()
 				case '0':
 				case '1':
 				{
-					printf("%s%c%s", BITS_BEGIN, c, T_RESET);
+					printf("%s%c%s", enable_colorize ? BITS_BEGIN : "", c, enable_colorize ? T_RESET : "");
 					break;
 				}
 				default:
 				{
 					riscv_arg_ptr arg = opcode->find_arg(bit);
 					if (arg) {
-						printf("%s%c%s", riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str(), arg->char_code(), T_RESET);
+						printf("%s%c%s",
+							enable_colorize ? riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str() : "",
+							arg->char_code(), enable_colorize ? T_RESET : "");
 					} else {
 						printf("%c", c);
 					}
@@ -1174,20 +1178,22 @@ void riscv_inst_set::print_map()
 			}
 		}
 		auto format = formats_by_name[opcode->type->format];
-		if (EXPERIMENTAL_COLOR_ARGS) {
+		if (enable_colorize) {
 			printf(" %s%s%s %s",
 				OPCODE_BEGIN, opcode->name.c_str(), T_RESET, colorize_args(opcode).c_str());
 		} else {
-			printf(" %s%s%s %s%s%s",
-				OPCODE_BEGIN, opcode->name.c_str(), T_RESET,
-				FORMAT_BEGIN, format->args.c_str(), T_RESET);
+			printf(" %s %s",
+				opcode->name.c_str(), format->args.c_str());
 		}
 		ssize_t len = 34 - (opcode->name.length() + format->args.length());
 		std::string ws;
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
-		printf("%s%s# %s%s\n", ws.c_str(), EXT_BEGIN, opcode->extensions.front()->name.c_str(), T_RESET);
+		printf("%s%s# %s%s\n",
+			ws.c_str(),
+			enable_colorize ? EXT_BEGIN : "",
+			opcode->extensions.front()->name.c_str(),
+			enable_colorize ? T_RESET : "");
 	}
-	printf("%s", T_RESET);
 }
 
 void riscv_inst_set::print_opcodes_h()
