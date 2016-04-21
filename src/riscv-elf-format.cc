@@ -2,11 +2,13 @@
 //  riscv-elf-format.cc
 //
 
+#include <cstdio>
 #include <cstdint>
 #include <cinttypes>
 #include <vector>
 #include <map>
 #include <string>
+#include <functional>
 
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
