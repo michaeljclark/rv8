@@ -1,2 +1,12 @@
-script: make && make test && make emulate
+language: cpp
+
+script: make
+
 compiler: clang
+
+addons:
+  apt:
+    sources:
+    - llvm-toolchain-precise-3.6
+    packages:
+    - clang-3.6
