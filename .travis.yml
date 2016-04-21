@@ -2,7 +2,7 @@ language: cpp
 
 script: make
 
-compiler: clang
+compiler: clang-3.6
 
 addons:
   apt:
