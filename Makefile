@@ -173,7 +173,7 @@ latex: all ; $(PARSE_OPCODES_BIN) -l -r $(OPCODES_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)
 bench: all ; $(TEST_DECODER_BIN)
-tests: ; (cd test && make)
+test: ; (cd test && make)
 emulate: all tests ; $(TEST_EMULATE_BIN) test/hello-world-asm
 danger: ; @echo Please do not make danger
 
