@@ -10,6 +10,11 @@ This is the starting point for a RISC-V binary translation investigation.
 
 *Example ASCII map output from make map*
 
+## Dependencies
+
+- gcc-5 or clang-3.7
+- riscv-gnu-toolchain (required for `make test emulate`)
+
 ## Performance Statistics
 
 The follow table shows the performance of the switch based instruction
