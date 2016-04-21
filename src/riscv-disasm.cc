@@ -3,6 +3,7 @@
 //
 
 #include <cstdio>
+#include <cstring>
 #include <map>
 #include <algorithm>
 #include <functional>
