@@ -4,12 +4,12 @@ CPU :=          $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
 ARCH :=         $(OS)_$(CPU)
 
 # check which compiler to use (default clang). e.g. make prefer_gcc=1
+ifeq ($(CXX),)
 ifeq ($(prefer_gcc),1)
-CC :=           $(shell which gcc || which clang || which cc)
 CXX :=          $(shell which g++ || which clang++ || which c++)
 else
-CC :=           $(shell which clang || which gcc || which cc)
 CXX :=          $(shell which clang++ || which g++ || which c++)
+endif
 endif
 
 # linker and archiver
