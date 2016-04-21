@@ -162,7 +162,7 @@ ASSEMBLY = $(TEST_DECODER_ASM)
 
 # build rules
 all: dirs $(PARSE_OPCODES_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
-.PHONY: dirs
+.PHONY: dirs test
 dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) riscv-instructions.* && (cd test && make clean)
 
@@ -174,7 +174,7 @@ pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_OPCODES_BIN) -m -r $(OPCODES_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make)
-emulate: all tests ; $(TEST_EMULATE_BIN) test/hello-world-asm
+emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-asm
 danger: ; @echo Please do not make danger
 
 c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(OPCODES_DIR)
