@@ -55,6 +55,7 @@ const char* disasm_colorize(const char *type)
 	}
 	return "";
 }
+
 void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	std::map<riscv_ptr,std::string> &branch_labels)
 {
