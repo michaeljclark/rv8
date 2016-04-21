@@ -2,11 +2,13 @@
 //  riscv-elf-file.cc
 //
 
+#include <cstdio>
 #include <cstdint>
 #include <cerrno>
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 
 #include <sys/stat.h>
 
