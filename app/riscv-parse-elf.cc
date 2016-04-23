@@ -134,7 +134,7 @@ struct riscv_parse_elf
 		proc.pc = start;
 		while (proc.pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
-			riscv_parse_elf_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset, gp,
+			riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symloopup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			proc.pc = next_pc;
