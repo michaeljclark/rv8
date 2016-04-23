@@ -19,7 +19,6 @@
 #include "riscv-util.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
-#include "riscv-decode-switch.h"
 #include "riscv-csr.h"
 #include "riscv-compression.h"
 #include "riscv-elf.h"
@@ -28,7 +27,7 @@
 
 void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
 {
-	riscv_ptr next_pc = riscv_decode_instruction(dec, proc);
+	riscv_ptr next_pc = riscv_decode_instruction(dec, proc->pc);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;

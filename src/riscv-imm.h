@@ -46,6 +46,7 @@ struct S<K,L>
 	enum { offset = 0 };
 
 	static inline constexpr int64_t decode(uint64_t inst) { return 0; }
+	static inline constexpr int64_t encode(uint64_t imm) { return 0; }
 };
 
 template<int K, int L, typename H, typename... T>
@@ -58,10 +59,16 @@ struct S<K,L,H,T...> : S<K,L,T...>
 
 	static inline constexpr int64_t decode(uint64_t inst) {
 		const uint64_t mask =
-			((uint64_t(1) << (H::n + 1)) - 1) ^
-			((uint64_t(1) << H::m) - 1);
+			((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
 		return ((shift < 0 ? inst << -shift : inst >> shift) & mask) |
 			I::decode(inst);
+	}
+
+	static inline constexpr int64_t encode(uint64_t imm) {
+		const uint64_t mask =
+			((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
+		return ((shift < 0 ? (imm & mask) >> -shift : (imm & mask) << shift)) |
+			I::encode(imm);
 	}
 };
 
@@ -79,6 +86,7 @@ template<int W>
 struct imm_impl_t<W>
 {
 	static inline constexpr int64_t decode(uint64_t inst) { return 0; }
+	static inline constexpr int64_t encode(uint64_t imm) { return 0; }
 };
 
 template<int W, typename H, typename... T>
@@ -89,6 +97,10 @@ struct imm_impl_t<W,H,T...> : imm_impl_t<W,T...>
 	static inline constexpr int64_t decode(uint64_t inst) {
 		return I::decode(inst) | H::decode(inst);
 	}
+
+	static inline constexpr int64_t encode(uint64_t imm) {
+		return I::encode(imm) | H::encode(imm);
+	}
 };
 
 template<int W, typename... Args>
@@ -98,6 +110,10 @@ struct imm_t : imm_impl_t<W,Args...>
 
 	static constexpr int64_t decode(uint64_t inst) {
 		return sign_extend<int64_t,W>(I::decode(inst));
+	}
+
+	static constexpr int64_t encode(uint64_t imm) {
+		return I::encode(imm);
 	}
 };
 

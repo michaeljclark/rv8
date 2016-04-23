@@ -26,7 +26,6 @@
 #include "riscv-color.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
-#include "riscv-decode-switch.h"
 #include "riscv-csr.h"
 #include "riscv-compression.h"
 #include "riscv-disasm.h"
@@ -77,7 +76,7 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	proc.pc = start;
 	uint64_t addr = 0;
 	while (proc.pc < end) {
-		riscv_ptr next_pc = riscv_decode_instruction(dec, &proc);
+		riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
 		const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
 		if (comp) {
 			dec.op = comp->op;
@@ -107,7 +106,7 @@ void disasm_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = start;
 	while (proc.pc < end) {
-		riscv_ptr next_pc = riscv_decode_instruction(dec, &proc);
+		riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
 		riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset,
 			symlookup, disasm_colorize);
 		proc.pc = next_pc;

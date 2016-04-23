@@ -12,6 +12,7 @@
 #include <string>
 
 #include "riscv-types.h"
+#include "riscv-endian.h"
 #include "riscv-format.h"
 #include "riscv-opcodes.h"
 #include "riscv-imm.h"

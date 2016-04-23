@@ -7,9 +7,6 @@
 #include "riscv-types.h"
 #include "riscv-format.h"
 #include "riscv-opcodes.h"
-#include "riscv-imm.h"
-#include "riscv-regs.h"
-#include "riscv-decode.h"
 #include "riscv-compression.h"
 
 /* Compression Meta Data */
