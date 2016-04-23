@@ -795,7 +795,6 @@ riscv_hu decode_code_2[] = {
 template <const size_t count>
 void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 {
-	uint64_t op = 0;
 	unsigned char* pc;
 	size_t decoded = 0;
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
@@ -803,7 +802,7 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 		pc = (unsigned char*)start;
 		while (pc < end) {
 			insn_bits_t inst = get_instruction(&pc);
-			op = riscv_decode_instruction<false, true, true, true, true, true, true, true, true>(inst);
+			riscv_decode_instruction<false, true, true, true, true, true, true, true, true>(inst);
 			decoded++;
 		}
 	}
