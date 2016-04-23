@@ -45,7 +45,7 @@ const char* elf_e_type_name(int v)
 		case ET_CORE: return "core";
 		default: return "unknown";
 	};
-};
+}
 
 const char* elf_e_machine_name(int v)
 {
@@ -55,7 +55,7 @@ const char* elf_e_machine_name(int v)
 		case EM_RISCV: return "RISC-V";
 		default: return "unknown";
 	}
-};
+}
 
 const char* elf_p_type_name(int v)
 {
@@ -99,7 +99,7 @@ const char* elf_sh_type_name(int v)
 		case SHT_FINI_ARRAY: return "FINI_ARRAY";
 		default: return "UNKNOWN";
 	}
-};
+}
 
 const std::string elf_sh_shndx_name(int v)
 {
@@ -118,7 +118,7 @@ const std::string elf_sh_flags_name(int v)
 	if (v & SHF_ALLOC) s+= "+ALLOC";
 	if (v & SHF_EXECINSTR) s+= "+EXEC";
 	return s;
-};
+}
 
 const char* elf_st_bind_name(int v)
 {
@@ -128,7 +128,7 @@ const char* elf_st_bind_name(int v)
 		case STB_WEAK: return "WEAK";
 		default: return "UNKNOWN";
 	}
-};
+}
 
 const char* elf_st_type_name(int v)
 {
@@ -140,7 +140,7 @@ const char* elf_st_type_name(int v)
 		case STT_FILE: return "FILE";
 		default: return "UNKNOWN";
 	}
-};
+}
 
 const char* elf_st_other_name(int v)
 {
