@@ -26,6 +26,8 @@
 #define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
 #define EXT_BEGIN    S_COLOR F_RED B_BLACK
 
+static bool enable_color = false;
+
 static const char* ARGS_FILE           = "args";
 static const char* TYPES_FILE          = "types";
 static const char* EXTENSIONS_FILE     = "extensions";
@@ -1133,7 +1135,7 @@ R"LaTeX(\end{tabular}
 
 void riscv_inst_set::print_map()
 {
-	bool enable_colorize = isatty(fileno(stdout));
+	bool enable_colorize = enable_color && isatty(fileno(stdout));
 
 	int i = 0;
 	for (auto &opcode : opcodes) {
@@ -1551,6 +1553,9 @@ int main(int argc, const char *argv[])
 
 	cmdline_option options[] =
 	{
+		{ "-c", "--color", cmdline_arg_type_none,
+			"Enable Color",
+			[&](std::string s) { return (enable_color = true); } },
 		{ "-I", "--isa-subset", cmdline_arg_type_string,
 			"ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)",
 			[&](std::string s) { isa_spec = s; return true; } },
@@ -1586,10 +1591,9 @@ int main(int argc, const char *argv[])
 		help_or_error = true;
 	}
 
-	help_or_error |= !print_latex && !print_map &&
-		!print_switch_c && !print_opcodes_h && !print_opcodes_c;
-
-	if (help_or_error) {
+	if ((help_or_error |= !print_latex && !print_map &&
+		!print_switch_c && !print_opcodes_h && !print_opcodes_c))
+	{
 		printf("usage: %s\n", argv[0]);
 		cmdline_option::print_options(options);
 		return false;
