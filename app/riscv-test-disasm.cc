@@ -37,6 +37,7 @@
 #define LEGEND_BEGIN  S_COLOR S_BOLD F_MAGENTA B_BLACK
 #define TITLE_BEGIN   S_COLOR S_BOLD F_WHITE B_BLACK
 #define OPCODE_BEGIN  S_COLOR S_BOLD F_CYAN B_BLACK
+#define LOCATION_BEGIN S_COLOR F_GREEN B_BLACK
 #define ADDRESS_BEGIN S_COLOR F_YELLOW B_BLACK
 #define SYMBOL_BEGIN  S_COLOR F_WHITE B_BLACK
 
@@ -54,6 +55,8 @@ const char* disasm_colorize(const char *type)
 		return TITLE_BEGIN;
 	} else if (strcmp(type, "opcode") == 0) {
 		return OPCODE_BEGIN;
+	} else if (strcmp(type, "location") == 0) {
+		return LOCATION_BEGIN;
 	} else if (strcmp(type, "address") == 0) {
 		return ADDRESS_BEGIN;
 	} else if (strcmp(type, "symbol") == 0) {
@@ -87,7 +90,7 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 			case riscv_inst_type_uj:
 			{
 				addr = proc.pc - pc_offset + dec.imm;
-				snprintf(branch_label_buf, sizeof(branch_label_buf), "label_%06lu", branch_label_num++);
+				snprintf(branch_label_buf, sizeof(branch_label_buf), "LOC_%06lu", branch_label_num++);
 				branch_labels[(riscv_ptr)addr] = branch_label_buf;
 				break;
 			}

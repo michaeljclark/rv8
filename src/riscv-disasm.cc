@@ -69,16 +69,22 @@ const void print_pad(size_t &offset, size_t pad_to, const char *str)
 const void print_addr(size_t &offset, uint64_t addr,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
-	print_pad(offset, 56);
+	print_pad(offset, 65);
 	printf("%s", colorize("address"));
 	print_add(offset, "# ");
 	print_fmt(offset, "0x%016tx", addr);
 	printf("%s", colorize("reset"));
 	const char* symbol_name = symlookup((riscv_ptr)addr);
 	if (symbol_name) {
-		printf("%s", colorize("symbol"));
-		print_fmt(offset, " <%s>", symbol_name);
-		printf("%s", colorize("reset"));
+		if (strncmp(symbol_name, "LOC_", 4) == 0) {
+			printf("%s", colorize("location"));
+			print_fmt(offset, " %s", symbol_name);
+			printf("%s", colorize("reset"));
+		} else {
+			printf("%s", colorize("symbol"));
+			print_fmt(offset, " <%s>", symbol_name);
+			printf("%s", colorize("reset"));
+		}
 	}
 }
 
@@ -102,27 +108,38 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 
 	// print symbol name if present
 	if (symbol_name) {
-		printf("\n%s", colorize("symbol"));
-		print_fmt(offset, "%s:", symbol_name);
-		printf("%s\n", colorize("reset"));
-		offset = 0;
+		if (strncmp(symbol_name, "LOC_", 4) == 0) {
+			printf("%s", colorize("location"));
+			print_fmt(offset, "%s:", symbol_name);
+			printf("%s", colorize("reset"));
+		} else {
+			printf("\n%s", colorize("address"));
+			print_fmt(offset, "0x%016tx: ", addr);
+			printf("%s", colorize("reset"));
+			printf("%s", colorize("symbol"));
+			print_fmt(offset, "<%s>:", symbol_name);
+			printf("%s\n", colorize("reset"));
+			offset = 0;
+		}
 	}
+	print_pad(offset, 12);
 
 	// print address
 	printf("%s", colorize("address"));
-	print_fmt(offset, "%016tx:   ", addr);
+	print_fmt(offset, "%8tx:", addr & 0xffffffff);
 	printf("%s", colorize("reset"));
+	print_pad(offset, 24);
 
 	// print instruction bytes
 	switch (next_pc - pc) {
 		case 2: print_fmt(offset, "%04x", *(riscv_hu*)pc); break;
 		case 4: print_fmt(offset, "%08x", *(riscv_wu*)pc); break;
 	}
-	print_pad(offset, 30);
+	print_pad(offset, 35);
 
 	// print opcode
 	printf("%s", colorize("opcode"));
-	print_pad(offset, 40, riscv_instruction_name[dec.op]);
+	print_pad(offset, 45, riscv_instruction_name[dec.op]);
 	printf("%s", colorize("reset"));
 
 	// print arguments
@@ -159,10 +176,48 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 		fmt++;
 	}
 
+	// handle lui and auipc combos
+	switch (last_dec.op) {
+		case riscv_op_lui:
+			switch (dec.op) {
+				case riscv_op_addi:
+					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
+						uint64_t addr = last_dec.imm + dec.imm;
+						print_addr(offset, addr, symlookup, colorize);
+						printf("\n");
+						return;
+					}
+				default:
+					break;
+			}
+		case riscv_op_auipc:
+			switch (dec.op) {
+				case riscv_op_addi:
+					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+						print_addr(offset, addr, symlookup, colorize);
+						printf("\n");
+						return;
+					}
+				case riscv_op_jalr:
+					if (last_dec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+						print_addr(offset, addr, symlookup, colorize);
+						printf("\n");
+						return;
+					}
+				default:
+					break;
+			}
+		default:
+			break;
+	}
+
 	// handle loads and stores from global pointer
 	if (gp && dec.rs1 == riscv_ireg_gp)
 	{
 		switch (dec.op) {
+			case riscv_op_addi:
 			case riscv_op_lb:
 			case riscv_op_lh:
 			case riscv_op_lw:
@@ -181,39 +236,10 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 			{
 				uint64_t addr = uint64_t(gp) + dec.imm;
 				print_addr(offset, addr, symlookup, colorize);
+			}
+			default:
 				break;
-			}
 		}
-	}
-
-	// handle lui and auipc combos
-	switch (last_dec.op) {
-		case riscv_op_lui:
-			switch (dec.op) {
-				case riscv_op_addi:
-					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
-						uint64_t addr = last_dec.imm + dec.imm;
-						print_addr(offset, addr, symlookup, colorize);
-					}
-					break;
-			}
-			break;
-		case riscv_op_auipc:
-			switch (dec.op) {
-				case riscv_op_addi:
-					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
-						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
-						print_addr(offset, addr, symlookup, colorize);
-					}
-					break;
-				case riscv_op_jalr:
-					if (last_dec.rd == dec.rs1) {
-						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
-						print_addr(offset, addr, symlookup, colorize);
-					}
-					break;
-			}
-			break;
 	}
 
 	printf("\n");
