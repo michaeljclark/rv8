@@ -98,7 +98,7 @@ void label_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	}
 }
 
-void disasm_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
+void disasm_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp,
 	riscv_symbol_name_fn symlookup)
 {
 	riscv_decode dec, last_dec;
@@ -107,7 +107,7 @@ void disasm_rv64(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset,
 	proc.pc = start;
 	while (proc.pc < end) {
 		riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
-		riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset,
+		riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset, gp,
 			symlookup, disasm_colorize);
 		proc.pc = next_pc;
 		last_dec = dec;
@@ -197,7 +197,11 @@ int main(int argc, const char *argv[])
 		printf("%s\n", disasm_colorize("reset"));
 		elf_print_symbol_table(elf, disasm_colorize);
 	}
-	if (disassebly) {
+	if (disassebly && elf.ehdr.e_machine == EM_RISCV) {
+		printf("%s\n", disasm_colorize("header"));
+		printf("---[ Disassembly ]---------------------------------------------------------------------------------------------------------\n");
+		printf("%s\n", disasm_colorize("reset"));
+
 		// predecode scanning for branch target addresses
 		std::map<riscv_ptr,std::string> branch_labels;
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
@@ -212,16 +216,15 @@ int main(int argc, const char *argv[])
 
 		// symbol lookup function
 		auto symloopup = [&elf, &branch_labels] (riscv_ptr addr)->const char* {
-			auto sym = elf_sym(elf, (Elf64_Addr)addr);
+			auto sym = elf_sym_by_addr(elf, (Elf64_Addr)addr);
 			if (sym) return elf_sym_name(elf, sym);
 			auto branch_label_i = branch_labels.find(addr);
 			if (branch_label_i != branch_labels.end()) return branch_label_i->second.c_str();
 			return nullptr;
 		};
 
-		printf("%s\n", disasm_colorize("header"));
-		printf("---[ Disassembly ]---------------------------------------------------------------------------------------------------------\n");
-		printf("%s\n", disasm_colorize("reset"));
+		// print disassembly
+		const Elf64_Sym *gp_sym = elf_sym_by_name(elf, "_gp");
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
@@ -229,7 +232,7 @@ int main(int argc, const char *argv[])
 				disasm_rv64(elf.buf.data() + shdr.sh_offset,
 					elf.buf.data() + shdr.sh_offset + shdr.sh_size,
 					elf.buf.data() + shdr.sh_offset - shdr.sh_addr,
-					symloopup);
+					riscv_ptr(gp_sym ? gp_sym->st_value : 0), symloopup);
 			}
 		}
 	}

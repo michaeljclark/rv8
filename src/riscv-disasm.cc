@@ -83,8 +83,10 @@ const void print_addr(size_t &offset, uint64_t addr,
 }
 
 void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
-	riscv_proc_state *proc, riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
+	riscv_proc_state *proc, riscv_ptr pc, riscv_ptr next_pc,
+	riscv_ptr pc_offset, riscv_ptr gp,
+	riscv_symbol_name_fn symlookup,
+	riscv_symbol_colorize_fn colorize)
 {
 	// decompress opcode if compressed
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
@@ -155,6 +157,33 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 			case rvf_z: break;
 		}
 		fmt++;
+	}
+
+	// handle loads and stores from global pointer
+	if (gp && dec.rs1 == riscv_ireg_gp)
+	{
+		switch (dec.op) {
+			case riscv_op_lb:
+			case riscv_op_lh:
+			case riscv_op_lw:
+			case riscv_op_ld:
+			case riscv_op_lbu:
+			case riscv_op_lhu:
+			case riscv_op_lwu:
+			case riscv_op_flw:
+			case riscv_op_fld:
+			case riscv_op_sb:
+			case riscv_op_sh:
+			case riscv_op_sw:
+			case riscv_op_sd:
+			case riscv_op_fsw:
+			case riscv_op_fsd:
+			{
+				uint64_t addr = uint64_t(gp) + dec.imm;
+				print_addr(offset, addr, symlookup, colorize);
+				break;
+			}
+		}
 	}
 
 	// handle lui and auipc combos

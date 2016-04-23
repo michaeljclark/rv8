@@ -240,9 +240,16 @@ const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
 		elf.strtab->sh_offset + sym->st_name) : "";
 }
 
-const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr)
+const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr)
 {
 	size_t i = elf.addr_symbol_map[addr];
+	if (i == 0 || i >= elf.symbols.size()) return nullptr;
+	return &elf.symbols[i];
+}
+
+const Elf64_Sym* elf_sym_by_name(elf_file &elf, const char *name)
+{
+	size_t i = elf.name_symbol_map[name];
 	if (i == 0 || i >= elf.symbols.size()) return nullptr;
 	return &elf.symbols[i];
 }

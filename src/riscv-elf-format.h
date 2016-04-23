@@ -30,7 +30,8 @@ const std::string elf_sym_info(elf_file &elf, int i,
 const char* elf_shdr_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym);
-const Elf64_Sym* elf_sym(elf_file &elf, Elf64_Addr addr);
+const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr);
+const Elf64_Sym* elf_sym_by_name(elf_file &elf, const char *name);
 void elf_print_header_info(elf_file &elf,
 	elf_symbol_colorize_fn colorize = elf_null_symbol_colorize);
 void elf_print_section_headers(elf_file &elf,

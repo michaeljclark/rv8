@@ -146,4 +146,13 @@ elf_file::elf_file(std::string filename) : filename(filename)
 			}
 			break;
 	}
+
+	// add symbol names to map
+	if (strtab) {
+		for (size_t i = 0; i < num_symbols; i++) {
+			Elf64_Sym &sym64 = symbols[i];
+			const char* name = (const char*)buf.data() + strtab->sh_offset + sym64.st_name;
+			name_symbol_map[name] = i;
+		}
+	}
 }
