@@ -139,16 +139,16 @@ PARSE_OPCODES_SRCS = $(APP_SRC_DIR)/riscv-parse-opcodes.cc
 PARSE_OPCODES_OBJS = $(call app_src_objs, $(PARSE_OPCODES_SRCS))
 PARSE_OPCODES_BIN = $(BIN_DIR)/riscv-parse-opcodes
 
+# parse-elf
+PARSE_ELF_SRCS = $(APP_SRC_DIR)/riscv-parse-elf.cc
+PARSE_ELF_OBJS = $(call app_src_objs, $(PARSE_ELF_SRCS))
+PARSE_ELF_BIN = $(BIN_DIR)/riscv-parse-elf
+
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
 TEST_DECODER_OBJS = $(call app_src_objs, $(TEST_DECODER_SRCS))
 TEST_DECODER_BIN = $(BIN_DIR)/riscv-test-decoder
 TEST_DECODER_ASM = $(call src_asm, $(APP_SRC_DIR)/riscv-test-decoder.cc)
-
-# test-disasm
-TEST_DISASM_SRCS = $(APP_SRC_DIR)/riscv-test-disasm.cc
-TEST_DISASM_OBJS = $(call app_src_objs, $(TEST_DISASM_SRCS))
-TEST_DISASM_BIN = $(BIN_DIR)/riscv-test-disasm
 
 # test-emulate
 TEST_EMULATE_SRCS = $(APP_SRC_DIR)/riscv-test-emulate.cc
@@ -156,8 +156,8 @@ TEST_EMULATE_OBJS = $(call app_src_objs, $(TEST_EMULATE_SRCS))
 TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
 
 # all
-ALL_SRCS = $(RV_UTIL_SRCS) $(RV_ELF_SRCS) $(RV_ASM_SRCS) $(PARSE_OPCODES_SRCS) $(TEST_DECODER_SRCS) $(TEST_DISASM_SRCS)
-BINARIES = $(TEST_DECODER_BIN) $(TEST_DISASM_BIN) $(TEST_EMULATE_BIN)
+ALL_SRCS = $(RV_UTIL_SRCS) $(RV_ELF_SRCS) $(RV_ASM_SRCS) $(PARSE_OPCODES_SRCS) $(TEST_DECODER_SRCS) $(PARSE_ELF_SRCS)
+BINARIES = $(TEST_DECODER_BIN) $(PARSE_ELF_BIN) $(TEST_EMULATE_BIN)
 ASSEMBLY = $(TEST_DECODER_ASM)
 
 # build rules
@@ -193,7 +193,7 @@ $(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_DISASM_BIN): $(TEST_DISASM_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 # build recipes

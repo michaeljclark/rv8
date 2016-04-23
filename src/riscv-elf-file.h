@@ -27,7 +27,11 @@ struct elf_file
 	Elf64_Shdr *symtab;
 	Elf64_Shdr *strtab;
 
+	elf_file();
 	elf_file(std::string filename);
+
+	void clear();
+	void load(std::string filename);
 };
 
 #endif

@@ -72,14 +72,14 @@ To print opcodes C source: ```make c_source```
 
 To run concept emulator: ```make emulate```
 
-## Disassembler
+## Parse ELF Utility
 
-To run the disassembler:
+To run the ELF parser and disassembler:
 
 ```
 # Requires RISC-V GNU Compiler Toolchain to build tests
 make test
-./build/darwin_x86_64/bin/riscv-test-disasm -a test/hello-world-asm
+./build/darwin_x86_64/bin/riscv-parse-elf -a test/hello-world-asm
 ```
 
 ## Parse Opcodes Utility

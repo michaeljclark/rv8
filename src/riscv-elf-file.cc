@@ -18,9 +18,42 @@
 #include "riscv-elf-format.h"
 #include "riscv-util.h"
 
-elf_file::elf_file(std::string filename) : filename(filename)
+
+elf_file::elf_file() {}
+
+elf_file::elf_file(std::string filename)
+{
+	load(filename);
+}
+
+void elf_file::clear()
+{
+	filename = "";
+	buf.resize(0);
+	filesize = 0;
+	ei_class = ELFCLASSNONE;
+	ei_data = ELFDATANONE;
+
+	memset(&ehdr, 0, sizeof(ehdr));
+	phdrs.resize(0);
+	shdrs.resize(0);
+	symbols.resize(0);
+	addr_symbol_map.clear();
+	name_symbol_map.clear();
+	shstrtab = nullptr;
+	symtab = nullptr;
+	strtab = nullptr;
+}
+
+void elf_file::load(std::string filename)
 {
 	struct stat stat_buf;
+
+	// clear current data
+	clear();
+
+	// set filename
+	this->filename = filename;
 
 	// open file
 	FILE *file = fopen(filename.c_str(), "r");
