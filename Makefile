@@ -147,12 +147,13 @@ PARSE_ELF_BIN = $(BIN_DIR)/riscv-parse-elf
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
 TEST_DECODER_OBJS = $(call app_src_objs, $(TEST_DECODER_SRCS))
+TEST_DECODER_ASM = $(call app_src_asm, $(TEST_DECODER_SRCS))
 TEST_DECODER_BIN = $(BIN_DIR)/riscv-test-decoder
-TEST_DECODER_ASM = $(call src_asm, $(APP_SRC_DIR)/riscv-test-decoder.cc)
 
 # test-emulate
 TEST_EMULATE_SRCS = $(APP_SRC_DIR)/riscv-test-emulate.cc
 TEST_EMULATE_OBJS = $(call app_src_objs, $(TEST_EMULATE_SRCS))
+TEST_EMULATE_ASM = $(call app_src_asm, $(TEST_EMULATE_SRCS))
 TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
 
 # source and binaries
@@ -163,11 +164,14 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(PARSE_ELF_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS)
+
 BINARIES = $(PARSE_OPCODES_BIN) \
            $(PARSE_ELF_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN)
-ASSEMBLY = $(TEST_DECODER_ASM)
+
+ASSEMBLY = $(TEST_DECODER_ASM) \
+           $(TEST_EMULATE_ASM)
 
 # build rules
 all: dirs $(PARSE_OPCODES_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
