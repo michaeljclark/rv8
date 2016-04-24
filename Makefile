@@ -187,7 +187,7 @@ pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_OPCODES_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make)
-emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-asm
+emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
 c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(META_DIR)

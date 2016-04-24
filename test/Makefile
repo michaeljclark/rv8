@@ -2,24 +2,17 @@
 # RISC-V Hello World
 #
 
-all: hello-world-libc hello-world-asm
+CC = riscv64-unknown-elf-gcc
+AS = riscv64-unknown-elf-as
+LD = riscv64-unknown-elf-ld
+
+all: hello-world-libc hello-world-abs hello-world-pcrel
 
 clean:
-	rm -f hello-world-asm hello-world-asm.o hello-world-libc
+	rm -f hello-world-libc hello-world-abs hello-world-pcrel *.o
 
-hello-world-libc: hello-world.c
-	riscv64-unknown-elf-gcc hello-world.c -o hello-world-libc
-
-hello-world-asm.o:
-	riscv64-unknown-elf-as hello-world.S -o hello-world-asm.o
-
-hello-world-asm: hello-world-asm.o
-	riscv64-unknown-elf-ld hello-world-asm.o -o hello-world-asm
-
-dump:
-	riscv64-unknown-elf-readelf -a hello-world-asm
-	riscv64-unknown-elf-objdump -d hello-world-asm
-
-strip:
-	riscv64-unknown-elf-strip hello-world-libc
-	riscv64-unknown-elf-strip hello-world-asm
+hello-world-libc: hello-world-libc.c ; $(CC) $^ -o $@
+hello-world-abs.o: hello-world-abs.S ; $(AS) $^ -o $@
+hello-world-abs: hello-world-abs.o ; $(LD) $^ -o $@
+hello-world-pcrel.o: hello-world-pcrel.S ; $(AS) $^ -o $@
+hello-world-pcrel: hello-world-pcrel.o ; $(LD) $^ -o $@

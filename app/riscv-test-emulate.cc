@@ -24,12 +24,16 @@
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
-void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
+void rv64_exec(riscv_decode &dec, riscv_proc_state *proc, riscv_lu vaddr)
 {
 	riscv_ptr next_pc = riscv_decode_instruction(dec, proc->pc);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;
+			proc->pc = next_pc;
+			break;
+		case riscv_op_auipc:
+			proc->i_reg[dec.rd].lu = proc->vaddr + riscv_lu(proc->pc - proc->mem) + dec.imm;
 			proc->pc = next_pc;
 			break;
 		case riscv_op_lui:
@@ -40,7 +44,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 			switch (proc->i_reg[riscv_ireg_a7].lu) {
 				case 64: /* sys_write */
 					proc->i_reg[riscv_ireg_a0].lu = write(proc->i_reg[riscv_ireg_a0].lu,
-						proc->mem + proc->i_reg[riscv_ireg_a1].lu - proc->vaddr, proc->i_reg[riscv_ireg_a2].lu);
+						proc->mem - proc->vaddr + proc->i_reg[riscv_ireg_a1].lu, proc->i_reg[riscv_ireg_a2].lu);
 					break;
 				case 93: /* sys_exit */
 					exit(proc->i_reg[riscv_ireg_a0].lu);
@@ -64,7 +68,7 @@ void rv64_run(riscv_ptr mem, riscv_lu vaddr, riscv_lu entry)
 	proc.vaddr = vaddr;
 	proc.pc = mem + entry - vaddr;
 	while (true) {
-		rv64_exec(dec, &proc);
+		rv64_exec(dec, &proc, vaddr);
 	}
 }
 

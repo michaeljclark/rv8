@@ -79,7 +79,7 @@ To run the ELF parser and disassembler:
 ```
 # Requires RISC-V GNU Compiler Toolchain to build tests
 make test
-./build/darwin_x86_64/bin/riscv-parse-elf -a test/hello-world-asm
+./build/darwin_x86_64/bin/riscv-parse-elf -a test/hello-world-pcrel
 ```
 
 ## Parse Opcodes Utility
