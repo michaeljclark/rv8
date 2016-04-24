@@ -17,8 +17,6 @@
 
 #include "riscv-types.h"
 #include "riscv-endian.h"
-#include "riscv-regs.h"
-#include "riscv-processor.h"
 #include "riscv-format.h"
 #include "riscv-opcodes.h"
 #include "riscv-util.h"
@@ -26,7 +24,6 @@
 #include "riscv-color.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
-#include "riscv-csr.h"
 #include "riscv-compression.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
@@ -86,12 +83,10 @@ struct riscv_parse_elf
 		char branch_label_buf[32];
 
 		riscv_decode dec;
-		riscv_proc_state proc = { 0 };
-		proc.p_type = riscv_proc_type_rv64i;
-		proc.pc = start;
+		riscv_ptr pc = start;
 		uint64_t addr = 0;
-		while (proc.pc < end) {
-			riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
+		while (pc < end) {
+			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
 			const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
 			if (comp) {
 				dec.op = comp->op;
@@ -101,7 +96,7 @@ struct riscv_parse_elf
 				case riscv_inst_type_sb:
 				case riscv_inst_type_uj:
 				{
-					addr = proc.pc - pc_offset + dec.imm;
+					addr = pc - pc_offset + dec.imm;
 					snprintf(branch_label_buf, sizeof(branch_label_buf), "LOC_%06lu", branch_label_num++);
 					branch_labels[(riscv_ptr)addr] = branch_label_buf;
 					break;
@@ -109,7 +104,7 @@ struct riscv_parse_elf
 				default:
 					break;
 			}
-			proc.pc = next_pc;
+			pc = next_pc;
 		}
 	}
 
