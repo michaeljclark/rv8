@@ -129,15 +129,13 @@ struct riscv_parse_elf
 	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
 		riscv_decode dec, last_dec;
-		riscv_proc_state proc = { 0 };
-		proc.p_type = riscv_proc_type_rv64i;
-		proc.pc = start;
-		while (proc.pc < end) {
-			riscv_ptr next_pc = riscv_decode_instruction(dec, proc.pc);
-			riscv_disasm_instruction(dec, last_dec, &proc, proc.pc, next_pc, pc_offset, gp,
+		riscv_ptr pc = start;
+		while (pc < end) {
+			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
+			riscv_disasm_instruction(dec, last_dec, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symloopup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-			proc.pc = next_pc;
+			pc = next_pc;
 			last_dec = dec;
 		}
 	}

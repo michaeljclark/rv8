@@ -19,7 +19,6 @@
 #include "riscv-regs.h"
 #include "riscv-decode.h"
 #include "riscv-csr.h"
-#include "riscv-processor.h"
 #include "riscv-compression.h"
 #include "riscv-format.h"
 #include "riscv-disasm.h"
@@ -89,10 +88,8 @@ const void print_addr(size_t &offset, uint64_t addr,
 }
 
 void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
-	riscv_proc_state *proc, riscv_ptr pc, riscv_ptr next_pc,
-	riscv_ptr pc_offset, riscv_ptr gp,
-	riscv_symbol_name_fn symlookup,
-	riscv_symbol_colorize_fn colorize)
+	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	// decompress opcode if compressed
 	const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
