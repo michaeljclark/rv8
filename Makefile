@@ -36,7 +36,7 @@ WARN_FLAGS =    -Wall -Wpedantic -Wsign-compare
 CPPFLAGS =
 CXXFLAGS =      -std=c++14 $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 LDFLAGS =       
-ASM_FLAGS =      -S -masm=intel
+ASM_FLAGS =     -S -masm=intel
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -84,7 +84,7 @@ endif
 APP_SRC_DIR =   app
 LIB_SRC_DIR =   src
 BUILD_DIR =     build
-META_DIR =   meta
+META_DIR =      meta
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
 ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
