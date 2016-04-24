@@ -10,7 +10,7 @@ typedef std::function<const char*(const char *type)> riscv_symbol_colorize_fn;
 
 const char* riscv_null_symbol_lookup(riscv_ptr);
 const char* riscv_null_symbol_colorize(const char *type);
-void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
+void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
 	riscv_symbol_name_fn symlookup = riscv_null_symbol_lookup,
 	riscv_symbol_colorize_fn colorize = riscv_null_symbol_colorize);

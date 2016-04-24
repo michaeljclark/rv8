@@ -87,7 +87,7 @@ const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
+void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
@@ -173,16 +173,15 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 		fmt++;
 	}
 
-	// handle lui and auipc combos
-	switch (last_dec.op) {
+	// handle lui and auipc combos by checking last decoded instruction
+	switch (ldec.op) {
 		case riscv_op_lui:
 			switch (dec.op) {
 				case riscv_op_addi:
-					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
-						uint64_t addr = last_dec.imm + dec.imm;
+					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
+						uint64_t addr = ldec.imm + dec.imm;
 						print_addr(offset, addr, symlookup, colorize);
-						printf("\n");
-						return;
+						goto out;
 					}
 				default:
 					break;
@@ -190,18 +189,16 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 		case riscv_op_auipc:
 			switch (dec.op) {
 				case riscv_op_addi:
-					if (last_dec.rd == dec.rd && last_dec.rd == dec.rs1) {
-						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + ldec.imm + dec.imm - 4;
 						print_addr(offset, addr, symlookup, colorize);
-						printf("\n");
-						return;
+						goto out;
 					}
 				case riscv_op_jalr:
-					if (last_dec.rd == dec.rs1) {
-						uint64_t addr = pc - pc_offset + last_dec.imm + dec.imm - 4;
+					if (ldec.rd == dec.rs1) {
+						uint64_t addr = pc - pc_offset + ldec.imm + dec.imm - 4;
 						print_addr(offset, addr, symlookup, colorize);
-						printf("\n");
-						return;
+						goto out;
 					}
 				default:
 					break;
@@ -239,5 +236,6 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &last_dec,
 		}
 	}
 
+out:
 	printf("\n");
 }

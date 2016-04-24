@@ -72,15 +72,15 @@ struct riscv_parse_elf
 	{
 		auto sym = elf_sym_by_addr(elf, (Elf64_Addr)addr);
 		if (sym) return elf_sym_name(elf, sym);
-		auto branch_label_i = branch_labels.find(addr);
-		if (branch_label_i != branch_labels.end()) return branch_label_i->second.c_str();
+		auto bli = branch_labels.find(addr);
+		if (bli != branch_labels.end()) return bli->second.c_str();
 		return nullptr;
 	}
 
 	void scan_branch_labels(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
 	{
-		ssize_t branch_label_num = 1;
-		char branch_label_buf[32];
+		ssize_t branch_num = 1;
+		char branch_label[32];
 
 		riscv_decode dec;
 		riscv_ptr pc = start;
@@ -97,8 +97,8 @@ struct riscv_parse_elf
 				case riscv_inst_type_uj:
 				{
 					addr = pc - pc_offset + dec.imm;
-					snprintf(branch_label_buf, sizeof(branch_label_buf), "LOC_%06lu", branch_label_num++);
-					branch_labels[(riscv_ptr)addr] = branch_label_buf;
+					snprintf(branch_label, sizeof(branch_label), "LOC_%06lu", branch_num++);
+					branch_labels[(riscv_ptr)addr] = branch_label;
 					break;
 				}
 				default:
@@ -123,15 +123,15 @@ struct riscv_parse_elf
 
 	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
-		riscv_decode dec, last_dec;
+		riscv_decode dec, ldec;
 		riscv_ptr pc = start;
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			riscv_disasm_instruction(dec, last_dec, pc, next_pc, pc_offset, gp,
+			riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symloopup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			pc = next_pc;
-			last_dec = dec;
+			ldec = dec;
 		}
 	}
 
