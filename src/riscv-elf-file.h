@@ -6,7 +6,7 @@
 #define riscv_elf_file_h
 
 struct cmp_str {
-   bool operator()(char const *a, char const *b) const { return std::strcmp(a, b) < 0; }
+	bool operator()(char const *a, char const *b) const { return std::strcmp(a, b) < 0; }
 };
 
 struct elf_file
