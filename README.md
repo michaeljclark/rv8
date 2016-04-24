@@ -87,23 +87,23 @@ make test
 To print a colour opcode map for the RV32IMA ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32IMA -m -r opcodes
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32IMA -m -r meta
 ```
 
 To print a colour opcode map for the RV64IMAFDS ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64IMAFDS -m -r opcodes
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64IMAFDS -m -r meta
 ```
 
 To output LaTeX for the RV32C ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32C -l -r opcodes
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32C -l -r meta
 ```
 
 To output LaTeX for the RV64G ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64G -l -r opcodes
+./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64G -l -r meta
 ```

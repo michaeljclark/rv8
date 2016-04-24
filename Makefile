@@ -84,7 +84,7 @@ endif
 APP_SRC_DIR =   app
 LIB_SRC_DIR =   src
 BUILD_DIR =     build
-OPCODES_DIR =   opcodes
+META_DIR =   meta
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
 ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
@@ -98,14 +98,14 @@ app_src_asm =	$(subst $(APP_SRC_DIR),$(ASM_DIR),$(subst .cc,.s,$(1)))
 all_src_deps =	$(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
 
 # riscv meta data
-RV_META_DATA =  $(OPCODES_DIR$)/args \
-                $(OPCODES_DIR$)/csrs \
-                $(OPCODES_DIR$)/descriptions \
-                $(OPCODES_DIR$)/extensions \
-                $(OPCODES_DIR$)/formats \
-                $(OPCODES_DIR$)/opcodes \
-                $(OPCODES_DIR$)/registers \
-                $(OPCODES_DIR$)/types
+RV_META_DATA =  $(META_DIR$)/args \
+                $(META_DIR$)/csrs \
+                $(META_DIR$)/descriptions \
+                $(META_DIR$)/extensions \
+                $(META_DIR$)/formats \
+                $(META_DIR$)/opcodes \
+                $(META_DIR$)/registers \
+                $(META_DIR$)/types
 
 # libriscv_util
 RV_UTIL_SRCS =	$(LIB_SRC_DIR)/riscv-cmdline.cc \
@@ -182,22 +182,22 @@ clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) riscv-instructions.* &&
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-latex: all ; $(PARSE_OPCODES_BIN) -l -r $(OPCODES_DIR) > riscv-instructions.tex
+latex: all ; $(PARSE_OPCODES_BIN) -l -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
-map: all ; @$(PARSE_OPCODES_BIN) -c -m -r $(OPCODES_DIR)
+map: all ; @$(PARSE_OPCODES_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make)
 emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-asm
 danger: ; @echo Please do not make danger
 
-c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(OPCODES_DIR)
-c_header: all ; @$(PARSE_OPCODES_BIN) -H -r $(OPCODES_DIR)
-c_source: all ; @$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR)
+c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(META_DIR)
+c_header: all ; @$(PARSE_OPCODES_BIN) -H -r $(META_DIR)
+c_source: all ; @$(PARSE_OPCODES_BIN) -C -r $(META_DIR)
 
 $(RV_META_HDR): $(PARSE_OPCODES_BIN) $(RV_META_DATA)
-	$(PARSE_OPCODES_BIN) -H -r $(OPCODES_DIR) > $@
+	$(PARSE_OPCODES_BIN) -H -r $(META_DIR) > $@
 $(RV_META_SRC): $(PARSE_OPCODES_BIN) $(RV_META_DATA) $(RV_META_HDR)
-	$(PARSE_OPCODES_BIN) -C -r $(OPCODES_DIR) > $@
+	$(PARSE_OPCODES_BIN) -C -r $(META_DIR) > $@
 
 # build targets
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
