@@ -139,9 +139,9 @@ void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data)
 			ehdr64->e_type = le16toh(ehdr64->e_type);
 			ehdr64->e_machine = le16toh(ehdr64->e_machine);
 			ehdr64->e_version = le32toh(ehdr64->e_version);
-			ehdr64->e_entry = le32toh(ehdr64->e_entry);
-			ehdr64->e_phoff = le32toh(ehdr64->e_phoff);
-			ehdr64->e_shoff = le32toh(ehdr64->e_shoff);
+			ehdr64->e_entry = le64toh(ehdr64->e_entry);
+			ehdr64->e_phoff = le64toh(ehdr64->e_phoff);
+			ehdr64->e_shoff = le64toh(ehdr64->e_shoff);
 			ehdr64->e_flags = le32toh(ehdr64->e_flags);
 			ehdr64->e_ehsize = le16toh(ehdr64->e_ehsize);
 			ehdr64->e_phentsize = le16toh(ehdr64->e_phentsize);
