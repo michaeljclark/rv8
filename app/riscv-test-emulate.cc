@@ -25,7 +25,7 @@
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
-void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
+void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
 	riscv_ptr next_pc = riscv_decode_instruction(dec, proc->pc);
 	switch (dec.op) {
@@ -56,7 +56,7 @@ void riscv_execute_instruction(riscv_decode &dec, riscv_proc_state *proc)
 	}
 }
 
-void run_rv64(riscv_ptr mem, riscv_lu vaddr, riscv_lu entry)
+void rv64_run(riscv_ptr mem, riscv_lu vaddr, riscv_lu entry)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
@@ -65,7 +65,7 @@ void run_rv64(riscv_ptr mem, riscv_lu vaddr, riscv_lu entry)
 	proc.vaddr = vaddr;
 	proc.pc = mem + entry - vaddr;
 	while (true) {
-		riscv_execute_instruction(dec, &proc);
+		rv64_exec(dec, &proc);
 	}
 }
 
@@ -76,10 +76,9 @@ int main(int argc, char *argv[])
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
 		Elf64_Phdr &phdr = elf.phdrs[i];
 		if (phdr.p_flags & PT_LOAD) {
-			run_rv64(elf.buf.data(), phdr.p_vaddr, elf.ehdr.e_entry);
+			rv64_run(elf.buf.data(), phdr.p_vaddr, elf.ehdr.e_entry);
 			break;
 		}
 	}
-	panic("could not execute");
 	return 0;
 }
