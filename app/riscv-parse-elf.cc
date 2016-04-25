@@ -68,7 +68,7 @@ struct riscv_parse_elf
 		return "";
 	}
 
-	const char* symloopup(riscv_ptr addr)
+	const char* symlookup(riscv_ptr addr)
 	{
 		auto sym = elf_sym_by_addr(elf, (Elf64_Addr)addr);
 		if (sym) return elf_sym_name(elf, sym);
@@ -128,7 +128,7 @@ struct riscv_parse_elf
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
 			riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
-				std::bind(&riscv_parse_elf::symloopup, this, std::placeholders::_1),
+				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			pc = next_pc;
 			ldec = dec;
