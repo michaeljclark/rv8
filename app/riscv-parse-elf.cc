@@ -49,21 +49,21 @@ struct riscv_parse_elf
 		if (!enable_color || !isatty(fileno(stdout))) {
 			return "";
 		} else if (strcmp(type, "header") == 0) {
-			return S_COLOR S_BOLD F_WHITE B_BLACK;
-		} else if (strcmp(type, "legend") == 0) {
-			return S_COLOR S_BOLD F_MAGENTA B_BLACK;
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
 		} else if (strcmp(type, "title") == 0) {
-			return S_COLOR S_BOLD F_WHITE B_BLACK;
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
+		} else if (strcmp(type, "legend") == 0) {
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_MAGENTA _COLOR_END;
 		} else if (strcmp(type, "opcode") == 0) {
-			return S_COLOR S_BOLD F_CYAN B_BLACK;
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_CYAN _COLOR_END;
 		} else if (strcmp(type, "location") == 0) {
-			return S_COLOR F_GREEN B_BLACK;
+			return _COLOR_BEGIN _COLOR_FG_GREEN _COLOR_END;
 		} else if (strcmp(type, "address") == 0) {
-			return S_COLOR F_YELLOW B_BLACK;
+			return _COLOR_BEGIN _COLOR_FG_YELLOW _COLOR_END;
 		} else if (strcmp(type, "symbol") == 0) {
-			return S_COLOR F_WHITE B_BLACK;
+			return _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_END;
 		} else if (strcmp(type, "reset") == 0) {
-			return T_RESET;
+			return _COLOR_RESET;
 		}
 		return "";
 	}

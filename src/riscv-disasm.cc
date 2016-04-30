@@ -75,12 +75,12 @@ const void print_addr(size_t &offset, uint64_t addr,
 	const char* symbol_name = symlookup((riscv_ptr)addr);
 	if (symbol_name) {
 		if (strncmp(symbol_name, "LOC_", 4) == 0) {
-			printf("%s", colorize("location"));
-			print_fmt(offset, " %s", symbol_name);
+			printf(" %s", colorize("location"));
+			print_fmt(offset, "%s", symbol_name);
 			printf("%s", colorize("reset"));
 		} else {
-			printf("%s", colorize("symbol"));
-			print_fmt(offset, " <%s>", symbol_name);
+			printf(" %s", colorize("symbol"));
+			print_fmt(offset, "<%s>", symbol_name);
 			printf("%s", colorize("reset"));
 		}
 	}

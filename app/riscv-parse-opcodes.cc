@@ -20,11 +20,11 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 
-#define OPCODE_BEGIN S_COLOR S_UNDERSCORE F_YELLOW B_BLACK
-#define BITS_BEGIN   S_COLOR S_REVERSE F_GREEN B_BLACK
-#define FORMAT_BEGIN S_COLOR S_BOLD F_RED B_BLACK
-#define LEGEND_BEGIN S_COLOR F_WHITE B_BLACK
-#define EXT_BEGIN    S_COLOR F_RED B_BLACK
+#define _COLOR_OPCODE_BEGIN _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_SEP _COLOR_FG_YELLOW _COLOR_END
+#define _COLOR_BITS_BEGIN   _COLOR_BEGIN _COLOR_REVERSE    _COLOR_SEP _COLOR_FG_GREEN  _COLOR_END
+#define _COLOR_FORMAT_BEGIN _COLOR_BEGIN _COLOR_BOLD       _COLOR_SEP _COLOR_FG_RED    _COLOR_END
+#define _COLOR_LEGEND_BEGIN _COLOR_BEGIN _COLOR_FG_WHITE   _COLOR_SEP _COLOR_BG_BLACK  _COLOR_END
+#define _COLOR_EXT_BEGIN    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
 
 static bool enable_color = false;
 
@@ -933,7 +933,7 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 		if (arg) {
 			auto new_comp = riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color, ansi_color_normal);
 			new_comp.append(comp);
-			new_comp.append(T_RESET);
+			new_comp.append(_COLOR_RESET);
 			comps[i] = new_comp;
 		}
 	}
@@ -1140,18 +1140,18 @@ void riscv_inst_set::print_map()
 	int i = 0;
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
-			printf("// %s", enable_colorize ? LEGEND_BEGIN : "");
+			printf("// %s", enable_colorize ? _COLOR_LEGEND_BEGIN : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit / 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", enable_colorize ? T_RESET : "");
-			printf("// %s", enable_colorize ? LEGEND_BEGIN : "");
+			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
+			printf("// %s", enable_colorize ? _COLOR_LEGEND_BEGIN : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
-			printf("%s\n", enable_colorize ? T_RESET : "");
+			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
 		}
 		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
@@ -1162,7 +1162,7 @@ void riscv_inst_set::print_map()
 				case '0':
 				case '1':
 				{
-					printf("%s%c%s", enable_colorize ? BITS_BEGIN : "", c, enable_colorize ? T_RESET : "");
+					printf("%s%c%s", enable_colorize ? _COLOR_BITS_BEGIN : "", c, enable_colorize ? _COLOR_RESET : "");
 					break;
 				}
 				default:
@@ -1171,7 +1171,7 @@ void riscv_inst_set::print_map()
 					if (arg) {
 						printf("%s%c%s",
 							enable_colorize ? riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str() : "",
-							arg->char_code(), enable_colorize ? T_RESET : "");
+							arg->char_code(), enable_colorize ? _COLOR_RESET : "");
 					} else {
 						printf("%c", c);
 					}
@@ -1182,7 +1182,7 @@ void riscv_inst_set::print_map()
 		auto format = formats_by_name[opcode->type->format];
 		if (enable_colorize) {
 			printf(" %s%s%s %s",
-				OPCODE_BEGIN, opcode->name.c_str(), T_RESET, colorize_args(opcode).c_str());
+				_COLOR_OPCODE_BEGIN, opcode->name.c_str(), _COLOR_RESET, colorize_args(opcode).c_str());
 		} else {
 			printf(" %s %s",
 				opcode->name.c_str(), format->args.c_str());
@@ -1192,9 +1192,9 @@ void riscv_inst_set::print_map()
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
 		printf("%s%s# %s%s\n",
 			ws.c_str(),
-			enable_colorize ? EXT_BEGIN : "",
+			enable_colorize ? _COLOR_EXT_BEGIN : "",
 			opcode->extensions.front()->name.c_str(),
-			enable_colorize ? T_RESET : "");
+			enable_colorize ? _COLOR_RESET : "");
 	}
 }
 
