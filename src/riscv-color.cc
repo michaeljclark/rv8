@@ -11,7 +11,7 @@
 #include "riscv-color.h"
 
 const char* ansi_color_names[] = {
-	"default",
+	"none",
 	"black",
 	"red",
 	"green",
