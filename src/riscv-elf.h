@@ -5,6 +5,15 @@
 #ifndef riscv_elf_h
 #define riscv_elf_h
 
+/*
+
+ References:
+
+ - Tool Interface Standards: Portable Formats Specification, Version 1.1
+ - ELF-64 Object File Format, Version 1.5 Draft 2
+ - System V Application Binary Interface AMD64 Architecture Processor Supplement Draft 0.99.6
+
+*/
 
 // ELF Types
 
@@ -360,9 +369,6 @@ typedef struct
 // x86-64 Relocation Types
 
 /*
-
- Source: AMD64 ABI Draft 0.99.6
-
 - A Represents the addend used to compute the value of the relocatable field.
 - B Represents the base address at which a shared object has been loaded into memory
 	during execution. Generally, a shared object is built with a 0 base virtual
