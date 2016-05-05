@@ -9,7 +9,7 @@
 
  References:
 
- - Tool Interface Standards: Portable Formats Specification, Version 1.1
+ - TIS Portable Formats Specification, Version 1.1 ELF: Executable and Linkable Format
  - ELF-64 Object File Format, Version 1.5 Draft 2
  - System V Application Binary Interface AMD64 Architecture Processor Supplement Draft 0.99.6
 
