@@ -1,0 +1,48 @@
+# format of a line in this file:
+# <compressed opcode> <decompressed opcide> [<constraint> ...]
+
+c.addi4spn   addi   imm=10x4 rd=q rs1=sp
+c.fld        fld    imm=8x8 rd=q rs1=q
+c.lw         lw     imm=7x4 rd=q rs1=q
+c.flw        flw    imm=7x4 rd=q rs1=q
+c.fsd        fsd    imm=8x8 rs1=q rd2=q
+c.sw         sw     imm=7x4 rs1=q rd2=q
+c.fsw        fsw    imm=7x4 rs1=q rd2=q
+c.nop        addi   rd=zero rs1=zero rs2=zero
+c.addi       addi   imm=6x1 rd=!zero rd=rs1
+c.jal        jal    imm=12x2 rd=ra
+c.li         addi   imm=6x1 rd=!zero rd=rs1
+c.lui        lui    imm=18 imm=!0 rd=!zero rd=!sp
+c.addi16sp   addi   imm=10x4 rd=sp rs1=sp
+c.srli       srli   imm=!0 rd=rs1 rd=q rs1=q
+c.srai       srai   imm=!0 rd=rs1 rd=q rs1=q
+c.andi       andi   imm=!0 rd=rs1 rd=q rs1=q
+c.sub        sub    rd=rs1 rd=q rs1=q rs2=q
+c.xor        xor    rd=rs1 rd=q rs1=q rs2=q
+c.or         or     rd=rs1 rd=q rs1=q rs2=q
+c.and        and    rd=rs1 rd=q rs1=q rs2=q
+c.subw       subw   rd=rs1 rd=q rs1=q rs2=q
+c.addw       addw   rd=rs1 rd=q rs1=q rs2=q
+c.j          jal    imm=12x2 rd=zero
+c.beqz       beq    imm=9x2 rs1=q rs2=zero
+c.bnez       bne    imm=9x2 rs1=q rs2=zero
+c.slli       slli   imm=!0 rd=!0 rd=rs1
+c.fldsp      fld    imm=9x8 rs1=sp
+c.lwsp       lw     imm=8x4 rs1=sp
+c.flwsp      flw    imm=8x4 rs1=sp
+c.jr         jalr   rd=zero rs2=zero
+c.mv         add    rs1=zero rd=!zero rs2=!zero
+c.ebreak     sbreak
+c.jalr       jalr   rd=ra rs2=zero
+c.add        add    rd=rs1 rd=!zero rs2=!zero
+c.fsdsp      fsd    imm=9x8 rs1=sp
+c.swsp       sw     imm=8x4 rs1=sp
+c.fswsp      fsw    imm=8x4 rs1=sp
+
+# RV64C    "RV64C Standard Extension for Compressed Instructions (in addition to RV32C)"
+
+c.ld         ld     imm8x8 rd=q rs1=q
+c.sd         sd     imm8x8 rs1=q rd2=q
+c.addiw      addiw  imm=6x1 rd=!zero rd=rs1
+c.ldsp       ld     imm=9x8 rs1=sp
+c.sdsp       sd     imm=9x8 rs1=sp

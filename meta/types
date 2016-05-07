@@ -7,8 +7,11 @@
 # i.e. <type(+format_variant)?> where type is the distinct type
 
 none       none
-cb         ipc
-ci         rd_imm
+c_nop      none
+cb         rd_rs1_imm
+cb_sh5     rd_rs1_imm
+ci         rd_rs1_imm
+ci_sh5     rd_rs1_imm
 ci_16sp    rd_rs1_imm
 ci_lwsp    rd_bimm_rs1
 ci_ldsp    rd_bimm_rs1
@@ -23,6 +26,7 @@ cl_ld      rd_bimm_rs1
 cl_lw+f    frd_bimm_rs1
 cl_ld+f    frd_bimm_rs1
 cr         rs1_rs2
+cr_mv      rs1_rs2
 cr_jalr    rs1_rs2
 cr_jr      rs1_rs2
 cs         rs1_rs2

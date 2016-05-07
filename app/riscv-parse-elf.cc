@@ -87,11 +87,7 @@ struct riscv_parse_elf
 		uint64_t addr = 0;
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			const riscv_inst_comp_metadata *comp = riscv_lookup_comp_metadata((riscv_op)dec.op);
-			if (comp) {
-				dec.op = comp->op;
-				dec.type = comp->type;
-			}
+			riscv_decode_decompress(dec);
 			switch (dec.type) {
 				case riscv_inst_type_sb:
 				case riscv_inst_type_uj:

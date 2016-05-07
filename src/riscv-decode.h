@@ -39,10 +39,17 @@ typedef imm_t<12, S<31,25, B<11,5>>,        S<11,7, B<4,0>>>                IMM_
 typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          IMM_SB;
 typedef imm_t<32, S<31,12, B<31,12>>>                                       IMM_U;
 typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   IMM_UJ;
+typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_C_sh5;
 
 
 /* Decode none */
 inline void riscv_decode_none(riscv_decode &dec, riscv_lu inst) {}
+
+/* Decode C nop */
+inline void riscv_decode_c_nop(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+}
 
 /* Decode CR */
 inline void riscv_decode_cr(riscv_decode &dec, riscv_lu inst)
@@ -51,12 +58,19 @@ inline void riscv_decode_cr(riscv_decode &dec, riscv_lu inst)
 	dec.rs2 = (inst >> 2) & 0b11111;
 }
 
+/* Decode CR mv */
+inline void riscv_decode_cr_mv(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rd = (inst >> 7) & 0b11111;
+	dec.rs1 = riscv_ireg_zero;
+	dec.rs2 = (inst >> 2) & 0b11111;
+}
+
 /* Decode CR jalr */
 inline void riscv_decode_cr_jalr(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = riscv_ireg_ra;
 	dec.rs1 = (inst >> 7) & 0b11111;
-	dec.imm = IMM_CI_lui::decode(inst);
 }
 
 /* Decode CR jr */
@@ -64,7 +78,6 @@ inline void riscv_decode_cr_jr(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = (inst >> 7) & 0b11111;
-	dec.imm = IMM_CI_lui::decode(inst);
 }
 
 /* Decode CI */
@@ -72,6 +85,13 @@ inline void riscv_decode_ci(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
 	dec.imm = IMM_CI::decode(inst);
+}
+
+/* Decode CI shamt5 */
+inline void riscv_decode_ci_sh5(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
+	dec.imm = IMM_C_sh5::decode(inst);
 }
 
 /* Decode CI li */
@@ -184,6 +204,13 @@ inline void riscv_decode_cb(riscv_decode &dec, riscv_lu inst)
 	dec.imm = IMM_CB::decode(inst);
 }
 
+/* Decode CB shamt5 */
+inline void riscv_decode_cb_sh5(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rs1 = ((inst >> 7) & 0b111) + 8;
+	dec.imm = IMM_C_sh5::decode(inst);
+}
+
 /* Decode CJ - imm */
 inline void riscv_decode_cj(riscv_decode &dec, riscv_lu inst)
 {
@@ -264,25 +291,33 @@ inline void riscv_decode_uj(riscv_decode &dec, riscv_lu inst)
 /* Encode none */
 inline riscv_lu riscv_encode_none(riscv_decode &dec) { return 0; }
 
+/* Encode C nop */
+inline riscv_lu riscv_encode_c_nop(riscv_decode &dec) { return 0; }
+
 /* Encode CR */
 inline riscv_lu riscv_encode_cr(riscv_decode &dec)
 {
-	return ((dec.rs1 & 0b11111) << 7) |
+	return ((dec.rd & 0b11111) << 7) |
+		((dec.rs2  & 0b11111) << 2);
+}
+
+/* Encode CR mv */
+inline riscv_lu riscv_encode_cr_mv(riscv_decode &dec)
+{
+	return ((dec.rd & 0b11111) << 7) |
 		((dec.rs2  & 0b11111) << 2);
 }
 
 /* Encode CR jalr */
 inline riscv_lu riscv_encode_cr_jalr(riscv_decode &dec)
 {
-	return ((dec.rs1 & 0b11111) << 7) |
-		IMM_CI_lui::encode(dec.imm);
+	return ((dec.rs1 & 0b11111) << 7);
 }
 
 /* Encode CR jr */
 inline riscv_lu riscv_encode_cr_jr(riscv_decode &dec)
 {
-	return ((dec.rs1 & 0b11111) << 7) |
-		IMM_CI_lui::encode(dec.imm);
+	return ((dec.rs1 & 0b11111) << 7);
 }
 
 /* Encode CI */
@@ -290,6 +325,13 @@ inline riscv_lu riscv_encode_ci(riscv_decode &dec)
 {
 	return ((dec.rs1 & 0b11111) << 7) |
 		IMM_CI::encode(dec.imm);
+}
+
+/* Encode CI shamt5 */
+inline riscv_lu riscv_encode_ci_sh5(riscv_decode &dec)
+{
+	return ((dec.rs1 & 0b11111) << 7) |
+		IMM_C_sh5::encode(dec.imm);
 }
 
 /* Encode CI li */
@@ -391,6 +433,13 @@ inline riscv_lu riscv_encode_cb(riscv_decode &dec)
 {
 	return (((dec.rs1 - 8) & 0b111) << 7) |
 		IMM_CB::encode(dec.imm);
+}
+
+/* Encode CB shamt5 */
+inline riscv_lu riscv_encode_cb_sh5(riscv_decode &dec)
+{
+	return (((dec.rs1 - 8) & 0b111) << 7) |
+		IMM_C_sh5::encode(dec.imm);
 }
 
 /* Encode CJ - imm */
@@ -1048,25 +1097,29 @@ inline void riscv_decode_type(riscv_decode &dec, riscv_lu inst)
 	dec.type = riscv_instruction_type[dec.op];
 	switch (dec.type) {
 		case riscv_inst_type_none:          riscv_decode_none(dec, inst);            break;
+		case riscv_inst_type_c_nop:         riscv_decode_c_nop(dec, inst);           break;
 		case riscv_inst_type_cb:            riscv_decode_cb(dec, inst);              break;
+		case riscv_inst_type_cb_sh5:        riscv_decode_cb_sh5(dec, inst);          break;
 		case riscv_inst_type_ci:            riscv_decode_ci(dec, inst);              break;
+		case riscv_inst_type_ci_sh5:        riscv_decode_ci_sh5(dec, inst);          break;
 		case riscv_inst_type_ci_16sp:       riscv_decode_ci_16sp(dec, inst);         break;
-		case riscv_inst_type_ci_ldsp:       riscv_decode_ci_ldsp(dec, inst);         break;
 		case riscv_inst_type_ci_lwsp:       riscv_decode_ci_lwsp(dec, inst);         break;
+		case riscv_inst_type_ci_ldsp:       riscv_decode_ci_ldsp(dec, inst);         break;
 		case riscv_inst_type_ci_li:         riscv_decode_ci_li(dec, inst);           break;
 		case riscv_inst_type_ci_lui:        riscv_decode_ci_lui(dec, inst);          break;
 		case riscv_inst_type_ciw_4spn:      riscv_decode_ciw_4spn(dec, inst);        break;
 		case riscv_inst_type_cj:            riscv_decode_cj(dec, inst);              break;
-		case riscv_inst_type_cl_ld:         riscv_decode_cl_ld(dec, inst);           break;
 		case riscv_inst_type_cl_lw:         riscv_decode_cl_lw(dec, inst);           break;
+		case riscv_inst_type_cl_ld:         riscv_decode_cl_ld(dec, inst);           break;
 		case riscv_inst_type_cr:            riscv_decode_cr(dec, inst);              break;
+		case riscv_inst_type_cr_mv:         riscv_decode_cr_mv(dec, inst);           break;
 		case riscv_inst_type_cr_jalr:       riscv_decode_cr_jalr(dec, inst);         break;
 		case riscv_inst_type_cr_jr:         riscv_decode_cr_jr(dec, inst);           break;
 		case riscv_inst_type_cs:            riscv_decode_cs(dec, inst);              break;
-		case riscv_inst_type_cs_sd:         riscv_decode_cs_sd(dec, inst);           break;
 		case riscv_inst_type_cs_sw:         riscv_decode_cs_sw(dec, inst);           break;
-		case riscv_inst_type_css_sdsp:      riscv_decode_css_sdsp(dec, inst);        break;
+		case riscv_inst_type_cs_sd:         riscv_decode_cs_sd(dec, inst);           break;
 		case riscv_inst_type_css_swsp:      riscv_decode_css_swsp(dec, inst);        break;
+		case riscv_inst_type_css_sdsp:      riscv_decode_css_sdsp(dec, inst);        break;
 		case riscv_inst_type_i:             riscv_decode_i(dec, inst);               break;
 		case riscv_inst_type_i_sh5:         riscv_decode_i_sh5(dec, inst);           break;
 		case riscv_inst_type_i_sh6:         riscv_decode_i_sh6(dec, inst);           break;
@@ -1087,8 +1140,11 @@ inline riscv_lu riscv_encode(riscv_decode &dec)
 	riscv_lu inst = riscv_instruction_match[dec.op];
 	switch (dec.type) {
 		case riscv_inst_type_none:          return inst |= riscv_encode_none(dec);            break;
+		case riscv_inst_type_c_nop:         return inst |= riscv_encode_c_nop(dec);           break;
 		case riscv_inst_type_cb:            return inst |= riscv_encode_cb(dec);              break;
+		case riscv_inst_type_cb_sh5:        return inst |= riscv_encode_cb_sh5(dec);          break;
 		case riscv_inst_type_ci:            return inst |= riscv_encode_ci(dec);              break;
+		case riscv_inst_type_ci_sh5:        return inst |= riscv_encode_ci_sh5(dec);          break;
 		case riscv_inst_type_ci_16sp:       return inst |= riscv_encode_ci_16sp(dec);         break;
 		case riscv_inst_type_ci_ldsp:       return inst |= riscv_encode_ci_ldsp(dec);         break;
 		case riscv_inst_type_ci_lwsp:       return inst |= riscv_encode_ci_lwsp(dec);         break;
@@ -1099,6 +1155,7 @@ inline riscv_lu riscv_encode(riscv_decode &dec)
 		case riscv_inst_type_cl_ld:         return inst |= riscv_encode_cl_ld(dec);           break;
 		case riscv_inst_type_cl_lw:         return inst |= riscv_encode_cl_lw(dec);           break;
 		case riscv_inst_type_cr:            return inst |= riscv_encode_cr(dec);              break;
+		case riscv_inst_type_cr_mv:         return inst |= riscv_encode_cr_mv(dec);           break;
 		case riscv_inst_type_cr_jalr:       return inst |= riscv_encode_cr_jalr(dec);         break;
 		case riscv_inst_type_cr_jr:         return inst |= riscv_encode_cr_jr(dec);           break;
 		case riscv_inst_type_cs:            return inst |= riscv_encode_cs(dec);              break;
