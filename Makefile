@@ -128,8 +128,7 @@ RV_ELF_OBJS =   $(call lib_src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
 # libriscv_asm
-RV_ASM_SRCS =   $(LIB_SRC_DIR)/riscv-compression.cc \
-                $(LIB_SRC_DIR)/riscv-csr.cc \
+RV_ASM_SRCS =   $(LIB_SRC_DIR)/riscv-csr.cc \
                 $(LIB_SRC_DIR)/riscv-disasm.cc
 RV_ASM_OBJS =   $(call lib_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a

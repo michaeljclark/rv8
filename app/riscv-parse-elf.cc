@@ -24,7 +24,6 @@
 #include "riscv-color.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
-#include "riscv-compression.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"

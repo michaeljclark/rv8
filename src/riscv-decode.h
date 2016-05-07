@@ -1204,4 +1204,14 @@ riscv_ptr riscv_decode_instruction(riscv_decode &dec, riscv_ptr pc)
 	return next_pc;
 }
 
+/* Decompress Instruction */
+
+inline void riscv_decode_decompress(riscv_decode &dec)
+{
+    riscv_op decomp_op = riscv_instruction_decomp[dec.op];
+    if (decomp_op != riscv_op_unknown) {
+        dec.op = decomp_op;
+        dec.type = riscv_instruction_type[decomp_op];
+    }
+}
 #endif

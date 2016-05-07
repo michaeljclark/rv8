@@ -7,6 +7,36 @@
 #ifndef riscv_opcodes_h
 #define riscv_opcodes_h
 
+enum rvc_constraint
+{
+	rvc_end,
+	rvc_imm_10,
+	rvc_imm_12,
+	rvc_imm_18,
+	rvc_imm_6,
+	rvc_imm_7,
+	rvc_imm_8,
+	rvc_imm_9,
+	rvc_imm_not_zero,
+	rvc_imm_scale_2,
+	rvc_imm_scale_4,
+	rvc_imm_scale_8,
+	rvc_rd2_comp,
+	rvc_rd_comp,
+	rvc_rd_eq_ra,
+	rvc_rd_eq_rs1,
+	rvc_rd_eq_sp,
+	rvc_rd_eq_zero,
+	rvc_rd_not_sp,
+	rvc_rd_not_zero,
+	rvc_rs1_comp,
+	rvc_rs1_eq_sp,
+	rvc_rs1_eq_zero,
+	rvc_rs2_comp,
+	rvc_rs2_eq_zero,
+	rvc_rs2_not_zero,
+};
+
 enum riscv_csr
 {
 	riscv_csr_fflags = 0x001,
@@ -489,5 +519,7 @@ extern const riscv_wu riscv_instruction_mask[];
 extern const rvf* riscv_instruction_format[];
 extern const char* riscv_i_registers[];
 extern const char* riscv_f_registers[];
+extern const rvc_constraint** riscv_instruction_comp[];
+extern const riscv_op riscv_instruction_decomp[];
 
 #endif

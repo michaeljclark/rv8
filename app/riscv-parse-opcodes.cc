@@ -35,6 +35,7 @@ static const char* FORMATS_FILE        = "formats";
 static const char* REGISTERS_FILE      = "registers";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
+static const char* COMPRESSION_FILE    = "compression";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
 // TODO - make this variable based on extension metadata
@@ -49,6 +50,8 @@ struct riscv_format;
 struct riscv_register;
 struct riscv_csr;
 struct riscv_opcode;
+struct riscv_constraint;
+struct riscv_compressed;
 struct riscv_bitrange;
 struct riscv_decoder_node;
 
@@ -74,6 +77,11 @@ typedef std::pair<riscv_bitrange,size_t> riscv_opcode_mask;
 typedef std::vector<riscv_opcode_mask> riscv_opcode_mask_list;
 typedef std::shared_ptr<riscv_opcode> riscv_opcode_ptr;
 typedef std::vector<riscv_opcode_ptr> riscv_opcode_list;
+typedef std::shared_ptr<riscv_constraint> riscv_constraint_ptr;
+typedef std::map<std::string,riscv_constraint_ptr> riscv_constraint_map;
+typedef std::vector<riscv_constraint_ptr> riscv_constraint_list;
+typedef std::shared_ptr<riscv_compressed> riscv_compressed_ptr;
+typedef std::vector<riscv_compressed_ptr> riscv_compressed_list;
 typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
 typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
 typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
@@ -193,6 +201,8 @@ struct riscv_opcode
 	riscv_opcode_mask_list masks;
 	riscv_type_ptr type;
 	riscv_extension_list extensions;
+	riscv_compressed_ptr compressed;
+	riscv_compressed_list compressions;
 
 	size_t mask;
 	size_t match;
@@ -214,6 +224,23 @@ struct riscv_opcode
 		}
 		return riscv_arg_ptr();
 	}
+};
+
+struct riscv_constraint
+{
+	std::string name;
+
+	riscv_constraint(std::string name) : name(name) {}
+};
+
+struct riscv_compressed
+{
+	riscv_opcode_ptr copcode;
+	riscv_opcode_ptr opcode;
+	riscv_constraint_list constraint_list;
+
+	riscv_compressed(riscv_opcode_ptr copcode, riscv_opcode_ptr opcode, riscv_constraint_list constraint_list)
+		: copcode(copcode), opcode(opcode), constraint_list(constraint_list) {}
 };
 
 struct riscv_decoder_node
@@ -244,6 +271,9 @@ struct riscv_inst_set
 	riscv_opcode_map         opcodes_by_key;
 	riscv_opcode_list_map    opcodes_by_name;
 	riscv_opcode_list_map    opcodes_by_type;
+	riscv_constraint_list    constraints;
+	riscv_constraint_map     constraints_by_name;
+	riscv_compressed_list    compressions;
 	riscv_extension_list     ext_subset;
 
 	riscv_decoder_node node;
@@ -275,6 +305,7 @@ struct riscv_inst_set
 	void parse_register(std::vector<std::string> &part);
 	void parse_csr(std::vector<std::string> &part);
 	void parse_opcode(std::vector<std::string> &part);
+	void parse_compression(std::vector<std::string> &part);
 	void parse_description(std::vector<std::string> &part);
 
 	bool read_metadata(std::string dirname);
@@ -858,6 +889,37 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 	}
 }
 
+void riscv_inst_set::parse_compression(std::vector<std::string> &part)
+{
+	if (part.size() < 2) {
+		panic("invalid compression file requires at least 2 parameters: %s", join(part, " ").c_str());
+	}
+	for (auto copcode : lookup_opcode_by_name(part[0])) {
+		for (auto opcode : lookup_opcode_by_name(part[1])) {
+			riscv_constraint_list constraint_list;
+			for (size_t i = 2; i < part.size(); i++) {
+				auto ci = constraints_by_name.find(part[i]);
+				if (ci == constraints_by_name.end()) {
+					auto constraint = std::make_shared<riscv_constraint>(part[i]);
+					constraints_by_name[part[i]] = constraint;
+					auto ci2 = std::find_if(constraints.begin(), constraints.end(),
+						[&constraint] (const riscv_constraint_ptr &c) {
+							return constraint->name < c->name;
+					});
+					constraints.insert(ci2, constraint);
+					constraint_list.push_back(constraint);
+				} else {
+					constraint_list.push_back(ci->second);
+				}
+			}
+			auto comp = std::make_shared<riscv_compressed>(copcode, opcode, constraint_list);
+			copcode->compressed = comp;
+			opcode->compressions.push_back(comp);
+			compressions.push_back(comp);
+		}
+	}
+}
+
 void riscv_inst_set::parse_description(std::vector<std::string> &part)
 {
 	if (part.size() < 2) return;
@@ -879,6 +941,7 @@ bool riscv_inst_set::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
+	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
 	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);
 	return true;
 }
@@ -1209,6 +1272,12 @@ void riscv_inst_set::print_opcodes_h()
 	printf("#ifndef riscv_opcodes_h\n");
 	printf("#define riscv_opcodes_h\n");
 	printf("\n");
+	printf("enum rvc_constraint\n{\n");
+	printf("\trvc_end,\n");
+	for (auto &constraint : constraints) {
+		printf("\trvc_%s,\n", constraint->name.c_str());
+	}
+	printf("};\n\n");
 	printf("enum riscv_csr\n{\n");
 	for (auto &csr : csrs) {
 		printf("\triscv_csr_%s = %s,\n", csr->name.c_str(), csr->number.c_str());
@@ -1257,6 +1326,8 @@ void riscv_inst_set::print_opcodes_h()
 	printf("extern const rvf* riscv_instruction_format[];\n");
 	printf("extern const char* riscv_i_registers[];\n");
 	printf("extern const char* riscv_f_registers[];\n");
+	printf("extern const rvc_constraint** riscv_instruction_comp[];\n");
+	printf("extern const riscv_op riscv_instruction_decomp[];\n");
 	printf("\n");
 	printf("#endif\n");
 }
@@ -1321,6 +1392,44 @@ void riscv_inst_set::print_opcodes_c()
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+
+	// compression meta data
+	for (auto &opcode : opcodes) {
+		if (!opcode->compressed) continue;
+		std::string cop_name = "rvc_" + opcode_format("", opcode, '_') + "[] =";
+		printf("const rvc_constraint %-30s { ", cop_name.c_str());
+		for (auto &constraint : opcode->compressed->constraint_list) {
+			printf("rvc_%s, ", constraint->name.c_str());
+		}
+		printf("rvc_end };\n");
+	}
+	printf("\n");
+	for (auto &opcode : opcodes) {
+		if (opcode->compressions.size() == 0) continue;
+		std::string op_name = "rvcl_" + opcode_format("", opcode, '_') + "[] =";
+		printf("const rvc_constraint* %-30s { ", op_name.c_str());
+		for (auto comp : opcode->compressions) {
+			printf("rvc_%s, ", opcode_format("", comp->copcode, '_').c_str());
+		}
+		printf("nullptr };\n");
+	}
+	printf("\n");
+	printf("const rvc_constraint** riscv_instruction_comp[] = {\n");
+	printf("\t/*              unknown */ nullptr,\n");
+	for (auto &opcode : opcodes) {
+		std::string opcode_key = opcode_format("", opcode, '.');
+		printf("\t/* %20s */ %s,\n", opcode_key.c_str(),
+			opcode->compressions.size() > 0 ? opcode_format("rvcl_", opcode, '_').c_str() : "nullptr");
+	}
+	printf("};\n\n");
+	printf("const riscv_op riscv_instruction_decomp[] = {\n");
+	printf("\t/*              unknown */ riscv_op_unknown,\n");
+	for (auto &opcode : opcodes) {
+		std::string opcode_key = opcode_format("", opcode, '.');
+		printf("\t/* %20s */ %s,\n", opcode_key.c_str(),
+			opcode->compressed ? opcode_format("riscv_op_", opcode->compressed->opcode, '_').c_str() : "riscv_op_unknown");
 	}
 	printf("};\n\n");
 }
