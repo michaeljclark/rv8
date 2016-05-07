@@ -1,48 +1,50 @@
 # format of a line in this file:
-# <compressed opcode> <decompressed opcide> [<constraint> ...]
+# <compressed opcode> <decompressed opcode> [<constraint> ...]
+#
+# <constraint> is on of imm_6, imm_7, imm_8, imm_9, imm_10, imm_12, imm_18,
+# imm_not_zero, imm_scale_2, imm_scale_4, imm_scale_8, rd_comp, rs1_comp,
+# rd2_comp, rs1_eq_sp, rd_eq_zero, rs1_eq_zero, rs2_eq_zero, rd_not_zero,
+# rs2_not_zero, rd_eq_rs1, rd_eq_ra, rd_not_sp, rd_eq_sp
 
-c.addi4spn   addi   imm=10x4 rd=q rs1=sp
-c.fld        fld    imm=8x8 rd=q rs1=q
-c.lw         lw     imm=7x4 rd=q rs1=q
-c.flw        flw    imm=7x4 rd=q rs1=q
-c.fsd        fsd    imm=8x8 rs1=q rd2=q
-c.sw         sw     imm=7x4 rs1=q rd2=q
-c.fsw        fsw    imm=7x4 rs1=q rd2=q
-c.nop        addi   rd=zero rs1=zero rs2=zero
-c.addi       addi   imm=6x1 rd=!zero rd=rs1
-c.jal        jal    imm=12x2 rd=ra
-c.li         addi   imm=6x1 rd=!zero rd=rs1
-c.lui        lui    imm=18 imm=!0 rd=!zero rd=!sp
-c.addi16sp   addi   imm=10x4 rd=sp rs1=sp
-c.srli       srli   imm=!0 rd=rs1 rd=q rs1=q
-c.srai       srai   imm=!0 rd=rs1 rd=q rs1=q
-c.andi       andi   imm=!0 rd=rs1 rd=q rs1=q
-c.sub        sub    rd=rs1 rd=q rs1=q rs2=q
-c.xor        xor    rd=rs1 rd=q rs1=q rs2=q
-c.or         or     rd=rs1 rd=q rs1=q rs2=q
-c.and        and    rd=rs1 rd=q rs1=q rs2=q
-c.subw       subw   rd=rs1 rd=q rs1=q rs2=q
-c.addw       addw   rd=rs1 rd=q rs1=q rs2=q
-c.j          jal    imm=12x2 rd=zero
-c.beqz       beq    imm=9x2 rs1=q rs2=zero
-c.bnez       bne    imm=9x2 rs1=q rs2=zero
-c.slli       slli   imm=!0 rd=!0 rd=rs1
-c.fldsp      fld    imm=9x8 rs1=sp
-c.lwsp       lw     imm=8x4 rs1=sp
-c.flwsp      flw    imm=8x4 rs1=sp
-c.jr         jalr   rd=zero rs2=zero
-c.mv         add    rs1=zero rd=!zero rs2=!zero
+c.addi4spn   addi   imm_10 imm_scale_4 rd_comp rs1_eq_sp
+c.fld        fld    imm_8 imm_scale_8 rd_comp rs1_comp
+c.lw         lw     imm_7 imm_scale_4 rd_comp rs1_comp
+c.flw        flw    imm_7 imm_scale_4 rd_comp rs1_comp
+c.fsd        fsd    imm_8 imm_scale_8 rs1_comp rd2_comp
+c.sw         sw     imm_7 imm_scale_4 rs1_comp rd2_comp
+c.fsw        fsw    imm_7 imm_scale_4 rs1_comp rd2_comp
+c.nop        addi   rd_eq_zero rs1_eq_zero rs2_eq_zero
+c.addi       addi   imm_6 rd_not_zero rd_eq_rs1
+c.jal        jal    imm_12 imm_scale_2 rd_eq_ra
+c.li         addi   imm_6 rd_not_zero rd_eq_rs1
+c.lui        lui    imm_18 imm_not_zero rd_not_zero rd_not_sp
+c.addi16sp   addi   imm_10 imm_scale_4 rd_eq_sp rs1_eq_sp
+c.srli       srli   imm_not_zero rd_eq_rs1 rd_comp rs1_comp
+c.srai       srai   imm_not_zero rd_eq_rs1 rd_comp rs1_comp
+c.andi       andi   imm_not_zero rd_eq_rs1 rd_comp rs1_comp
+c.sub        sub    rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.xor        xor    rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.or         or     rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.and        and    rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.subw       subw   rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.addw       addw   rd_eq_rs1 rd_comp rs1_comp rs2_comp
+c.j          jal    imm_12 imm_scale_2 rd_eq_zero
+c.beqz       beq    imm_9 imm_scale_2 rs1_comp rs2_eq_zero
+c.bnez       bne    imm_9 imm_scale_2 rs1_comp rs2_eq_zero
+c.slli       slli   imm_not_zero rd_not_zero rd_eq_rs1
+c.fldsp      fld    imm_9 imm_scale_8 rs1_eq_sp
+c.lwsp       lw     imm_8 imm_scale_4 rs1_eq_sp
+c.flwsp      flw    imm_8 imm_scale_4 rs1_eq_sp
+c.jr         jalr   rd_eq_zero rs2_eq_zero
+c.mv         add    rs1_eq_zero rd_not_zero rs2_not_zero
 c.ebreak     sbreak
-c.jalr       jalr   rd=ra rs2=zero
-c.add        add    rd=rs1 rd=!zero rs2=!zero
-c.fsdsp      fsd    imm=9x8 rs1=sp
-c.swsp       sw     imm=8x4 rs1=sp
-c.fswsp      fsw    imm=8x4 rs1=sp
-
-# RV64C    "RV64C Standard Extension for Compressed Instructions (in addition to RV32C)"
-
-c.ld         ld     imm8x8 rd=q rs1=q
-c.sd         sd     imm8x8 rs1=q rd2=q
-c.addiw      addiw  imm=6x1 rd=!zero rd=rs1
-c.ldsp       ld     imm=9x8 rs1=sp
-c.sdsp       sd     imm=9x8 rs1=sp
+c.jalr       jalr   rd_eq_ra rs2_eq_zero
+c.add        add    rd_eq_rs1 rd_not_zero rs2_not_zero
+c.fsdsp      fsd    imm_9 imm_scale_8 rs1_eq_sp
+c.swsp       sw     imm_8 imm_scale_4 rs1_eq_sp
+c.fswsp      fsw    imm_8 imm_scale_4 rs1_eq_sp
+c.ld         ld     imm_8 imm_scale_8 rd_comp rs1_comp
+c.sd         sd     imm_8 imm_scale_8 rs1_comp rd2_comp
+c.addiw      addiw  imm_6 rd_not_zero rd_eq_rs1
+c.ldsp       ld     imm_9 imm_scale_8 rs1_eq_sp
+c.sdsp       sd     imm_9 imm_scale_8 rs1_eq_sp
