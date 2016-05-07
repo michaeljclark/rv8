@@ -3,6 +3,7 @@
 //
 
 #include <map>
+#include <cstring>
 
 #include "riscv-types.h"
 #include "riscv-endian.h"
