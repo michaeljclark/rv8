@@ -1412,16 +1412,6 @@ void riscv_inst_set::print_opcodes_c()
 	printf("\n");
 	for (auto &opcode : opcodes) {
 		if (opcode->compressions.size() == 0) continue;
-		std::string op_constraint_name = "rvcl_" + opcode_format("", opcode, '_') + "[] =";
-		printf("const rvc_constraint* %-30s { ", op_constraint_name.c_str());
-		for (auto comp : opcode->compressions) {
-			printf("rvcc_%s, ", opcode_format("", comp->copcode, '_').c_str());
-		}
-		printf("nullptr };\n");
-	}
-	printf("\n");
-	for (auto &opcode : opcodes) {
-		if (opcode->compressions.size() == 0) continue;
 		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, '_') + "[] =";
 		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
 		for (auto comp : opcode->compressions) {
