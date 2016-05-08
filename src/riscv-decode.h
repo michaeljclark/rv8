@@ -1214,4 +1214,59 @@ inline void riscv_decode_decompress(riscv_decode &dec)
         dec.type = riscv_instruction_type[decomp_op];
     }
 }
+
+/* Check constraint */
+
+inline bool riscv_decode_decompress_check(riscv_decode &dec, const rvc_constraint *c)
+{
+	while (*c != rvc_end) {
+		switch (*c) {
+			case rvc_imm_6:         if (dec.imm > (dec.imm & ((1<<6)-1))) return false; break;
+			case rvc_imm_7:         if (dec.imm > (dec.imm & ((1<<7)-1))) return false; break;
+			case rvc_imm_8:         if (dec.imm > (dec.imm & ((1<<8)-1))) return false; break;
+			case rvc_imm_9:         if (dec.imm > (dec.imm & ((1<<9)-1))) return false; break;
+			case rvc_imm_10:        if (dec.imm > (dec.imm & ((1<<10)-1))) return false; break;
+			case rvc_imm_12:        if (dec.imm > (dec.imm & ((1<<12)-1))) return false; break;
+			case rvc_imm_18:        if (dec.imm > (dec.imm & ((1<<18)-1))) return false; break;
+			case rvc_imm_not_zero:  if (dec.imm == 0) return false; break;
+			case rvc_imm_scale_2:   if ((dec.imm & 0b1) != 0) return false; break;
+			case rvc_imm_scale_4:   if ((dec.imm & 0b11) != 0) return false; break;
+			case rvc_imm_scale_8:   if ((dec.imm & 0b111) != 0) return false; break;
+			case rvc_rd_comp:       if (dec.rd  < 8 || dec.rd  > 15) return false; break;
+			case rvc_rs1_comp:      if (dec.rs1 < 8 || dec.rs1 > 15) return false; break;
+			case rvc_rs2_comp:      if (dec.rs2 < 8 || dec.rs2 > 15) return false; break;
+			case rvc_rd_eq_rs1:     if (dec.rd != dec.rs1) return false; break;
+			case rvc_rd_eq_ra:      if (dec.rd != riscv_ireg_ra) return false; break;
+			case rvc_rd_eq_sp:      if (dec.rd != riscv_ireg_sp) return false; break;
+			case rvc_rd_eq_zero:    if (dec.rd != riscv_ireg_zero) return false; break;
+			case rvc_rs1_eq_sp:     if (dec.rs1 != riscv_ireg_sp) return false; break;
+			case rvc_rs1_eq_zero:   if (dec.rs1 != riscv_ireg_zero) return false; break;
+			case rvc_rs2_eq_zero:   if (dec.rs2 != riscv_ireg_zero) return false; break;
+			case rvc_rd_not_sp:     if (dec.rd == riscv_ireg_sp) return false; break;
+			case rvc_rd_not_zero:   if (dec.rd == riscv_ireg_zero) return false; break;
+			case rvc_rs2_not_zero:  if (dec.rs2 == riscv_ireg_zero) return false; break;
+			case rvc_end:           break;
+		}
+		c++;
+	}
+	return true;
+}
+
+/* Compress Instruction */
+
+inline bool riscv_decode_compress(riscv_decode &dec)
+{
+	const riscv_comp_data *comp_data = riscv_instruction_comp[dec.op];
+	if (!comp_data) return false;
+	while (comp_data->constraints) {
+		if (riscv_decode_decompress_check(dec, comp_data->constraints)) {
+			dec.op = comp_data->op;
+			dec.type = riscv_instruction_type[dec.op];
+			return true;
+		}
+		comp_data++;
+	}
+	return false;
+}
+
 #endif
