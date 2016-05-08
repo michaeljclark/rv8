@@ -8,7 +8,7 @@
 
 none       none
 c_nop      none
-cb         rd_rs1_imm
+cb         rs1_rs2_ipc
 cb_sh5     rd_rs1_imm
 ci         rd_rs1_imm
 ci_sh5     rd_rs1_imm
@@ -17,19 +17,19 @@ ci_lwsp    rd_bimm_rs1
 ci_ldsp    rd_bimm_rs1
 ci_lwsp+f  frd_bimm_rs1
 ci_ldsp+f  frd_bimm_rs1
-ci_li      rd_imm
+ci_li      rd_rs1_imm
 ci_lui     rd_imm
 ciw_4spn   rd_rs1_imm
-cj         ipc
+cj         rd_ipc
 cl_lw      rd_bimm_rs1
 cl_ld      rd_bimm_rs1
 cl_lw+f    frd_bimm_rs1
 cl_ld+f    frd_bimm_rs1
-cr         rs1_rs2
-cr_mv      rs1_rs2
-cr_jalr    rs1_rs2
-cr_jr      rs1_rs2
-cs         rs1_rs2
+cr         rd_rs1_rs2
+cr_mv      rd_rs1_rs2
+cr_jalr    rd_rs1_imm
+cr_jr      rd_rs1_imm
+cs         rd_rs1_rs2
 cs_sw+f    frs2_bimm_rs1
 cs_sd+f    frs2_bimm_rs1
 cs_sw      rs2_bimm_rs1
