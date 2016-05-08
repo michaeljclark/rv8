@@ -16,7 +16,7 @@ c.fsw        fsw    imm_7 imm_scale_4 rs1_comp rs2_comp
 c.nop        addi   rd_eq_zero rs1_eq_zero rs2_eq_zero
 c.addi       addi   imm_6 rd_not_zero rd_eq_rs1
 c.jal        jal    imm_12 imm_scale_2 rd_eq_ra
-c.li         addi   imm_6 rd_not_zero rd_eq_rs1
+c.li         addi   imm_6 rd_not_zero rs1_eq_zero
 c.lui        lui    imm_18 imm_not_zero rd_not_zero rd_not_sp
 c.addi16sp   addi   imm_10 imm_scale_4 rd_eq_sp rs1_eq_sp
 c.srli       srli   imm_not_zero rd_eq_rs1 rd_comp rs1_comp
