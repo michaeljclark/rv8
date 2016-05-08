@@ -512,6 +512,12 @@ enum riscv_op
 	riscv_op_c_sdsp,
 };
 
+struct riscv_comp_data
+{
+	const riscv_op op;
+	const rvc_constraint* constraints;
+};
+
 extern const char* riscv_instruction_name[];
 extern const riscv_inst_type riscv_instruction_type[];
 extern const riscv_wu riscv_instruction_match[];
@@ -519,7 +525,7 @@ extern const riscv_wu riscv_instruction_mask[];
 extern const rvf* riscv_instruction_format[];
 extern const char* riscv_i_registers[];
 extern const char* riscv_f_registers[];
-extern const rvc_constraint** riscv_instruction_comp[];
+extern const riscv_comp_data* riscv_instruction_comp[];
 extern const riscv_op riscv_instruction_decomp[];
 
 #endif

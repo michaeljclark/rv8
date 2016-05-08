@@ -1203,133 +1203,164 @@ const char* riscv_f_registers[] = {
 	"ft11",
 };
 
-const rvc_constraint rvc_c_addi4spn[] =             { rvc_imm_10, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_fld[] =                  { rvc_imm_8, rvc_imm_scale_8, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_lw[] =                   { rvc_imm_7, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_flw[] =                  { rvc_imm_7, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_fsd[] =                  { rvc_imm_8, rvc_imm_scale_8, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
-const rvc_constraint rvc_c_sw[] =                   { rvc_imm_7, rvc_imm_scale_4, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
-const rvc_constraint rvc_c_fsw[] =                  { rvc_imm_7, rvc_imm_scale_4, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
-const rvc_constraint rvc_c_nop[] =                  { rvc_rd_eq_zero, rvc_rs1_eq_zero, rvc_rs2_eq_zero, rvc_end };
-const rvc_constraint rvc_c_addi[] =                 { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
-const rvc_constraint rvc_c_jal[] =                  { rvc_imm_12, rvc_imm_scale_2, rvc_rd_eq_ra, rvc_end };
-const rvc_constraint rvc_c_li[] =                   { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
-const rvc_constraint rvc_c_lui[] =                  { rvc_imm_18, rvc_imm_not_zero, rvc_rd_not_zero, rvc_rd_not_sp, rvc_end };
-const rvc_constraint rvc_c_addi16sp[] =             { rvc_imm_10, rvc_imm_scale_4, rvc_rd_eq_sp, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_srli[] =                 { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_srai[] =                 { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_andi[] =                 { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_sub[] =                  { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_xor[] =                  { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_or[] =                   { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_and[] =                  { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_subw[] =                 { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_addw[] =                 { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
-const rvc_constraint rvc_c_j[] =                    { rvc_imm_12, rvc_imm_scale_2, rvc_rd_eq_zero, rvc_end };
-const rvc_constraint rvc_c_beqz[] =                 { rvc_imm_9, rvc_imm_scale_2, rvc_rs1_comp, rvc_rs2_eq_zero, rvc_end };
-const rvc_constraint rvc_c_bnez[] =                 { rvc_imm_9, rvc_imm_scale_2, rvc_rs1_comp, rvc_rs2_eq_zero, rvc_end };
-const rvc_constraint rvc_c_slli[] =                 { rvc_imm_not_zero, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
-const rvc_constraint rvc_c_fldsp[] =                { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_lwsp[] =                 { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_flwsp[] =                { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_jr[] =                   { rvc_rd_eq_zero, rvc_rs2_eq_zero, rvc_end };
-const rvc_constraint rvc_c_mv[] =                   { rvc_rs1_eq_zero, rvc_rd_not_zero, rvc_rs2_not_zero, rvc_end };
-const rvc_constraint rvc_c_ebreak[] =               { rvc_end };
-const rvc_constraint rvc_c_jalr[] =                 { rvc_rd_eq_ra, rvc_rs2_eq_zero, rvc_end };
-const rvc_constraint rvc_c_add[] =                  { rvc_rd_eq_rs1, rvc_rd_not_zero, rvc_rs2_not_zero, rvc_end };
-const rvc_constraint rvc_c_fsdsp[] =                { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_swsp[] =                 { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_fswsp[] =                { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_ld[] =                   { rvc_imm_8, rvc_imm_scale_8, rvc_rd_comp, rvc_rs1_comp, rvc_end };
-const rvc_constraint rvc_c_sd[] =                   { rvc_imm_8, rvc_imm_scale_8, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
-const rvc_constraint rvc_c_addiw[] =                { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
-const rvc_constraint rvc_c_ldsp[] =                 { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvc_c_sdsp[] =                 { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_addi4spn[] =            { rvc_imm_10, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_fld[] =                 { rvc_imm_8, rvc_imm_scale_8, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_lw[] =                  { rvc_imm_7, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_flw[] =                 { rvc_imm_7, rvc_imm_scale_4, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_fsd[] =                 { rvc_imm_8, rvc_imm_scale_8, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
+const rvc_constraint rvcc_c_sw[] =                  { rvc_imm_7, rvc_imm_scale_4, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
+const rvc_constraint rvcc_c_fsw[] =                 { rvc_imm_7, rvc_imm_scale_4, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
+const rvc_constraint rvcc_c_nop[] =                 { rvc_rd_eq_zero, rvc_rs1_eq_zero, rvc_rs2_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_addi[] =                { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
+const rvc_constraint rvcc_c_jal[] =                 { rvc_imm_12, rvc_imm_scale_2, rvc_rd_eq_ra, rvc_end };
+const rvc_constraint rvcc_c_li[] =                  { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
+const rvc_constraint rvcc_c_lui[] =                 { rvc_imm_18, rvc_imm_not_zero, rvc_rd_not_zero, rvc_rd_not_sp, rvc_end };
+const rvc_constraint rvcc_c_addi16sp[] =            { rvc_imm_10, rvc_imm_scale_4, rvc_rd_eq_sp, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_srli[] =                { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_srai[] =                { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_andi[] =                { rvc_imm_not_zero, rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_sub[] =                 { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_xor[] =                 { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_or[] =                  { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_and[] =                 { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_subw[] =                { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_addw[] =                { rvc_rd_eq_rs1, rvc_rd_comp, rvc_rs1_comp, rvc_rs2_comp, rvc_end };
+const rvc_constraint rvcc_c_j[] =                   { rvc_imm_12, rvc_imm_scale_2, rvc_rd_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_beqz[] =                { rvc_imm_9, rvc_imm_scale_2, rvc_rs1_comp, rvc_rs2_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_bnez[] =                { rvc_imm_9, rvc_imm_scale_2, rvc_rs1_comp, rvc_rs2_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_slli[] =                { rvc_imm_not_zero, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
+const rvc_constraint rvcc_c_fldsp[] =               { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_lwsp[] =                { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_flwsp[] =               { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_jr[] =                  { rvc_rd_eq_zero, rvc_rs2_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_mv[] =                  { rvc_rs1_eq_zero, rvc_rd_not_zero, rvc_rs2_not_zero, rvc_end };
+const rvc_constraint rvcc_c_ebreak[] =              { rvc_end };
+const rvc_constraint rvcc_c_jalr[] =                { rvc_rd_eq_ra, rvc_rs2_eq_zero, rvc_end };
+const rvc_constraint rvcc_c_add[] =                 { rvc_rd_eq_rs1, rvc_rd_not_zero, rvc_rs2_not_zero, rvc_end };
+const rvc_constraint rvcc_c_fsdsp[] =               { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_swsp[] =                { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_fswsp[] =               { rvc_imm_8, rvc_imm_scale_4, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_ld[] =                  { rvc_imm_8, rvc_imm_scale_8, rvc_rd_comp, rvc_rs1_comp, rvc_end };
+const rvc_constraint rvcc_c_sd[] =                  { rvc_imm_8, rvc_imm_scale_8, rvc_rs1_comp, rvc_rd2_comp, rvc_end };
+const rvc_constraint rvcc_c_addiw[] =               { rvc_imm_6, rvc_rd_not_zero, rvc_rd_eq_rs1, rvc_end };
+const rvc_constraint rvcc_c_ldsp[] =                { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_sdsp[] =                { rvc_imm_9, rvc_imm_scale_8, rvc_rs1_eq_sp, rvc_end };
 
-const rvc_constraint* rvcl_lui[] =                   { rvc_c_lui, nullptr };
-const rvc_constraint* rvcl_jal[] =                   { rvc_c_jal, rvc_c_j, nullptr };
-const rvc_constraint* rvcl_jalr[] =                  { rvc_c_jr, rvc_c_jalr, nullptr };
-const rvc_constraint* rvcl_beq[] =                   { rvc_c_beqz, nullptr };
-const rvc_constraint* rvcl_bne[] =                   { rvc_c_bnez, nullptr };
-const rvc_constraint* rvcl_lw[] =                    { rvc_c_lw, rvc_c_lwsp, nullptr };
-const rvc_constraint* rvcl_sw[] =                    { rvc_c_sw, rvc_c_swsp, nullptr };
-const rvc_constraint* rvcl_addi[] =                  { rvc_c_addi4spn, rvc_c_nop, rvc_c_addi, rvc_c_li, rvc_c_addi16sp, nullptr };
-const rvc_constraint* rvcl_andi[] =                  { rvc_c_andi, nullptr };
-const rvc_constraint* rvcl_slli_rv32i[] =            { rvc_c_slli, nullptr };
-const rvc_constraint* rvcl_srli_rv32i[] =            { rvc_c_srli, nullptr };
-const rvc_constraint* rvcl_srai_rv32i[] =            { rvc_c_srai, nullptr };
-const rvc_constraint* rvcl_add[] =                   { rvc_c_mv, rvc_c_add, nullptr };
-const rvc_constraint* rvcl_sub[] =                   { rvc_c_sub, nullptr };
-const rvc_constraint* rvcl_xor[] =                   { rvc_c_xor, nullptr };
-const rvc_constraint* rvcl_or[] =                    { rvc_c_or, nullptr };
-const rvc_constraint* rvcl_and[] =                   { rvc_c_and, nullptr };
-const rvc_constraint* rvcl_ld[] =                    { rvc_c_ld, rvc_c_ldsp, nullptr };
-const rvc_constraint* rvcl_sd[] =                    { rvc_c_sd, rvc_c_sdsp, nullptr };
-const rvc_constraint* rvcl_slli_rv64i[] =            { rvc_c_slli, nullptr };
-const rvc_constraint* rvcl_srli_rv64i[] =            { rvc_c_srli, nullptr };
-const rvc_constraint* rvcl_srai_rv64i[] =            { rvc_c_srai, nullptr };
-const rvc_constraint* rvcl_addiw[] =                 { rvc_c_addiw, nullptr };
-const rvc_constraint* rvcl_addw[] =                  { rvc_c_addw, nullptr };
-const rvc_constraint* rvcl_subw[] =                  { rvc_c_subw, nullptr };
-const rvc_constraint* rvcl_sbreak[] =                { rvc_c_ebreak, nullptr };
-const rvc_constraint* rvcl_flw[] =                   { rvc_c_flw, rvc_c_flwsp, nullptr };
-const rvc_constraint* rvcl_fsw[] =                   { rvc_c_fsw, rvc_c_fswsp, nullptr };
-const rvc_constraint* rvcl_fld[] =                   { rvc_c_fld, rvc_c_fldsp, nullptr };
-const rvc_constraint* rvcl_fsd[] =                   { rvc_c_fsd, rvc_c_fsdsp, nullptr };
+const rvc_constraint* rvcl_lui[] =                   { rvcc_c_lui, nullptr };
+const rvc_constraint* rvcl_jal[] =                   { rvcc_c_jal, rvcc_c_j, nullptr };
+const rvc_constraint* rvcl_jalr[] =                  { rvcc_c_jr, rvcc_c_jalr, nullptr };
+const rvc_constraint* rvcl_beq[] =                   { rvcc_c_beqz, nullptr };
+const rvc_constraint* rvcl_bne[] =                   { rvcc_c_bnez, nullptr };
+const rvc_constraint* rvcl_lw[] =                    { rvcc_c_lw, rvcc_c_lwsp, nullptr };
+const rvc_constraint* rvcl_sw[] =                    { rvcc_c_sw, rvcc_c_swsp, nullptr };
+const rvc_constraint* rvcl_addi[] =                  { rvcc_c_addi4spn, rvcc_c_nop, rvcc_c_addi, rvcc_c_li, rvcc_c_addi16sp, nullptr };
+const rvc_constraint* rvcl_andi[] =                  { rvcc_c_andi, nullptr };
+const rvc_constraint* rvcl_slli_rv32i[] =            { rvcc_c_slli, nullptr };
+const rvc_constraint* rvcl_srli_rv32i[] =            { rvcc_c_srli, nullptr };
+const rvc_constraint* rvcl_srai_rv32i[] =            { rvcc_c_srai, nullptr };
+const rvc_constraint* rvcl_add[] =                   { rvcc_c_mv, rvcc_c_add, nullptr };
+const rvc_constraint* rvcl_sub[] =                   { rvcc_c_sub, nullptr };
+const rvc_constraint* rvcl_xor[] =                   { rvcc_c_xor, nullptr };
+const rvc_constraint* rvcl_or[] =                    { rvcc_c_or, nullptr };
+const rvc_constraint* rvcl_and[] =                   { rvcc_c_and, nullptr };
+const rvc_constraint* rvcl_ld[] =                    { rvcc_c_ld, rvcc_c_ldsp, nullptr };
+const rvc_constraint* rvcl_sd[] =                    { rvcc_c_sd, rvcc_c_sdsp, nullptr };
+const rvc_constraint* rvcl_slli_rv64i[] =            { rvcc_c_slli, nullptr };
+const rvc_constraint* rvcl_srli_rv64i[] =            { rvcc_c_srli, nullptr };
+const rvc_constraint* rvcl_srai_rv64i[] =            { rvcc_c_srai, nullptr };
+const rvc_constraint* rvcl_addiw[] =                 { rvcc_c_addiw, nullptr };
+const rvc_constraint* rvcl_addw[] =                  { rvcc_c_addw, nullptr };
+const rvc_constraint* rvcl_subw[] =                  { rvcc_c_subw, nullptr };
+const rvc_constraint* rvcl_sbreak[] =                { rvcc_c_ebreak, nullptr };
+const rvc_constraint* rvcl_flw[] =                   { rvcc_c_flw, rvcc_c_flwsp, nullptr };
+const rvc_constraint* rvcl_fsw[] =                   { rvcc_c_fsw, rvcc_c_fswsp, nullptr };
+const rvc_constraint* rvcl_fld[] =                   { rvcc_c_fld, rvcc_c_fldsp, nullptr };
+const rvc_constraint* rvcl_fsd[] =                   { rvcc_c_fsd, rvcc_c_fsdsp, nullptr };
 
-const rvc_constraint** riscv_instruction_comp[] = {
+const riscv_comp_data rvcd_lui[] =                   { { riscv_op_c_lui, rvcc_c_lui }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_jal[] =                   { { riscv_op_c_jal, rvcc_c_jal }, { riscv_op_c_j, rvcc_c_j }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_jalr[] =                  { { riscv_op_c_jr, rvcc_c_jr }, { riscv_op_c_jalr, rvcc_c_jalr }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_beq[] =                   { { riscv_op_c_beqz, rvcc_c_beqz }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_bne[] =                   { { riscv_op_c_bnez, rvcc_c_bnez }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_lw[] =                    { { riscv_op_c_lw, rvcc_c_lw }, { riscv_op_c_lwsp, rvcc_c_lwsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_sw[] =                    { { riscv_op_c_sw, rvcc_c_sw }, { riscv_op_c_swsp, rvcc_c_swsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_addi[] =                  { { riscv_op_c_addi4spn, rvcc_c_addi4spn }, { riscv_op_c_nop, rvcc_c_nop }, { riscv_op_c_addi, rvcc_c_addi }, { riscv_op_c_li, rvcc_c_li }, { riscv_op_c_addi16sp, rvcc_c_addi16sp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_andi[] =                  { { riscv_op_c_andi, rvcc_c_andi }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_slli_rv32i[] =            { { riscv_op_c_slli, rvcc_c_slli }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_srli_rv32i[] =            { { riscv_op_c_srli, rvcc_c_srli }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_srai_rv32i[] =            { { riscv_op_c_srai, rvcc_c_srai }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_add[] =                   { { riscv_op_c_mv, rvcc_c_mv }, { riscv_op_c_add, rvcc_c_add }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_sub[] =                   { { riscv_op_c_sub, rvcc_c_sub }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_xor[] =                   { { riscv_op_c_xor, rvcc_c_xor }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_or[] =                    { { riscv_op_c_or, rvcc_c_or }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_and[] =                   { { riscv_op_c_and, rvcc_c_and }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_ld[] =                    { { riscv_op_c_ld, rvcc_c_ld }, { riscv_op_c_ldsp, rvcc_c_ldsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_sd[] =                    { { riscv_op_c_sd, rvcc_c_sd }, { riscv_op_c_sdsp, rvcc_c_sdsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_slli_rv64i[] =            { { riscv_op_c_slli, rvcc_c_slli }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_srli_rv64i[] =            { { riscv_op_c_srli, rvcc_c_srli }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_srai_rv64i[] =            { { riscv_op_c_srai, rvcc_c_srai }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_addiw[] =                 { { riscv_op_c_addiw, rvcc_c_addiw }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_addw[] =                  { { riscv_op_c_addw, rvcc_c_addw }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_subw[] =                  { { riscv_op_c_subw, rvcc_c_subw }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_sbreak[] =                { { riscv_op_c_ebreak, rvcc_c_ebreak }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_flw[] =                   { { riscv_op_c_flw, rvcc_c_flw }, { riscv_op_c_flwsp, rvcc_c_flwsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_fsw[] =                   { { riscv_op_c_fsw, rvcc_c_fsw }, { riscv_op_c_fswsp, rvcc_c_fswsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_fld[] =                   { { riscv_op_c_fld, rvcc_c_fld }, { riscv_op_c_fldsp, rvcc_c_fldsp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_fsd[] =                   { { riscv_op_c_fsd, rvcc_c_fsd }, { riscv_op_c_fsdsp, rvcc_c_fsdsp }, { riscv_op_unknown, nullptr } };
+
+const riscv_comp_data* riscv_instruction_comp[] = {
 	/*              unknown */ nullptr,
-	/*                  lui */ rvcl_lui,
+	/*                  lui */ rvcd_lui,
 	/*                auipc */ nullptr,
-	/*                  jal */ rvcl_jal,
-	/*                 jalr */ rvcl_jalr,
-	/*                  beq */ rvcl_beq,
-	/*                  bne */ rvcl_bne,
+	/*                  jal */ rvcd_jal,
+	/*                 jalr */ rvcd_jalr,
+	/*                  beq */ rvcd_beq,
+	/*                  bne */ rvcd_bne,
 	/*                  blt */ nullptr,
 	/*                  bge */ nullptr,
 	/*                 bltu */ nullptr,
 	/*                 bgeu */ nullptr,
 	/*                   lb */ nullptr,
 	/*                   lh */ nullptr,
-	/*                   lw */ rvcl_lw,
+	/*                   lw */ rvcd_lw,
 	/*                  lbu */ nullptr,
 	/*                  lhu */ nullptr,
 	/*                   sb */ nullptr,
 	/*                   sh */ nullptr,
-	/*                   sw */ rvcl_sw,
-	/*                 addi */ rvcl_addi,
+	/*                   sw */ rvcd_sw,
+	/*                 addi */ rvcd_addi,
 	/*                 slti */ nullptr,
 	/*                sltiu */ nullptr,
 	/*                 xori */ nullptr,
 	/*                  ori */ nullptr,
-	/*                 andi */ rvcl_andi,
-	/*           slli.rv32i */ rvcl_slli_rv32i,
-	/*           srli.rv32i */ rvcl_srli_rv32i,
-	/*           srai.rv32i */ rvcl_srai_rv32i,
-	/*                  add */ rvcl_add,
-	/*                  sub */ rvcl_sub,
+	/*                 andi */ rvcd_andi,
+	/*           slli.rv32i */ rvcd_slli_rv32i,
+	/*           srli.rv32i */ rvcd_srli_rv32i,
+	/*           srai.rv32i */ rvcd_srai_rv32i,
+	/*                  add */ rvcd_add,
+	/*                  sub */ rvcd_sub,
 	/*                  sll */ nullptr,
 	/*                  slt */ nullptr,
 	/*                 sltu */ nullptr,
-	/*                  xor */ rvcl_xor,
+	/*                  xor */ rvcd_xor,
 	/*                  srl */ nullptr,
 	/*                  sra */ nullptr,
-	/*                   or */ rvcl_or,
-	/*                  and */ rvcl_and,
+	/*                   or */ rvcd_or,
+	/*                  and */ rvcd_and,
 	/*                fence */ nullptr,
 	/*              fence.i */ nullptr,
 	/*                  lwu */ nullptr,
-	/*                   ld */ rvcl_ld,
-	/*                   sd */ rvcl_sd,
-	/*           slli.rv64i */ rvcl_slli_rv64i,
-	/*           srli.rv64i */ rvcl_srli_rv64i,
-	/*           srai.rv64i */ rvcl_srai_rv64i,
-	/*                addiw */ rvcl_addiw,
+	/*                   ld */ rvcd_ld,
+	/*                   sd */ rvcd_sd,
+	/*           slli.rv64i */ rvcd_slli_rv64i,
+	/*           srli.rv64i */ rvcd_srli_rv64i,
+	/*           srai.rv64i */ rvcd_srai_rv64i,
+	/*                addiw */ rvcd_addiw,
 	/*                slliw */ nullptr,
 	/*                srliw */ nullptr,
 	/*                sraiw */ nullptr,
-	/*                 addw */ rvcl_addw,
-	/*                 subw */ rvcl_subw,
+	/*                 addw */ rvcd_addw,
+	/*                 subw */ rvcd_subw,
 	/*                 sllw */ nullptr,
 	/*                 srlw */ nullptr,
 	/*                 sraw */ nullptr,
@@ -1369,7 +1400,7 @@ const rvc_constraint** riscv_instruction_comp[] = {
 	/*            amominu.d */ nullptr,
 	/*            amomaxu.d */ nullptr,
 	/*                scall */ nullptr,
-	/*               sbreak */ rvcl_sbreak,
+	/*               sbreak */ rvcd_sbreak,
 	/*                 sret */ nullptr,
 	/*            sfence.vm */ nullptr,
 	/*                  wfi */ nullptr,
@@ -1388,8 +1419,8 @@ const rvc_constraint** riscv_instruction_comp[] = {
 	/*               csrrwi */ nullptr,
 	/*               csrrsi */ nullptr,
 	/*               csrrci */ nullptr,
-	/*                  flw */ rvcl_flw,
-	/*                  fsw */ rvcl_fsw,
+	/*                  flw */ rvcd_flw,
+	/*                  fsw */ rvcd_fsw,
 	/*              fmadd.s */ nullptr,
 	/*              fmsub.s */ nullptr,
 	/*             fnmsub.s */ nullptr,
@@ -1418,8 +1449,8 @@ const rvc_constraint** riscv_instruction_comp[] = {
 	/*            fcvt.lu.s */ nullptr,
 	/*             fcvt.s.l */ nullptr,
 	/*            fcvt.s.lu */ nullptr,
-	/*                  fld */ rvcl_fld,
-	/*                  fsd */ rvcl_fsd,
+	/*                  fld */ rvcd_fld,
+	/*                  fsd */ rvcd_fsd,
 	/*              fmadd.d */ nullptr,
 	/*              fmsub.d */ nullptr,
 	/*             fnmsub.d */ nullptr,

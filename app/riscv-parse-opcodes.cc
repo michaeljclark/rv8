@@ -1319,6 +1319,10 @@ void riscv_inst_set::print_opcodes_h()
 		printf("\t%s,\n", opcode_format("riscv_op_", opcode, '_').c_str());
 	}
 	printf("};\n\n");
+	printf("struct riscv_comp_data\n{\n");
+	printf("\tconst riscv_op op;\n");
+	printf("\tconst rvc_constraint* constraints;\n");
+	printf("};\n\n");
 	printf("extern const char* riscv_instruction_name[];\n");
 	printf("extern const riscv_inst_type riscv_instruction_type[];\n");
 	printf("extern const riscv_wu riscv_instruction_match[];\n");
@@ -1326,7 +1330,7 @@ void riscv_inst_set::print_opcodes_h()
 	printf("extern const rvf* riscv_instruction_format[];\n");
 	printf("extern const char* riscv_i_registers[];\n");
 	printf("extern const char* riscv_f_registers[];\n");
-	printf("extern const rvc_constraint** riscv_instruction_comp[];\n");
+	printf("extern const riscv_comp_data* riscv_instruction_comp[];\n");
 	printf("extern const riscv_op riscv_instruction_decomp[];\n");
 	printf("\n");
 	printf("#endif\n");
@@ -1398,7 +1402,7 @@ void riscv_inst_set::print_opcodes_c()
 	// compression meta data
 	for (auto &opcode : opcodes) {
 		if (!opcode->compressed) continue;
-		std::string cop_name = "rvc_" + opcode_format("", opcode, '_') + "[] =";
+		std::string cop_name = "rvcc_" + opcode_format("", opcode, '_') + "[] =";
 		printf("const rvc_constraint %-30s { ", cop_name.c_str());
 		for (auto &constraint : opcode->compressed->constraint_list) {
 			printf("rvc_%s, ", constraint->name.c_str());
@@ -1408,20 +1412,34 @@ void riscv_inst_set::print_opcodes_c()
 	printf("\n");
 	for (auto &opcode : opcodes) {
 		if (opcode->compressions.size() == 0) continue;
-		std::string op_name = "rvcl_" + opcode_format("", opcode, '_') + "[] =";
-		printf("const rvc_constraint* %-30s { ", op_name.c_str());
+		std::string op_constraint_name = "rvcl_" + opcode_format("", opcode, '_') + "[] =";
+		printf("const rvc_constraint* %-30s { ", op_constraint_name.c_str());
 		for (auto comp : opcode->compressions) {
-			printf("rvc_%s, ", opcode_format("", comp->copcode, '_').c_str());
+			printf("rvcc_%s, ", opcode_format("", comp->copcode, '_').c_str());
 		}
 		printf("nullptr };\n");
 	}
 	printf("\n");
-	printf("const rvc_constraint** riscv_instruction_comp[] = {\n");
+	for (auto &opcode : opcodes) {
+		if (opcode->compressions.size() == 0) continue;
+		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, '_') + "[] =";
+		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
+		for (auto comp : opcode->compressions) {
+			printf("{ %s, %s }, ",
+				opcode_format("riscv_op_", comp->copcode, '_').c_str(),
+				opcode_format("rvcc_", comp->copcode, '_').c_str());
+		}
+		printf("{ riscv_op_unknown, nullptr } };\n");
+	}
+	printf("\n");
+	printf("const riscv_comp_data* riscv_instruction_comp[] = {\n");
 	printf("\t/*              unknown */ nullptr,\n");
 	for (auto &opcode : opcodes) {
 		std::string opcode_key = opcode_format("", opcode, '.');
+		std::string opcode_data = opcode_format("rvcd_", opcode, '_');
+		std::string opcode_constraint = "nullptr";
 		printf("\t/* %20s */ %s,\n", opcode_key.c_str(),
-			opcode->compressions.size() > 0 ? opcode_format("rvcl_", opcode, '_').c_str() : "nullptr");
+			opcode->compressions.size() > 0 ? opcode_data.c_str() : "nullptr");
 	}
 	printf("};\n\n");
 	printf("const riscv_op riscv_instruction_decomp[] = {\n");
