@@ -21,7 +21,6 @@ enum rvc_constraint
 	rvc_imm_scale_2,
 	rvc_imm_scale_4,
 	rvc_imm_scale_8,
-	rvc_rd2_comp,
 	rvc_rd_comp,
 	rvc_rd_eq_ra,
 	rvc_rd_eq_rs1,

@@ -99,6 +99,7 @@ all_src_deps =	$(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DI
 
 # riscv meta data
 RV_META_DATA =  $(META_DIR$)/args \
+                $(META_DIR$)/compression \
                 $(META_DIR$)/csrs \
                 $(META_DIR$)/descriptions \
                 $(META_DIR$)/extensions \
