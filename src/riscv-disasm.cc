@@ -170,8 +170,10 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 	// handle lui and auipc combos by checking last decoded instruction
 	switch (ldec.op) {
 		case riscv_op_lui:
+		case riscv_op_c_lui:
 			switch (dec.op) {
 				case riscv_op_addi:
+				case riscv_op_c_addi:
 					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
 						uint64_t addr = ldec.imm + dec.imm;
 						print_addr(offset, addr, symlookup, colorize);
@@ -183,12 +185,14 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 		case riscv_op_auipc:
 			switch (dec.op) {
 				case riscv_op_addi:
+				case riscv_op_c_addi:
 					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
 						uint64_t addr = pc - pc_offset + ldec.imm + dec.imm - 4;
 						print_addr(offset, addr, symlookup, colorize);
 						goto out;
 					}
 				case riscv_op_jalr:
+				case riscv_op_c_jalr:
 					if (ldec.rd == dec.rs1) {
 						uint64_t addr = pc - pc_offset + ldec.imm + dec.imm - 4;
 						print_addr(offset, addr, symlookup, colorize);
