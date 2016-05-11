@@ -94,6 +94,7 @@ struct riscv_compress_elf
 
 	void compress(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
+		// NOTE - work in progress
 		riscv_decode dec, ldec;
 		riscv_ptr pc = start;
 		size_t bytes = 0, saving = 0;
@@ -165,13 +166,6 @@ struct riscv_compress_elf
 		}
 
 		filename = result.first[0];
-	}
-
-	void print_heading(std::string heading)
-	{
-		printf("\n%s---[ %s ]", colorize("header"), heading.c_str());
-		for (size_t i = 0; i < 116 - heading.length(); i++) printf("-");
-		printf("%s\n\n", colorize("reset"));
 	}
 
 	void run()
