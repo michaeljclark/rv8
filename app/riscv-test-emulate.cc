@@ -88,8 +88,16 @@ void* map_executable(const char* filename, void *vaddr, size_t len, size_t offse
 int main(int argc, char *argv[])
 {
 	elf_file elf;
+
 	if (argc != 2) panic("usage: %s <elf_file>", argv[0]);
+
+	// load ELF headers
+	// NOTE: This POC code presently loads the whole ELF into RAM.
+	// TODO: Add flag to only load headers
 	elf.load(argv[1]);
+
+	// Find the LOAD segment and mmap it into memory
+	// NOTE: This POC code presently only handles on PT_LOAD segment
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
 		Elf64_Phdr &phdr = elf.phdrs[i];
 		if (phdr.p_flags & PT_LOAD) {
@@ -98,6 +106,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
 	// TODO : munmap
+
 	return 0;
 }
