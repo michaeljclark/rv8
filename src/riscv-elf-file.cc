@@ -212,3 +212,13 @@ uint8_t* elf_file::offset(size_t offset)
 	panic("illegal offset: %lu", offset);
 	return nullptr;
 }
+
+elf_section* elf_file::section(size_t offset)
+{
+	for (size_t i = 0; i < sections.size(); i++) {
+		if (offset >= sections[i].offset && offset < sections[i].offset + sections[i].buf.size()) {
+			return &sections[i];
+		}
+	}
+	return nullptr;
+}

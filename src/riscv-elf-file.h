@@ -40,6 +40,7 @@ struct elf_file
 	void clear();
 	void load(std::string filename);
 	uint8_t* offset(size_t offset);
+	elf_section* section(size_t offset);
 };
 
 #endif
