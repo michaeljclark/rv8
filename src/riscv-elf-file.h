@@ -9,10 +9,16 @@ struct cmp_str {
 	bool operator()(char const *a, char const *b) const { return std::strcmp(a, b) < 0; }
 };
 
+struct elf_section
+{
+	size_t offset;
+	size_t size;
+	std::vector<uint8_t> buf;
+};
+
 struct elf_file
 {
 	std::string filename;
-	std::vector<uint8_t> buf;
 	ssize_t filesize;
 	int ei_class;
 	int ei_data;
@@ -26,12 +32,14 @@ struct elf_file
 	Elf64_Shdr *shstrtab;
 	Elf64_Shdr *symtab;
 	Elf64_Shdr *strtab;
+	std::vector<elf_section> sections;
 
 	elf_file();
 	elf_file(std::string filename);
 
 	void clear();
 	void load(std::string filename);
+	uint8_t* offset(size_t offset);
 };
 
 #endif

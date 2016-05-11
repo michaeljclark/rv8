@@ -29,41 +29,18 @@
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
-struct riscv_parse_elf
+struct riscv_compress_elf
 {
 	elf_file elf;
 	std::string filename;
 	std::map<riscv_ptr,std::string> branch_labels;
 
-	bool enable_color = false;
-	bool elf_header = false;
-	bool section_headers = false;
-	bool program_headers = false;
-	bool symbol_table = false;
-	bool disassebly = false;
+	bool do_compress = false;
+	bool do_decompress = false;
 	bool help_or_error = false;
 
 	const char* colorize(const char *type)
 	{
-		if (!enable_color || !isatty(fileno(stdout))) {
-			return "";
-		} else if (strcmp(type, "header") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
-		} else if (strcmp(type, "title") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
-		} else if (strcmp(type, "legend") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_MAGENTA _COLOR_END;
-		} else if (strcmp(type, "opcode") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_CYAN _COLOR_END;
-		} else if (strcmp(type, "location") == 0) {
-			return _COLOR_BEGIN _COLOR_FG_GREEN _COLOR_END;
-		} else if (strcmp(type, "address") == 0) {
-			return _COLOR_BEGIN _COLOR_FG_YELLOW _COLOR_END;
-		} else if (strcmp(type, "symbol") == 0) {
-			return _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_END;
-		} else if (strcmp(type, "reset") == 0) {
-			return _COLOR_RESET;
-		}
 		return "";
 	}
 
@@ -115,21 +92,34 @@ struct riscv_parse_elf
 		}
 	}
 
-	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
+	void compress(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
 		riscv_decode dec, ldec;
 		riscv_ptr pc = start;
+		size_t bytes = 0, saving = 0;
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
-				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1),
-				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			if (next_pc - pc == 4 && riscv_decode_compress(dec)) {
+				(*(unsigned short*)pc) = le16toh(riscv_encode(dec));
+				riscv_disasm_instruction(dec, ldec, pc, next_pc-2, pc_offset, gp,
+					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
+					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1),
+					false);
+				bytes += 2;
+				saving += 2;
+			} else {
+				riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
+					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
+					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
+				bytes += 4;
+			}
 			pc = next_pc;
 			ldec = dec;
 		}
+		printf("old_total=%lu new_total=%lu saving=%lu", bytes + saving, bytes, saving);
 	}
 
-	void print_disassembly()
+	void compress()
 	{
 		const Elf64_Sym *gp_sym = elf_sym_by_name(elf, "_gp");
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
@@ -137,7 +127,7 @@ struct riscv_parse_elf
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				uint8_t *offset = elf.offset(shdr.sh_offset);
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf_shdr_name(elf, i), colorize("reset"));
-				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
+				compress(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
 					riscv_ptr(gp_sym ? gp_sym->st_value : 0));
 			}
 		}
@@ -147,27 +137,12 @@ struct riscv_parse_elf
 	{
 		cmdline_option options[] =
 		{
-			{ "-c", "--color", cmdline_arg_type_none,
-				"Enable Color",
-				[&](std::string s) { return (enable_color = true); } },
-			{ "-e", "--print-elf-header", cmdline_arg_type_none,
-				"Print ELF header",
-				[&](std::string s) { return (elf_header = true); } },
-			{ "-s", "--print-section-headers", cmdline_arg_type_none,
-				"Print Section headers",
-				[&](std::string s) { return (section_headers = true); } },
-			{ "-p", "--print-program-headers", cmdline_arg_type_none,
-				"Print Program headers",
-				[&](std::string s) { return (program_headers = true); } },
-			{ "-t", "--print-symbol-table", cmdline_arg_type_none,
-				"Print Symbol Table",
-				[&](std::string s) { return (symbol_table = true); } },
-			{ "-d", "--print-disassembly", cmdline_arg_type_none,
-				"Print Disassembly",
-				[&](std::string s) { return (disassebly = true); } },
-			{ "-a", "--print-all", cmdline_arg_type_none,
-				"Print All",
-				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = disassebly = true); } },
+			{ "-c", "--compress", cmdline_arg_type_none,
+				"Compress",
+				[&](std::string s) { return (do_compress = true); } },
+			{ "-d", "--decompress", cmdline_arg_type_none,
+				"Decompress",
+				[&](std::string s) { return (do_decompress = true); } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -182,8 +157,7 @@ struct riscv_parse_elf
 			help_or_error = true;
 		}
 
-		if ((help_or_error |= !elf_header && !section_headers &&
-			!program_headers && !symbol_table && !disassebly))
+		if ((help_or_error |= !do_compress && !do_decompress))
 		{
 			printf("usage: %s [<options>] <elf_file>\n", argv[0]);
 			cmdline_option::print_options(options);
@@ -203,26 +177,9 @@ struct riscv_parse_elf
 	void run()
 	{
 		elf.load(filename);
-		if (elf_header) {
-			print_heading("ELF Header");
-			elf_print_header_info(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-		}
-		if (section_headers) {
-			print_heading("Section Headers");
-			elf_print_section_headers(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-		}
-		if (program_headers) {
-			print_heading("Program Headers");
-			elf_print_program_headers(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-		}
-		if (symbol_table) {
-			print_heading("Symbol Table");
-			elf_print_symbol_table(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-		}
-		if (disassebly && elf.ehdr.e_machine == EM_RISCV) {
-			print_heading("Disassembly");
+		if (do_compress && elf.ehdr.e_machine == EM_RISCV) {
 			scan_branch_labels();
-			print_disassembly();
+			compress();
 		}
 		printf("\n");
 	}
@@ -230,8 +187,8 @@ struct riscv_parse_elf
 
 int main(int argc, const char *argv[])
 {
-	riscv_parse_elf elf_parser;
-	elf_parser.parse_commandline(argc, argv);
-	elf_parser.run();
+	riscv_compress_elf elf_compress;
+	elf_compress.parse_commandline(argc, argv);
+	elf_compress.run();
 	return 0;
 }

@@ -225,20 +225,20 @@ const std::string elf_sym_info(elf_file &elf, int i, elf_symbol_colorize_fn colo
 
 const char* elf_shdr_name(elf_file &elf, int i)
 {
-	return elf.shstrtab ? (const char*)(elf.buf.data() +
-		elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
+	return elf.shstrtab ?
+		(const char*)elf.offset(elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
 }
 
 const char* elf_sym_name(elf_file &elf, int i)
 {
-	return elf.strtab ? (const char*)(elf.buf.data() +
-		elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
+	return elf.strtab ?
+		(const char*)elf.offset(elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
 }
 
 const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
 {
-	return elf.strtab ? (const char*)(elf.buf.data() +
-		elf.strtab->sh_offset + sym->st_name) : "";
+	return elf.strtab ?
+		(const char*)elf.offset(elf.strtab->sh_offset + sym->st_name) : "";
 }
 
 const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr)

@@ -87,9 +87,10 @@ const void print_addr(size_t &offset, uint64_t addr,
 
 void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize,
+	bool decompress)
 {
-	riscv_decode_decompress(dec);
+	if (decompress) riscv_decode_decompress(dec);
 
 	size_t offset = 0;
 	const rvf *fmt = riscv_instruction_format[dec.op];

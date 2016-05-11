@@ -29,7 +29,6 @@ elf_file::elf_file(std::string filename)
 void elf_file::clear()
 {
 	filename = "";
-	buf.resize(0);
 	filesize = 0;
 	ei_class = ELFCLASSNONE;
 	ei_data = ELFDATANONE;
@@ -43,11 +42,14 @@ void elf_file::clear()
 	shstrtab = nullptr;
 	symtab = nullptr;
 	strtab = nullptr;
+	sections.resize(0);
 }
 
 void elf_file::load(std::string filename)
 {
+	FILE *file;
 	struct stat stat_buf;
+	std::vector<uint8_t> buf;
 
 	// clear current data
 	clear();
@@ -56,7 +58,7 @@ void elf_file::load(std::string filename)
 	this->filename = filename;
 
 	// open file
-	FILE *file = fopen(filename.c_str(), "r");
+	file = fopen(filename.c_str(), "r");
 	if (!file) {
 		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
 	}
@@ -155,6 +157,16 @@ void elf_file::load(std::string filename)
 		}
 	}
 
+	// copy section data into buffers
+	sections.resize(shdrs.size());
+	for (size_t i = 0; i < shdrs.size(); i++) {
+		sections[i].offset = shdrs[i].sh_offset;
+		sections[i].size = shdrs[i].sh_size;
+		size_t len = (i == shdrs.size() - 1) ? buf.size() - shdrs[i].sh_offset : shdrs[i + 1].sh_offset - shdrs[i].sh_offset;
+		sections[i].buf.resize(len);
+		std::memcpy(sections[i].buf.data(), buf.data() + shdrs[i].sh_offset, len);
+	}
+
 	if (!symtab) return;
 
 	// byteswap and normalize symbol table entries
@@ -166,16 +178,16 @@ void elf_file::load(std::string filename)
 				Elf64_Sym sym64;
 				elf_bswap_sym32(sym32, ei_data);
 				elf_convert_to_sym64(&sym64, sym32);
+				addr_symbol_map[sym64.st_value] = symbols.size();
 				symbols.push_back(sym64);
-				addr_symbol_map[sym64.st_value] = symbols.size() - 1;
 			}
 			break;
 		case ELFCLASS64:
 			for (size_t i = 0; i < num_symbols; i++) {
 				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data);
+				addr_symbol_map[sym64->st_value] = symbols.size();
 				symbols.push_back(*sym64);
-				addr_symbol_map[sym64->st_value] = symbols.size() - 1;
 			}
 			break;
 	}
@@ -188,4 +200,15 @@ void elf_file::load(std::string filename)
 			name_symbol_map[name] = i;
 		}
 	}
+}
+
+uint8_t* elf_file::offset(size_t offset)
+{
+	for (size_t i = 0; i < sections.size(); i++) {
+		if (offset >= sections[i].offset && offset < sections[i].offset + sections[i].buf.size()) {
+			return sections[i].buf.data() + (offset - sections[i].offset);
+		}
+	}
+	panic("illegal offset: %lu", offset);
+	return nullptr;
 }

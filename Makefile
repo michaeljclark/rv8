@@ -37,6 +37,7 @@ CPPFLAGS =
 CXXFLAGS =      -std=c++14 $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
+ZEROPAGE_FLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -65,6 +66,10 @@ endif
 ifeq ($(call check_opt,$(CXX),cc,$(NOEXEC_FLAGS)), 0)
 LDFLAGS +=      $(NOEXEC_FLAGS)
 endif
+endif
+# check if we can link with a small zero page
+ifeq ($(call check_opt,$(CXX),cc,$(ZEROPAGE_FLAGS)), 0)
+LDFLAGS +=      $(ZEROPAGE_FLAGS)
 endif
 
 # check whether to enable sanitizer
@@ -134,15 +139,20 @@ RV_ASM_SRCS =   $(LIB_SRC_DIR)/riscv-csr.cc \
 RV_ASM_OBJS =   $(call lib_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
-# parse-opcodes
-PARSE_OPCODES_SRCS = $(APP_SRC_DIR)/riscv-parse-opcodes.cc
-PARSE_OPCODES_OBJS = $(call app_src_objs, $(PARSE_OPCODES_SRCS))
-PARSE_OPCODES_BIN = $(BIN_DIR)/riscv-parse-opcodes
+# compress-elf
+COMPRESS_ELF_SRCS = $(APP_SRC_DIR)/riscv-compress-elf.cc
+COMPRESS_ELF_OBJS = $(call app_src_objs, $(COMPRESS_ELF_SRCS))
+COMPRESS_ELF_BIN = $(BIN_DIR)/riscv-compress-elf
 
 # parse-elf
 PARSE_ELF_SRCS = $(APP_SRC_DIR)/riscv-parse-elf.cc
 PARSE_ELF_OBJS = $(call app_src_objs, $(PARSE_ELF_SRCS))
 PARSE_ELF_BIN = $(BIN_DIR)/riscv-parse-elf
+
+# parse-opcodes
+PARSE_OPCODES_SRCS = $(APP_SRC_DIR)/riscv-parse-opcodes.cc
+PARSE_OPCODES_OBJS = $(call app_src_objs, $(PARSE_OPCODES_SRCS))
+PARSE_OPCODES_BIN = $(BIN_DIR)/riscv-parse-opcodes
 
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
@@ -165,8 +175,9 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS)
 
-BINARIES = $(PARSE_OPCODES_BIN) \
+BINARIES = $(COMPRESS_ELF_BIN) \
            $(PARSE_ELF_BIN) \
+           $(PARSE_OPCODES_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN)
 
@@ -204,8 +215,9 @@ $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_ELF_LIB): $(RV_ELF_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

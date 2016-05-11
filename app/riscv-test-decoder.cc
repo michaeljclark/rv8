@@ -1597,8 +1597,8 @@ int main(int argc, const char *argv[])
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				printf("Section[%2lu] %s\n", i, elf_shdr_name(elf, i));
-				riscv_ptr start = elf.buf.data() + shdr.sh_offset;
-				riscv_ptr end = elf.buf.data() + shdr.sh_offset + shdr.sh_size;
+				riscv_ptr start = elf.offset(shdr.sh_offset);
+				riscv_ptr end = start + shdr.sh_size;
 				TEST_DECODER_ELF(decode_switch, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_nocache, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_cache, start, end, count_elf, "RV64C");
