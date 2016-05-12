@@ -4,8 +4,7 @@
 
 A meta compiler that generates RISC-V instruction decoders, disassembler
 meta data, opcode maps and documentation from instruction set meta data.
-This is the starting point for a RISC-V binary translation investigation
-and "pointer shades"™ (see initial shades in meta/args; will evolve).
+This is the starting point for a RISC-V binary translation investigation.
 
 ![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot.png)
 

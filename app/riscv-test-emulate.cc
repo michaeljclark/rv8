@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	elf.load(argv[1]);
 
 	// Find the LOAD segment and mmap it into memory
-	// NOTE: This POC code presently only handles on PT_LOAD segment
+	// NOTE: This POC code presently only handles one PT_LOAD segment
 	for (size_t i = 0; i < elf.phdrs.size(); i++) {
 		Elf64_Phdr &phdr = elf.phdrs[i];
 		if (phdr.p_flags & PT_LOAD) {
