@@ -167,30 +167,37 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 		fmt++;
 	}
 
-	// handle lui and auipc combos by checking last decoded instruction
+	// handle lui/addi, auipc,addi and auipc,jalr pair address decoding
+	// by checking last decoded instruction.
+
+	// TODO - instruction pairs may be separated by more than one
+	// instruction so we need to maintain a short history.
 	switch (ldec.op) {
 		case riscv_op_lui:
 		case riscv_op_c_lui:
 			switch (dec.op) {
 				case riscv_op_addi:
 				case riscv_op_c_addi:
-					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
+					if (ldec.rd == dec.rs1) {
 						uint64_t addr = ldec.imm + dec.imm;
 						print_addr(offset, addr, symlookup, colorize);
 						goto out;
 					}
+					break;
 				default:
 					break;
 			}
+			break;
 		case riscv_op_auipc:
 			switch (dec.op) {
 				case riscv_op_addi:
 				case riscv_op_c_addi:
-					if (ldec.rd == dec.rd && ldec.rd == dec.rs1) {
+					if (ldec.rd == dec.rs1) {
 						uint64_t addr = pc - pc_offset + ldec.imm + dec.imm - 4;
 						print_addr(offset, addr, symlookup, colorize);
 						goto out;
 					}
+					break;
 				case riscv_op_jalr:
 				case riscv_op_c_jalr:
 					if (ldec.rd == dec.rs1) {
@@ -198,14 +205,16 @@ void riscv_disasm_instruction(riscv_decode &dec, riscv_decode &ldec,
 						print_addr(offset, addr, symlookup, colorize);
 						goto out;
 					}
+					break;
 				default:
 					break;
 			}
+			break;
 		default:
 			break;
 	}
 
-	// handle loads and stores from global pointer
+	// handle address decoding for loads and stores from the global pointer
 	if (gp && dec.rs1 == riscv_ireg_gp)
 	{
 		switch (dec.op) {
