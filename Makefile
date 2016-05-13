@@ -144,6 +144,11 @@ COMPRESS_ELF_SRCS = $(APP_SRC_DIR)/riscv-compress-elf.cc
 COMPRESS_ELF_OBJS = $(call app_src_objs, $(COMPRESS_ELF_SRCS))
 COMPRESS_ELF_BIN = $(BIN_DIR)/riscv-compress-elf
 
+# histogram-elf
+HISTOGRAM_ELF_SRCS = $(APP_SRC_DIR)/riscv-histogram-elf.cc
+HISTOGRAM_ELF_OBJS = $(call app_src_objs, $(HISTOGRAM_ELF_SRCS))
+HISTOGRAM_ELF_BIN = $(BIN_DIR)/riscv-histogram-elf
+
 # parse-elf
 PARSE_ELF_SRCS = $(APP_SRC_DIR)/riscv-parse-elf.cc
 PARSE_ELF_OBJS = $(call app_src_objs, $(PARSE_ELF_SRCS))
@@ -176,6 +181,7 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(TEST_EMULATE_SRCS)
 
 BINARIES = $(COMPRESS_ELF_BIN) \
+           $(HISTOGRAM_ELF_BIN) \
            $(PARSE_ELF_BIN) \
            $(PARSE_OPCODES_BIN) \
            $(TEST_DECODER_BIN) \
@@ -216,6 +222,7 @@ $(RV_ELF_LIB): $(RV_ELF_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
