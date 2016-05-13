@@ -243,9 +243,9 @@ const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
 
 const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr)
 {
-	size_t i = elf.addr_symbol_map[addr];
-	if (i == 0 || i >= elf.symbols.size()) return nullptr;
-	return &elf.symbols[i];
+	auto ai = elf.addr_symbol_map.find(addr);
+	if (ai == elf.addr_symbol_map.end()) return nullptr;
+	return &elf.symbols[ai->second];
 }
 
 const Elf64_Sym* elf_sym_by_name(elf_file &elf, const char *name)

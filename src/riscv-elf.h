@@ -216,7 +216,7 @@ enum {
 	SHT_HASH = 5,                    /* Contains a symbol hash table */
 	SHT_DYNAMIC = 6,                 /* Contains dynamic linking tables */
 	SHT_NOTE = 7,                    /* Contains note information */
-	SHT_NOBITS = 8,                  /* Contains uninitialized space; does not space in file */
+	SHT_NOBITS = 8,                  /* Contains uninitialized space; does not take up space in file */
 	SHT_REL = 9,                     /* Contains "Rel" type relocation entries */
 	SHT_SHLIB = 10,                  /* Reserved */
 	SHT_DYNSYM = 11,                 /* Contains a dynamic loader symbol table */

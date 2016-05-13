@@ -9,6 +9,8 @@
 
 struct riscv_decode
 {
+	riscv_ptr pc;
+	riscv_lu  inst;
 	riscv_l   imm;
 	riscv_hu  op;
 	riscv_hu  type;
@@ -40,7 +42,6 @@ typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          IMM_
 typedef imm_t<32, S<31,12, B<31,12>>>                                       IMM_U;
 typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   IMM_UJ;
 typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_C_sh5;
-
 
 /* Decode none */
 inline void riscv_decode_none(riscv_decode &dec, riscv_lu inst) {}
@@ -1176,17 +1177,42 @@ inline riscv_lu riscv_encode(riscv_decode &dec)
 	return inst;
 }
 
+/* Instruction length */
+
+inline size_t riscv_get_instruction_length(riscv_lu inst)
+{
+	// instruction length coding
+
+	//      aa - 16 bit aa != 11
+	//   bbb11 - 32 bit bbb != 111
+	//  011111 - 48 bit
+	// 0111111 - 64 bit
+
+	// NOTE: currenttly supports maximum of 64-bit
+	return (inst &      0b11) != 0b11      ? 2
+		 : (inst &   0b11100) != 0b11100   ? 4
+		 : (inst &  0b111111) == 0b011111  ? 6
+		 : 8;
+}
+
 /* Fetch Instruction */
 
-inline riscv_lu riscv_get_instruction(unsigned char *pc, unsigned char **next_pc)
+inline riscv_lu riscv_get_instruction(unsigned char *pc, unsigned char **next_pc = nullptr)
 {
-	riscv_lu inst = htole16(*(unsigned short*)pc);
-	unsigned int op1 = inst & 0b11;
-	if (op1 == 3) {
-		inst |= htole16(*(unsigned short*)(pc + 2)) << 16;
-		*next_pc = pc + 4;
+	// NOTE: currenttly supports maximum of 64-bit
+	riscv_lu inst;
+	if ((*(uint8_t*)pc & 0b11) != 0b11) {
+		inst = htole16(*(uint16_t*)pc);
+		if (next_pc) *next_pc = pc + 2;
+	} else if ((*(uint8_t*)pc & 0b11100) != 0b11100) {
+		inst = htole32(*(uint32_t*)pc);
+		if (next_pc) *next_pc = pc + 4;
+	} else if ((*(uint8_t*)pc & 0b111111) == 0b011111) {
+		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
+		if (next_pc) *next_pc = pc + 6;
 	} else {
-		*next_pc = pc + 2;
+		inst = htole64(*(uint64_t*)pc);
+		if (next_pc) *next_pc = pc + 8;
 	}
 	return inst;
 }
@@ -1198,9 +1224,10 @@ riscv_ptr riscv_decode_instruction(riscv_decode &dec, riscv_ptr pc)
 {
 	riscv_ptr next_pc;
 	memset(&dec, 0, sizeof(dec));
-	riscv_lu inst = riscv_get_instruction(pc, &next_pc);
-	riscv_decode_opcode<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, inst);
-	riscv_decode_type(dec, inst);
+	dec.pc = pc;
+	dec.inst = riscv_get_instruction(pc, &next_pc);
+	riscv_decode_opcode<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, dec.inst);
+	riscv_decode_type(dec, dec.inst);
 	return next_pc;
 }
 

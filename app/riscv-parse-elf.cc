@@ -117,15 +117,15 @@ struct riscv_parse_elf
 
 	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
-		riscv_decode dec, ldec;
+		riscv_decode dec;
+		std::deque<riscv_decode> dec_hist;
 		riscv_ptr pc = start;
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
+			riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			pc = next_pc;
-			ldec = dec;
 		}
 	}
 

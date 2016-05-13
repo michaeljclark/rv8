@@ -95,27 +95,27 @@ struct riscv_compress_elf
 	void compress(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
 		// NOTE - work in progress
-		riscv_decode dec, ldec;
+		riscv_decode dec;
+		std::deque<riscv_decode> dec_hist;
 		riscv_ptr pc = start;
 		size_t bytes = 0, saving = 0;
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			if (next_pc - pc == 4 && riscv_decode_compress(dec)) {
-				(*(unsigned short*)pc) = le16toh(riscv_encode(dec));
-				riscv_disasm_instruction(dec, ldec, pc, next_pc-2, pc_offset, gp,
+			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_decode_compress(dec)) {
+				dec.inst = riscv_encode(dec);
+				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1),
 					false);
 				bytes += 2;
 				saving += 2;
 			} else {
-				riscv_disasm_instruction(dec, ldec, pc, next_pc, pc_offset, gp,
+				riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 4;
 			}
 			pc = next_pc;
-			ldec = dec;
 		}
 		printf("old_total=%lu new_total=%lu saving=%lu", bytes + saving, bytes, saving);
 	}

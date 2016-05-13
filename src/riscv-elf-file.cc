@@ -162,9 +162,10 @@ void elf_file::load(std::string filename)
 	for (size_t i = 0; i < shdrs.size(); i++) {
 		sections[i].offset = shdrs[i].sh_offset;
 		sections[i].size = shdrs[i].sh_size;
-		size_t len = (i == shdrs.size() - 1) ? buf.size() - shdrs[i].sh_offset : shdrs[i + 1].sh_offset - shdrs[i].sh_offset;
-		sections[i].buf.resize(len);
-		std::memcpy(sections[i].buf.data(), buf.data() + shdrs[i].sh_offset, len);
+		if (shdrs[i].sh_type != SHT_NOBITS) {
+			sections[i].buf.resize(shdrs[i].sh_size);
+			std::memcpy(sections[i].buf.data(), buf.data() + shdrs[i].sh_offset, shdrs[i].sh_size);
+		}
 	}
 
 	if (!symtab) return;
@@ -178,7 +179,9 @@ void elf_file::load(std::string filename)
 				Elf64_Sym sym64;
 				elf_bswap_sym32(sym32, ei_data);
 				elf_convert_to_sym64(&sym64, sym32);
-				addr_symbol_map[sym64.st_value] = symbols.size();
+				if (sym64.st_shndx != SHN_UNDEF) {
+					addr_symbol_map[sym64.st_value] = symbols.size();
+				}
 				symbols.push_back(sym64);
 			}
 			break;
@@ -186,7 +189,9 @@ void elf_file::load(std::string filename)
 			for (size_t i = 0; i < num_symbols; i++) {
 				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data);
-				addr_symbol_map[sym64->st_value] = symbols.size();
+				if (sym64->st_shndx != SHN_UNDEF) {
+					addr_symbol_map[sym64->st_value] = symbols.size();
+				}
 				symbols.push_back(*sym64);
 			}
 			break;
