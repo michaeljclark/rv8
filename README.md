@@ -111,3 +111,11 @@ To output LaTeX for the RV64G ISA subset:
 ```
 ./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64G -l -r meta
 ```
+
+## RISC-V ELF Histogram Utility
+
+To print the top 20 instructions in a RISC-V ELF binary:
+
+```
+./build/darwin_x86_64/bin/riscv-histogram-elf -b -c █ linux/vmlinux | head -20
+```
