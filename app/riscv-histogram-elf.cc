@@ -34,7 +34,11 @@ struct riscv_histogram_elf
 	elf_file elf;
 	std::string filename;
 
+	std::string use_char = "#";
+	size_t max_chars = 80;
 	bool help_or_error = false;
+	bool hash_bars = false;
+	bool reverse_sort = false;
 
 	typedef std::map<size_t,size_t> map_t;
 	typedef std::pair<size_t,size_t> pair_t;
@@ -52,19 +56,17 @@ struct riscv_histogram_elf
 		}
 	}
 
-	char* repeat_char(char *buf, size_t buf_len, char c, size_t count)
+	std::string repeat_str(std::string str, size_t count)
 	{
-		size_t end = std::min(buf_len - 1, count);
-		std::memset(buf, c, end);
-		buf[end] = '\0';
-		return buf;
+		std::string s;
+		for (size_t i = 0; i < count; i++) s += str;
+		return s;
 	}
 
 	void histogram()
 	{
 		map_t hist;
 		std::vector<pair_t> hist_s;
-		char buf[120];
 
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
@@ -80,14 +82,17 @@ struct riscv_histogram_elf
 			hist_s.push_back(ent);
 		}
 
-		std::sort(hist_s.begin(), hist_s.end(), [] (const pair_t &a, const pair_t &b) {
-			return a.second < b.second;
+		std::sort(hist_s.begin(), hist_s.end(), [&] (const pair_t &a, const pair_t &b) {
+			return reverse_sort ? a.second < b.second : a.second > b.second;
 		});
 
+		size_t i = 0;
 		for (auto ent : hist_s) {
-			printf("%-10s[%-6lu] #%s\n",
-				riscv_instruction_name[ent.first], ent.second,
-				repeat_char(buf, sizeof(buf), '#', ent.second * (sizeof(buf)-1) / max));
+			printf("%5lu. %-10s[%-6lu]%s%s%s\n",
+				++i, riscv_instruction_name[ent.first], ent.second,
+				hash_bars ? " " : "",
+				hash_bars ? use_char.c_str() : "",
+				hash_bars ? repeat_str(use_char, ent.second * (max_chars - 1) / max).c_str() : "");
 		}
 	}
 
@@ -98,6 +103,18 @@ struct riscv_histogram_elf
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
+			{ "-c", "--char", cmdline_arg_type_string,
+				"Character to use in bars",
+				[&](std::string s) { use_char = s; return true; } },
+			{ "-b", "--bars", cmdline_arg_type_none,
+				"Print bars next to counts",
+				[&](std::string s) { return (hash_bars = true); } },
+			{ "-m", "--max-chars", cmdline_arg_type_string,
+				"Maximum number of characters for bars",
+				[&](std::string s) { return (max_chars = strtoull(s.c_str(), nullptr, 10)); } },
+			{ "-r", "--reverse-sort", cmdline_arg_type_none,
+				"Sort in Reverse",
+				[&](std::string s) { return (reverse_sort = true); } },
 			{ nullptr, nullptr, cmdline_arg_type_none,   nullptr, nullptr }
 		};
 
