@@ -6,9 +6,13 @@ A meta compiler that generates RISC-V instruction decoders, disassembler
 meta data, opcode maps and documentation from instruction set meta data.
 This is the starting point for a RISC-V binary translation investigation.
 
-![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot.png)
+![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-1.png)
 
 *Example ASCII map output from make map*
+
+![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-2.png)
+
+*Example Histogram from riscv-histogram-elf*
 
 ## Dependencies
 
