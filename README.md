@@ -2,9 +2,35 @@
 
 [![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
 
-A meta compiler that generates RISC-V instruction decoders, disassembler
-meta data, opcode maps and documentation from instruction set meta data.
-This is the starting point for a RISC-V binary translation investigation.
+RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
+Set Architecture) Metadata. The RISC-V Meta suite of tools can generate
+RISC-V instruction opcode maps, C headers and source containing instruction
+set metadata, instruction decoders and LaTex documentation (`riscv-parse-opcodes`).
+
+The suite also contains simple decoupled libraries with an ELF parser, a
+functional meta data based RISC-V disassembler (`riscv-parse-elf`), a
+RVC compressor / decompressor (`riscv-compress-elf`) plus library routines
+and tools for benchmarking software decoders and generating statistics on
+RISC-V executables (`riscv-histogram-elf`).
+
+RISC-V Meta is the starting point for a RISC-V binary translation and security
+sandboxing investigation.
+
+The future goals of the RISC-V Meta project are:
+
+- Concise metadata representing the RISC-V ISA
+- Tools for metadata-based generation of source and documentation 
+- Full color disassembler
+- ELF Binary compressor, decompressor
+- High performance emulation, sandboxing and binary translation
+- RISC-V-(n) → RISC-V-(n+1)
+- RISC-V-(n) → Intel i786 + AVX-512
+- RISC-V Linux ABI emulation on MacOS, Windows, Linux and *BSD
+- RISC-V Linux ABI entropy coding - Runtime ABI randomisation
+- RISC-V Specification undefined behaviour investigation
+- RISC-V Virtualization and memory protection investigation
+
+## Screenshots
 
 ![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-1.png)
 
@@ -13,6 +39,20 @@ This is the starting point for a RISC-V binary translation investigation.
 ![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-2.png)
 
 *Example Histogram from riscv-histogram-elf*
+
+## Refernences
+
+- [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
+- [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
+- [lowRISC project](http://www.lowrisc.org/)
+- [RISC-V ISA Specification](http://riscv.org/specifications/)
+- [RISC-V Compressed ISA Specification](http://riscv.org/specifications/compressed-isa/)
+- [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
+- [RISC-V ISA Simulator](https://github.com/riscv/riscv-isa-sim/)
+- [RISC-V Opcodes](https://github.com/riscv/riscv-opcodes/)
+- [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
+- [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
+- [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 
 ## Dependencies
 
@@ -74,7 +114,7 @@ To print opcodes C header: ```make c_header```
 
 To print opcodes C source: ```make c_source```
 
-To run concept emulator: ```make emulate```
+To run the proof of concept emulator: ```make emulate```
 
 ## Parse ELF Utility
 
