@@ -478,8 +478,7 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=", false, false);
 	if (spart.size() != 2) {
-		printf("bit range %s must be in form n..m=v\n", bit_spec.c_str());
-		exit(1);
+		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 	}
 	std::vector<std::string> rpart = split(spart[0], "..", false, false);
 	ssize_t msb, lsb, val;
@@ -489,8 +488,7 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 		msb = strtoul(rpart[0].c_str(), nullptr, 10);
 		lsb = strtoul(rpart[1].c_str(), nullptr, 10);
 	} else {
-		printf("bit range %s must be in form n..m=v\n", bit_spec.c_str());
-		exit(1);
+		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 	}
 	if (spart[1].find("0x") == 0) {
 		val = strtoul(spart[1].c_str() + 2, nullptr, 16);
