@@ -60,10 +60,10 @@ The future goals of the RISC-V Meta project are:
 - [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
 - [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
 - [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
-- [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
-- [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
 - [Standard C++](https://isocpp.org/std/the-standard/)
+- [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
+- [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
 
 ## Dependencies
