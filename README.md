@@ -59,6 +59,7 @@ The future goals of the RISC-V Meta project are:
 - [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
 - [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
 - [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
+- [A Precise Memory Model for Low-Level Bounded Model Checking](https://www.usenix.org/legacy/event/ssv10/tech/full_papers/Sinz.pdf)
 - [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
 - [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
 - [Standard C++](https://isocpp.org/std/the-standard/)
