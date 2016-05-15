@@ -50,9 +50,21 @@ The future goals of the RISC-V Meta project are:
 - [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
 - [RISC-V ISA Simulator](https://github.com/riscv/riscv-isa-sim/)
 - [RISC-V Opcodes](https://github.com/riscv/riscv-opcodes/)
+- [RISC-V LLVM](https://github.com/riscv/riscv-llvm/)
+- [RISC-V Clang](https://github.com/riscv/riscv-clang/)
+- [Clang SafeStack](http://clang.llvm.org/docs/SafeStack.html)
+- [musl libc](https://www.musl-libc.org/)
+- [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
+- [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
+- [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
+- [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
 - [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
+- [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
+- A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
 - [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
+- [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
+- [Standard C++](https://isocpp.org/std/the-standard/)
 
 ## Dependencies
 
