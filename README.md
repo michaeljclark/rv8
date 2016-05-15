@@ -5,7 +5,7 @@
 RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
 Set Architecture) Metadata. The RISC-V Meta suite of tools can generate
 RISC-V instruction opcode maps, C headers and source containing instruction
-set metadata, instruction decoders and LaTex documentation (`riscv-parse-opcodes`).
+set metadata, instruction decoders and LaTeX documentation (`riscv-parse-opcodes`).
 
 The suite also contains simple decoupled libraries with an ELF parser, a
 functional meta data based RISC-V disassembler (`riscv-parse-elf`), a
