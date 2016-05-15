@@ -40,7 +40,7 @@ The future goals of the RISC-V Meta project are:
 
 *Example Histogram from riscv-histogram-elf*
 
-## Refernences
+## References
 
 - [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
 - [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
