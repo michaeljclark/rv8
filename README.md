@@ -40,6 +40,10 @@ The future goals of the RISC-V Meta project are:
 
 *Example Histogram from riscv-histogram-elf*
 
+![RISC-V disassembly screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-3.png)
+
+*Example Disassembly output from riscv-parse-elf*
+
 ## References
 
 - [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
