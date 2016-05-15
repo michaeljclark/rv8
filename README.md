@@ -54,6 +54,7 @@ The future goals of the RISC-V Meta project are:
 - [RISC-V Clang](https://github.com/riscv/riscv-clang/)
 - [Clang SafeStack](http://clang.llvm.org/docs/SafeStack.html)
 - [musl libc](https://www.musl-libc.org/)
+- [Yocto Project](https://www.yoctoproject.org/)
 - [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
