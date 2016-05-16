@@ -19,7 +19,8 @@ all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS) *.o
 
-hello-world-libc: hello-world-libc.c ; $(CC) $^ -o $@
+hello-world-libc.o: hello-world-libc.c ; $(CC) $^ -o $@
+hello-world-libc: hello-world-libc.o ; $(LD) $^ -o $@
 hello-world-abs.o: hello-world-abs.S ; $(AS) $^ -o $@
 hello-world-abs: hello-world-abs.o ; $(LD) $^ -o $@
 hello-world-pcrel.o: hello-world-pcrel.S ; $(AS) $^ -o $@
