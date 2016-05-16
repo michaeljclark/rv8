@@ -128,7 +128,7 @@ struct riscv_arg
 		else if (type == "freg") return 'R';
 		else if (type == "arg") return 'A';
 		else if (type == "imm") return 'I';
-		else if (type == "ipc") return 'J';
+		else if (type == "disp") return 'D';
 		else return '?';
 	}
 };
@@ -1130,7 +1130,7 @@ R"LaTeX(\end{tabular}
 				auto &str = std::get<3>(arg_parts[i]);
 				if (arg) {
 					str = arg->label;
-					if (str == "imm") {
+					if (str == "imm" || str == "disp") {
 						auto spec = arg->bitrange_spec;
 						for (auto &seg : spec.segments) {
 							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
