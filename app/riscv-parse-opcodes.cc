@@ -37,6 +37,7 @@ static const char* CAUSES_FILE         = "causes";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* COMPRESSION_FILE    = "compression";
+static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
 // TODO - make this variable based on extension metadata
@@ -210,6 +211,7 @@ struct riscv_opcode
 	std::string key;
 	std::string name;
 	std::string long_name;
+	std::string instruction;
 	std::string description;
 	riscv_arg_list args;
 	riscv_opcode_mask_list masks;
@@ -323,6 +325,7 @@ struct riscv_inst_set
 	void parse_csr(std::vector<std::string> &part);
 	void parse_opcode(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
+	void parse_instruction(std::vector<std::string> &part);
 	void parse_description(std::vector<std::string> &part);
 
 	bool read_metadata(std::string dirname);
@@ -944,14 +947,24 @@ void riscv_inst_set::parse_compression(std::vector<std::string> &part)
 	}
 }
 
-void riscv_inst_set::parse_description(std::vector<std::string> &part)
+void riscv_inst_set::parse_instruction(std::vector<std::string> &part)
 {
 	if (part.size() < 2) return;
 	std::string opcode_name = part[0];
 	std::string opcode_long_name = part[1];
-	std::string opcode_description = part.size() > 2 ? part[2] : "";
+	std::string opcode_instruction = part.size() > 2 ? part[2] : "";
 	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
 		opcode->long_name = opcode_long_name;
+		opcode->instruction = opcode_instruction;
+	}
+}
+
+void riscv_inst_set::parse_description(std::vector<std::string> &part)
+{
+	if (part.size() < 1) return;
+	std::string opcode_name = part[0];
+	std::string opcode_description = part.size() > 1 ? part[1] : "";
+	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
 		opcode->description = opcode_description;
 	}
 }
@@ -967,6 +980,7 @@ bool riscv_inst_set::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
+	for (auto part : read_file(dirname + std::string("/") + INSTRUCTIONS_FILE)) parse_instruction(part);
 	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);
 	return true;
 }
