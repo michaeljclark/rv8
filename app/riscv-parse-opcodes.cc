@@ -33,6 +33,7 @@ static const char* TYPES_FILE          = "types";
 static const char* EXTENSIONS_FILE     = "extensions";
 static const char* FORMATS_FILE        = "formats";
 static const char* REGISTERS_FILE      = "registers";
+static const char* CAUSES_FILE         = "causes";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* COMPRESSION_FILE    = "compression";
@@ -48,6 +49,7 @@ struct riscv_type;
 struct riscv_extension;
 struct riscv_format;
 struct riscv_register;
+struct riscv_cause;
 struct riscv_csr;
 struct riscv_opcode;
 struct riscv_constraint;
@@ -70,6 +72,9 @@ typedef std::map<std::string,riscv_format_ptr> riscv_format_map;
 typedef std::shared_ptr<riscv_register> riscv_register_ptr;
 typedef std::vector<riscv_register_ptr> riscv_register_list;
 typedef std::map<std::string,riscv_register_ptr> riscv_register_map;
+typedef std::shared_ptr<riscv_cause> riscv_cause_ptr;
+typedef std::vector<riscv_cause_ptr> riscv_cause_list;
+typedef std::map<std::string,riscv_cause_ptr> riscv_cause_map;
 typedef std::shared_ptr<riscv_csr> riscv_csr_ptr;
 typedef std::vector<riscv_csr_ptr> riscv_csr_list;
 typedef std::map<std::string,riscv_csr_ptr> riscv_csr_map;
@@ -179,6 +184,15 @@ struct riscv_register
 		: name(name), alias(alias), type(type), save(save), description(description) {}
 };
 
+struct riscv_cause
+{
+	std::string number;
+	std::string name;
+
+	riscv_cause(std::string number, std::string name)
+		: number(number), name(name) {}
+};
+
 struct riscv_csr
 {
 	std::string number;
@@ -265,6 +279,8 @@ struct riscv_inst_set
 	riscv_format_map         formats_by_name;
 	riscv_register_list      registers;
 	riscv_register_map       registers_by_name;
+	riscv_cause_list         causes;
+	riscv_cause_map          causes_by_name;
 	riscv_csr_list           csrs;
 	riscv_csr_map            csrs_by_name;
 	riscv_opcode_list        opcodes;
@@ -303,6 +319,7 @@ struct riscv_inst_set
 	void parse_extension(std::vector<std::string> &part);
 	void parse_format(std::vector<std::string> &part);
 	void parse_register(std::vector<std::string> &part);
+	void parse_cause(std::vector<std::string> &part);
 	void parse_csr(std::vector<std::string> &part);
 	void parse_opcode(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
@@ -831,6 +848,15 @@ void riscv_inst_set::parse_register(std::vector<std::string> &part)
 	registers.push_back(reg);
 }
 
+void riscv_inst_set::parse_cause(std::vector<std::string> &part)
+{
+	if (part.size() < 2) {
+		panic("invalid causes file requires 2 parameters: %s", join(part, " ").c_str());
+	}
+	auto cause = causes_by_name[part[1]] = std::make_shared<riscv_cause>(part[0], part[1]);
+	causes.push_back(cause);
+}
+
 void riscv_inst_set::parse_csr(std::vector<std::string> &part)
 {
 	if (part.size() < 4) {
@@ -937,6 +963,7 @@ bool riscv_inst_set::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + EXTENSIONS_FILE)) parse_extension(part);
 	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);
 	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
+	for (auto part : read_file(dirname + std::string("/") + CAUSES_FILE)) parse_cause(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
