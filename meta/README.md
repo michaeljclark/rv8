@@ -5,10 +5,10 @@ This directory contains meta data for the RISC-V Instruction Set
 |File|Description|
 |:---|:----------|
 |`args`        |Bit encodings of opcode arguments|
-|`types`       |Distinct instruction encodings and their formats|
+|`types`       |Instruction encodings and formats|
 |`extensions`  |Instruction set extensions|
 |`formats`     |Disassembly formats|
-|`registers`   |Description of registers and their ABI names|
+|`registers`   |Registers and their ABI names|
 |`causes`      |Trap codes and causes|
 |`csrs`        |CPU Specific Registers|
 |`opcodes`     |Opcode encoding information|
