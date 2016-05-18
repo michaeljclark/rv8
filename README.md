@@ -84,42 +84,42 @@ The follow table shows the performance of the switch based instruction
 decoder compared to the riscv_isa_simulator instruction decoder.
 The code is compiled with `Apple LLVM version 7.3.0 (clang-703.0.29)`
 
-### Micro benchmark 33 RV64 instructions (1000000 iterations)
+##### Micro benchmark 33 RV64 instructions (1000000 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   | 33000000  |   2.30 | RV64       |
 |spike_nocache | 33000000  |  15.66 | RV64       |
 |spike_cache   | 33000000  |   2.97 | RV64       |
 
-### Micro benchmark 32 RV64C instructions (1000000 iterations)
+##### Micro benchmark 32 RV64C instructions (1000000 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   | 32000000 |   2.36  | RV64C      |
 |spike_nocache | 32000000 |  25.20  | RV64C      |
 |spike_cache   | 32000000 |   2.52  | RV64C      |
 
-### ELF benchmark vmlinux RV64 .init.text (10 iterations)
+##### ELF benchmark vmlinux RV64 .init.text (10 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   |   161970 |   2.59  | RV64       |
 |spike_nocache |   161970 |  21.42  | RV64       |
 |spike_cache   |   161970 |  14.47  | RV64       |
 
-### ELF benchmark vmlinux RV64 .text (10 iterations)
+##### ELF benchmark vmlinux RV64 .text (10 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   | 4871200  |   2.50  | RV64       |
 |spike_nocache | 4871200  |  24.87  | RV64       |
 |spike_cache   | 4871200  |  18.31  | RV64       |
 
-### ELF benchmark vmlinux RV64C .init.text (10 iterations)
+##### ELF benchmark vmlinux RV64C .init.text (10 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   |   158550 |   2.72  | RV64C      |
 |spike_nocache |   158550 |  63.59  | RV64C      |
 |spike_cache   |   158550 |  23.25  | RV64C      |
 
-### ELF benchmark vmlinux RV64C .text (10 iterations)
+##### ELF benchmark vmlinux RV64C .text (10 iterations)
 |Decoder|Instruction Count|Time (ns)|Architecture|
 |:------|----------------:|--------:|:-----------|
 |meta_switch   | 4848690  |   2.48  | RV64C      |

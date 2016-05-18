@@ -1,6 +1,6 @@
-# RISC-V Meta Data
+# RISC-V Metadata
 
-This directory contains meta data for the RISC-V Instruction Set
+This directory contains metadata for the RISC-V Instruction Set
 
 |File|Description|
 |:---|:----------|
