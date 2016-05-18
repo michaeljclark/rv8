@@ -204,16 +204,16 @@ fcvt.w.d   rd rs1 24..20=0 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r+rf  
 fcvt.wu.d  rd rs1 24..20=1 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r+rf  rv32d rv64d
 fcvt.d.w   rd rs1 24..20=0 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r+fr  rv32d rv64d
 fcvt.d.wu  rd rs1 24..20=1 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r+fr  rv32d rv64d
-fmv.x.d    rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=1 6..2=0x14 1..0=3 r+rf  rv32d rv64d
 fclass.d   rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=1 6..2=0x14 1..0=3 r+rf  rv32d rv64d
-fmv.d.x    rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr  rv32d rv64d
 
 # RV64D    "RV64D Standard Extension for Double-Precision Floating-Point (in addition to RV32D)"
 
 fcvt.l.d   rd rs1 24..20=2 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r+rf        rv64d
 fcvt.lu.d  rd rs1 24..20=3 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r+rf        rv64d
+fmv.x.d    rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=1 6..2=0x14 1..0=3 r+rf        rv64d
 fcvt.d.l   rd rs1 24..20=2 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r+fr        rv64d
 fcvt.d.lu  rd rs1 24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r+fr        rv64d
+fmv.d.x    rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr        rv64d
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 

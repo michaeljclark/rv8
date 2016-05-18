@@ -145,7 +145,7 @@ fsgnjn.s   "Take the value from frs1 and inject the negated sign bit from frs2, 
 fsgnjx.s   "Take the value from frs1 and inject the xor of the sign bits frs1 and frs2, then write the result to frd"
 fmin.s     "Take the smaller value from frs1 and frs2, then write the result to frd"
 fmax.s     "Take the larger value from frs1 and frs2, then write the result to frd"
-fsqrt.s    "-FP Square Root (SP)"
+fsqrt.s    "Calculate the square root of frs1, then write the result to frd"
 fle.s      "-FP Less Than Equal (SP)"
 flt.s      "-FP Less Than (SP)"
 feq.s      "-FP Equal (SP)"
@@ -153,16 +153,16 @@ fcvt.w.s   "-FP Convert Float to Word (SP)"
 fcvt.wu.s  "-FP Convert Float to Word Unsigned (SP)"
 fcvt.s.w   "-FP Convert Word to Float (SP)"
 fcvt.s.wu  "-FP Convert Word Unsigned to Float (SP)"
-fmv.x.s    "-FP Move to Integer Register (SP)"
 fclass.s   "-FP Classify (SP)"
-fmv.s.x    "-FP Move from Integer Register (SP)"
 
 # RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
 
 fcvt.l.s   "-FP Convert Float to Double Word (SP)"
 fcvt.lu.s  "-FP Convert Float to Double Word Unsigned (SP)"
+fmv.x.s    "-FP Move to Integer Register (SP)"
 fcvt.s.l   "-FP Convert Double Word to Float (SP)"
 fcvt.s.lu  "-FP Convert Double Word Unsigned to Float (SP)"
+fmv.s.x    "-FP Move from Integer Register (SP)"
 
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 

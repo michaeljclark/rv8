@@ -960,9 +960,9 @@ void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 							}
 							break;
 						case 113:
-							// fmv.x.d fclass.d
+							// fclass.d fmv.x.d
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-								case 0: if (rvd) dec.op = riscv_op_fmv_x_d; break;
+								case 0: if (rvd && rv64) dec.op = riscv_op_fmv_x_d; break;
 								case 1: if (rvd) dec.op = riscv_op_fclass_d; break;
 							}
 							break;
@@ -975,7 +975,7 @@ void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)
 						case 121:
 							// fmv.d.x
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-								case 0: if (rvd) dec.op = riscv_op_fmv_d_x; break;
+								case 0: if (rvd && rv64) dec.op = riscv_op_fmv_d_x; break;
 							}
 							break;
 					}
