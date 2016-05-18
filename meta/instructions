@@ -24,7 +24,7 @@ sh         "Store Half"                                     "*((u16*)(rs1 + imm)
 sw         "Store Word"                                     "*((u32*)(rs1 + imm)) = rs2"
 addi       "Add Immediate"                                  "rd = rs1 + imm"
 slti       "Set Less Than Immediate"                        "rd = sx(rs1) < imm ? 1 : 0"
-sltiu      "Set Less Than Immediate Unsigned"               "rd = ux(rs1) < imm ? 1 : 0"
+sltiu      "Set Less Than Immediate Unsigned"               "rd = ux(rs1) < ux(imm) ? 1 : 0"
 xori       "Xor Immediate"                                  "rd = ux(rs1) ^ imm"
 ori        "Or Immediate"                                   "rd = ux(rs1) | imm"
 andi       "And Immediate"                                  "rd = ux(rs1) & imm"
