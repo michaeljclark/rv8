@@ -1,5 +1,5 @@
 //
-//  riscv-opcodes.h
+//  riscv-meta.h
 //
 //  DANGER - This is machine generated code
 //
@@ -517,13 +517,13 @@ struct riscv_comp_data
 	const rvc_constraint* constraints;
 };
 
+extern const char* riscv_i_registers[];
+extern const char* riscv_f_registers[];
 extern const char* riscv_instruction_name[];
 extern const riscv_inst_type riscv_instruction_type[];
 extern const riscv_wu riscv_instruction_match[];
 extern const riscv_wu riscv_instruction_mask[];
 extern const rvf* riscv_instruction_format[];
-extern const char* riscv_i_registers[];
-extern const char* riscv_f_registers[];
 extern const riscv_comp_data* riscv_instruction_comp[];
 extern const riscv_op riscv_instruction_decomp[];
 

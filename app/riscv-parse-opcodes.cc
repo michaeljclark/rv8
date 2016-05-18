@@ -1262,7 +1262,7 @@ void riscv_inst_set::print_map()
 void riscv_inst_set::print_opcodes_h()
 {
 	printf("//\n");
-	printf("//  riscv-opcodes.h\n");
+	printf("//  riscv-meta.h\n");
 	printf("//\n");
 	printf("//  DANGER - This is machine generated code\n");
 	printf("//\n");
@@ -1321,13 +1321,13 @@ void riscv_inst_set::print_opcodes_h()
 	printf("\tconst riscv_op op;\n");
 	printf("\tconst rvc_constraint* constraints;\n");
 	printf("};\n\n");
+	printf("extern const char* riscv_i_registers[];\n");
+	printf("extern const char* riscv_f_registers[];\n");
 	printf("extern const char* riscv_instruction_name[];\n");
 	printf("extern const riscv_inst_type riscv_instruction_type[];\n");
 	printf("extern const riscv_wu riscv_instruction_match[];\n");
 	printf("extern const riscv_wu riscv_instruction_mask[];\n");
 	printf("extern const rvf* riscv_instruction_format[];\n");
-	printf("extern const char* riscv_i_registers[];\n");
-	printf("extern const char* riscv_f_registers[];\n");
 	printf("extern const riscv_comp_data* riscv_instruction_comp[];\n");
 	printf("extern const riscv_op riscv_instruction_decomp[];\n");
 	printf("\n");
@@ -1337,15 +1337,27 @@ void riscv_inst_set::print_opcodes_h()
 void riscv_inst_set::print_opcodes_c()
 {
 	printf("//\n");
-	printf("//  riscv-opcodes.cc\n");
+	printf("//  riscv-meta.cc\n");
 	printf("//\n");
 	printf("//  DANGER - This is machine generated code\n");
 	printf("//\n");
 	printf("\n");
 	printf("#include \"riscv-types.h\"\n");
 	printf("#include \"riscv-format.h\"\n");
-	printf("#include \"riscv-opcodes.h\"\n");
+	printf("#include \"riscv-meta.h\"\n");
 	printf("\n");
+	printf("const char* riscv_i_registers[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "ireg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+	printf("const char* riscv_f_registers[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "freg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
 	printf("const char* riscv_instruction_name[] = {\n");
 	printf("\t/*              unknown */ \"unknown\",\n");
 	for (auto &opcode : opcodes) {
@@ -1382,18 +1394,6 @@ void riscv_inst_set::print_opcodes_c()
 		std::string opcode_key = opcode_format("", opcode, '.');
 		auto format = formats_by_name[opcode->type->format];
 		printf("\t/* %20s */ riscv_fmt_%s,\n", opcode_key.c_str(), format->name.c_str());
-	}
-	printf("};\n\n");
-	printf("const char* riscv_i_registers[] = {\n");
-	for (auto &reg : registers) {
-		if (reg->type != "ireg") continue;
-		printf("\t\"%s\",\n", reg->alias.c_str());
-	}
-	printf("};\n\n");
-	printf("const char* riscv_f_registers[] = {\n");
-	for (auto &reg : registers) {
-		if (reg->type != "freg") continue;
-		printf("\t\"%s\",\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
 

@@ -121,8 +121,8 @@ RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 
 # libriscv_meta
-RV_META_HDR =   $(LIB_SRC_DIR)/riscv-opcodes.h
-RV_META_SRC =   $(LIB_SRC_DIR)/riscv-opcodes.cc
+RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
+RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
 RV_META_OBJS =  $(call lib_src_objs, $(RV_META_SRC))
 RV_META_LIB =   $(LIB_DIR)/libriscv_meta.a
 

@@ -18,7 +18,7 @@
 #include "riscv-types.h"
 #include "riscv-endian.h"
 #include "riscv-format.h"
-#include "riscv-opcodes.h"
+#include "riscv-meta.h"
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"

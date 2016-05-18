@@ -15,7 +15,7 @@
 #include "riscv-types.h"
 #include "riscv-endian.h"
 #include "riscv-format.h"
-#include "riscv-opcodes.h"
+#include "riscv-meta.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"

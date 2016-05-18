@@ -16,7 +16,7 @@
 #include "riscv-endian.h"
 #include "riscv-processor.h"
 #include "riscv-format.h"
-#include "riscv-opcodes.h"
+#include "riscv-meta.h"
 #include "riscv-util.h"
 #include "riscv-imm.h"
 #include "riscv-decode.h"
