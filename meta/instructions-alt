@@ -1,8 +1,4 @@
-# format of a line in this file:
-# <instruction name> "<instruction long name>" "<instruction pseudo code>"
-
-# RV32I    "RV32I Base Integer Instruction Set"
-
+# RV32I
 lui        "Load Upper Immediate"                           "rd ← imm"
 auipc      "Add Upper Immediate to PC"                      "rd ← disp"
 jal        "Jump and Link"                                  "rd ← pc ↪ disp"
@@ -26,8 +22,8 @@ addi       "Add Immediate"                                  "rd ← rs1 + s(imm)
 slti       "Set Less Than Immediate"                        "rd ← s(rs1) < s(imm)"
 sltiu      "Set Less Than Immediate Unsigned"               "rd ← u(rs1) < u(imm)"
 xori       "Xor Immediate"                                  "rd ← u(rs1) ⊻ s(imm)"
-ori        "Or Immediate"                                   "rd ← u(rs1) | s(imm)"
-andi       "And Immediate"                                  "rd ← u(rs1) & s(imm)"
+ori        "Or Immediate"                                   "rd ← u(rs1) ∨ s(imm)"
+andi       "And Immediate"                                  "rd ← u(rs1) ∧ s(imm)"
 slli       "Shift Left Logical Immediate"                   "rd ← u(rs1) « s(imm)"
 srli       "Shift Right Logical Immediate"                  "rd ← u(rs1) » s(imm)"
 srai       "Shift Right Arithmetic Immediate"               "rd ← s(rs1) » s(imm)"
@@ -44,8 +40,7 @@ and        "And"                                            "rd ← s(rs1) ∧ s
 fence      "Fence"                                          "fence"
 fence.i    "Fence Instruction"                              "fence_i"
 
-# RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
-
+# RV64I
 ld         "Load Double"                                    "rd ← u64[rs1 + imm]"
 sd         "Store Double"                                   "rs2 → u64[rs1 + imm]"
 addiw      "Add Immediate Word"                             "rd ← s32(rs1) + imm"
@@ -58,8 +53,7 @@ sllw       "Shift Left Logical Word"                        "rd ← u32(rs1) « 
 srlw       "Shift Right Logical Word"                       "rd ← u32(rs1) » (rs2 ∧ 2⁶-1)"
 sraw       "Shift Right Arithmetic Word"                    "rd ← s32(rs1) » (rs2 ∧ 2⁶-1)"
 
-# RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
-
+# RV32M
 mul        "Multiply"                                       "rd ← u(rs1) × u(rs2)"
 mulh       "Multiply High Signed Signed"                    "rd ← (s(rs1) × s(rs2)) » xlen"
 mulhsu     "Multiply High Signed Unsigned"                  "rd ← (s(rs1) × u(rs2)) » xlen"
@@ -69,8 +63,7 @@ divu       "Divide Unsigned"                                "rd ← u(rs1) ÷ u(
 rem        "Remainder Signed"                               "rd ← s(rs1) mod s(rs2)"
 remu       "Remainder Unsigned"                             "rd ← u(rs1) mod u(rs2)"
 
-# RV64M    "RV64M Standard Extension for Integer Multiply and Divide (in addition to RV32M)"
-
+# RV64M 
 mulw       "Multiple Word"                                  "rd ← u32(rs1) × u32(rs2)"
 divw       "Divide Signed Word"                             "rd ← s32(rs1) ÷ s32(rs2)"
 divuw      "Divide Unsigned Word"                           "rd ← u32(rs1) ÷ u32(rs2)"
