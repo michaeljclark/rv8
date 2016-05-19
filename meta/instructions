@@ -13,9 +13,9 @@ blt        "Branch Less Than "                              "if (sx(rs1) < sx(rs
 bge        "Branch Greater than Equal"                      "if (sx(rs1) >= sx(rs2)) pc = pc + imm"
 bltu       "Branch Less Than Unsigned"                      "if (ux(rs1) < ux(rs2)) pc = pc + imm"
 bgeu       "Branch Greater than Equal Unsigned"             "if (ux(rs1) >= ux(rs2)) pc = pc + imm"
-lb         "Load Byte"                                      "rd = sx(*(u8*)(rs1 + imm))"
-lh         "Load Half"                                      "rd = sx(*(u16*)(rs1 + imm))"
-lw         "Load Word"                                      "rd = sx(*(u32*)(rs1 + imm))"
+lb         "Load Byte"                                      "rd = sx(*(s8*)(rs1 + imm))"
+lh         "Load Half"                                      "rd = sx(*(s16*)(rs1 + imm))"
+lw         "Load Word"                                      "rd = sx(*(s32*)(rs1 + imm))"
 lbu        "Load Byte Unsigned"                             "rd = ux(*(u8*)(rs1 + imm))"
 lhu        "Load Half Unsigned"                             "rd = ux(*(u16*)(rs1 + imm))"
 lwu        "Load Word Unsigned"                             "rd = ux(*(u32*)(rs1 + imm))"
@@ -46,7 +46,7 @@ fence.i    "Fence Instruction"                              "fence_i()"
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
 
-ld         "Load Double"                                    "rd = sx(*(u64*)(rs1 + imm))"
+ld         "Load Double"                                    "rd = sx(*(s64*)(rs1 + imm))"
 sd         "Store Double"                                   "*(u64*)(rs1 + imm) = rs2"
 addiw      "Add Immediate Word"                             "rd = s32(rs1) + imm"
 slliw      "Shift Left Logical Immediate Word"              "rd = u32(rs1) << imm"
@@ -79,7 +79,7 @@ remuw      "Remainder Unsigned Word"                        "rd = u32(rs1) % u32
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
-lr.w       "Load Reserved Word"                             "state.lr = rs1; rd = sx(*(u32*)(rs1))"
+lr.w       "Load Reserved Word"                             "state.lr = rs1; rd = sx(*(s32*)(rs1))"
 sc.w       "Store Conditional Word"                         "if (state.lr == rs1) *((u32*)(rs1)) = u32(rs2)"
 amoswap.w  "Atomic Swap Word"                               "u32 t(*(u32*)(rs1)); *((u32*)(rs1)) = u32(rs2); rd = t"
 amoadd.w   "Atomic Add Word"                                "u32 t(*(u32*)(rs1)); *((u32*)(rs1)) = u32(rs2) + t; rd = t"
@@ -93,7 +93,7 @@ amomaxu.w  "Atomic Maximum Unsigned Word"                   "u32 t(*(u32*)(rs1))
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
-lr.d       "Load Reserved Double Word"                      "state.lr = rs1; rd = sx(*(u64*)(rs1))"
+lr.d       "Load Reserved Double Word"                      "state.lr = rs1; rd = sx(*(s64*)(rs1))"
 sc.d       "Store Conditional Double Word"                  "if (state.lr == rs1) *((u64*)(rs1)) = u64(rs2)"
 amoswap.d  "Atomic Swap Double Word"                        "u64 t(*(u64*)(rs1)); *((u64*)(rs1)) = u64(rs2); rd = t"
 amoadd.d   "Atomic Add Double Word"                         "u64 t(*(u64*)(rs1)); *((u64*)(rs1)) = u64(rs2) + t; rd = t"
