@@ -79,7 +79,7 @@ remuw      "Remainder Unsigned Word"                        "rd = u32(rs1) % u32
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
-lr.w       "Load Reserved Word"                             "state.lr = rs1; rd = s32(*(u32*)(rs1))"
+lr.w       "Load Reserved Word"                             "state.lr = rs1; rd = sx(*(u32*)(rs1))"
 sc.w       "Store Conditional Word"                         "if (state.lr == rs1) *((u32*)(rs1)) = u32(rs2)"
 amoswap.w  "Atomic Swap Word"                               "u32 t(*(u32*)(rs1)); *((u32*)(rs1)) = u32(rs2); rd = t"
 amoadd.w   "Atomic Add Word"                                "u32 t(*(u32*)(rs1)); *((u32*)(rs1)) = u32(rs2) + t; rd = t"
@@ -93,7 +93,7 @@ amomaxu.w  "Atomic Maximum Unsigned Word"                   "u32 t(*(u32*)(rs1))
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
-lr.d       "Load Reserved Double Word"                      "state.lr = rs1; rd = s64(*(u64*)(rs1))"
+lr.d       "Load Reserved Double Word"                      "state.lr = rs1; rd = sx(*(u64*)(rs1))"
 sc.d       "Store Conditional Double Word"                  "if (state.lr == rs1) *((u64*)(rs1)) = u64(rs2)"
 amoswap.d  "Atomic Swap Double Word"                        "u64 t(*(u64*)(rs1)); *((u64*)(rs1)) = u64(rs2); rd = t"
 amoadd.d   "Atomic Add Double Word"                         "u64 t(*(u64*)(rs1)); *((u64*)(rs1)) = u64(rs2) + t; rd = t"
