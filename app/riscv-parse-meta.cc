@@ -360,33 +360,28 @@ static std::string rtrim(std::string s)
 	return s;
 }
 
-static std::vector<std::string> split(std::string str, std::string separator,
-	bool includeEmpty, bool includeSeparator)
+static std::vector<std::string> split(std::string str, std::string sep,
+	bool inc_empty, bool inc_sep)
 {
-	size_t last_index = 0, index;
+	size_t i, j = 0;
 	std::vector<std::string> comps;
-	while ((index = str.find_first_of(separator, last_index)) != std::string::npos) {
-		if (includeEmpty || index - last_index > 0) {
-			comps.push_back(str.substr(last_index, index - last_index));
-		}
-		if (includeSeparator) {
-			comps.push_back(separator);
-		}
-		last_index = index + separator.length();
+	while ((i = str.find_first_of(sep, j)) != std::string::npos) {
+		if (inc_empty || i - j > 0) comps.push_back(str.substr(j, i - j));
+		if (inc_sep) comps.push_back(sep);
+		j = i + sep.length();
 	}
-	if (includeEmpty || str.size() - last_index > 0) {
-		comps.push_back(str.substr(last_index, str.size() - last_index));
+	if (inc_empty || str.size() - j > 0) {
+		comps.push_back(str.substr(j, str.size() - j));
 	}
 	return comps;
 }
 
 template <typename T>
-std::string join(std::vector<T> list, std::string separator)
+std::string join(std::vector<T> list, std::string sep)
 {
 	std::stringstream ss;
-	for (typename std::vector<T>::iterator i = list.begin(); i != list.end(); i++) {
-		if (i != list.begin()) ss << separator;
-		ss << *i;
+	for (auto i = list.begin(); i != list.end(); i++) {
+		ss << (i != list.begin() ? sep : "") << *i;
 	}
 	return ss.str();
 }
