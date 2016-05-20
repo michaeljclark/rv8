@@ -154,10 +154,10 @@ PARSE_ELF_SRCS = $(APP_SRC_DIR)/riscv-parse-elf.cc
 PARSE_ELF_OBJS = $(call app_src_objs, $(PARSE_ELF_SRCS))
 PARSE_ELF_BIN = $(BIN_DIR)/riscv-parse-elf
 
-# parse-opcodes
-PARSE_OPCODES_SRCS = $(APP_SRC_DIR)/riscv-parse-opcodes.cc
-PARSE_OPCODES_OBJS = $(call app_src_objs, $(PARSE_OPCODES_SRCS))
-PARSE_OPCODES_BIN = $(BIN_DIR)/riscv-parse-opcodes
+# parse-meta
+PARSE_META_SRCS = $(APP_SRC_DIR)/riscv-parse-meta.cc
+PARSE_META_OBJS = $(call app_src_objs, $(PARSE_META_SRCS))
+PARSE_META_BIN = $(BIN_DIR)/riscv-parse-meta
 
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
@@ -175,7 +175,7 @@ TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
 ALL_SRCS = $(RV_UTIL_SRCS) \
            $(RV_ELF_SRCS) \
            $(RV_ASM_SRCS) \
-           $(PARSE_OPCODES_SRCS) \
+           $(PARSE_META_SRCS) \
            $(PARSE_ELF_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS)
@@ -183,7 +183,7 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
 BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
            $(PARSE_ELF_BIN) \
-           $(PARSE_OPCODES_BIN) \
+           $(PARSE_META_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN)
 
@@ -191,7 +191,7 @@ ASSEMBLY = $(TEST_DECODER_ASM) \
            $(TEST_EMULATE_ASM)
 
 # build rules
-all: dirs $(PARSE_OPCODES_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
+all: dirs $(PARSE_META_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
 .PHONY: dirs test
 dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) riscv-instructions.* && (cd test && make clean)
@@ -199,22 +199,22 @@ clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) riscv-instructions.* &&
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-latex: all ; $(PARSE_OPCODES_BIN) -l -r $(META_DIR) > riscv-instructions.tex
+latex: all ; $(PARSE_META_BIN) -l -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
-map: all ; @$(PARSE_OPCODES_BIN) -c -m -r $(META_DIR)
+map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make)
 emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
-c_switch: all ; @$(PARSE_OPCODES_BIN) -S -r $(META_DIR)
-c_header: all ; @$(PARSE_OPCODES_BIN) -H -r $(META_DIR)
-c_source: all ; @$(PARSE_OPCODES_BIN) -C -r $(META_DIR)
+c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
+c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
+c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
-$(RV_META_HDR): $(PARSE_OPCODES_BIN) $(RV_META_DATA)
-	$(PARSE_OPCODES_BIN) -H -r $(META_DIR) > $@
-$(RV_META_SRC): $(PARSE_OPCODES_BIN) $(RV_META_DATA) $(RV_META_HDR)
-	$(PARSE_OPCODES_BIN) -C -r $(META_DIR) > $@
+$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+	$(PARSE_META_BIN) -H -r $(META_DIR) > $@
+$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA) $(RV_META_HDR)
+	$(PARSE_META_BIN) -C -r $(META_DIR) > $@
 
 # build targets
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
@@ -224,7 +224,7 @@ $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(PARSE_OPCODES_BIN): $(PARSE_OPCODES_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

@@ -5,7 +5,7 @@
 RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
 Set Architecture) Metadata. The RISC-V Meta suite of tools can generate
 RISC-V instruction opcode maps, C headers and source containing instruction
-set metadata, instruction decoders and LaTeX documentation (`riscv-parse-opcodes`).
+set metadata, instruction decoders and LaTeX documentation (`riscv-parse-meta`).
 
 The suite also contains simple decoupled libraries with an ELF parser, a
 functional meta data based RISC-V disassembler (`riscv-parse-elf`), a
@@ -161,25 +161,25 @@ make test
 To print a colour opcode map for the RV32IMA ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32IMA -m -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV32IMA -m -r meta
 ```
 
 To print a colour opcode map for the RV64IMAFDS ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64IMAFDS -m -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV64IMAFDS -m -r meta
 ```
 
 To output LaTeX for the RV32C ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV32C -l -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV32C -l -r meta
 ```
 
 To output LaTeX for the RV64G ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-opcodes -I RV64G -l -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV64G -l -r meta
 ```
 
 ## RISC-V ELF Histogram Utility
