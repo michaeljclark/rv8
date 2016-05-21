@@ -287,7 +287,7 @@ enum riscv_inst_type
 
 enum riscv_op
 {
-	riscv_op_unknown,
+	riscv_op_unknown = 0,
 	riscv_op_lui = 1,
 	riscv_op_auipc = 2,
 	riscv_op_jal = 3,
