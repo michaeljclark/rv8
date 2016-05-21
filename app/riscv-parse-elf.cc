@@ -87,9 +87,9 @@ struct riscv_parse_elf
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
 			riscv_decode_decompress(dec);
-			switch (dec.type) {
-				case riscv_inst_type_sb:
-				case riscv_inst_type_uj:
+			switch (dec.codec) {
+				case riscv_codec_sb:
+				case riscv_codec_uj:
 				{
 					addr = pc - pc_offset + dec.imm;
 					snprintf(branch_label, sizeof(branch_label), "LOC_%06lu", branch_num++);

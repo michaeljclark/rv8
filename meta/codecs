@@ -1,10 +1,10 @@
 # format of a line in this file:
-# <type> <format>
+# <codec> <format>
 # 
-# <type> denotes a distinct instruction encoding, decoding
+# <codec> denotes a distinct instruction encoding, decoding
 #
-# Types with a + sign denote a format variant for the same type
-# i.e. <type(+format_variant)?> where type is the distinct type
+# Codecs with a + sign denote a format variant for the same codec
+# i.e. <codec(+format_variant)?> where codec is the distinct codec
 
 none       none
 c_nop      none
