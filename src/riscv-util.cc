@@ -30,7 +30,7 @@ std::string format_string(const char* fmt, ...)
     return str;
 }
 
-void log_format(const char* fmt, va_list arg)
+void log_format(FILE *file, const char* fmt, va_list arg)
 {
 	std::vector<char> buf(INITIAL_BUFFER_SIZE);
 
@@ -41,14 +41,14 @@ void log_format(const char* fmt, va_list arg)
 		vsnprintf(buf.data(), buf.capacity(), fmt, arg);
 	}
 
-	printf("%s\n", buf.data());
+	fprintf(file, "%s\n", buf.data());
 }
 
 void panic(const char* fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	log_format(fmt, ap);
+	log_format(stderr, fmt, ap);
 	va_end(ap);
 	exit(9);
 }
@@ -57,6 +57,6 @@ void debug(const char* fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	log_format(fmt, ap);
+	log_format(stderr, fmt, ap);
 	va_end(ap);
 }
