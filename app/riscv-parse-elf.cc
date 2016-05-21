@@ -48,9 +48,9 @@ struct riscv_parse_elf
 		if (!enable_color || !isatty(fileno(stdout))) {
 			return "";
 		} else if (strcmp(type, "header") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_END;
 		} else if (strcmp(type, "title") == 0) {
-			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_WHITE _COLOR_SEP _COLOR_BG_BLACK _COLOR_END;
+			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_CYAN _COLOR_END;
 		} else if (strcmp(type, "legend") == 0) {
 			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_MAGENTA _COLOR_END;
 		} else if (strcmp(type, "opcode") == 0) {
@@ -195,8 +195,8 @@ struct riscv_parse_elf
 
 	void print_heading(std::string heading)
 	{
-		printf("\n%s---[ %s ]", colorize("header"), heading.c_str());
-		for (size_t i = 0; i < 116 - heading.length(); i++) printf("-");
+		printf("\n%s███ %s ", colorize("header"), heading.c_str());
+		for (size_t i = 0; i < 118 - heading.length(); i++) printf("█");
 		printf("%s\n\n", colorize("reset"));
 	}
 
