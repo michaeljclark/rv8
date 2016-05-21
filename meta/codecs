@@ -46,7 +46,7 @@ i+csri     rd_csr_irs1
 i+l        rd_imm_rs1
 i+lf       frd_imm_rs1
 r          rd_rs1_rs2
-r_4f       frd_frs1_frs2_frs3
+r4+f       frd_frs1_frs2_frs3
 r+a        rd_rs2_b_rs1
 r+ff       frd_frs1
 r+fr       frd_rs1

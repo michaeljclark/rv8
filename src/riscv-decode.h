@@ -226,7 +226,7 @@ inline void riscv_decode_r(riscv_decode &dec, riscv_lu inst)
 }
 
 /* Decode R 4f */
-inline void riscv_decode_r_4f(riscv_decode &dec, riscv_lu inst)
+inline void riscv_decode_r4(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
@@ -457,7 +457,7 @@ inline riscv_lu riscv_encode_r(riscv_decode &dec)
 }
 
 /* Encode R 4f */
-inline riscv_lu riscv_encode_r_4f(riscv_decode &dec)
+inline riscv_lu riscv_encode_r4(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
 		((dec.rs1 & 0b11111) << 15) |
@@ -1124,7 +1124,7 @@ inline void riscv_decode_type(riscv_decode &dec, riscv_lu inst)
 		case riscv_codec_i_sh5:         riscv_decode_i_sh5(dec, inst);           break;
 		case riscv_codec_i_sh6:         riscv_decode_i_sh6(dec, inst);           break;
 		case riscv_codec_r:             riscv_decode_r(dec, inst);               break;
-		case riscv_codec_r_4f:          riscv_decode_r_4f(dec, inst);            break;
+		case riscv_codec_r4:            riscv_decode_r4(dec, inst);              break;
 		case riscv_codec_s:             riscv_decode_s(dec, inst);               break;
 		case riscv_codec_sb:            riscv_decode_sb(dec, inst);              break;
 		case riscv_codec_u:             riscv_decode_u(dec, inst);               break;
@@ -1167,7 +1167,7 @@ inline riscv_lu riscv_encode(riscv_decode &dec)
 		case riscv_codec_i_sh5:         return inst |= riscv_encode_i_sh5(dec);           break;
 		case riscv_codec_i_sh6:         return inst |= riscv_encode_i_sh6(dec);           break;
 		case riscv_codec_r:             return inst |= riscv_encode_r(dec);               break;
-		case riscv_codec_r_4f:          return inst |= riscv_encode_r_4f(dec);            break;
+		case riscv_codec_r4:            return inst |= riscv_encode_r4(dec);              break;
 		case riscv_codec_s:             return inst |= riscv_encode_s(dec);               break;
 		case riscv_codec_sb:            return inst |= riscv_encode_sb(dec);              break;
 		case riscv_codec_u:             return inst |= riscv_encode_u(dec);               break;

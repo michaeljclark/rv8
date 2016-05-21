@@ -145,10 +145,10 @@ csrrci     rd      zimm     imm12             14..12=7 6..2=0x1C 1..0=3  i+csri 
 
 flw        rd rs1 imm12                14..12=2          6..2=0x01 1..0=3 i+lf  rv32f rv64f
 fsw        rs1 rs2 simm12              14..12=2          6..2=0x09 1..0=3 s+f   rv32f rv64f
-fmadd.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x10 1..0=3 r_4f  rv32f rv64f
-fmsub.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x11 1..0=3 r_4f  rv32f rv64f
-fnmsub.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x12 1..0=3 r_4f  rv32f rv64f
-fnmadd.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x13 1..0=3 r_4f  rv32f rv64f
+fmadd.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x10 1..0=3 r4+f  rv32f rv64f
+fmsub.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x11 1..0=3 r4+f  rv32f rv64f
+fnmsub.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x12 1..0=3 r4+f  rv32f rv64f
+fnmadd.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x13 1..0=3 r4+f  rv32f rv64f
 fadd.s     rd rs1 rs2      31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3 r+fff rv32f rv64f
 fsub.s     rd rs1 rs2      31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3 r+fff rv32f rv64f
 fmul.s     rd rs1 rs2      31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3 r+fff rv32f rv64f
@@ -181,10 +181,10 @@ fcvt.s.lu  rd rs1 24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r+fr  
 
 fld        rd rs1 imm12                14..12=3          6..2=0x01 1..0=3 i+lf  rv32d rv64d
 fsd        rs1 rs2 simm12              14..12=3          6..2=0x09 1..0=3 s+f   rv32d rv64d
-fmadd.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x10 1..0=3 r_4f  rv32d rv64d
-fmsub.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x11 1..0=3 r_4f  rv32d rv64d
-fnmsub.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x12 1..0=3 r_4f  rv32d rv64d
-fnmadd.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x13 1..0=3 r_4f  rv32d rv64d
+fmadd.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x10 1..0=3 r4+f  rv32d rv64d
+fmsub.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x11 1..0=3 r4+f  rv32d rv64d
+fnmsub.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x12 1..0=3 r4+f  rv32d rv64d
+fnmadd.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x13 1..0=3 r4+f  rv32d rv64d
 fadd.d     rd rs1 rs2      31..27=0x00 rm       26..25=1 6..2=0x14 1..0=3 r+fff rv32d rv64d
 fsub.d     rd rs1 rs2      31..27=0x01 rm       26..25=1 6..2=0x14 1..0=3 r+fff rv32d rv64d
 fmul.d     rd rs1 rs2      31..27=0x02 rm       26..25=1 6..2=0x14 1..0=3 r+fff rv32d rv64d
