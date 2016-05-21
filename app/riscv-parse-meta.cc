@@ -1195,21 +1195,37 @@ R"LaTeX(\end{tabular}
 	{
 		riscv_extension_ptr extension; // set if this is a title row
 		riscv_opcode_ptr opcode;       // set if this is an opcode row
+		bool table_line;               // set to print a table line
+		bool page_break;               // set to cause a page break
 	};
 
-	// create list of opcodes ordered by extension, with blank entries between extension sections
+	// paginate opcodes ordered by extension, adding page breaks and
+	size_t line = 0;
 	std::vector<riscv_table_row> rows;
 	for (auto &ext : extensions) {
-		if (ext_subset.size() > 0 && std::find(ext_subset.begin(), ext_subset.end(),
-			ext) == ext_subset.end()) continue;
-		if (ext->opcodes.size() == 0) continue;
-		if (rows.size() != 0) rows.push_back(riscv_table_row{
-			riscv_extension_ptr(), riscv_opcode_ptr()
-		});
-		rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr() });
-		for (auto &opcode : ext->opcodes) {
-			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode });
+		if (ext->opcodes.size() == 0 || (ext_subset.size() > 0 &&
+			std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end())) {
+			continue;
 		}
+		rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr(), false, false });
+		line++;
+		for (auto &opcode : ext->opcodes) {
+			// add a line to the top of the table if we are continuing
+			if (line % TABLE_ROWS == 0) {
+				rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr(), true, false });
+			}
+			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode, false, false });
+			line++;
+			if (line % TABLE_ROWS == 0) {
+				rows.push_back(riscv_table_row{
+					riscv_extension_ptr(), riscv_opcode_ptr(), false, true
+				});
+			}
+		}
+		rows.push_back(riscv_table_row{
+			riscv_extension_ptr(), riscv_opcode_ptr(), false, false
+		});
+		line++;
 	}
 
 	// create the table width specification
@@ -1222,28 +1238,25 @@ R"LaTeX(\end{tabular}
 
 	// print document header
 	printf("%s", kLatexDocumentBegin);
+	printf("%s%s", kLatexTableBegin, ts.str().c_str());
 
 	// iterate through the table rows
-	size_t line = 0;
 	for (auto &row : rows) {
 
-		auto &extension = row.extension;
-		auto &opcode = row.opcode;
-
 		// print table header and page breaks
-		if (line % TABLE_ROWS == 0) {
-			if (line != 0) {
-				printf("%s", kLatexTableEnd);
-			}
+		if (row.page_break) {
+			printf("%s", kLatexTableEnd);
 			printf("%s%s", kLatexTableBegin, ts.str().c_str());
-			if (opcode) {
-				printf("\\cline{1-%ld}\n", TABLE_COLUMNS);
-			}
 		}
 
-		// format an opcode line
-		if (opcode) {
+		// format a line
+		else if (row.table_line) {
+			printf("\\cline{1-%ld}\n", TABLE_COLUMNS);
+		}
 
+		// format an opcode row
+		else if (row.opcode) {
+			auto &opcode = row.opcode;
 			ssize_t bit_width = opcode->extensions[0]->insn_width;
 
 			// calculate the column spans for this row
@@ -1339,17 +1352,15 @@ R"LaTeX(\end{tabular}
 		}
 
 		// format an extension heading
-		else if (extension) {
+		else if (row.extension) {
 			printf("\\multicolumn{%ld}{c}{\\bf %s} & \\\\\n\\cline{1-%ld}\n",
-				TABLE_COLUMNS, extension->description.c_str(), TABLE_COLUMNS);
+				TABLE_COLUMNS, row.extension->description.c_str(), TABLE_COLUMNS);
 		}
 
 		// format an empty line
 		else {
 			printf("\\multicolumn{%ld}{c}{} & \\\\\n", TABLE_COLUMNS);
 		}
-
-		line++;
 	}
 
 	// print table and document trailer
