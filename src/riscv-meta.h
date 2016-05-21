@@ -139,7 +139,7 @@ enum riscv_ireg_name
 	riscv_ireg_x31,
 };
 
-enum riscv_ireg_alias
+enum riscv_ireg_abi
 {
 	riscv_ireg_zero,
 	riscv_ireg_ra,
@@ -211,7 +211,7 @@ enum riscv_freg_name
 	riscv_freg_f31,
 };
 
-enum riscv_freg_alias
+enum riscv_freg_abi
 {
 	riscv_freg_ft0,
 	riscv_freg_ft1,
