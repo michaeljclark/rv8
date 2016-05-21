@@ -26,7 +26,7 @@ The future goals of the RISC-V Meta project are:
 - RISC-V-(n) → RISC-V-(n+1)
 - RISC-V-(n) → Intel i786 + AVX-512
 - RISC-V Linux ABI emulation on MacOS, Windows, Linux and *BSD
-- RISC-V Linux ABI entropy coding - Runtime ABI randomisation
+- RISC-V Linux ABI randomisation and entropy coding
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
 
