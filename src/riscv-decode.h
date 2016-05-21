@@ -22,26 +22,25 @@ struct riscv_decode
 
 /* Decode immediate */
 
-typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_CI;
-typedef imm_t<18, S<12,12, B<17>>,          S<6,2,  B<16,12>>>              IMM_CI_lui;
-typedef imm_t<8,  S<12,12, B<5>>,           S<6,2,  B<4,2>,B<7,6>>>         IMM_CI_lwsp;
-typedef imm_t<9,  S<12,12, B<5>>,           S<6,2,  B<4,3>,B<8,6>>>         IMM_CI_ldsp;
-typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> IMM_CI_16sp;
-typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  IMM_CSS_swsp;
-typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  IMM_CSS_sdsp;
-typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  IMM_CSS_sqsp;
-typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        IMM_CSS_4spn;
-typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             IMM_CW;
-typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                IMM_CD;
-typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                IMM_CQ;
-typedef imm_t<9,  S<12,10, B<8>,B<4,3>>,    S<6,2,  B<7,6>,B<2,1>,B<5>>>    IMM_CB;
-typedef imm_t<12, S<12,2,  B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>>  IMM_CJ;
-typedef imm_t<12, S<31,20, B<11,0>>>                                        IMM_I;
-typedef imm_t<12, S<31,25, B<11,5>>,        S<11,7, B<4,0>>>                IMM_S;
-typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          IMM_SB;
-typedef imm_t<32, S<31,12, B<31,12>>>                                       IMM_U;
-typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   IMM_UJ;
-typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_C_sh5;
+typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                riscv_arg_cimmi;
+typedef imm_t<18, S<12,12, B<17>>,          S<6,2,  B<16,12>>>              riscv_arg_cimmui;
+typedef imm_t<8,  S<12,12, B<5>>,           S<6,2,  B<4,2>,B<7,6>>>         riscv_arg_cimmlwsp;
+typedef imm_t<9,  S<12,12, B<5>>,           S<6,2,  B<4,3>,B<8,6>>>         riscv_arg_cimmldsp;
+typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> riscv_arg_cimm16sp;
+typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  riscv_arg_cimmswsp;
+typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  riscv_arg_cimmsdsp;
+typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  riscv_arg_cimmsqsp;
+typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        riscv_arg_cimm4spn;
+typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             riscv_arg_cimmw;
+typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                riscv_arg_cimmd;
+typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                riscv_arg_cimmq;
+typedef imm_t<9,  S<12,10, B<8>,B<4,3>>,    S<6,2,  B<7,6>,B<2,1>,B<5>>>    riscv_arg_cimmb;
+typedef imm_t<12, S<12,2,  B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>>  riscv_arg_cimmj;
+typedef imm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_imm12;
+typedef imm_t<12, S<31,25, B<11,5>>,        S<11,7, B<4,0>>>                riscv_arg_simm12;
+typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          riscv_arg_sbimm12;
+typedef imm_t<32, S<31,12, B<31,12>>>                                       riscv_arg_imm20;
+typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   riscv_arg_jimm20;
 
 /* Decode none */
 inline void riscv_decode_none(riscv_decode &dec, riscv_lu inst) {}
@@ -85,14 +84,14 @@ inline void riscv_decode_cr_jr(riscv_decode &dec, riscv_lu inst)
 inline void riscv_decode_ci(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
-	dec.imm = IMM_CI::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(inst);
 }
 
 /* Decode CI shamt5 */
 inline void riscv_decode_ci_sh5(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = (inst >> 7) & 0b11111;
-	dec.imm = IMM_C_sh5::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(inst);
 }
 
 /* Decode CI li */
@@ -100,7 +99,7 @@ inline void riscv_decode_ci_li(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_zero;
-	dec.imm = IMM_CI::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(inst);
 }
 
 /* Decode CI lui */
@@ -108,7 +107,7 @@ inline void riscv_decode_ci_lui(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_zero;
-	dec.imm = IMM_CI_lui::decode(inst);
+	dec.imm = riscv_arg_cimmui::decode(inst);
 }
 
 /* Decode CI lwsp */
@@ -116,7 +115,7 @@ inline void riscv_decode_ci_lwsp(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_lwsp::decode(inst);
+	dec.imm = riscv_arg_cimmlwsp::decode(inst);
 }
 
 /* Decode CI ldsp */
@@ -124,7 +123,7 @@ inline void riscv_decode_ci_ldsp(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_ldsp::decode(inst);
+	dec.imm = riscv_arg_cimmldsp::decode(inst);
 }
 
 /* Decode CI 16sp */
@@ -132,7 +131,7 @@ inline void riscv_decode_ci_16sp(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CI_16sp::decode(inst);
+	dec.imm = riscv_arg_cimm16sp::decode(inst);
 }
 
 /* Decode CSS swsp */
@@ -140,7 +139,7 @@ inline void riscv_decode_css_swsp(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = (inst >> 2) & 0b11111;
-	dec.imm = IMM_CSS_swsp::decode(inst);
+	dec.imm = riscv_arg_cimmswsp::decode(inst);
 }
 
 /* Decode CSS sdsp */
@@ -148,7 +147,7 @@ inline void riscv_decode_css_sdsp(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = (inst >> 2) & 0b11111;
-	dec.imm = IMM_CSS_sdsp::decode(inst);
+	dec.imm = riscv_arg_cimmsdsp::decode(inst);
 }
 
 /* Decode CIW 4spn */
@@ -156,7 +155,7 @@ inline void riscv_decode_ciw_4spn(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = riscv_ireg_sp;
-	dec.imm = IMM_CSS_4spn::decode(inst);
+	dec.imm = riscv_arg_cimm4spn::decode(inst);
 }
 
 /* Decode CL lw */
@@ -164,7 +163,7 @@ inline void riscv_decode_cl_lw(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CW::decode(inst);
+	dec.imm = riscv_arg_cimmw::decode(inst);
 }
 
 /* Decode CL ld */
@@ -172,7 +171,7 @@ inline void riscv_decode_cl_ld(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CD::decode(inst);
+	dec.imm = riscv_arg_cimmd::decode(inst);
 }
 
 /* Decode CS f */
@@ -187,7 +186,7 @@ inline void riscv_decode_cs_sd(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CD::decode(inst);
+	dec.imm = riscv_arg_cimmd::decode(inst);
 }
 
 /* Decode CS sw */
@@ -195,27 +194,27 @@ inline void riscv_decode_cs_sw(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs2 = ((inst >> 2) & 0b111) + 8;
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CW::decode(inst);
+	dec.imm = riscv_arg_cimmw::decode(inst);
 }
 
 /* Decode CB */
 inline void riscv_decode_cb(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_CB::decode(inst);
+	dec.imm = riscv_arg_cimmb::decode(inst);
 }
 
 /* Decode CB shamt5 */
 inline void riscv_decode_cb_sh5(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = ((inst >> 7) & 0b111) + 8;
-	dec.imm = IMM_C_sh5::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(inst);
 }
 
 /* Decode CJ - imm */
 inline void riscv_decode_cj(riscv_decode &dec, riscv_lu inst)
 {
-	dec.imm = IMM_CJ::decode(inst);
+	dec.imm = riscv_arg_cimmj::decode(inst);
 }
 
 /* Decode R */
@@ -240,7 +239,7 @@ inline void riscv_decode_i(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
 	dec.rs1 = (inst >> 15) & 0b11111;
-	dec.imm = IMM_I::decode(inst);
+	dec.imm = riscv_arg_imm12::decode(inst);
 }
 
 /* Decode I sh5 */
@@ -264,7 +263,7 @@ inline void riscv_decode_s(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = (inst >> 15) & 0b11111;
 	dec.rs2 = (inst >> 20) & 0b11111;
-	dec.imm = IMM_S::decode(inst);
+	dec.imm = riscv_arg_simm12::decode(inst);
 }
 
 /* Decode SB Branch */
@@ -272,21 +271,21 @@ inline void riscv_decode_sb(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = (inst >> 15) & 0b11111;
 	dec.rs2 = (inst >> 20) & 0b11111;
-	dec.imm = IMM_SB::decode(inst);
+	dec.imm = riscv_arg_sbimm12::decode(inst);
 }
 
 /* Decode U */
 inline void riscv_decode_u(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
-	dec.imm = IMM_U::decode(inst);
+	dec.imm = riscv_arg_imm20::decode(inst);
 }
 
 /* Decode UJ */
 inline void riscv_decode_uj(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = (inst >> 7) & 0b11111;
-	dec.imm = IMM_UJ::decode(inst);
+	dec.imm = riscv_arg_jimm20::decode(inst);
 }
 
 /* Encode none */
@@ -325,69 +324,69 @@ inline riscv_lu riscv_encode_cr_jr(riscv_decode &dec)
 inline riscv_lu riscv_encode_ci(riscv_decode &dec)
 {
 	return ((dec.rs1 & 0b11111) << 7) |
-		IMM_CI::encode(dec.imm);
+		riscv_arg_cimmi::encode(dec.imm);
 }
 
 /* Encode CI shamt5 */
 inline riscv_lu riscv_encode_ci_sh5(riscv_decode &dec)
 {
 	return ((dec.rs1 & 0b11111) << 7) |
-		IMM_C_sh5::encode(dec.imm);
+		riscv_arg_cimmi::encode(dec.imm);
 }
 
 /* Encode CI li */
 inline riscv_lu riscv_encode_ci_li(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_CI::encode(dec.imm);
+		riscv_arg_cimmi::encode(dec.imm);
 }
 
 /* Encode CI lui */
 inline riscv_lu riscv_encode_ci_lui(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_CI_lui::encode(dec.imm);
+		riscv_arg_cimmui::encode(dec.imm);
 }
 
 /* Encode CI lwsp */
 inline riscv_lu riscv_encode_ci_lwsp(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_CI_lwsp::encode(dec.imm);
+		riscv_arg_cimmlwsp::encode(dec.imm);
 }
 
 /* Encode CI ldsp */
 inline riscv_lu riscv_encode_ci_ldsp(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_CI_ldsp::encode(dec.imm);
+		riscv_arg_cimmldsp::encode(dec.imm);
 }
 
 /* Encode CI 16sp */
 inline riscv_lu riscv_encode_ci_16sp(riscv_decode &dec)
 {
-	return IMM_CI_16sp::encode(dec.imm);
+	return riscv_arg_cimm16sp::encode(dec.imm);
 }
 
 /* Encode CSS swsp */
 inline riscv_lu riscv_encode_css_swsp(riscv_decode &dec)
 {
 	return ((dec.rs2 & 0b11111) << 2) |
-		IMM_CSS_swsp::encode(dec.imm);
+		riscv_arg_cimmswsp::encode(dec.imm);
 }
 
 /* Encode CSS sdsp */
 inline riscv_lu riscv_encode_css_sdsp(riscv_decode &dec)
 {
 	return ((dec.rs2 & 0b11111) << 2) |
-		IMM_CSS_sdsp::encode(dec.imm);
+		riscv_arg_cimmsdsp::encode(dec.imm);
 }
 
 /* Encode CIW 4spn */
 inline riscv_lu riscv_encode_ciw_4spn(riscv_decode &dec)
 {
 	return (((dec.rd - 8) & 0b111) << 2) |
-		IMM_CSS_4spn::encode(dec.imm);
+		riscv_arg_cimm4spn::encode(dec.imm);
 }
 
 /* Encode CL lw */
@@ -395,7 +394,7 @@ inline riscv_lu riscv_encode_cl_lw(riscv_decode &dec)
 {
 	return (((dec.rd - 8) & 0b111) << 2) |
 		(((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_CW::encode(dec.imm);
+		riscv_arg_cimmw::encode(dec.imm);
 }
 
 /* Encode CL ld */
@@ -403,7 +402,7 @@ inline riscv_lu riscv_encode_cl_ld(riscv_decode &dec)
 {
 	return (((dec.rd - 8) & 0b111) << 2) |
 		(((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_CD::encode(dec.imm);
+		riscv_arg_cimmd::encode(dec.imm);
 }
 
 /* Encode CS f */
@@ -418,7 +417,7 @@ inline riscv_lu riscv_encode_cs_sd(riscv_decode &dec)
 {
 	return (((dec.rs2 - 8) & 0b111) << 2) |
 		(((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_CD::encode(dec.imm);
+		riscv_arg_cimmd::encode(dec.imm);
 }
 
 /* Encode CS sw */
@@ -426,27 +425,27 @@ inline riscv_lu riscv_encode_cs_sw(riscv_decode &dec)
 {
 	return (((dec.rs2 - 8) & 0b111) << 2) |
 		(((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_CW::encode(dec.imm);
+		riscv_arg_cimmw::encode(dec.imm);
 }
 
 /* Encode CB */
 inline riscv_lu riscv_encode_cb(riscv_decode &dec)
 {
 	return (((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_CB::encode(dec.imm);
+		riscv_arg_cimmb::encode(dec.imm);
 }
 
 /* Encode CB shamt5 */
 inline riscv_lu riscv_encode_cb_sh5(riscv_decode &dec)
 {
 	return (((dec.rs1 - 8) & 0b111) << 7) |
-		IMM_C_sh5::encode(dec.imm);
+		riscv_arg_cimmi::encode(dec.imm);
 }
 
 /* Encode CJ - imm */
 inline riscv_lu riscv_encode_cj(riscv_decode &dec)
 {
-	return IMM_CJ::encode(dec.imm);
+	return riscv_arg_cimmj::encode(dec.imm);
 }
 
 /* Encode R */
@@ -471,7 +470,7 @@ inline riscv_lu riscv_encode_i(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
 		((dec.rs1 & 0b11111) << 15) |
-		IMM_I::encode(dec.imm);
+		riscv_arg_imm12::encode(dec.imm);
 }
 
 /* Encode I sh5 */
@@ -495,7 +494,7 @@ inline riscv_lu riscv_encode_s(riscv_decode &dec)
 {
 	return ((dec.rs1 & 0b11111) << 15) |
 		((dec.rs2 & 0b11111) << 20) |
-		IMM_S::encode(dec.imm);
+		riscv_arg_simm12::encode(dec.imm);
 }
 
 /* Encode SB Branch */
@@ -503,21 +502,21 @@ inline riscv_lu riscv_encode_sb(riscv_decode &dec)
 {
 	return ((dec.rs1 & 0b11111) << 15) |
 		((dec.rs2 & 0b11111) << 20) |
-		IMM_SB::encode(dec.imm);
+		riscv_arg_sbimm12::encode(dec.imm);
 }
 
 /* Encode U */
 inline riscv_lu riscv_encode_u(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_U::encode(dec.imm);
+		riscv_arg_imm20::encode(dec.imm);
 }
 
 /* Encode UJ */
 inline riscv_lu riscv_encode_uj(riscv_decode &dec)
 {
 	return ((dec.rd & 0b11111) << 7) |
-		IMM_UJ::encode(dec.imm);
+		riscv_arg_jimm20::encode(dec.imm);
 }
 
 /* Decode Instruction Opcode */
