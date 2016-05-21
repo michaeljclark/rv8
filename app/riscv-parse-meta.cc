@@ -41,8 +41,7 @@ static const char* COMPRESSION_FILE    = "compression";
 static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
-// TODO - make this variable based on extension metadata
-static const ssize_t INSN_WIDTH = 32;
+static const ssize_t MAX_INSN_WIDTH = 32;
 
 struct riscv_bitrange;
 struct riscv_bitspec;
@@ -1335,13 +1334,13 @@ void riscv_inst_set::print_map()
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
-			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+			for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) == 0 ? (bit / 10) + '0' : ' ';
 				printf("%c", c);
 			}
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
-			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+			for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
@@ -1350,7 +1349,9 @@ void riscv_inst_set::print_map()
 		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
 		printf("// ");
-		for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+		ssize_t bit_width = opcode->extensions[0]->insn_width;
+		for (ssize_t i = 0; i < MAX_INSN_WIDTH-bit_width; i++) printf(" ");
+		for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '.');
 			switch (c) {
 				case '0':
@@ -1691,21 +1692,21 @@ void riscv_inst_set::generate_codec_node(riscv_codec_node &node, riscv_opcode_li
 	std::vector<ssize_t> sum;
 	sum.resize(32);
 	for (auto &opcode : opcode_list) {
-		for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+		for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
 			if ((opcode->mask & (1 << bit)) && !(opcode->done & (1 << bit))) sum[bit]++;
 		}
 	}
 
 	// find column with maximum row coverage
 	ssize_t max_rows = 0;
-	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+	for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
 		if (sum[bit] > max_rows) max_rows = sum[bit];
 	}
 
 	if (max_rows == 0) return; // no bits to match
 
 	// select bits that cover maximum number of rows
-	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+	for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
 		if (sum[bit] == max_rows) node.bits.push_back(bit);
 	}
 
