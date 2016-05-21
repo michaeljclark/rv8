@@ -46,6 +46,7 @@ static const ssize_t INSN_WIDTH = 32;
 struct riscv_bitrange;
 struct riscv_bitspec;
 struct riscv_arg;
+struct riscv_type;
 struct riscv_codec;
 struct riscv_extension;
 struct riscv_format;
@@ -61,6 +62,9 @@ struct riscv_codec_node;
 typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
 typedef std::vector<riscv_arg_ptr> riscv_arg_list;
 typedef std::map<std::string,riscv_arg_ptr> riscv_arg_map;
+typedef std::shared_ptr<riscv_type> riscv_type_ptr;
+typedef std::vector<riscv_type_ptr> riscv_type_list;
+typedef std::map<std::string,riscv_type_ptr> riscv_type_map;
 typedef std::shared_ptr<riscv_codec> riscv_codec_ptr;
 typedef std::vector<riscv_codec_ptr> riscv_codec_list;
 typedef std::map<std::string,riscv_codec_ptr> riscv_codec_map;
@@ -139,6 +143,15 @@ struct riscv_arg
 		else if (type == "disp") return 'D';
 		else return '?';
 	}
+};
+
+struct riscv_type
+{
+	std::string name;
+	std::string description;
+	std::vector<std::pair<riscv_bitspec,std::string>> parts;
+
+	riscv_type(std::string name, std::string description) : name(name), description(description) {}
 };
 
 struct riscv_codec
@@ -278,6 +291,8 @@ struct riscv_inst_set
 
 	riscv_arg_list           args;
 	riscv_arg_map            args_by_name;
+	riscv_type_list          types;
+	riscv_type_map           types_by_name;
 	riscv_codec_list         codecs;
 	riscv_codec_map          codecs_by_name;
 	riscv_extension_list     extensions;
@@ -322,6 +337,7 @@ struct riscv_inst_set
 	bool is_extension(std::string mnem);
 
 	void parse_arg(std::vector<std::string> &part);
+	void parse_type(std::vector<std::string> &part);
 	void parse_codec(std::vector<std::string> &part);
 	void parse_extension(std::vector<std::string> &part);
 	void parse_format(std::vector<std::string> &part);
@@ -829,6 +845,22 @@ void riscv_inst_set::parse_arg(std::vector<std::string> &part)
 		part[0], part[1], part[2], part[3], part[4], part[5]
 	);
 	args.push_back(arg);
+}
+
+void riscv_inst_set::parse_type(std::vector<std::string> &part)
+{
+	if (part.size() <= 2) {
+		panic("types requires 2 or more parameters: %s", join(part, " ").c_str());
+	}
+	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
+		part[0], part[1]
+	);
+	for (size_t i = 1; i < part.size(); i++) {
+		std::vector<std::string> type_spec = split(part[i], "=", false, false);
+		std::string label = type_spec.size() > 1 ? type_spec[1] : "";
+		type->parts.push_back(std::pair<riscv_bitspec,std::string>(riscv_bitspec(type_spec[0]),label));
+	}
+	types.push_back(type);
 }
 
 void riscv_inst_set::parse_codec(std::vector<std::string> &part)
