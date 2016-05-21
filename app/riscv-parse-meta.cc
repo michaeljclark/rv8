@@ -59,6 +59,7 @@ struct riscv_compressed;
 struct riscv_bitrange;
 struct riscv_codec_node;
 
+typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
 typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
 typedef std::vector<riscv_arg_ptr> riscv_arg_list;
 typedef std::map<std::string,riscv_arg_ptr> riscv_arg_map;
@@ -101,8 +102,10 @@ struct riscv_bitrange
 	ssize_t msb;
 	ssize_t lsb;
 
+	riscv_bitrange() : msb(0), lsb(0) {}
 	riscv_bitrange(std::string bitrange);
 	riscv_bitrange(ssize_t msb, ssize_t lsb) : msb(msb), lsb(lsb) {}
+	riscv_bitrange(const riscv_bitrange &o) : msb(o.msb), lsb(o.lsb) {}
 
 	std::string to_string(std::string sep);
 };
@@ -114,7 +117,9 @@ struct riscv_bitspec
 
 	std::vector<riscv_bitseg> segments;
 
+	riscv_bitspec() : segments() {}
 	riscv_bitspec(std::string bitspec);
+	riscv_bitspec(const riscv_bitspec &o) : segments(o.segments) {}
 
 	bool matches_bit(ssize_t bit);
 	std::string to_string();
@@ -149,9 +154,16 @@ struct riscv_type
 {
 	std::string name;
 	std::string description;
-	std::vector<std::pair<riscv_bitspec,std::string>> parts;
+	std::vector<riscv_named_bitspec> parts;
 
 	riscv_type(std::string name, std::string description) : name(name), description(description) {}
+
+	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
+		for (auto ent : parts) {
+			if (ent.first.matches_bit(bit)) return ent;
+		}
+		return riscv_named_bitspec();
+	}
 };
 
 struct riscv_codec
@@ -255,10 +267,17 @@ struct riscv_opcode
 	}
 
 	riscv_arg_ptr find_arg(ssize_t bit) {
-		for (auto arg: args) {
+		for (auto arg : args) {
 			if (arg->bitspec.matches_bit(bit)) return arg;
 		}
 		return riscv_arg_ptr();
+	}
+
+	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
+		for (auto ent : type->parts) {
+			if (ent.first.matches_bit(bit)) return ent;
+		}
+		return riscv_named_bitspec();
 	}
 };
 
@@ -865,10 +884,9 @@ void riscv_inst_set::parse_type(std::vector<std::string> &part)
 	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
 		part[0], part[1]
 	);
-	for (size_t i = 1; i < part.size(); i++) {
-		std::vector<std::string> type_spec = split(part[i], "=", false, false);
-		std::string label = type_spec.size() > 1 ? type_spec[1] : "";
-		type->parts.push_back(std::pair<riscv_bitspec,std::string>(riscv_bitspec(type_spec[0]),label));
+	for (size_t i = 2; i < part.size(); i++) {
+		std::vector<std::string> spec = split(part[i], "=", false, false);
+		type->parts.push_back(riscv_named_bitspec(riscv_bitspec(spec[0]), spec.size() > 1 ? spec[1] : ""));
 	}
 	types.push_back(type);
 }
@@ -1230,12 +1248,16 @@ R"LaTeX(\end{tabular}
 
 			// calculate the column spans for this row
 			riscv_arg_ptr arg, larg;
+			bool lbound = false;
 			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
 			std::vector<arg_tuple> arg_parts;
 			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
 				arg = opcode->find_arg(bit);
-				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg) {
+
+				// figure out where to break columns
+				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
+				{
 					std::string str;
 					str += c;
 					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
@@ -1254,6 +1276,16 @@ R"LaTeX(\end{tabular}
 						str += c;
 					}
 				}
+
+				// find the type of this opcode for column boundaries
+				auto named_bitspec = opcode->find_named_bitspec(bit);
+				if (named_bitspec.first.segments.size() == 0) {
+					auto default_type = types_by_name[std::to_string(bit_width)];
+					if (!default_type) panic("can't find default type: %d", bit_width);
+					named_bitspec = default_type->find_named_bitspec(bit);
+				}
+				lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
+
 				larg = arg;
 			}
 
