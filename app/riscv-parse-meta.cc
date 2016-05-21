@@ -314,8 +314,7 @@ struct riscv_inst_set
 	riscv_constraint_map     constraints_by_name;
 	riscv_compressed_list    compressions;
 	riscv_extension_list     ext_subset;
-
-	riscv_codec_node node;
+	riscv_codec_node         root_node;
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
@@ -1089,7 +1088,7 @@ void riscv_inst_set::generate_map()
 
 void riscv_inst_set::generate_codec()
 {
-	generate_codec_node(node, opcodes);
+	generate_codec_node(root_node, opcodes);
 }
 
 std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
@@ -1669,7 +1668,7 @@ void riscv_inst_set::print_switch_c(bool no_comment, bool zero_not_oh)
 	printf(">\n");
 	printf("void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)\n");
 	printf("{\n");
-	print_switch_decoder_node(node, 1);
+	print_switch_decoder_node(root_node, 1);
 	printf("}\n\n");
 
 	// print type decoder
