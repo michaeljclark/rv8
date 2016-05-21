@@ -23,7 +23,7 @@
 #define _COLOR_OPCODE _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_SEP _COLOR_FG_YELLOW _COLOR_END
 #define _COLOR_BITS   _COLOR_BEGIN _COLOR_REVERSE    _COLOR_SEP _COLOR_FG_GREEN  _COLOR_END
 #define _COLOR_FORMAT _COLOR_BEGIN _COLOR_BOLD       _COLOR_SEP _COLOR_FG_RED    _COLOR_END
-#define _COLOR_LEGEND _COLOR_BEGIN _COLOR_FG_WHITE   _COLOR_SEP _COLOR_BG_BLACK  _COLOR_END
+#define _COLOR_LEGEND _COLOR_BEGIN _COLOR_BOLD       _COLOR_END
 #define _COLOR_EXT    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
 
 static bool enable_color = false;
@@ -1282,7 +1282,7 @@ void riscv_inst_set::print_map()
 		if (i % 22 == 0) {
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
-				char c = (bit / 10) + '0';
+				char c = (bit % 10) == 0 ? (bit / 10) + '0' : ' ';
 				printf("%c", c);
 			}
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
