@@ -46,7 +46,7 @@ crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
 crs2       6:2                          ireg  "rs2"       white   green
 cimmi      12[5],6:2[4:0]               imm   "imm"       green   none
 cimmui     12[17],6:2[16:12]            imm   "imm"       green   none
-cimmlwsp   12[5],6:2[4:6|7:6]           imm   "imm"       green   none
+cimmlwsp   12[5],6:2[4:2|7:6]           imm   "imm"       green   none
 cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"       green   none
 cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"       green   none
 cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  imm   "imm"       green   none     # PC relative jump
