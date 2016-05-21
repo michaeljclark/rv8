@@ -14,12 +14,12 @@ frd_rs1            frd,rs1
 frd_frs1           frd,frs1
 rd_frs1            rd,frs1
 rd_rs1_imm         rd,rs1,imm
-rd_bimm_rs1        rd,imm(rs1)
-frd_bimm_rs1       frd,imm(rs1)
+rd_imm_rs1         rd,imm(rs1)
+frd_imm_rs1        frd,imm(rs1)
 rd_csr_rs1         rd,csr,rs1
 rd_csr_irs1        rd,csr,irs1
-rs2_bimm_rs1       rs2,imm(rs1)
-frs2_bimm_rs1      frs2,imm(rs1)
+rs2_imm_rs1        rs2,imm(rs1)
+frs2_imm_rs1       frs2,imm(rs1)
 rs1_rs2_disp       rs1,rs2,disp
 rd_rs2_b_rs1       rd,rs2,(rs1)
 rd_b_rs1           rd,(rs1)
