@@ -259,7 +259,7 @@ c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                       ci_lwsp    
 c.flwsp    crd        cimmlwsp 1..0=2 15..13=3                       ci_lwsp+f        rv32c
 c.jr       crs1                1..0=2 15..13=4 12=0 6..2=0           cr_jr      rv32c rv64c
 c.mv       crd crs2            1..0=2 15..13=4 12=0                  cr_mv      rv32c rv64c
-c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0   none       rv32c rv64c
+c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0   none+c     rv32c rv64c
 c.jalr     crs1                1..0=2 15..13=4 12=1 6..2=0           cr_jalr    rv32c rv64c
 c.add      crd crs2            1..0=2 15..13=4 12=1                  cr         rv32c rv64c
 c.fsdsp    crs2       cimmsdsp 1..0=2 15..13=5                       css_sdsp+f rv32c rv64c
