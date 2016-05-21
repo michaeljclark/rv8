@@ -212,9 +212,9 @@ c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
 $(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -H -r $(META_DIR) > $@
+	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $@
 $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA) $(RV_META_HDR)
-	$(PARSE_META_BIN) -C -r $(META_DIR) > $@
+	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $@
 
 # build targets
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)

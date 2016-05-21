@@ -207,7 +207,6 @@ struct riscv_csr
 
 struct riscv_opcode
 {
-	ssize_t num;
 	std::string key;
 	std::string name;
 	std::string long_name;
@@ -220,11 +219,12 @@ struct riscv_opcode
 	riscv_compressed_ptr compressed;
 	riscv_compressed_list compressions;
 
+	size_t num;
 	size_t mask;
 	size_t match;
 	size_t done;
 
-	riscv_opcode(std::string key, std::string name) : key(key), name(name), mask(0), match(0), done(0) {}
+	riscv_opcode(std::string key, std::string name) : key(key), name(name), num(0), mask(0), match(0), done(0) {}
 
 	bool match_extension(riscv_extension_list &ext_subset) {
 		if (ext_subset.size() == 0) return true;
@@ -299,6 +299,7 @@ struct riscv_inst_set
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
 	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key = true);
+	static std::string opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key = true);
 	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
@@ -338,9 +339,9 @@ struct riscv_inst_set
 
 	void print_latex();
 	void print_map();
-	void print_opcodes_h();
-	void print_opcodes_c();
-	void print_switch_c();
+	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
+	void print_opcodes_c(bool no_comment = false, bool zero_not_oh = false);
+	void print_switch_c(bool no_comment = false, bool zero_not_oh = false);
 
 	void generate_decoder_node(riscv_decoder_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_decoder_node &node, size_t indent);
@@ -584,6 +585,12 @@ std::string riscv_inst_set::opcode_format(std::string prefix, riscv_opcode_ptr o
 	return prefix + name;
 }
 
+std::string riscv_inst_set::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
+{
+	std::string opcode_name = opcode_format("", opcode, '.', key);
+	return no_comment ? "" : format_string("/* %20s */ ", opcode_name.c_str());
+}
+
 std::string riscv_inst_set::opcode_isa_shortname(riscv_opcode_ptr opcode)
 {
 	auto &ext = opcode->extensions.front();
@@ -743,12 +750,12 @@ riscv_opcode_ptr riscv_inst_set::create_opcode(std::string opcode_name, std::str
 			panic("opcode key with same extension already exists: %s", opcode_key.c_str());
 		}
 		opcode = opcodes_by_key[opcode_key] = std::make_shared<riscv_opcode>(opcode_key, opcode_name);
-		opcode->num = opcodes.size();
 		opcodes.push_back(opcode);
+		opcode->num = opcodes.size();
 	} else {
 		opcode = opcodes_by_key[opcode_name] = std::make_shared<riscv_opcode>(opcode_name, opcode_name);
-		opcode->num = opcodes.size();
 		opcodes.push_back(opcode);
+		opcode->num = opcodes.size();
 	}
 
 	// add opcode to the opcode by name list, creating a new list if one doesn't exist
@@ -1295,7 +1302,7 @@ void riscv_inst_set::print_map()
 	}
 }
 
-void riscv_inst_set::print_opcodes_h()
+void riscv_inst_set::print_opcodes_h(bool no_comment, bool zero_not_oh)
 {
 	printf("//\n");
 	printf("//  riscv-meta.h\n");
@@ -1303,8 +1310,8 @@ void riscv_inst_set::print_opcodes_h()
 	printf("//  DANGER - This is machine generated code\n");
 	printf("//\n");
 	printf("\n");
-	printf("#ifndef riscv_opcodes_h\n");
-	printf("#define riscv_opcodes_h\n");
+	printf("#ifndef riscv_meta_h\n");
+	printf("#define riscv_meta_h\n");
 	printf("\n");
 	printf("enum rvc_constraint\n{\n");
 	printf("\trvc_end,\n");
@@ -1350,27 +1357,46 @@ void riscv_inst_set::print_opcodes_h()
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown,\n");
 	for (auto &opcode : opcodes) {
-		printf("\t%s,\n", opcode_format("riscv_op_", opcode, '_').c_str());
+		printf("\t%s = %lu,\n", opcode_format("riscv_op_", opcode, '_').c_str(), opcode->num);
 	}
 	printf("};\n\n");
 	printf("struct riscv_comp_data\n{\n");
-	printf("\tconst riscv_op op;\n");
+	printf("\tconst int op;\n");
 	printf("\tconst rvc_constraint* constraints;\n");
 	printf("};\n\n");
-	printf("extern const char* riscv_i_registers[];\n");
-	printf("extern const char* riscv_f_registers[];\n");
-	printf("extern const char* riscv_instruction_name[];\n");
-	printf("extern const riscv_inst_type riscv_instruction_type[];\n");
-	printf("extern const riscv_wu riscv_instruction_match[];\n");
-	printf("extern const riscv_wu riscv_instruction_mask[];\n");
-	printf("extern const rvf* riscv_instruction_format[];\n");
-	printf("extern const riscv_comp_data* riscv_instruction_comp[];\n");
-	printf("extern const riscv_op riscv_instruction_decomp[];\n");
+	printf("extern \"C\" {\n");
+	printf("\textern const char* riscv_i_registers[];\n");
+	printf("\textern const char* riscv_f_registers[];\n");
+	printf("\textern const char* riscv_instruction_name[];\n");
+	printf("\textern const riscv_inst_type riscv_instruction_type[];\n");
+	printf("\textern const riscv_wu riscv_instruction_match[];\n");
+	printf("\textern const riscv_wu riscv_instruction_mask[];\n");
+	printf("\textern const rvf* riscv_instruction_format[];\n");
+	printf("\textern const riscv_comp_data* riscv_instruction_comp[];\n");
+	printf("\textern const int riscv_instruction_decomp[];\n");
+	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
 }
 
-void riscv_inst_set::print_opcodes_c()
+static const char* unknown_op_comment = "/*              unknown */ ";
+
+static void print_array_unknown_str(const char *str, bool no_comment)
+{
+	printf("\t%s\"%s\",\n", no_comment ? "" : unknown_op_comment, str);
+}
+
+static void print_array_unknown_enum(const char *str, bool no_comment)
+{
+	printf("\t%s%s,\n", no_comment ? "" : unknown_op_comment, str);
+}
+
+static void print_array_unknown_int(uint32_t num, bool no_comment)
+{
+	printf("\t%s0x%08x,\n", no_comment ? "" : unknown_op_comment, num);
+}
+
+void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 {
 	printf("//\n");
 	printf("//  riscv-meta.cc\n");
@@ -1395,41 +1421,46 @@ void riscv_inst_set::print_opcodes_c()
 	}
 	printf("};\n\n");
 	printf("const char* riscv_instruction_name[] = {\n");
-	printf("\t/*              unknown */ \"unknown\",\n");
+	print_array_unknown_str("unknown", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
 		std::string opcode_name = opcode_format("", opcode, '.', false);
-		printf("\t/* %20s */ \"%s\",\n", opcode_key.c_str(), opcode_name.c_str());
+		printf("\t%s\"%s\",\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			opcode_name.c_str());
 	}
 	printf("};\n\n");
 	printf("const riscv_inst_type riscv_instruction_type[] = {\n");
-	printf("\t/*              unknown */ riscv_inst_type_unknown,\n");
+	print_array_unknown_enum("riscv_inst_type_unknown", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
 		std::string type_name = split(opcode->type->name, "+", false, false)[0];
-		printf("\t/* %20s */ riscv_inst_type_%s,\n", opcode_key.c_str(), type_name.c_str());
+		printf("\t%sriscv_inst_type_%s,\n",\
+			opcode_comment(opcode, no_comment).c_str(),
+			type_name.c_str());
 	}
 	printf("};\n\n");
 	printf("const riscv_wu riscv_instruction_match[] = {\n");
-	printf("\t/*              unknown */ 0x%08x,\n", 0);
+	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
-		printf("\t/* %20s */ 0x%08x,\n", opcode_key.c_str(), (uint32_t)opcode->match);
+		printf("\t%s0x%08x,\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			(uint32_t)opcode->match);
 	}
 	printf("};\n\n");
 	printf("const riscv_wu riscv_instruction_mask[] = {\n");
-	printf("\t/*              unknown */ 0x%08x,\n", 0);
+	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
-		printf("\t/* %20s */ 0x%08x,\n", opcode_key.c_str(), (uint32_t)opcode->mask);
+		printf("\t%s0x%08x,\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			(uint32_t)opcode->mask);
 	}
 	printf("};\n\n");
 	printf("const rvf* riscv_instruction_format[] = {\n");
-	printf("\t/*              unknown */ riscv_fmt_none,\n");
+	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
 		auto format = formats_by_name[opcode->type->format];
-		printf("\t/* %20s */ riscv_fmt_%s,\n", opcode_key.c_str(), format->name.c_str());
+		printf("\t%sriscv_fmt_%s,\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			format->name.c_str());
 	}
 	printf("};\n\n");
 
@@ -1450,33 +1481,43 @@ void riscv_inst_set::print_opcodes_c()
 		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
 		for (auto comp : opcode->compressions) {
 			printf("{ %s, %s }, ",
-				opcode_format("riscv_op_", comp->copcode, '_').c_str(),
+				(zero_not_oh ?
+					format_string("%lu", comp->copcode->num).c_str() :
+					opcode_format("riscv_op_", comp->copcode, '_').c_str()),
 				opcode_format("rvcc_", comp->copcode, '_').c_str());
 		}
 		printf("{ riscv_op_unknown, nullptr } };\n");
 	}
 	printf("\n");
 	printf("const riscv_comp_data* riscv_instruction_comp[] = {\n");
-	printf("\t/*              unknown */ nullptr,\n");
+	print_array_unknown_enum("nullptr", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_key = opcode_format("", opcode, '.');
 		std::string opcode_data = opcode_format("rvcd_", opcode, '_');
 		std::string opcode_constraint = "nullptr";
-		printf("\t/* %20s */ %s,\n", opcode_key.c_str(),
+		printf("\t%s%s,\n",
+			opcode_comment(opcode, no_comment).c_str(),
 			opcode->compressions.size() > 0 ? opcode_data.c_str() : "nullptr");
 	}
 	printf("};\n\n");
-	printf("const riscv_op riscv_instruction_decomp[] = {\n");
-	printf("\t/*              unknown */ riscv_op_unknown,\n");
+	printf("const int riscv_instruction_decomp[] = {\n");
+	print_array_unknown_enum("riscv_op_unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_key = opcode_format("", opcode, '.');
-		printf("\t/* %20s */ %s,\n", opcode_key.c_str(),
-			opcode->compressed ? opcode_format("riscv_op_", opcode->compressed->opcode, '_').c_str() : "riscv_op_unknown");
+		printf("\t%s%s,\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			opcode->compressed ?
+				(zero_not_oh ?
+					format_string("%lu", opcode->compressed->opcode->num).c_str() :
+					opcode_format("riscv_op_", opcode->compressed->opcode, '_').c_str()) :
+				(zero_not_oh ?
+					"0" :
+					"riscv_op_unknown"));
 	}
 	printf("};\n\n");
 }
 
-void riscv_inst_set::print_switch_c()
+void riscv_inst_set::print_switch_c(bool no_comment, bool zero_not_oh)
 {
 	std::vector<std::string> mnems;
 
@@ -1696,6 +1737,8 @@ int main(int argc, const char *argv[])
 
 	bool print_latex = false;
 	bool print_map = false;
+	bool no_comment = false;
+	bool zero_not_oh = false;
 	bool print_switch_c = false;
 	bool print_opcodes_h = false;
 	bool print_opcodes_c = false;
@@ -1719,6 +1762,12 @@ int main(int argc, const char *argv[])
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
+		{ "-N", "--no-comment", cmdline_arg_type_none,
+			"Don't emit comments in generated source",
+			[&](std::string s) { return (no_comment = true); } },
+		{ "-0", "--zero-not-oh", cmdline_arg_type_none,
+			"Use numeric constants in generated source",
+			[&](std::string s) { return (zero_not_oh = true); } },
 		{ "-H", "--print-opcodes-h", cmdline_arg_type_none,
 			"Print C header",
 			[&](std::string s) { return (print_opcodes_h = true); } },
@@ -1763,16 +1812,16 @@ int main(int argc, const char *argv[])
 	}
 
 	if (print_opcodes_h) {
-		inst_set.print_opcodes_h();
+		inst_set.print_opcodes_h(no_comment, zero_not_oh);
 	}
 
 	if (print_opcodes_c) {
-		inst_set.print_opcodes_c();
+		inst_set.print_opcodes_c(no_comment, zero_not_oh);
 	}
 
 	if (print_switch_c) {
 		inst_set.generate_decoder();
-		inst_set.print_switch_c();
+		inst_set.print_switch_c(no_comment, zero_not_oh);
 	}
 
 	exit(0);
