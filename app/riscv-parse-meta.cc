@@ -21,6 +21,8 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 
+static bool enable_color = false;
+
 #define _COLOR_OPCODE _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_SEP _COLOR_FG_YELLOW _COLOR_END
 #define _COLOR_BITS   _COLOR_BEGIN _COLOR_REVERSE    _COLOR_SEP _COLOR_FG_GREEN  _COLOR_END
 #define _COLOR_FORMAT _COLOR_BEGIN _COLOR_BOLD       _COLOR_SEP _COLOR_FG_RED    _COLOR_END
@@ -29,7 +31,7 @@
 
 static const ssize_t kMaxInstructionWidth = 32;
 static const ssize_t kLatexTableColumns = 32;
-static const ssize_t kLatexTableRows = 58;
+static const ssize_t kLatexTableRows = 50;
 
 static const char* kLatexDocumentBegin =
 R"LaTeX(\documentclass{report}
@@ -56,14 +58,35 @@ R"LaTeX(\end{tabular}
 \end{table}
 )LaTeX";
 
-static bool enable_color = false;
+enum riscv_latex_type {
+	riscv_latex_type_empty,
+	riscv_latex_type_line,
+	riscv_latex_type_page_break,
+	riscv_latex_type_extension_heading,
+	riscv_latex_type_extension_contd,
+	riscv_latex_type_opcode,
+	riscv_latex_type_type_bitrange,
+	riscv_latex_type_type_spec,
+};
 
 struct riscv_latex_row
 {
-	riscv_extension_ptr extension; // set if this is a title row
-	riscv_opcode_ptr opcode;       // set if this is an opcode row
-	bool table_line;               // set to print a table line
-	bool page_break;               // set to cause a page break
+	riscv_latex_type row_type;
+	riscv_extension_ptr extension;
+	riscv_opcode_ptr opcode;
+	riscv_type_ptr type;
+
+	riscv_latex_row(riscv_latex_type row_type)
+		: row_type(row_type) {}
+
+	riscv_latex_row(riscv_latex_type row_type, riscv_extension_ptr extension)
+		: row_type(row_type), extension(extension) {}
+
+	riscv_latex_row(riscv_latex_type row_type, riscv_opcode_ptr opcode)
+		: row_type(row_type), opcode(opcode) {}
+
+	riscv_latex_row(riscv_latex_type row_type, riscv_type_ptr type)
+		: row_type(row_type), type(type) {}
 };
 
 struct riscv_latex_page
@@ -173,156 +196,255 @@ std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 
 void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 {
-	// print table header and page breaks
-	if (row.page_break) {
-		printf("%s", kLatexTableEnd);
-		printf("%s%s", kLatexTableBegin, ts.c_str());
-	}
+	switch (row.row_type) {
+		case riscv_latex_type_empty:
+			printf("\\multicolumn{%ld}{c}{} & \\\\\n", kLatexTableColumns);
+			break;
+		case riscv_latex_type_line:
+			printf("\\cline{1-%ld}\n", kLatexTableColumns);
+			break;
+		case riscv_latex_type_page_break:
+			printf("%s", kLatexTableEnd);
+			printf("%s%s", kLatexTableBegin, ts.c_str());
+			break;
+		case riscv_latex_type_extension_heading:
+		case riscv_latex_type_extension_contd:
+		{
+			printf("\\multicolumn{%ld}{c}{\\bf %s %s} & \\\\\n\\cline{1-%ld}\n",
+				kLatexTableColumns,
+				row.extension->description.c_str(),
+				row.row_type == riscv_latex_type_extension_contd ? " contd" : "",
+				kLatexTableColumns);
+			break;
+		}
+		case riscv_latex_type_opcode:
+		{
+			auto &opcode = row.opcode;
+			ssize_t bit_width = opcode->extensions[0]->insn_width;
 
-	// format a line
-	else if (row.table_line) {
-		printf("\\cline{1-%ld}\n", kLatexTableColumns);
-	}
+			// calculate the column spans for this row
+			riscv_arg_ptr arg, larg;
+			bool lbound = false;
+			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
+			std::vector<arg_tuple> arg_parts;
+			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
+				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
+				arg = opcode->find_arg(bit);
 
-	// format an opcode row
-	else if (row.opcode) {
-		auto &opcode = row.opcode;
-		ssize_t bit_width = opcode->extensions[0]->insn_width;
-
-		// calculate the column spans for this row
-		riscv_arg_ptr arg, larg;
-		bool lbound = false;
-		typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
-		std::vector<arg_tuple> arg_parts;
-		for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
-			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
-			arg = opcode->find_arg(bit);
-
-			// figure out where to break columns
-			if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
-			{
-				std::string str;
-				str += c;
-				arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
-			} else {
-				auto &sz = std::get<2>(arg_parts.back());
-				auto &str = std::get<3>(arg_parts.back());
-				char lastc = str[str.length()-1];
-				if ((lastc == '?' && (c == '1' || c == '0')) ||
-					((lastc == '1' || lastc == '0') && c == '?'))
+				// figure out where to break columns
+				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
 				{
 					std::string str;
 					str += c;
 					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
 				} else {
-					sz++;
-					str += c;
-				}
-			}
-
-			// find the type of this opcode for column boundaries
-			auto named_bitspec = opcode->find_named_bitspec(bit);
-			if (named_bitspec.first.segments.size() == 0) {
-				auto default_type = types_by_name[std::to_string(bit_width)];
-				if (!default_type) panic("can't find default type: %d", bit_width);
-				named_bitspec = default_type->find_named_bitspec(bit);
-			}
-			lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
-
-			larg = arg;
-		}
-
-		// update labels for segments with args
-		ssize_t msb = bit_width-1;
-		for (size_t i = 0; i < arg_parts.size(); i++) {
-			auto &arg = std::get<1>(arg_parts[i]);
-			auto size = std::get<2>(arg_parts[i]);
-			auto &str = std::get<3>(arg_parts[i]);
-			if (arg) {
-				str = arg->label;
-				if (str == "imm" || str == "disp") {
-					auto spec = arg->bitspec;
-					for (auto &seg : spec.segments) {
-						if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
-							str += "[";
-							for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
-								if (ri != seg.second.begin()) str += "$\\vert$";
-								str += ri->to_string(":");
-							}
-							str += "]";
-							break;
-						}
+					auto &sz = std::get<2>(arg_parts.back());
+					auto &str = std::get<3>(arg_parts.back());
+					char lastc = str[str.length()-1];
+					if ((lastc == '?' && (c == '1' || c == '0')) ||
+						((lastc == '1' || lastc == '0') && c == '?'))
+					{
+						std::string str;
+						str += c;
+						arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
+					} else {
+						sz++;
+						str += c;
 					}
 				}
-			} else {
-				std::replace(str.begin(), str.end(), '?', '0');
+
+				// find the type of this opcode for column boundaries
+				auto named_bitspec = opcode->find_named_bitspec(bit);
+				if (named_bitspec.first.segments.size() == 0) {
+					auto default_type = types_by_name[std::to_string(bit_width)];
+					if (!default_type) panic("can't find default type: %d", bit_width);
+					named_bitspec = default_type->find_named_bitspec(bit);
+				}
+				lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
+
+				larg = arg;
 			}
-			msb -= size;
+
+			// update labels for segments with args
+			ssize_t msb = bit_width-1;
+			for (size_t i = 0; i < arg_parts.size(); i++) {
+				auto &arg = std::get<1>(arg_parts[i]);
+				auto size = std::get<2>(arg_parts[i]);
+				auto &str = std::get<3>(arg_parts[i]);
+				if (arg) {
+					str = arg->label;
+					if (str == "imm" || str == "disp") {
+						auto spec = arg->bitspec;
+						for (auto &seg : spec.segments) {
+							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+								str += "[";
+								for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+									if (ri != seg.second.begin()) str += "$\\vert$";
+									str += ri->to_string(":");
+								}
+								str += "]";
+								break;
+							}
+						}
+					}
+				} else {
+					std::replace(str.begin(), str.end(), '?', '0');
+				}
+				msb -= size;
+			}
+
+			// construct the LaTeX for this row
+			std::stringstream ls;
+			for (size_t i = 0; i < arg_parts.size(); i++) {
+				auto size = std::get<2>(arg_parts[i]);
+				auto &str = std::get<3>(arg_parts[i]);
+				ls << (i != 0 ? " & " : "")
+				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
+				   << "{" << (i == 0 ? "|" : "") << "c|}"
+				   << "{" << str << "}";
+			}
+
+			// format the opcode name and arguments
+			auto name = opcode->name;
+			auto arg_comps = split(opcode->format->args, ",", false, false);
+			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+
+			// print this row
+			printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
+				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), kLatexTableColumns);
+			break;
 		}
+		case riscv_latex_type_type_spec:
+		{
+			// construct the LaTeX for this type row
+			std::stringstream ls;
+			auto type = row.type;
+			size_t bit_width = type->parts[0].first.segments.front().first.msb + 1;
+			for (size_t i = 0; i < type->parts.size(); i++) {
+				auto &named_bitspec = type->parts[i];
+				auto &range = named_bitspec.first;
+				auto &str = named_bitspec.second;
+				auto size = range.segments.front().first.msb - range.segments.back().first.lsb + 1;
+				ls << (i != 0 ? " & " : "")
+				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
+				   << "{" << (i == 0 ? "|" : "") << "c|}"
+				   << "{" << str << "}";
+			}
 
-		// construct the LaTeX for this row
-		std::stringstream ls;
-		for (size_t i = 0; i < arg_parts.size(); i++) {
-			auto size = std::get<2>(arg_parts[i]);
-			auto &str = std::get<3>(arg_parts[i]);
-			ls << (i != 0 ? " & " : "")
-			   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
-			   << "{" << (i == 0 ? "|" : "") << "c|}"
-			   << "{" << str << "}";
+			// format the type name
+			std::string name = type->name;
+			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+			name = "Type-" + name;
+
+			// print this row
+			printf("%s & %s \\\\\n\\cline{1-%ld}\n",
+				ls.str().c_str(), name.c_str(), kLatexTableColumns);
+			break;
 		}
-
-		// format the opcode name and arguments
-		auto name = opcode->name;
-		auto arg_comps = split(opcode->format->args, ",", false, false);
-		std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-
-		// print this row
-		printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
-			ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), kLatexTableColumns);
-	}
-
-	// format an extension heading
-	else if (row.extension) {
-		printf("\\multicolumn{%ld}{c}{\\bf %s} & \\\\\n\\cline{1-%ld}\n",
-			kLatexTableColumns, row.extension->description.c_str(), kLatexTableColumns);
-	}
-
-	// format an empty line
-	else {
-		printf("\\multicolumn{%ld}{c}{} & \\\\\n", kLatexTableColumns);
+		case riscv_latex_type_type_bitrange:
+		{
+			// construct the LaTeX for this type bit range header
+			std::stringstream ls;
+			auto type = row.type;
+			size_t bit_width = type->parts[0].first.segments.front().first.msb + 1;
+			for (size_t i = 0; i < type->parts.size(); i++) {
+				auto &named_bitspec = type->parts[i];
+				auto &range = named_bitspec.first;
+				auto msb = range.segments.front().first.msb;
+				auto lsb = range.segments.back().first.lsb;
+				auto size = msb - lsb + 1;
+				auto tsize = size * kLatexTableColumns / bit_width;
+				if (size == 1) {
+					ls << "\\multicolumn{" << tsize << "}{c}{\\textbf{\\scriptsize{" << msb << "}}} & ";
+				} else {
+					auto lsize = size >> 1;
+					auto rsize = tsize - lsize;
+					ls << "\\multicolumn{" << lsize << "}{l}{\\textbf{\\scriptsize{" << msb << "}}} & "
+					   << "\\multicolumn{" << rsize << "}{r}{\\textbf{\\scriptsize{" << lsb << "}}} & ";
+				}
+			}
+			// print this row
+			printf("%s \\\\\n\\cline{1-%ld}\n",
+				ls.str().c_str(), kLatexTableColumns);
+			break;
+		}
 	}
 }
 
 void riscv_parse_meta::print_latex()
 {
-	// paginate opcodes ordered by extension, adding page breaks and
+	// paginate opcodes ordered by extension
+	// adding type and extension headings, page breaks and continuations
 	size_t line = 0;
+	ssize_t lwidth = 0;
 	std::vector<riscv_latex_page> pages;
 	for (auto &ext : extensions) {
+		// check if this extension is in the selected subset
 		if (ext->opcodes.size() == 0 || (ext_subset.size() > 0 &&
 			std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end())) {
 			continue;
 		}
 		if (pages.size() == 0) pages.push_back(riscv_latex_page());
-		pages.back().rows.push_back(riscv_latex_row{ ext, riscv_opcode_ptr(), false, false });
+
+		// page break if the instruction width has changed
+		if (lwidth != 0 && lwidth != ext->insn_width) {
+			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
+			line = 0;
+		} else {
+			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
+		}
+
+		// add extension heading
+		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_extension_heading, ext));
 		line++;
+
+		// add opcodes
 		for (auto &opcode : ext->opcodes) {
-			// add a line to the top of the table if we are continuing
+			// add a line to the top of the page if there is a continuation
 			if (line % kLatexTableRows == 0) {
-				pages.back().rows.push_back(riscv_latex_row{ ext, riscv_opcode_ptr(), true, false });
+				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
+				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_extension_contd, ext));
+				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_line));
 			}
-			pages.back().rows.push_back(riscv_latex_row{ riscv_extension_ptr(), opcode, false, false });
+			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_opcode, opcode));
 			line++;
+			// add page break
 			if (line % kLatexTableRows == 0) {
-				pages.back().rows.push_back(riscv_latex_row{
-					riscv_extension_ptr(), riscv_opcode_ptr(), false, true
-				});
+				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
+				pages.push_back(riscv_latex_page());
 			}
 		}
-		pages.back().rows.push_back(riscv_latex_row{
-			riscv_extension_ptr(), riscv_opcode_ptr(), false, false
-		});
+
+		// add empty line
+		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
 		line++;
+		lwidth = ext->insn_width;
+	}
+
+	// iterate through the table rows and add types to 
+	for (auto &page : pages) {
+		std::vector<riscv_type_ptr> types;
+		for (auto &row : page.rows) {
+			// accumulate types on this page
+			if (row.opcode) {
+				auto type = row.opcode->type;
+				// exclude empty type
+				if (type->parts.size() > 0 &&
+						std::find(types.begin(), types.end(), type) == types.end()) {
+					types.push_back(type);
+				}
+			}
+		}
+		if (types.size() == 0) continue;
+		size_t bit_width = types.front()->parts[0].first.segments.front().first.msb + 1;
+		auto default_type = types_by_name[std::to_string(bit_width)];
+		if (!default_type) panic("can't find default type: %d", bit_width);
+
+		// insert type header rows at top of the page
+		for (auto ti = types.rbegin(); ti != types.rend(); ti++) {
+			page.rows.insert(page.rows.begin(), riscv_latex_row(riscv_latex_type_type_spec, *ti));
+		}
+		page.rows.insert(page.rows.begin(), riscv_latex_row(riscv_latex_type_type_bitrange, default_type));
 	}
 
 	// create the table width specification
@@ -337,14 +459,14 @@ void riscv_parse_meta::print_latex()
 	printf("%s", kLatexDocumentBegin);
 	printf("%s%s", kLatexTableBegin, ts.str().c_str());
 
-	// iterate through the table rows
+	// iterate through pages and rows and printing them
 	for (auto &page : pages) {
 		for (auto &row : page.rows) {
 			print_latex_row(row, ts.str());
 		}
 	}
 
-	// print table and document trailer
+	// print document trailer
 	printf("%s", kLatexTableEnd);
 	printf("%s", kLatexDocumentEnd);
 }
@@ -433,6 +555,7 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("#define riscv_meta_h\n");
 	printf("\n");
 
+	// Constraint enum
 	printf("enum rvc_constraint\n{\n");
 	printf("\trvc_end,\n");
 	for (auto &constraint : constraints) {
@@ -440,12 +563,14 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
+	// CSR enum
 	printf("enum riscv_csr\n{\n");
 	for (auto &csr : csrs) {
 		printf("\triscv_csr_%s = %s,\n", csr->name.c_str(), csr->number.c_str());
 	}
 	printf("};\n\n");
 
+	// Integer register enum
 	printf("enum riscv_ireg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
@@ -453,13 +578,15 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	printf("enum riscv_ireg_alias\n{\n");
+	// Integer register ABI enum 
+	printf("enum riscv_ireg_abi\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\triscv_ireg_%s,\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
 
+	// Floating Point register enum
 	printf("enum riscv_freg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
@@ -467,13 +594,15 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	printf("enum riscv_freg_alias\n{\n");
+	// Floating Point register ABI enum
+	printf("enum riscv_freg_abi\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\triscv_freg_%s,\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
 
+	// Instruction codec enum
 	printf("enum riscv_codec\n{\n");
 	printf("\triscv_codec_unknown,\n");
 	for (auto &codec : get_unique_codecs()) {
@@ -481,6 +610,7 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
+	// Instruction opcode enum
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown = 0,\n");
 	for (auto &opcode : opcodes) {
@@ -488,11 +618,13 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
+	// Instruction compression data structure
 	printf("struct riscv_comp_data\n{\n");
 	printf("\tconst int op;\n");
 	printf("\tconst rvc_constraint* constraints;\n");
 	printf("};\n\n");
 
+	// C interfaces
 	printf("extern \"C\" {\n");
 	printf("\textern const char* riscv_i_registers[];\n");
 	printf("\textern const char* riscv_f_registers[];\n");
@@ -546,7 +678,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Float register names
+	// Floating Point register names
 	printf("const char* riscv_f_registers[] = {\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
@@ -565,7 +697,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Instruction types
+	// Instruction codecs
 	printf("const riscv_codec riscv_instruction_codec[] = {\n");
 	print_array_unknown_enum("riscv_codec_unknown", no_comment);
 	for (auto &opcode : opcodes) {
