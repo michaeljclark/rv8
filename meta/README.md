@@ -5,7 +5,8 @@ This directory contains metadata for the RISC-V Instruction Set
 |File|Description|
 |:---|:----------|
 |`args`        |Bit encodings of opcode arguments|
-|`types`       |Instruction encodings and formats|
+|`types`       |Instruction types|
+|`codecs`      |Instruction encodings|
 |`extensions`  |Instruction set extensions|
 |`formats`     |Disassembly formats|
 |`registers`   |Registers and their ABI names|
