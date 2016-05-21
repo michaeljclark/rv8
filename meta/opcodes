@@ -235,7 +235,7 @@ c.flw      crdq  crs1q   cimmw 1..0=0 15..13=3                       cl_lw+f    
 c.fsd      crs1q crs2q   cimmd 1..0=0 15..13=5                       cs_sd+f    rv32c rv64c
 c.sw       crs1q crs2q   cimmw 1..0=0 15..13=6                       cs_sw      rv32c rv64c
 c.fsw      crs1q crs2q   cimmw 1..0=0 15..13=7                       cs_sw+f          rv32c
-c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0   c_nop      rv32c rv64c
+c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0   ci_nop     rv32c rv64c
 c.addi     crs1rd        cimmi 1..0=1 15..13=0                       ci         rv32c rv64c
 c.jal                    cimmj 1..0=1 15..13=1                       cj               rv32c
 c.li       crs1rd        cimmi 1..0=1 15..13=2                       ci_li      rv32c rv64c

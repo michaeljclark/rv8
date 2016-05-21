@@ -7,7 +7,6 @@
 # i.e. <codec(+format_variant)?> where codec is the distinct codec
 
 none       none
-c_nop      none
 cb         rs1_rs2_disp
 cb_sh5     rd_rs1_imm
 ci         rd_rs1_imm
@@ -19,6 +18,7 @@ ci_lwsp+f  frd_imm_rs1
 ci_ldsp+f  frd_imm_rs1
 ci_li      rd_rs1_imm
 ci_lui     rd_imm
+ci_nop     none
 ciw_4spn   rd_rs1_imm
 cj         rd_disp
 cl_lw      rd_imm_rs1

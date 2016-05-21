@@ -47,7 +47,7 @@ typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                IMM_
 inline void riscv_decode_none(riscv_decode &dec, riscv_lu inst) {}
 
 /* Decode C nop */
-inline void riscv_decode_c_nop(riscv_decode &dec, riscv_lu inst)
+inline void riscv_decode_ci_nop(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 }
@@ -293,7 +293,7 @@ inline void riscv_decode_uj(riscv_decode &dec, riscv_lu inst)
 inline riscv_lu riscv_encode_none(riscv_decode &dec) { return 0; }
 
 /* Encode C nop */
-inline riscv_lu riscv_encode_c_nop(riscv_decode &dec) { return 0; }
+inline riscv_lu riscv_encode_ci_nop(riscv_decode &dec) { return 0; }
 
 /* Encode CR */
 inline riscv_lu riscv_encode_cr(riscv_decode &dec)
@@ -1098,7 +1098,7 @@ inline void riscv_decode_type(riscv_decode &dec, riscv_lu inst)
 	dec.codec = riscv_instruction_codec[dec.op];
 	switch (dec.codec) {
 		case riscv_codec_none:          riscv_decode_none(dec, inst);            break;
-		case riscv_codec_c_nop:         riscv_decode_c_nop(dec, inst);           break;
+		case riscv_codec_ci_nop:        riscv_decode_ci_nop(dec, inst);           break;
 		case riscv_codec_cb:            riscv_decode_cb(dec, inst);              break;
 		case riscv_codec_cb_sh5:        riscv_decode_cb_sh5(dec, inst);          break;
 		case riscv_codec_ci:            riscv_decode_ci(dec, inst);              break;
@@ -1141,7 +1141,7 @@ inline riscv_lu riscv_encode(riscv_decode &dec)
 	riscv_lu inst = riscv_instruction_match[dec.op];
 	switch (dec.codec) {
 		case riscv_codec_none:          return inst |= riscv_encode_none(dec);            break;
-		case riscv_codec_c_nop:         return inst |= riscv_encode_c_nop(dec);           break;
+		case riscv_codec_ci_nop:        return inst |= riscv_encode_ci_nop(dec);           break;
 		case riscv_codec_cb:            return inst |= riscv_encode_cb(dec);              break;
 		case riscv_codec_cb_sh5:        return inst |= riscv_encode_cb_sh5(dec);          break;
 		case riscv_codec_ci:            return inst |= riscv_encode_ci(dec);              break;

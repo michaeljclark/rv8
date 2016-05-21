@@ -251,7 +251,6 @@ enum riscv_codec
 {
 	riscv_codec_unknown,
 	riscv_codec_none,
-	riscv_codec_c_nop,
 	riscv_codec_cb,
 	riscv_codec_cb_sh5,
 	riscv_codec_ci,
@@ -261,6 +260,7 @@ enum riscv_codec
 	riscv_codec_ci_ldsp,
 	riscv_codec_ci_li,
 	riscv_codec_ci_lui,
+	riscv_codec_ci_nop,
 	riscv_codec_ciw_4spn,
 	riscv_codec_cj,
 	riscv_codec_cl_lw,
