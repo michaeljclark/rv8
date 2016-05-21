@@ -29,9 +29,10 @@
 static bool enable_color = false;
 
 static const char* ARGS_FILE           = "args";
+static const char* TYPES_FILE          = "types";
+static const char* FORMATS_FILE        = "formats";
 static const char* CODECS_FILE         = "codecs";
 static const char* EXTENSIONS_FILE     = "extensions";
-static const char* FORMATS_FILE        = "formats";
 static const char* REGISTERS_FILE      = "registers";
 static const char* CAUSES_FILE         = "causes";
 static const char* CSRS_FILE           = "csrs";
@@ -232,6 +233,8 @@ struct riscv_opcode
 	riscv_arg_list args;
 	riscv_opcode_mask_list masks;
 	riscv_codec_ptr codec;
+	riscv_format_ptr format;
+	riscv_type_ptr type;
 	riscv_extension_list extensions;
 	riscv_compressed_ptr compressed;
 	riscv_compressed_list compressions;
@@ -320,6 +323,7 @@ struct riscv_inst_set
 	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key = true);
 	static std::string opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key = true);
 	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
+	static std::string codec_type_name(riscv_codec_ptr codec);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 
@@ -619,6 +623,14 @@ std::string riscv_inst_set::opcode_isa_shortname(riscv_opcode_ptr opcode)
 	return short_name;
 }
 
+std::string riscv_inst_set::codec_type_name(riscv_codec_ptr codec)
+{
+	size_t o = codec->name.find("_");
+	if (o == std::string::npos) o = codec->name.find("+");
+	if (o == std::string::npos) return codec->name;
+	return codec->name.substr(0, o);
+}
+
 std::vector<std::string> riscv_inst_set::parse_line(std::string line)
 {
 	// simple parsing routine that handles tokens separated by whitespace,
@@ -849,7 +861,7 @@ void riscv_inst_set::parse_arg(std::vector<std::string> &part)
 
 void riscv_inst_set::parse_type(std::vector<std::string> &part)
 {
-	if (part.size() <= 2) {
+	if (part.size() < 2) {
 		panic("types requires 2 or more parameters: %s", join(part, " ").c_str());
 	}
 	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
@@ -958,6 +970,17 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 			opcode->masks.push_back(decode_mask(mnem));
 		} else if (is_codec(mnem)) {
 			opcode->codec = codecs_by_name[mnem];
+			opcode->format = formats_by_name[opcode->codec->format];
+			if (!opcode->format) {
+				panic("opcode %s codec %s has unknown format: %s",
+					opcode_name.c_str(), opcode->codec->format.c_str());
+			}
+			std::string type_name = codec_type_name(opcode->codec);
+			opcode->type = types_by_name[type_name];
+			if (!opcode->type) {
+				panic("opcode %s codec %s has unknown type: %s",
+					opcode_name.c_str(), opcode->codec->name.c_str(), type_name.c_str());
+			}
 		} else if (is_extension(mnem)) {
 			auto extension = extensions_by_name[mnem];
 			opcode->extensions.push_back(extension);
@@ -1036,9 +1059,10 @@ void riscv_inst_set::parse_description(std::vector<std::string> &part)
 bool riscv_inst_set::read_metadata(std::string dirname)
 {
 	for (auto part : read_file(dirname + std::string("/") + ARGS_FILE)) parse_arg(part);
+	for (auto part : read_file(dirname + std::string("/") + TYPES_FILE)) parse_type(part);
+	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);
 	for (auto part : read_file(dirname + std::string("/") + CODECS_FILE)) parse_codec(part);
 	for (auto part : read_file(dirname + std::string("/") + EXTENSIONS_FILE)) parse_extension(part);
-	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);
 	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
 	for (auto part : read_file(dirname + std::string("/") + CAUSES_FILE)) parse_cause(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
@@ -1071,11 +1095,9 @@ void riscv_inst_set::generate_codec()
 
 std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 {
-	auto format = formats_by_name[opcode->codec->format];
-	auto args = format->args;
-
 	std::vector<char> token;
 	std::vector<std::string> comps;
+	auto args = opcode->format->args;
 
 	for (size_t i = 0; i < args.length(); i++) {
 		char c = args[i];
@@ -1277,8 +1299,7 @@ R"LaTeX(\end{tabular}
 
 			// format the opcode name and arguments
 			auto name = opcode->name;
-			auto format = formats_by_name[opcode->codec->format];
-			auto arg_comps = split(format->args, ",", false, false);
+			auto arg_comps = split(opcode->format->args, ",", false, false);
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
 			// print this row
@@ -1357,15 +1378,14 @@ void riscv_inst_set::print_map()
 				}
 			}
 		}
-		auto format = formats_by_name[opcode->codec->format];
 		if (enable_colorize) {
 			printf(" %s%s%s %s",
 				_COLOR_OPCODE, opcode->name.c_str(), _COLOR_RESET, colorize_args(opcode).c_str());
 		} else {
 			printf(" %s %s",
-				opcode->name.c_str(), format->args.c_str());
+				opcode->name.c_str(), opcode->format->args.c_str());
 		}
-		ssize_t len = 34 - (opcode->name.length() + format->args.length());
+		ssize_t len = 34 - (opcode->name.length() + opcode->format->args.length());
 		std::string ws;
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
 		printf("%s%s# %s%s\n",
@@ -1555,10 +1575,9 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("const rvf* riscv_instruction_format[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
-		auto format = formats_by_name[opcode->codec->format];
 		printf("\t%sriscv_fmt_%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
-			format->name.c_str());
+			opcode->format->name.c_str());
 	}
 	printf("};\n\n");
 
