@@ -20,11 +20,11 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 
-#define _COLOR_OPCODE_BEGIN _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_SEP _COLOR_FG_YELLOW _COLOR_END
-#define _COLOR_BITS_BEGIN   _COLOR_BEGIN _COLOR_REVERSE    _COLOR_SEP _COLOR_FG_GREEN  _COLOR_END
-#define _COLOR_FORMAT_BEGIN _COLOR_BEGIN _COLOR_BOLD       _COLOR_SEP _COLOR_FG_RED    _COLOR_END
-#define _COLOR_LEGEND_BEGIN _COLOR_BEGIN _COLOR_FG_WHITE   _COLOR_SEP _COLOR_BG_BLACK  _COLOR_END
-#define _COLOR_EXT_BEGIN    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
+#define _COLOR_OPCODE _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_SEP _COLOR_FG_YELLOW _COLOR_END
+#define _COLOR_BITS   _COLOR_BEGIN _COLOR_REVERSE    _COLOR_SEP _COLOR_FG_GREEN  _COLOR_END
+#define _COLOR_FORMAT _COLOR_BEGIN _COLOR_BOLD       _COLOR_SEP _COLOR_FG_RED    _COLOR_END
+#define _COLOR_LEGEND _COLOR_BEGIN _COLOR_FG_WHITE   _COLOR_SEP _COLOR_BG_BLACK  _COLOR_END
+#define _COLOR_EXT    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
 
 static bool enable_color = false;
 
@@ -44,7 +44,7 @@ static const char* DESCRIPTIONS_FILE   = "descriptions";
 static const ssize_t INSN_WIDTH = 32;
 
 struct riscv_bitrange;
-struct riscv_bitrange_spec;
+struct riscv_bitspec;
 struct riscv_arg;
 struct riscv_type;
 struct riscv_extension;
@@ -103,14 +103,14 @@ struct riscv_bitrange
 	std::string to_string(std::string sep);
 };
 
-struct riscv_bitrange_spec
+struct riscv_bitspec
 {
 	typedef std::vector<riscv_bitrange> riscv_bitrange_list;
-	typedef std::pair<riscv_bitrange,riscv_bitrange_list> riscv_bitrange_segment;
+	typedef std::pair<riscv_bitrange,riscv_bitrange_list> riscv_bitseg;
 
-	std::vector<riscv_bitrange_segment> segments;
+	std::vector<riscv_bitseg> segments;
 
-	riscv_bitrange_spec(std::string bitrange_spec);
+	riscv_bitspec(std::string bitspec);
 
 	bool matches_bit(ssize_t bit);
 	std::string to_string();
@@ -120,14 +120,16 @@ struct riscv_bitrange_spec
 struct riscv_arg
 {
 	std::string name;
-	riscv_bitrange_spec bitrange_spec;
+	riscv_bitspec bitspec;
 	std::string type;
 	std::string label;
 	std::string fg_color;
 	std::string bg_color;
 
-	riscv_arg(std::string name, std::string bitrange_spec, std::string type, std::string label, std::string fg_color, std::string bg_color)
-		: name(name), bitrange_spec(bitrange_spec), type(type), label(label), fg_color(fg_color), bg_color(bg_color) {}
+	riscv_arg(std::string name, std::string bitspec, std::string type,
+		  std::string label, std::string fg_color, std::string bg_color)
+		: name(name), bitspec(bitspec), type(type),
+		  label(label), fg_color(fg_color), bg_color(bg_color) {}
 
 	char char_code() {
 		if (type == "ireg") return 'R';
@@ -157,12 +159,13 @@ struct riscv_extension
 	std::string description;
 	riscv_opcode_list opcodes;
 
-	riscv_extension(std::string prefix, std::string isa_width, std::string alpha_code, std::string insn_width, std::string description) :
-		name(prefix + isa_width + alpha_code), prefix(prefix),
-		isa_width(strtoull(isa_width.c_str(), NULL, 10)),
-		alpha_code(alpha_code.length() > 0 ? alpha_code[0] : '?'),
-		insn_width(strtoull(insn_width.c_str(), NULL, 10)),
-		description(description) {}
+	riscv_extension(std::string prefix, std::string isa_width,
+		  std::string alpha_code, std::string insn_width, std::string description)
+		: name(prefix + isa_width + alpha_code), prefix(prefix),
+		  isa_width(strtoull(isa_width.c_str(), NULL, 10)),
+		  alpha_code(alpha_code.length() > 0 ? alpha_code[0] : '?'),
+		  insn_width(strtoull(insn_width.c_str(), NULL, 10)),
+		  description(description) {}
 };
 
 struct riscv_format
@@ -170,7 +173,8 @@ struct riscv_format
 	std::string name;
 	std::string args;
 
-	riscv_format(std::string name, std::string args) : name(name), args(args) {}
+	riscv_format(std::string name, std::string args)
+		: name(name), args(args) {}
 };
 
 struct riscv_register
@@ -224,19 +228,20 @@ struct riscv_opcode
 	size_t match;
 	size_t done;
 
-	riscv_opcode(std::string key, std::string name) : key(key), name(name), num(0), mask(0), match(0), done(0) {}
+	riscv_opcode(std::string key, std::string name)
+		: key(key), name(name), num(0), mask(0), match(0), done(0) {}
 
-	bool match_extension(riscv_extension_list &ext_subset) {
-		if (ext_subset.size() == 0) return true;
+	bool match_extension(riscv_extension_list &s) {
+		if (s.size() == 0) return true;
 		for (auto ext : extensions) {
-			if (std::find(ext_subset.begin(), ext_subset.end(), ext) != ext_subset.end()) return true;
+			if (std::find(s.begin(), s.end(), ext) != s.end()) return true;
 		}
 		return false;
 	}
 
 	riscv_arg_ptr find_arg(ssize_t bit) {
 		for (auto arg: args) {
-			if (arg->bitrange_spec.matches_bit(bit)) return arg;
+			if (arg->bitspec.matches_bit(bit)) return arg;
 		}
 		return riscv_arg_ptr();
 	}
@@ -251,12 +256,12 @@ struct riscv_constraint
 
 struct riscv_compressed
 {
-	riscv_opcode_ptr copcode;
-	riscv_opcode_ptr opcode;
+	riscv_opcode_ptr comp_opcode;
+	riscv_opcode_ptr decomp_opcode;
 	riscv_constraint_list constraint_list;
 
-	riscv_compressed(riscv_opcode_ptr copcode, riscv_opcode_ptr opcode, riscv_constraint_list constraint_list)
-		: copcode(copcode), opcode(opcode), constraint_list(constraint_list) {}
+	riscv_compressed(riscv_opcode_ptr comp_opcode, riscv_opcode_ptr decomp_opcode, riscv_constraint_list constraint_list)
+		: comp_opcode(comp_opcode), decomp_opcode(decomp_opcode), constraint_list(constraint_list) {}
 };
 
 struct riscv_decoder_node
@@ -411,7 +416,7 @@ std::string riscv_bitrange::to_string(std::string sep)
 	return ss.str();
 }
 
-riscv_bitrange_spec::riscv_bitrange_spec(std::string bitrange_spec)
+riscv_bitspec::riscv_bitspec(std::string bitspec)
 {
 	/*
 	 * example bitrange specs in gather[scatter](,...) format
@@ -424,7 +429,7 @@ riscv_bitrange_spec::riscv_bitrange_spec(std::string bitrange_spec)
 	 * when [scatter] is ommitted, bits are right justified from bit 0
 	 */
 
-	std::vector<std::string> comps = split(bitrange_spec, ",", false, false);
+	std::vector<std::string> comps = split(bitspec, ",", false, false);
 	for (std::string comp : comps) {
 		size_t bopen = comp.find("[");
 		size_t bclose = comp.find("]");
@@ -435,16 +440,16 @@ riscv_bitrange_spec::riscv_bitrange_spec(std::string bitrange_spec)
 			for (auto scatter_comp : split(scatter_spec, "|", false, false)) {
 				scatter.push_back(riscv_bitrange(scatter_comp));
 			}
-			segments.push_back(riscv_bitrange_segment(gather, scatter));
+			segments.push_back(riscv_bitseg(gather, scatter));
 		} else {
 			riscv_bitrange gather(comp);
 			riscv_bitrange_list scatter({ riscv_bitrange(gather.msb - gather.lsb, 0) });
-			segments.push_back(riscv_bitrange_segment(gather, scatter));
+			segments.push_back(riscv_bitseg(gather, scatter));
 		}
 	}
 }
 
-bool riscv_bitrange_spec::matches_bit(ssize_t bit)
+bool riscv_bitspec::matches_bit(ssize_t bit)
 {
 	for (auto si = segments.begin(); si != segments.end(); si++) {
 		if (bit <= si->first.msb && bit >= si->first.lsb) return true;
@@ -452,7 +457,7 @@ bool riscv_bitrange_spec::matches_bit(ssize_t bit)
 	return false;
 }
 
-std::string riscv_bitrange_spec::to_string()
+std::string riscv_bitspec::to_string()
 {
 	std::stringstream ss;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
@@ -467,7 +472,7 @@ std::string riscv_bitrange_spec::to_string()
 	return ss.str();
 }
 
-std::string riscv_bitrange_spec::to_template()
+std::string riscv_bitspec::to_template()
 {
 	ssize_t msb = 0;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
@@ -517,33 +522,33 @@ riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
 
 std::vector<riscv_bitrange> riscv_inst_set::bitmask_to_bitrange(std::vector<ssize_t> &bits)
 {	
-	std::vector<riscv_bitrange> ranges;
+	std::vector<riscv_bitrange> v;
 	if (bits.size() > 0) {
-		ranges.push_back(riscv_bitrange(bits[0], bits[0]));
+		v.push_back(riscv_bitrange(bits[0], bits[0]));
 		for (size_t i = 1; i < bits.size(); i++) {
-			if (bits[i] + 1 == ranges.back().lsb) {
-				ranges.back().lsb = bits[i];
+			if (bits[i] + 1 == v.back().lsb) {
+				v.back().lsb = bits[i];
 			} else {
-				ranges.push_back(riscv_bitrange(bits[i], bits[i]));
+				v.push_back(riscv_bitrange(bits[i], bits[i]));
 			}
 		}
 	}
-	return ranges;
+	return v;
 }
 
 std::string riscv_inst_set::format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment)
 {
-	std::vector<riscv_bitrange> ranges = bitmask_to_bitrange(bits);
+	std::vector<riscv_bitrange> v = bitmask_to_bitrange(bits);
 	std::stringstream ss;
 
 	ssize_t total_length = bits.size();
 	ssize_t range_start = bits.size();
 
-	for (auto ri = ranges.begin(); ri != ranges.end(); ri++) {
+	for (auto ri = v.begin(); ri != v.end(); ri++) {
 		riscv_bitrange r = *ri;
 		ssize_t range_end = range_start - (r.msb - r.lsb);
 		ssize_t shift = r.msb - range_start + 1;
-		if (ri != ranges.begin()) ss << " | ";
+		if (ri != v.begin()) ss << " | ";
 		ss << "((" << var << " >> " << shift << ") & 0b";
 		for (ssize_t i = total_length; i > 0; i--) {
 			if (i <= range_start && i >= range_end) ss << "1";
@@ -555,9 +560,9 @@ std::string riscv_inst_set::format_bitmask(std::vector<ssize_t> &bits, std::stri
 
 	if (comment) {
 		ss << " /* " << var << "[";
-		for (auto ri = ranges.begin(); ri != ranges.end(); ri++) {
+		for (auto ri = v.begin(); ri != v.end(); ri++) {
 			riscv_bitrange r = *ri;
-			if (ri != ranges.begin()) ss << "|";
+			if (ri != v.begin()) ss << "|";
 			if (r.msb == r.lsb) ss << r.msb;
 			else ss << r.msb << ":" << r.lsb;
 		}
@@ -715,7 +720,8 @@ riscv_extension_list riscv_inst_set::decode_isa_extensions(std::string isa_spec)
 	// replace 'g' with 'imafd'
 	size_t g_offset = isa_spec.find("g");
 	if (g_offset != std::string::npos) {
-		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset, isa_spec.begin() + g_offset + 1, "imafd");
+		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset,
+			isa_spec.begin() + g_offset + 1, "imafd");
 	}
 
 	// lookup extensions
@@ -724,10 +730,12 @@ riscv_extension_list riscv_inst_set::decode_isa_extensions(std::string isa_spec)
 		std::string ext_name = isa_spec.substr(0, ext_offset) + *i;
 		auto ext = extensions_by_name[ext_name];
 		if (!ext) {
-			panic("illegal isa spec: %s: missing extension: %s", isa_spec.c_str(), ext_name.c_str());
+			panic("illegal isa spec: %s: missing extension: %s",
+				isa_spec.c_str(), ext_name.c_str());
 		}
 		if (std::find(list.begin(), list.end(), ext) != list.end()) {
-			panic("illegal isa spec: %s: duplicate extension: %s", isa_spec.c_str(), ext_name.c_str());
+			panic("illegal isa spec: %s: duplicate extension: %s",
+				isa_spec.c_str(), ext_name.c_str());
 		}
 		list.push_back(ext);
 	}
@@ -739,21 +747,26 @@ riscv_opcode_ptr riscv_inst_set::create_opcode(std::string opcode_name, std::str
 	// create key for the opcode
 	riscv_opcode_ptr opcode = lookup_opcode_by_key(opcode_name);
 	if (opcode) {
-		// if the opcode already exists then rename the previous opcode using its isa extension
-		opcode->key = opcode_name + std::string(".") + opcode->extensions.front()->name;
+		// if the opcode exists rename the previous opcode using isa extension
+		opcode->key = opcode_name + "." + opcode->extensions.front()->name;
 		opcodes_by_key.erase(opcode_name);
 		opcodes_by_key[opcode->key] = opcode;
 
 		// and add the new opcode with its isa extension
 		std::string opcode_key = opcode_name + std::string(".") + extension;
 		if (opcodes_by_key.find(opcode_key) != opcodes_by_key.end()) {
-			panic("opcode key with same extension already exists: %s", opcode_key.c_str());
+			panic("opcode with same extension already exists: %s",
+				opcode_key.c_str());
 		}
-		opcode = opcodes_by_key[opcode_key] = std::make_shared<riscv_opcode>(opcode_key, opcode_name);
+		opcode = opcodes_by_key[opcode_key] = std::make_shared<riscv_opcode>(
+			opcode_key, opcode_name
+		);
 		opcodes.push_back(opcode);
 		opcode->num = opcodes.size();
 	} else {
-		opcode = opcodes_by_key[opcode_name] = std::make_shared<riscv_opcode>(opcode_name, opcode_name);
+		opcode = opcodes_by_key[opcode_name] = std::make_shared<riscv_opcode>(
+			opcode_name, opcode_name
+		);
 		opcodes.push_back(opcode);
 		opcode->num = opcodes.size();
 	}
@@ -811,63 +824,78 @@ bool riscv_inst_set::is_extension(std::string mnem)
 void riscv_inst_set::parse_arg(std::vector<std::string> &part)
 {
 	if (part.size() < 6) {
-		panic("invalid args file requires 6 parameters: %s", join(part, " ").c_str());
+		panic("args requires 6 parameters: %s", join(part, " ").c_str());
 	}
-	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(part[0], part[1], part[2], part[3], part[4], part[5]);
+	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(
+		part[0], part[1], part[2], part[3], part[4], part[5]
+	);
 	args.push_back(arg);
 }
 
 void riscv_inst_set::parse_type(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
-		panic("invalid types file requires 2 parameters: %s", join(part, " ").c_str());
+		panic("types requires 2 parameters: %s", join(part, " ").c_str());
 	}
-	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(part[0], part[1]);
+	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
+		part[0], part[1]
+	);
 	types.push_back(type);
 }
 
 void riscv_inst_set::parse_extension(std::vector<std::string> &part)
 {
 	if (part.size() < 5) {
-		panic("invalid extensions file requires 5 parameters: %s", join(part, " ").c_str());
+		panic("extensions requires 5 parameters: %s", join(part, " ").c_str());
 	}
-	auto extension = extensions_by_name[part[0]+part[1]+part[2]] = std::make_shared<riscv_extension>(part[0], part[1], part[2], part[3], part[4]);
+	std::string isa = part[0] + part[1] + part[2];
+	auto extension = extensions_by_name[isa] = std::make_shared<riscv_extension>(
+		part[0], part[1], part[2], part[3], part[4]
+	);
 	extensions.push_back(extension);
 }
 
 void riscv_inst_set::parse_format(std::vector<std::string> &part)
 {
 	if (part.size() < 1) {
-		panic("invalid formats file requires at least 1 parameters: %s", join(part, " ").c_str());
+		panic("formats requires at least 1 parameters: %s", join(part, " ").c_str());
 	}
-	auto format = formats_by_name[part[0]] = std::make_shared<riscv_format>(part[0], part.size() > 1 ? part[1] : "");
+	auto format = formats_by_name[part[0]] = std::make_shared<riscv_format>(
+		part[0], part.size() > 1 ? part[1] : ""
+	);
 	formats.push_back(format);
 }
 
 void riscv_inst_set::parse_register(std::vector<std::string> &part)
 {
 	if (part.size() < 5) {
-		panic("invalid registers file requires 5 parameters: %s", join(part, " ").c_str());
+		panic("registers requires 5 parameters: %s", join(part, " ").c_str());
 	}
-	auto reg = registers_by_name[part[0]] = std::make_shared<riscv_register>(part[0], part[1], part[2], part[3], part[4]);
+	auto reg = registers_by_name[part[0]] = std::make_shared<riscv_register>(
+		part[0], part[1], part[2], part[3], part[4]
+	);
 	registers.push_back(reg);
 }
 
 void riscv_inst_set::parse_cause(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
-		panic("invalid causes file requires 2 parameters: %s", join(part, " ").c_str());
+		panic("causes requires 2 parameters: %s", join(part, " ").c_str());
 	}
-	auto cause = causes_by_name[part[1]] = std::make_shared<riscv_cause>(part[0], part[1]);
+	auto cause = causes_by_name[part[1]] = std::make_shared<riscv_cause>(
+		part[0], part[1]
+	);
 	causes.push_back(cause);
 }
 
 void riscv_inst_set::parse_csr(std::vector<std::string> &part)
 {
 	if (part.size() < 4) {
-		panic("invalid csrs file requires 4 parameters: %s", join(part, " ").c_str());
+		panic("csrs requires 4 parameters: %s", join(part, " ").c_str());
 	}
-	auto csr = csrs_by_name[part[2]] = std::make_shared<riscv_csr>(part[0], part[1], part[2], part[3]);
+	auto csr = csrs_by_name[part[2]] = std::make_shared<riscv_csr>(
+		part[0], part[1], part[2], part[3]
+	);
 	csrs.push_back(csr);
 }
 
@@ -921,9 +949,10 @@ void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
 void riscv_inst_set::parse_compression(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
-		panic("invalid compression file requires at least 2 parameters: %s", join(part, " ").c_str());
+		panic("invalid compression file requires at least 2 parameters: %s",
+			join(part, " ").c_str());
 	}
-	for (auto copcode : lookup_opcode_by_name(part[0])) {
+	for (auto comp_opcode : lookup_opcode_by_name(part[0])) {
 		for (auto opcode : lookup_opcode_by_name(part[1])) {
 			riscv_constraint_list constraint_list;
 			for (size_t i = 2; i < part.size(); i++) {
@@ -931,18 +960,20 @@ void riscv_inst_set::parse_compression(std::vector<std::string> &part)
 				if (ci == constraints_by_name.end()) {
 					auto constraint = std::make_shared<riscv_constraint>(part[i]);
 					constraints_by_name[part[i]] = constraint;
-					auto ci2 = std::find_if(constraints.begin(), constraints.end(),
+					auto cli = std::find_if(constraints.begin(), constraints.end(),
 						[&constraint] (const riscv_constraint_ptr &c) {
 							return constraint->name < c->name;
 					});
-					constraints.insert(ci2, constraint);
+					constraints.insert(cli, constraint);
 					constraint_list.push_back(constraint);
 				} else {
 					constraint_list.push_back(ci->second);
 				}
 			}
-			auto comp = std::make_shared<riscv_compressed>(copcode, opcode, constraint_list);
-			copcode->compressed = comp;
+			auto comp = std::make_shared<riscv_compressed>(
+				comp_opcode, opcode, constraint_list
+			);
+			comp_opcode->compressed = comp;
 			opcode->compressions.push_back(comp);
 			compressions.push_back(comp);
 		}
@@ -1035,7 +1066,9 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 		auto comp = comps[i];
 		auto arg = args_by_name[comp];
 		if (arg) {
-			auto new_comp = riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color, ansi_color_normal);
+			auto new_comp = riscv_colors_to_ansi_escape_sequence(
+				arg->fg_color, arg->bg_color, ansi_color_normal
+			);
 			new_comp.append(comp);
 			new_comp.append(_COLOR_RESET);
 			comps[i] = new_comp;
@@ -1095,9 +1128,12 @@ R"LaTeX(\end{tabular}
 	// create list of opcodes ordered by extension, with blank entries between extension sections
 	std::vector<riscv_table_row> rows;
 	for (auto &ext : extensions) {
-		if (ext_subset.size() > 0 && std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end()) continue;
+		if (ext_subset.size() > 0 && std::find(ext_subset.begin(), ext_subset.end(),
+			ext) == ext_subset.end()) continue;
 		if (ext->opcodes.size() == 0) continue;
-		if (rows.size() != 0) rows.push_back(riscv_table_row{ riscv_extension_ptr(), riscv_opcode_ptr() });
+		if (rows.size() != 0) rows.push_back(riscv_table_row{
+			riscv_extension_ptr(), riscv_opcode_ptr()
+		});
 		rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr() });
 		for (auto &opcode : ext->opcodes) {
 			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode });
@@ -1174,7 +1210,7 @@ R"LaTeX(\end{tabular}
 				if (arg) {
 					str = arg->label;
 					if (str == "imm" || str == "disp") {
-						auto spec = arg->bitrange_spec;
+						auto spec = arg->bitspec;
 						for (auto &seg : spec.segments) {
 							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
 								str += "[";
@@ -1244,13 +1280,13 @@ void riscv_inst_set::print_map()
 	int i = 0;
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
-			printf("// %s", enable_colorize ? _COLOR_LEGEND_BEGIN : "");
+			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit / 10) + '0';
 				printf("%c", c);
 			}
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
-			printf("// %s", enable_colorize ? _COLOR_LEGEND_BEGIN : "");
+			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
 			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
@@ -1266,7 +1302,10 @@ void riscv_inst_set::print_map()
 				case '0':
 				case '1':
 				{
-					printf("%s%c%s", enable_colorize ? _COLOR_BITS_BEGIN : "", c, enable_colorize ? _COLOR_RESET : "");
+					printf("%s%c%s",
+						enable_colorize ? _COLOR_BITS : "",
+						c,
+						enable_colorize ? _COLOR_RESET : "");
 					break;
 				}
 				default:
@@ -1274,8 +1313,11 @@ void riscv_inst_set::print_map()
 					riscv_arg_ptr arg = opcode->find_arg(bit);
 					if (arg) {
 						printf("%s%c%s",
-							enable_colorize ? riscv_colors_to_ansi_escape_sequence(arg->fg_color, arg->bg_color).c_str() : "",
-							arg->char_code(), enable_colorize ? _COLOR_RESET : "");
+							enable_colorize ? riscv_colors_to_ansi_escape_sequence(
+								arg->fg_color, arg->bg_color
+							).c_str() : "",
+							arg->char_code(),
+							enable_colorize ? _COLOR_RESET : "");
 					} else {
 						printf("%c", c);
 					}
@@ -1286,7 +1328,7 @@ void riscv_inst_set::print_map()
 		auto format = formats_by_name[opcode->type->format];
 		if (enable_colorize) {
 			printf(" %s%s%s %s",
-				_COLOR_OPCODE_BEGIN, opcode->name.c_str(), _COLOR_RESET, colorize_args(opcode).c_str());
+				_COLOR_OPCODE, opcode->name.c_str(), _COLOR_RESET, colorize_args(opcode).c_str());
 		} else {
 			printf(" %s %s",
 				opcode->name.c_str(), format->args.c_str());
@@ -1296,7 +1338,7 @@ void riscv_inst_set::print_map()
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
 		printf("%s%s# %s%s\n",
 			ws.c_str(),
-			enable_colorize ? _COLOR_EXT_BEGIN : "",
+			enable_colorize ? _COLOR_EXT : "",
 			opcode->extensions.front()->name.c_str(),
 			enable_colorize ? _COLOR_RESET : "");
 	}
@@ -1308,62 +1350,72 @@ void riscv_inst_set::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("//  riscv-meta.h\n");
 	printf("//\n");
 	printf("//  DANGER - This is machine generated code\n");
-	printf("//\n");
-	printf("\n");
+	printf("//\n\n");
+
 	printf("#ifndef riscv_meta_h\n");
 	printf("#define riscv_meta_h\n");
 	printf("\n");
+
 	printf("enum rvc_constraint\n{\n");
 	printf("\trvc_end,\n");
 	for (auto &constraint : constraints) {
 		printf("\trvc_%s,\n", constraint->name.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_csr\n{\n");
 	for (auto &csr : csrs) {
 		printf("\triscv_csr_%s = %s,\n", csr->name.c_str(), csr->number.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_ireg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\triscv_ireg_%s,\n", reg->name.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_ireg_alias\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\triscv_ireg_%s,\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_freg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\triscv_freg_%s,\n", reg->name.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_freg_alias\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\triscv_freg_%s,\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_inst_type\n{\n");
 	printf("\triscv_inst_type_unknown,\n");
 	for (auto &type : get_unique_types()) {
 		printf("\triscv_inst_type_%s,\n", type.c_str());
 	}
 	printf("};\n\n");
+
 	printf("enum riscv_op\n{\n");
-	printf("\triscv_op_unknown,\n");
+	printf("\triscv_op_unknown = 0,\n");
 	for (auto &opcode : opcodes) {
 		printf("\t%s = %lu,\n", opcode_format("riscv_op_", opcode, '_').c_str(), opcode->num);
 	}
 	printf("};\n\n");
+
 	printf("struct riscv_comp_data\n{\n");
 	printf("\tconst int op;\n");
 	printf("\tconst rvc_constraint* constraints;\n");
 	printf("};\n\n");
+
 	printf("extern \"C\" {\n");
 	printf("\textern const char* riscv_i_registers[];\n");
 	printf("\textern const char* riscv_f_registers[];\n");
@@ -1402,24 +1454,30 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("//  riscv-meta.cc\n");
 	printf("//\n");
 	printf("//  DANGER - This is machine generated code\n");
-	printf("//\n");
-	printf("\n");
+	printf("//\n\n");
+
 	printf("#include \"riscv-types.h\"\n");
 	printf("#include \"riscv-format.h\"\n");
 	printf("#include \"riscv-meta.h\"\n");
 	printf("\n");
+
+	// Integer register names
 	printf("const char* riscv_i_registers[] = {\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\t\"%s\",\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
+
+	// Float register names
 	printf("const char* riscv_f_registers[] = {\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\t\"%s\",\n", reg->alias.c_str());
 	}
 	printf("};\n\n");
+
+	// Instruction names
 	printf("const char* riscv_instruction_name[] = {\n");
 	print_array_unknown_str("unknown", no_comment);
 	for (auto &opcode : opcodes) {
@@ -1429,6 +1487,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			opcode_name.c_str());
 	}
 	printf("};\n\n");
+
+	// Instruction types
 	printf("const riscv_inst_type riscv_instruction_type[] = {\n");
 	print_array_unknown_enum("riscv_inst_type_unknown", no_comment);
 	for (auto &opcode : opcodes) {
@@ -1438,6 +1498,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			type_name.c_str());
 	}
 	printf("};\n\n");
+
+	// Instruction match bits
 	printf("const riscv_wu riscv_instruction_match[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
@@ -1446,6 +1508,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			(uint32_t)opcode->match);
 	}
 	printf("};\n\n");
+
+	// Instruction mask bits
 	printf("const riscv_wu riscv_instruction_mask[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
@@ -1454,6 +1518,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			(uint32_t)opcode->mask);
 	}
 	printf("};\n\n");
+
+	// Instruction formats
 	printf("const rvf* riscv_instruction_format[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
@@ -1464,7 +1530,7 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// compression meta data
+	// Compression constraints
 	for (auto &opcode : opcodes) {
 		if (!opcode->compressed) continue;
 		std::string cop_name = "rvcc_" + opcode_format("", opcode, '_') + "[] =";
@@ -1475,6 +1541,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 		printf("rvc_end };\n");
 	}
 	printf("\n");
+
+	// Compression data
 	for (auto &opcode : opcodes) {
 		if (opcode->compressions.size() == 0) continue;
 		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, '_') + "[] =";
@@ -1482,13 +1550,15 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 		for (auto comp : opcode->compressions) {
 			printf("{ %s, %s }, ",
 				(zero_not_oh ?
-					format_string("%lu", comp->copcode->num).c_str() :
-					opcode_format("riscv_op_", comp->copcode, '_').c_str()),
-				opcode_format("rvcc_", comp->copcode, '_').c_str());
+					format_string("%lu", comp->comp_opcode->num).c_str() :
+					opcode_format("riscv_op_", comp->comp_opcode, '_').c_str()),
+				opcode_format("rvcc_", comp->comp_opcode, '_').c_str());
 		}
 		printf("{ riscv_op_unknown, nullptr } };\n");
 	}
 	printf("\n");
+
+	// RVC compression table
 	printf("const riscv_comp_data* riscv_instruction_comp[] = {\n");
 	print_array_unknown_enum("nullptr", no_comment);
 	for (auto &opcode : opcodes) {
@@ -1500,6 +1570,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			opcode->compressions.size() > 0 ? opcode_data.c_str() : "nullptr");
 	}
 	printf("};\n\n");
+
+	// RVC decompression table
 	printf("const int riscv_instruction_decomp[] = {\n");
 	print_array_unknown_enum("riscv_op_unknown", no_comment);
 	for (auto &opcode : opcodes) {
@@ -1508,8 +1580,8 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 			opcode_comment(opcode, no_comment).c_str(),
 			opcode->compressed ?
 				(zero_not_oh ?
-					format_string("%lu", opcode->compressed->opcode->num).c_str() :
-					opcode_format("riscv_op_", opcode->compressed->opcode, '_').c_str()) :
+					format_string("%lu", opcode->compressed->decomp_opcode->num).c_str() :
+					opcode_format("riscv_op_", opcode->compressed->decomp_opcode, '_').c_str()) :
 				(zero_not_oh ?
 					"0" :
 					"riscv_op_unknown"));
@@ -1655,7 +1727,8 @@ void riscv_inst_set::print_switch_decoder_node(riscv_decoder_node &node, size_t 
 			std::vector<size_t> opcode_widths;
 			for (auto opcode : opcode_list) {
 				for (auto &ext : opcode->extensions) {
-					if (std::find(opcode_widths.begin(), opcode_widths.end(), ext->isa_width) == opcode_widths.end()) {
+					if (std::find(opcode_widths.begin(), opcode_widths.end(),
+							ext->isa_width) == opcode_widths.end()) {
 						opcode_widths.push_back(ext->isa_width);
 					}
 				}
