@@ -1171,6 +1171,9 @@ R"LaTeX(\end{tabular}
 \end{table}
 )LaTeX";
 
+	static const ssize_t TABLE_COLUMNS = 32;
+	static const ssize_t TABLE_ROWS = 64;
+
 	// table row data
 	struct riscv_table_row
 	{
@@ -1196,9 +1199,9 @@ R"LaTeX(\end{tabular}
 	// create the table width specification
 	std::stringstream ts;
 	ts << "{";
-	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) ts << "p{0.02in}";
+	for (ssize_t i = 0 ; i < TABLE_COLUMNS; i++) ts << "p{0.02in}";
 	ts << "p{2.0in}l}";
-	for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) ts << "& ";
+	for (ssize_t i = 0 ; i < TABLE_COLUMNS; i++) ts << "& ";
 	ts << "& \\\\\n";
 
 	// print document header
@@ -1206,33 +1209,32 @@ R"LaTeX(\end{tabular}
 
 	// iterate through the table rows
 	size_t line = 0;
-	bool insn16 = false;
 	for (auto &row : rows) {
 
 		auto &extension = row.extension;
 		auto &opcode = row.opcode;
 
-		if (extension) insn16 = (extension->insn_width == 16);
-
 		// print table header and page breaks
-		if (line % 64 == 0) {
+		if (line % TABLE_ROWS == 0) {
 			if (line != 0) {
 				printf("%s", kLatexTableEnd);
 			}
 			printf("%s%s", kLatexTableBegin, ts.str().c_str());
 			if (opcode) {
-				printf("\\cline{1-32}\n");
+				printf("\\cline{1-%ld}\n", TABLE_COLUMNS);
 			}
 		}
 
 		// format an opcode line
 		if (opcode) {
 
+			ssize_t bit_width = opcode->extensions[0]->insn_width;
+
 			// calculate the column spans for this row
 			riscv_arg_ptr arg, larg;
 			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
 			std::vector<arg_tuple> arg_parts;
-			for (ssize_t bit = INSN_WIDTH-1; bit >= 0; bit--) {
+			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
 				arg = opcode->find_arg(bit);
 				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg) {
@@ -1258,7 +1260,7 @@ R"LaTeX(\end{tabular}
 			}
 
 			// update labels for segments with args
-			ssize_t msb = INSN_WIDTH-1;
+			ssize_t msb = bit_width-1;
 			for (size_t i = 0; i < arg_parts.size(); i++) {
 				auto &arg = std::get<1>(arg_parts[i]);
 				auto size = std::get<2>(arg_parts[i]);
@@ -1290,10 +1292,9 @@ R"LaTeX(\end{tabular}
 			for (size_t i = 0; i < arg_parts.size(); i++) {
 				auto size = std::get<2>(arg_parts[i]);
 				auto &str = std::get<3>(arg_parts[i]);
-				if (i == 0 && insn16) continue;
-				ls << (i != (insn16 ? 1 : 0) ? " & " : "")
-				   << "\\multicolumn{" << (size * (insn16 ? 2 : 1)) << "}"
-				   << "{" << (i == (insn16 ? 1 : 0) ? "|" : "") << "c|}"
+				ls << (i != 0 ? " & " : "")
+				   << "\\multicolumn{" << (size * TABLE_COLUMNS / bit_width) << "}"
+				   << "{" << (i == 0 ? "|" : "") << "c|}"
 				   << "{" << str << "}";
 			}
 
@@ -1303,19 +1304,19 @@ R"LaTeX(\end{tabular}
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
 			// print this row
-			printf("%s & %s %s \\\\\n\\cline{1-32}\n",
-				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str());
+			printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
+				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), TABLE_COLUMNS);
 		}
 
 		// format an extension heading
 		else if (extension) {
-			printf("\\multicolumn{32}{c}{\\bf %s} & \\\\\n\\cline{1-32}\n",
-				extension->description.c_str());
+			printf("\\multicolumn{%ld}{c}{\\bf %s} & \\\\\n\\cline{1-%ld}\n",
+				TABLE_COLUMNS, extension->description.c_str(), TABLE_COLUMNS);
 		}
 
 		// format an empty line
 		else {
-			printf("\\multicolumn{32}{c}{} & \\\\\n");
+			printf("\\multicolumn{%ld}{c}{} & \\\\\n", TABLE_COLUMNS);
 		}
 
 		line++;
