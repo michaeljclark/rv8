@@ -73,6 +73,31 @@ The future goals of the RISC-V Meta project are:
 - [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
 
+## Libraries
+
+The following table shows the RISC-V Meta libraries:
+
+|Name|Description|Scale|
+|:---|:----------|-----|
+|libriscv_asm.a|disassembly formatting|micro|
+|libriscv_elf.a|ELF parser|micro|
+|libriscv_meta.a|instruction set metadata|nano|
+|libriscv_model.a|instruction set metamodel|macro|
+|libriscv_util.a|utility functions for tools|mini|
+
+## Tools
+
+The following table shows the RISC-V Meta tools:
+
+|Name|Description|
+|:---|:----------|
+|riscv-parse-meta|generates source, headers and documentation|
+|riscv-parse-elf|ELF parser and disassmbler tool|
+|riscv-compress-elf|ELF compressor tool (work in progress)|
+|riscv-histogram-elf|ELF histogram tool|
+|riscv-test-decoder|Decoder Benchmarks|
+|riscv-test-emulate|Emulator Proof of Concept|
+
 ## Dependencies
 
 - gcc-5 or clang-3.7

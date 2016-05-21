@@ -128,6 +128,12 @@ RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
 RV_META_OBJS =  $(call lib_src_objs, $(RV_META_SRC))
 RV_META_LIB =   $(LIB_DIR)/libriscv_meta.a
 
+# libriscv_model
+RV_MODEL_HDR =  $(LIB_SRC_DIR)/riscv-model.h
+RV_MODEL_SRC =  $(LIB_SRC_DIR)/riscv-model.cc
+RV_MODEL_OBJS = $(call lib_src_objs, $(RV_MODEL_SRC))
+RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
+
 # libriscv_elf
 RV_ELF_SRCS =   $(LIB_SRC_DIR)/riscv-elf.cc \
                 $(LIB_SRC_DIR)/riscv-elf-file.cc \
@@ -222,11 +228,12 @@ $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA) $(RV_META_HDR)
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_ELF_LIB): $(RV_ELF_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
+$(RV_MODEL_LIB): $(RV_MODEL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

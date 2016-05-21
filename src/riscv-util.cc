@@ -4,6 +4,7 @@
 #include <cstdarg>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "riscv-util.h"
 
@@ -59,4 +60,34 @@ void debug(const char* fmt, ...)
 	va_start(ap, fmt);
 	log_format(stderr, fmt, ap);
 	va_end(ap);
+}
+
+std::string ltrim(std::string s)
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+			std::not1(std::ptr_fun<int, int>(std::isspace))));
+	return s;
+}
+
+std::string rtrim(std::string s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(),
+			std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	return s;
+}
+
+std::vector<std::string> split(std::string str, std::string sep,
+	bool inc_empty, bool inc_sep)
+{
+	size_t i, j = 0;
+	std::vector<std::string> comps;
+	while ((i = str.find_first_of(sep, j)) != std::string::npos) {
+		if (inc_empty || i - j > 0) comps.push_back(str.substr(j, i - j));
+		if (inc_sep) comps.push_back(sep);
+		j = i + sep.length();
+	}
+	if (inc_empty || str.size() - j > 0) {
+		comps.push_back(str.substr(j, str.size() - j));
+	}
+	return comps;
 }

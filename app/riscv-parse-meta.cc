@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "riscv-util.h"
+#include "riscv-model.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 
@@ -26,358 +27,59 @@
 #define _COLOR_LEGEND _COLOR_BEGIN _COLOR_BOLD       _COLOR_END
 #define _COLOR_EXT    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
 
+static const ssize_t kMaxInstructionWidth = 32;
+static const ssize_t kLatexTableColumns = 32;
+static const ssize_t kLatexTableRows = 58;
+
+static const char* kLatexDocumentBegin =
+R"LaTeX(\documentclass{report}
+\usepackage[letterpaper, portrait, margin=0.5in]{geometry}
+\usepackage[utf8]{inputenc}
+\begin{document}
+)LaTeX";
+
+static const char* kLatexDocumentEnd =
+R"LaTeX(\end{document}
+)LaTeX";
+
+static const char* kLatexTableBegin =
+R"LaTeX(\newpage
+\begin{table}[p]
+\begin{small}
+\begin{center}
+\begin{tabular})LaTeX";
+
+static const char* kLatexTableEnd =
+R"LaTeX(\end{tabular}
+\end{center}
+\end{small}
+\end{table}
+)LaTeX";
+
 static bool enable_color = false;
 
-static const char* ARGS_FILE           = "args";
-static const char* TYPES_FILE          = "types";
-static const char* FORMATS_FILE        = "formats";
-static const char* CODECS_FILE         = "codecs";
-static const char* EXTENSIONS_FILE     = "extensions";
-static const char* REGISTERS_FILE      = "registers";
-static const char* CAUSES_FILE         = "causes";
-static const char* CSRS_FILE           = "csrs";
-static const char* OPCODES_FILE        = "opcodes";
-static const char* COMPRESSION_FILE    = "compression";
-static const char* INSTRUCTIONS_FILE   = "instructions";
-static const char* DESCRIPTIONS_FILE   = "descriptions";
-
-static const ssize_t MAX_INSN_WIDTH = 32;
-
-struct riscv_bitrange;
-struct riscv_bitspec;
-struct riscv_arg;
-struct riscv_type;
-struct riscv_codec;
-struct riscv_extension;
-struct riscv_format;
-struct riscv_register;
-struct riscv_cause;
-struct riscv_csr;
-struct riscv_opcode;
-struct riscv_constraint;
-struct riscv_compressed;
-struct riscv_bitrange;
-struct riscv_codec_node;
-
-typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
-typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
-typedef std::vector<riscv_arg_ptr> riscv_arg_list;
-typedef std::map<std::string,riscv_arg_ptr> riscv_arg_map;
-typedef std::shared_ptr<riscv_type> riscv_type_ptr;
-typedef std::vector<riscv_type_ptr> riscv_type_list;
-typedef std::map<std::string,riscv_type_ptr> riscv_type_map;
-typedef std::shared_ptr<riscv_codec> riscv_codec_ptr;
-typedef std::vector<riscv_codec_ptr> riscv_codec_list;
-typedef std::map<std::string,riscv_codec_ptr> riscv_codec_map;
-typedef std::shared_ptr<riscv_extension> riscv_extension_ptr;
-typedef std::vector<riscv_extension_ptr> riscv_extension_list;
-typedef std::map<std::string,riscv_extension_ptr> riscv_extension_map;
-typedef std::shared_ptr<riscv_format> riscv_format_ptr;
-typedef std::vector<riscv_format_ptr> riscv_format_list;
-typedef std::map<std::string,riscv_format_ptr> riscv_format_map;
-typedef std::shared_ptr<riscv_register> riscv_register_ptr;
-typedef std::vector<riscv_register_ptr> riscv_register_list;
-typedef std::map<std::string,riscv_register_ptr> riscv_register_map;
-typedef std::shared_ptr<riscv_cause> riscv_cause_ptr;
-typedef std::vector<riscv_cause_ptr> riscv_cause_list;
-typedef std::map<std::string,riscv_cause_ptr> riscv_cause_map;
-typedef std::shared_ptr<riscv_csr> riscv_csr_ptr;
-typedef std::vector<riscv_csr_ptr> riscv_csr_list;
-typedef std::map<std::string,riscv_csr_ptr> riscv_csr_map;
-typedef std::pair<riscv_bitrange,size_t> riscv_opcode_mask;
-typedef std::vector<riscv_opcode_mask> riscv_opcode_mask_list;
-typedef std::shared_ptr<riscv_opcode> riscv_opcode_ptr;
-typedef std::vector<riscv_opcode_ptr> riscv_opcode_list;
-typedef std::shared_ptr<riscv_constraint> riscv_constraint_ptr;
-typedef std::map<std::string,riscv_constraint_ptr> riscv_constraint_map;
-typedef std::vector<riscv_constraint_ptr> riscv_constraint_list;
-typedef std::shared_ptr<riscv_compressed> riscv_compressed_ptr;
-typedef std::vector<riscv_compressed_ptr> riscv_compressed_list;
-typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
-typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
-typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
-
-struct riscv_bitrange
+struct riscv_latex_row
 {
-	ssize_t msb;
-	ssize_t lsb;
-
-	riscv_bitrange() : msb(0), lsb(0) {}
-	riscv_bitrange(std::string bitrange);
-	riscv_bitrange(ssize_t msb, ssize_t lsb) : msb(msb), lsb(lsb) {}
-	riscv_bitrange(const riscv_bitrange &o) : msb(o.msb), lsb(o.lsb) {}
-
-	std::string to_string(std::string sep);
+	riscv_extension_ptr extension; // set if this is a title row
+	riscv_opcode_ptr opcode;       // set if this is an opcode row
+	bool table_line;               // set to print a table line
+	bool page_break;               // set to cause a page break
 };
 
-struct riscv_bitspec
+struct riscv_latex_page
 {
-	typedef std::vector<riscv_bitrange> riscv_bitrange_list;
-	typedef std::pair<riscv_bitrange,riscv_bitrange_list> riscv_bitseg;
-
-	std::vector<riscv_bitseg> segments;
-
-	riscv_bitspec() : segments() {}
-	riscv_bitspec(std::string bitspec);
-	riscv_bitspec(const riscv_bitspec &o) : segments(o.segments) {}
-
-	bool matches_bit(ssize_t bit);
-	std::string to_string();
-	std::string to_template();
+	std::vector<riscv_latex_row> rows;
 };
 
-struct riscv_arg
+struct riscv_parse_meta : riscv_meta_model
 {
-	std::string name;
-	riscv_bitspec bitspec;
-	std::string type;
-	std::string label;
-	std::string fg_color;
-	std::string bg_color;
-
-	riscv_arg(std::string name, std::string bitspec, std::string type,
-		  std::string label, std::string fg_color, std::string bg_color)
-		: name(name), bitspec(bitspec), type(type),
-		  label(label), fg_color(fg_color), bg_color(bg_color) {}
-
-	char char_code() {
-		if (type == "ireg") return 'R';
-		else if (type == "freg") return 'R';
-		else if (type == "arg") return 'A';
-		else if (type == "imm") return 'I';
-		else if (type == "disp") return 'D';
-		else return '?';
-	}
-};
-
-struct riscv_type
-{
-	std::string name;
-	std::string description;
-	std::vector<riscv_named_bitspec> parts;
-
-	riscv_type(std::string name, std::string description) : name(name), description(description) {}
-
-	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
-		for (auto ent : parts) {
-			if (ent.first.matches_bit(bit)) return ent;
-		}
-		return riscv_named_bitspec();
-	}
-};
-
-struct riscv_codec
-{
-	std::string name;
-	std::string format;
-
-	riscv_codec(std::string name, std::string format) : name(name), format(format) {}
-};
-
-struct riscv_extension
-{
-	std::string name;
-	std::string prefix;
-	ssize_t isa_width;
-	char alpha_code;
-	ssize_t insn_width;
-	std::string description;
-	riscv_opcode_list opcodes;
-
-	riscv_extension(std::string prefix, std::string isa_width,
-		  std::string alpha_code, std::string insn_width, std::string description)
-		: name(prefix + isa_width + alpha_code), prefix(prefix),
-		  isa_width(strtoull(isa_width.c_str(), NULL, 10)),
-		  alpha_code(alpha_code.length() > 0 ? alpha_code[0] : '?'),
-		  insn_width(strtoull(insn_width.c_str(), NULL, 10)),
-		  description(description) {}
-};
-
-struct riscv_format
-{
-	std::string name;
-	std::string args;
-
-	riscv_format(std::string name, std::string args)
-		: name(name), args(args) {}
-};
-
-struct riscv_register
-{
-	std::string name;
-	std::string alias;
-	std::string type;
-	std::string save;
-	std::string description;
-
-	riscv_register(std::string name, std::string alias, std::string type, std::string save, std::string description)
-		: name(name), alias(alias), type(type), save(save), description(description) {}
-};
-
-struct riscv_cause
-{
-	std::string number;
-	std::string name;
-
-	riscv_cause(std::string number, std::string name)
-		: number(number), name(name) {}
-};
-
-struct riscv_csr
-{
-	std::string number;
-	std::string access;
-	std::string name;
-	std::string description;
-
-	riscv_csr(std::string number, std::string access, std::string name, std::string description)
-		: number(number), access(access), name(name), description(description) {}
-};
-
-struct riscv_opcode
-{
-	std::string key;
-	std::string name;
-	std::string long_name;
-	std::string instruction;
-	std::string description;
-	riscv_arg_list args;
-	riscv_opcode_mask_list masks;
-	riscv_codec_ptr codec;
-	riscv_format_ptr format;
-	riscv_type_ptr type;
-	riscv_extension_list extensions;
-	riscv_compressed_ptr compressed;
-	riscv_compressed_list compressions;
-
-	size_t num;
-	size_t mask;
-	size_t match;
-	size_t done;
-
-	riscv_opcode(std::string key, std::string name)
-		: key(key), name(name), num(0), mask(0), match(0), done(0) {}
-
-	bool match_extension(riscv_extension_list &s) {
-		if (s.size() == 0) return true;
-		for (auto ext : extensions) {
-			if (std::find(s.begin(), s.end(), ext) != s.end()) return true;
-		}
-		return false;
-	}
-
-	riscv_arg_ptr find_arg(ssize_t bit) {
-		for (auto arg : args) {
-			if (arg->bitspec.matches_bit(bit)) return arg;
-		}
-		return riscv_arg_ptr();
-	}
-
-	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
-		for (auto ent : type->parts) {
-			if (ent.first.matches_bit(bit)) return ent;
-		}
-		return riscv_named_bitspec();
-	}
-};
-
-struct riscv_constraint
-{
-	std::string name;
-
-	riscv_constraint(std::string name) : name(name) {}
-};
-
-struct riscv_compressed
-{
-	riscv_opcode_ptr comp_opcode;
-	riscv_opcode_ptr decomp_opcode;
-	riscv_constraint_list constraint_list;
-
-	riscv_compressed(riscv_opcode_ptr comp_opcode, riscv_opcode_ptr decomp_opcode, riscv_constraint_list constraint_list)
-		: comp_opcode(comp_opcode), decomp_opcode(decomp_opcode), constraint_list(constraint_list) {}
-};
-
-struct riscv_codec_node
-{
-	std::vector<ssize_t> bits;
-	std::vector<ssize_t> vals;
-	std::map<ssize_t,riscv_opcode_list> val_opcodes;
-	std::map<ssize_t,riscv_codec_node> val_decodes;
-};
-
-struct riscv_inst_set
-{
-	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
-
-	riscv_arg_list           args;
-	riscv_arg_map            args_by_name;
-	riscv_type_list          types;
-	riscv_type_map           types_by_name;
-	riscv_codec_list         codecs;
-	riscv_codec_map          codecs_by_name;
-	riscv_extension_list     extensions;
-	riscv_extension_map      extensions_by_name;
-	riscv_format_list        formats;
-	riscv_format_map         formats_by_name;
-	riscv_register_list      registers;
-	riscv_register_map       registers_by_name;
-	riscv_cause_list         causes;
-	riscv_cause_map          causes_by_name;
-	riscv_csr_list           csrs;
-	riscv_csr_map            csrs_by_name;
-	riscv_opcode_list        opcodes;
-	riscv_opcode_map         opcodes_by_key;
-	riscv_opcode_list_map    opcodes_by_name;
-	riscv_constraint_list    constraints;
-	riscv_constraint_map     constraints_by_name;
-	riscv_compressed_list    compressions;
-	riscv_extension_list     ext_subset;
-	riscv_codec_node         root_node;
-
-	static riscv_opcode_mask decode_mask(std::string bit_spec);
-	static std::string opcode_mask(riscv_opcode_ptr opcode);
-	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key = true);
-	static std::string opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key = true);
-	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
-	static std::string codec_type_name(riscv_codec_ptr codec);
-	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
-	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
-
-	std::vector<std::string> parse_line(std::string line);
-	std::vector<std::vector<std::string>> read_file(std::string filename);
-	riscv_extension_list decode_isa_extensions(std::string isa_spec);
-	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
-	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
-	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
-
-	bool is_arg(std::string mnem);
-	bool is_ignore(std::string mnem);
-	bool is_mask(std::string mnem);
-	bool is_codec(std::string mnem);
-	bool is_extension(std::string mnem);
-
-	void parse_arg(std::vector<std::string> &part);
-	void parse_type(std::vector<std::string> &part);
-	void parse_codec(std::vector<std::string> &part);
-	void parse_extension(std::vector<std::string> &part);
-	void parse_format(std::vector<std::string> &part);
-	void parse_register(std::vector<std::string> &part);
-	void parse_cause(std::vector<std::string> &part);
-	void parse_csr(std::vector<std::string> &part);
-	void parse_opcode(std::vector<std::string> &part);
-	void parse_compression(std::vector<std::string> &part);
-	void parse_instruction(std::vector<std::string> &part);
-	void parse_description(std::vector<std::string> &part);
-
-	bool read_metadata(std::string dirname);
-
 	void generate_map();
 	void generate_codec();
 
 	std::string colorize_args(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
 
+	void print_latex_row(riscv_latex_row &row, std::string ts);
 	void print_latex();
 	void print_map();
 	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
@@ -387,36 +89,6 @@ struct riscv_inst_set
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_codec_node &node, size_t indent);
 };
-
-static std::string ltrim(std::string s)
-{
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-			std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
-}
-
-static std::string rtrim(std::string s)
-{
-	s.erase(std::find_if(s.rbegin(), s.rend(),
-			std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
-
-static std::vector<std::string> split(std::string str, std::string sep,
-	bool inc_empty, bool inc_sep)
-{
-	size_t i, j = 0;
-	std::vector<std::string> comps;
-	while ((i = str.find_first_of(sep, j)) != std::string::npos) {
-		if (inc_empty || i - j > 0) comps.push_back(str.substr(j, i - j));
-		if (inc_sep) comps.push_back(sep);
-		j = i + sep.length();
-	}
-	if (inc_empty || str.size() - j > 0) {
-		comps.push_back(str.substr(j, str.size() - j));
-	}
-	return comps;
-}
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -428,668 +100,7 @@ std::string join(std::vector<T> list, std::string sep)
 	return ss.str();
 }
 
-riscv_bitrange::riscv_bitrange(std::string bitrange)
-{
-	std::vector<std::string> comps = split(bitrange, ":", false, false);
-	if (comps.size() < 1 || comps.size() > 2) {
-		panic("invalid bitrange: %s", bitrange.c_str());
-	}
-	if (comps.size() == 2) {
-		msb = strtoul(comps[0].c_str(), nullptr, 10);
-		lsb = strtoul(comps[1].c_str(), nullptr, 10);
-	} else {
-		msb = lsb = strtoul(comps[0].c_str(), nullptr, 10);
-	}
-}
-
-std::string riscv_bitrange::to_string(std::string sep)
-{
-	std::stringstream ss;
-	ss << msb;
-	if (msb != lsb) {
-		ss << sep << lsb;
-	}
-	return ss.str();
-}
-
-riscv_bitspec::riscv_bitspec(std::string bitspec)
-{
-	/*
-	 * example bitrange specs in gather[scatter](,...) format
-	 *
-	 *     0
-	 *     11:7
-	 *     12[5],6:2[4:0]
-	 *     31:25[12|10:5],11:7[4:1|11]
-	 *
-	 * when [scatter] is ommitted, bits are right justified from bit 0
-	 */
-
-	std::vector<std::string> comps = split(bitspec, ",", false, false);
-	for (std::string comp : comps) {
-		size_t bopen = comp.find("[");
-		size_t bclose = comp.find("]");
-		if (bopen != std::string::npos && bclose != std::string::npos) {
-			riscv_bitrange gather(comp.substr(0, bopen));
-			std::string scatter_spec = comp.substr(bopen + 1, bclose - bopen - 1);
-			riscv_bitrange_list scatter;
-			for (auto scatter_comp : split(scatter_spec, "|", false, false)) {
-				scatter.push_back(riscv_bitrange(scatter_comp));
-			}
-			segments.push_back(riscv_bitseg(gather, scatter));
-		} else {
-			riscv_bitrange gather(comp);
-			riscv_bitrange_list scatter({ riscv_bitrange(gather.msb - gather.lsb, 0) });
-			segments.push_back(riscv_bitseg(gather, scatter));
-		}
-	}
-}
-
-bool riscv_bitspec::matches_bit(ssize_t bit)
-{
-	for (auto si = segments.begin(); si != segments.end(); si++) {
-		if (bit <= si->first.msb && bit >= si->first.lsb) return true;
-	}
-	return false;
-}
-
-std::string riscv_bitspec::to_string()
-{
-	std::stringstream ss;
-	for (auto si = segments.begin(); si != segments.end(); si++) {
-		if (si != segments.begin()) ss << ",";
-		ss << si->first.to_string(":") << "[";
-		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti != si->second.begin()) ss << "|";
-			ss << ti->to_string(":");
-		}
-		ss << "]";
-	}
-	return ss.str();
-}
-
-std::string riscv_bitspec::to_template()
-{
-	ssize_t msb = 0;
-	for (auto si = segments.begin(); si != segments.end(); si++) {
-		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti->msb > msb) msb = ti->msb;
-		}
-	}
-	std::stringstream ss;
-	ss << "imm_t<" << (msb + 1) << ", ";
-	for (auto si = segments.begin(); si != segments.end(); si++) {
-		if (si != segments.begin()) ss << ", ";
-		ss << "S<" << si->first.to_string(",") << ", ";
-		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti != si->second.begin()) ss << ",";
-			ss << "B<" << ti->to_string(",") << ">";
-		}
-		ss << ">";
-	}
-	ss << ">";
-	return ss.str();
-}
-
-riscv_opcode_mask riscv_inst_set::decode_mask(std::string bit_spec)
-{
-	std::vector<std::string> spart = split(bit_spec, "=", false, false);
-	if (spart.size() != 2) {
-		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
-	}
-	std::vector<std::string> rpart = split(spart[0], "..", false, false);
-	ssize_t msb, lsb, val;
-	if (rpart.size() == 1) {
-		msb = lsb = strtoul(rpart[0].c_str(), nullptr, 10);
-	} else if (rpart.size() == 2) {
-		msb = strtoul(rpart[0].c_str(), nullptr, 10);
-		lsb = strtoul(rpart[1].c_str(), nullptr, 10);
-	} else {
-		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
-	}
-	if (spart[1].find("0x") == 0) {
-		val = strtoul(spart[1].c_str() + 2, nullptr, 16);
-	} else {
-		val = strtoul(spart[1].c_str(), nullptr, 10);
-	}
-
-	return riscv_opcode_mask(riscv_bitrange(msb, lsb), val);
-}
-
-std::vector<riscv_bitrange> riscv_inst_set::bitmask_to_bitrange(std::vector<ssize_t> &bits)
-{	
-	std::vector<riscv_bitrange> v;
-	if (bits.size() > 0) {
-		v.push_back(riscv_bitrange(bits[0], bits[0]));
-		for (size_t i = 1; i < bits.size(); i++) {
-			if (bits[i] + 1 == v.back().lsb) {
-				v.back().lsb = bits[i];
-			} else {
-				v.push_back(riscv_bitrange(bits[i], bits[i]));
-			}
-		}
-	}
-	return v;
-}
-
-std::string riscv_inst_set::format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment)
-{
-	std::vector<riscv_bitrange> v = bitmask_to_bitrange(bits);
-	std::stringstream ss;
-
-	ssize_t total_length = bits.size();
-	ssize_t range_start = bits.size();
-
-	for (auto ri = v.begin(); ri != v.end(); ri++) {
-		riscv_bitrange r = *ri;
-		ssize_t range_end = range_start - (r.msb - r.lsb);
-		ssize_t shift = r.msb - range_start + 1;
-		if (ri != v.begin()) ss << " | ";
-		ss << "((" << var << " >> " << shift << ") & 0b";
-		for (ssize_t i = total_length; i > 0; i--) {
-			if (i <= range_start && i >= range_end) ss << "1";
-			else ss << "0";
-		}
-		ss << ")";
-		range_start -= (r.msb - r.lsb) + 1;
-	}
-
-	if (comment) {
-		ss << " /* " << var << "[";
-		for (auto ri = v.begin(); ri != v.end(); ri++) {
-			riscv_bitrange r = *ri;
-			if (ri != v.begin()) ss << "|";
-			if (r.msb == r.lsb) ss << r.msb;
-			else ss << r.msb << ":" << r.lsb;
-		}
-		ss << "] */";
-	}
-
-	return ss.str();
-}
-
-std::string riscv_inst_set::opcode_mask(riscv_opcode_ptr opcode)
-{
-	std::stringstream ss;
-	ss << std::left << std::setw(20) << "";
-	for (auto &mask : opcode->masks) {
-		ss << " " << mask.first.msb << ".." << mask.first.lsb << "=" << mask.second;
-	}
-	return ss.str();
-}
-
-std::string riscv_inst_set::opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key)
-{
-	std::string name = key ? opcode->key : opcode->name;
-	if (name.find("@") == 0) name = name.substr(1);
-	std::replace(name.begin(), name.end(), '.', dot);
-	return prefix + name;
-}
-
-std::string riscv_inst_set::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
-{
-	std::string opcode_name = opcode_format("", opcode, '.', key);
-	return no_comment ? "" : format_string("/* %20s */ ", opcode_name.c_str());
-}
-
-std::string riscv_inst_set::opcode_isa_shortname(riscv_opcode_ptr opcode)
-{
-	auto &ext = opcode->extensions.front();
-	std::string short_name = ext->prefix;
-	short_name += ext->alpha_code;
-	return short_name;
-}
-
-std::string riscv_inst_set::codec_type_name(riscv_codec_ptr codec)
-{
-	size_t o = codec->name.find("_");
-	if (o == std::string::npos) o = codec->name.find("+");
-	if (o == std::string::npos) return codec->name;
-	return codec->name.substr(0, o);
-}
-
-std::vector<std::string> riscv_inst_set::parse_line(std::string line)
-{
-	// simple parsing routine that handles tokens separated by whitespace,
-	// double quoted tokens containing whitespace and # comments
-
-	std::vector<char> token;
-	std::vector<std::string> comps;
-	enum {
-		whitespace,
-		quoted_token,
-		unquoted_token,
-		comment
-	} state = whitespace;
-
-	size_t i = 0;
-	while (i < line.size()) {
-		char c = line[i];
-		switch (state) {
-			case whitespace:
-				if (::isspace(c)) {
-					i++;
-				} else if (c == '#') {
-					state = comment;
-				} else if (c == '"') {
-					state = quoted_token;
-					i++;
-				} else {
-					state = unquoted_token;
-				}
-				break;
-			case quoted_token:
-				if (c == '"') {
-					comps.push_back(std::string(token.begin(), token.end()));
-					token.resize(0);
-					state = whitespace;
-				} else {
-					token.push_back(c);
-				}
-				i++;
-				break;
-			case unquoted_token:
-				if (::isspace(c)) {
-					comps.push_back(std::string(token.begin(), token.end()));
-					token.resize(0);
-					state = whitespace;
-				} else {
-					token.push_back(c);
-				}
-				i++;
-				break;
-			case comment:
-				i++;
-				break;
-		}
-	}
-	if (token.size() > 0) {
-		comps.push_back(std::string(token.begin(), token.end()));
-	}
-	return comps;
-}
-
-std::vector<std::vector<std::string>> riscv_inst_set::read_file(std::string filename)
-{
-	std::vector<std::vector<std::string>> data;
-	std::ifstream in(filename.c_str());
-	std::string line;
-	if (!in.is_open()) {
-		panic("error opening %s\n", filename.c_str());
-	}
-	while (in.good())
-	{
-		std::getline(in, line);
-		size_t hoffset = line.find("#");
-		if (hoffset != std::string::npos) {
-			line = ltrim(rtrim(line.substr(0, hoffset)));
-		}
-		std::vector<std::string> part = parse_line(line);
-		if (part.size() == 0) continue;
-		data.push_back(part);
-	}
-	in.close();
-	return data;
-}
-
-
-riscv_extension_list riscv_inst_set::decode_isa_extensions(std::string isa_spec)
-{
-	riscv_extension_list list;
-	if (isa_spec.size() == 0) {
-		return list;
-	}
-
-	// canonicalise isa spec to lower case
-	std::transform(isa_spec.begin(), isa_spec.end(), isa_spec.begin(), ::tolower);
-
-	// find isa prefix and width
-	ssize_t ext_isa_width = 0;
-	std::string ext_prefix, ext_isa_width_str;
-	for (auto &ext : extensions) {
-		if (isa_spec.find(ext->prefix) == 0) {
-			ext_prefix = ext->prefix;
-		}
-		if (ext_prefix.size() > 0) {
-			ext_isa_width_str = std::to_string(ext->isa_width);
-			if (isa_spec.find(ext_isa_width_str) == ext_prefix.size()) {
-				ext_isa_width = ext->isa_width;
-			}
-		}
-	}
-	if (ext_prefix.size() == 0 || ext_isa_width == 0) {
-		panic("illegal isa spec: %s", isa_spec.c_str());
-	}
-
-	// replace 'g' with 'imafd'
-	size_t g_offset = isa_spec.find("g");
-	if (g_offset != std::string::npos) {
-		isa_spec = isa_spec.replace(isa_spec.begin() + g_offset,
-			isa_spec.begin() + g_offset + 1, "imafd");
-	}
-
-	// lookup extensions
-	ssize_t ext_offset = ext_prefix.length() + ext_isa_width_str.length();
-	for (auto i = isa_spec.begin() + ext_offset; i != isa_spec.end(); i++) {
-		std::string ext_name = isa_spec.substr(0, ext_offset) + *i;
-		auto ext = extensions_by_name[ext_name];
-		if (!ext) {
-			panic("illegal isa spec: %s: missing extension: %s",
-				isa_spec.c_str(), ext_name.c_str());
-		}
-		if (std::find(list.begin(), list.end(), ext) != list.end()) {
-			panic("illegal isa spec: %s: duplicate extension: %s",
-				isa_spec.c_str(), ext_name.c_str());
-		}
-		list.push_back(ext);
-	}
-	return list;
-}
-
-riscv_opcode_ptr riscv_inst_set::create_opcode(std::string opcode_name, std::string extension)
-{
-	// create key for the opcode
-	riscv_opcode_ptr opcode = lookup_opcode_by_key(opcode_name);
-	if (opcode) {
-		// if the opcode exists rename the previous opcode using isa extension
-		opcode->key = opcode_name + "." + opcode->extensions.front()->name;
-		opcodes_by_key.erase(opcode_name);
-		opcodes_by_key[opcode->key] = opcode;
-
-		// and add the new opcode with its isa extension
-		std::string opcode_key = opcode_name + std::string(".") + extension;
-		if (opcodes_by_key.find(opcode_key) != opcodes_by_key.end()) {
-			panic("opcode with same extension already exists: %s",
-				opcode_key.c_str());
-		}
-		opcode = opcodes_by_key[opcode_key] = std::make_shared<riscv_opcode>(
-			opcode_key, opcode_name
-		);
-		opcodes.push_back(opcode);
-		opcode->num = opcodes.size();
-	} else {
-		opcode = opcodes_by_key[opcode_name] = std::make_shared<riscv_opcode>(
-			opcode_name, opcode_name
-		);
-		opcodes.push_back(opcode);
-		opcode->num = opcodes.size();
-	}
-
-	// add opcode to the opcode by name list, creating a new list if one doesn't exist
-	auto opcode_list_i  = opcodes_by_name.find(opcode_name);
-	if (opcode_list_i == opcodes_by_name.end()) {
-		opcodes_by_name[opcode_name] = { opcode };
-	} else {
-		opcode_list_i->second.push_back(opcode);
-	}
-
-	return opcode;
-}
-
-riscv_opcode_ptr riscv_inst_set::lookup_opcode_by_key(std::string opcode_key)
-{
-	auto i = opcodes_by_key.find(opcode_key);
-	if (i != opcodes_by_key.end()) return i->second;
-	return riscv_opcode_ptr();
-}
-
-riscv_opcode_list riscv_inst_set::lookup_opcode_by_name(std::string opcode_name)
-{
-	auto i = opcodes_by_name.find(opcode_name);
-	if (i != opcodes_by_name.end()) return i->second;
-	return riscv_opcode_list();
-}
-
-bool riscv_inst_set::is_arg(std::string mnem)
-{
-	return (args_by_name.find(mnem) != args_by_name.end());
-}
-
-bool riscv_inst_set::is_ignore(std::string mnem)
-{
-	return (mnem.find("=ignore") != std::string::npos);
-}
-
-bool riscv_inst_set::is_mask(std::string mnem)
-{
-	return (mnem.find("=") != std::string::npos);
-}
-
-bool riscv_inst_set::is_codec(std::string mnem)
-{
-	return (codecs_by_name.find(mnem) != codecs_by_name.end());
-}
-
-bool riscv_inst_set::is_extension(std::string mnem)
-{
-	return (extensions_by_name.find(mnem) != extensions_by_name.end());
-}
-
-void riscv_inst_set::parse_arg(std::vector<std::string> &part)
-{
-	if (part.size() < 6) {
-		panic("args requires 6 parameters: %s", join(part, " ").c_str());
-	}
-	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(
-		part[0], part[1], part[2], part[3], part[4], part[5]
-	);
-	args.push_back(arg);
-}
-
-void riscv_inst_set::parse_type(std::vector<std::string> &part)
-{
-	if (part.size() < 2) {
-		panic("types requires 2 or more parameters: %s", join(part, " ").c_str());
-	}
-	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
-		part[0], part[1]
-	);
-	for (size_t i = 2; i < part.size(); i++) {
-		std::vector<std::string> spec = split(part[i], "=", false, false);
-		type->parts.push_back(riscv_named_bitspec(riscv_bitspec(spec[0]), spec.size() > 1 ? spec[1] : ""));
-	}
-	types.push_back(type);
-}
-
-void riscv_inst_set::parse_codec(std::vector<std::string> &part)
-{
-	if (part.size() < 2) {
-		panic("codecs requires 2 parameters: %s", join(part, " ").c_str());
-	}
-	auto codec = codecs_by_name[part[0]] = std::make_shared<riscv_codec>(
-		part[0], part[1]
-	);
-	codecs.push_back(codec);
-}
-
-void riscv_inst_set::parse_extension(std::vector<std::string> &part)
-{
-	if (part.size() < 5) {
-		panic("extensions requires 5 parameters: %s", join(part, " ").c_str());
-	}
-	std::string isa = part[0] + part[1] + part[2];
-	auto extension = extensions_by_name[isa] = std::make_shared<riscv_extension>(
-		part[0], part[1], part[2], part[3], part[4]
-	);
-	extensions.push_back(extension);
-}
-
-void riscv_inst_set::parse_format(std::vector<std::string> &part)
-{
-	if (part.size() < 1) {
-		panic("formats requires at least 1 parameters: %s", join(part, " ").c_str());
-	}
-	auto format = formats_by_name[part[0]] = std::make_shared<riscv_format>(
-		part[0], part.size() > 1 ? part[1] : ""
-	);
-	formats.push_back(format);
-}
-
-void riscv_inst_set::parse_register(std::vector<std::string> &part)
-{
-	if (part.size() < 5) {
-		panic("registers requires 5 parameters: %s", join(part, " ").c_str());
-	}
-	auto reg = registers_by_name[part[0]] = std::make_shared<riscv_register>(
-		part[0], part[1], part[2], part[3], part[4]
-	);
-	registers.push_back(reg);
-}
-
-void riscv_inst_set::parse_cause(std::vector<std::string> &part)
-{
-	if (part.size() < 2) {
-		panic("causes requires 2 parameters: %s", join(part, " ").c_str());
-	}
-	auto cause = causes_by_name[part[1]] = std::make_shared<riscv_cause>(
-		part[0], part[1]
-	);
-	causes.push_back(cause);
-}
-
-void riscv_inst_set::parse_csr(std::vector<std::string> &part)
-{
-	if (part.size() < 4) {
-		panic("csrs requires 4 parameters: %s", join(part, " ").c_str());
-	}
-	auto csr = csrs_by_name[part[2]] = std::make_shared<riscv_csr>(
-		part[0], part[1], part[2], part[3]
-	);
-	csrs.push_back(csr);
-}
-
-void riscv_inst_set::parse_opcode(std::vector<std::string> &part)
-{
-	std::vector<std::string> extensions;
-	for (size_t i = 1; i < part.size(); i++) {
-		std::string mnem = part[i];
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
-		if (is_extension(mnem)) {
-			extensions.push_back(mnem);
-		}
-	}
-
-	std::string opcode_name = part[0];
-	if (extensions.size() == 0) {
-		panic("no extension assigned for opcode: %s", opcode_name.c_str());
-	}
-	auto opcode = create_opcode(opcode_name, extensions.front());
-
-	for (size_t i = 1; i < part.size(); i++) {
-		std::string mnem = part[i];
-		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
-		if (is_arg(mnem)) {
-			opcode->args.push_back(args_by_name[mnem]);
-		} else if (is_ignore(mnem)) {
-			// presently we ignore masks labeled as ignore
-		} else if (is_mask(mnem)) {
-			opcode->masks.push_back(decode_mask(mnem));
-		} else if (is_codec(mnem)) {
-			opcode->codec = codecs_by_name[mnem];
-			opcode->format = formats_by_name[opcode->codec->format];
-			if (!opcode->format) {
-				panic("opcode %s codec %s has unknown format: %s",
-					opcode_name.c_str(), opcode->codec->format.c_str());
-			}
-			std::string type_name = codec_type_name(opcode->codec);
-			opcode->type = types_by_name[type_name];
-			if (!opcode->type) {
-				panic("opcode %s codec %s has unknown type: %s",
-					opcode_name.c_str(), opcode->codec->name.c_str(), type_name.c_str());
-			}
-		} else if (is_extension(mnem)) {
-			auto extension = extensions_by_name[mnem];
-			opcode->extensions.push_back(extension);
-			if (opcode->extensions.size() == 1) {
-				extension->opcodes.push_back(opcode);
-			}
-		} else {
-			debug("opcode %s: unknown arg: %s", opcode_name.c_str(), mnem.c_str());
-		}
-	}
-
-	if (!opcode->codec) {
-		panic("opcode has no codec: %s", opcode_name.c_str());
-	}
-	if (opcode->extensions.size() == 0) {
-		panic("opcode has no extensions: %s", opcode_name.c_str());
-	}
-}
-
-void riscv_inst_set::parse_compression(std::vector<std::string> &part)
-{
-	if (part.size() < 2) {
-		panic("invalid compression file requires at least 2 parameters: %s",
-			join(part, " ").c_str());
-	}
-	for (auto comp_opcode : lookup_opcode_by_name(part[0])) {
-		for (auto opcode : lookup_opcode_by_name(part[1])) {
-			riscv_constraint_list constraint_list;
-			for (size_t i = 2; i < part.size(); i++) {
-				auto ci = constraints_by_name.find(part[i]);
-				if (ci == constraints_by_name.end()) {
-					auto constraint = std::make_shared<riscv_constraint>(part[i]);
-					constraints_by_name[part[i]] = constraint;
-					auto cli = std::find_if(constraints.begin(), constraints.end(),
-						[&constraint] (const riscv_constraint_ptr &c) {
-							return constraint->name < c->name;
-					});
-					constraints.insert(cli, constraint);
-					constraint_list.push_back(constraint);
-				} else {
-					constraint_list.push_back(ci->second);
-				}
-			}
-			auto comp = std::make_shared<riscv_compressed>(
-				comp_opcode, opcode, constraint_list
-			);
-			comp_opcode->compressed = comp;
-			opcode->compressions.push_back(comp);
-			compressions.push_back(comp);
-		}
-	}
-}
-
-void riscv_inst_set::parse_instruction(std::vector<std::string> &part)
-{
-	if (part.size() < 2) return;
-	std::string opcode_name = part[0];
-	std::string opcode_long_name = part[1];
-	std::string opcode_instruction = part.size() > 2 ? part[2] : "";
-	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
-		opcode->long_name = opcode_long_name;
-		opcode->instruction = opcode_instruction;
-	}
-}
-
-void riscv_inst_set::parse_description(std::vector<std::string> &part)
-{
-	if (part.size() < 1) return;
-	std::string opcode_name = part[0];
-	std::string opcode_description = part.size() > 1 ? part[1] : "";
-	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
-		opcode->description = opcode_description;
-	}
-}
-
-bool riscv_inst_set::read_metadata(std::string dirname)
-{
-	for (auto part : read_file(dirname + std::string("/") + ARGS_FILE)) parse_arg(part);
-	for (auto part : read_file(dirname + std::string("/") + TYPES_FILE)) parse_type(part);
-	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);
-	for (auto part : read_file(dirname + std::string("/") + CODECS_FILE)) parse_codec(part);
-	for (auto part : read_file(dirname + std::string("/") + EXTENSIONS_FILE)) parse_extension(part);
-	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
-	for (auto part : read_file(dirname + std::string("/") + CAUSES_FILE)) parse_cause(part);
-	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
-	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
-	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
-	for (auto part : read_file(dirname + std::string("/") + INSTRUCTIONS_FILE)) parse_instruction(part);
-	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);
-	return true;
-}
-
-void riscv_inst_set::generate_map()
+void riscv_parse_meta::generate_map()
 {
 	for (auto &opcode : opcodes) {
 		for (auto &mask : opcode->masks) {
@@ -1104,12 +115,12 @@ void riscv_inst_set::generate_map()
 	}
 }
 
-void riscv_inst_set::generate_codec()
+void riscv_parse_meta::generate_codec()
 {
 	generate_codec_node(root_node, opcodes);
 }
 
-std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
+std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)
 {
 	std::vector<char> token;
 	std::vector<std::string> comps;
@@ -1148,7 +159,7 @@ std::string riscv_inst_set::colorize_args(riscv_opcode_ptr opcode)
 }
 
 
-std::vector<std::string> riscv_inst_set::get_unique_codecs()
+std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 {
 	std::vector<std::string> codec_names;
 	for (auto &codec : codecs) {
@@ -1160,69 +171,155 @@ std::vector<std::string> riscv_inst_set::get_unique_codecs()
 	return codec_names;
 }
 
-void riscv_inst_set::print_latex()
+void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 {
-	static const char* kLatexDocumentBegin =
-R"LaTeX(\documentclass{report}
-\usepackage[letterpaper, portrait, margin=0.5in]{geometry}
-\usepackage[utf8]{inputenc}
-\begin{document}
-)LaTeX";
+	// print table header and page breaks
+	if (row.page_break) {
+		printf("%s", kLatexTableEnd);
+		printf("%s%s", kLatexTableBegin, ts.c_str());
+	}
 
-	static const char* kLatexDocumentEnd =
-R"LaTeX(\end{document}
-)LaTeX";
+	// format a line
+	else if (row.table_line) {
+		printf("\\cline{1-%ld}\n", kLatexTableColumns);
+	}
 
-	static const char* kLatexTableBegin =
-R"LaTeX(\newpage
-\begin{table}[p]
-\begin{small}
-\begin{center}
-\begin{tabular})LaTeX";
+	// format an opcode row
+	else if (row.opcode) {
+		auto &opcode = row.opcode;
+		ssize_t bit_width = opcode->extensions[0]->insn_width;
 
-	static const char* kLatexTableEnd =
-R"LaTeX(\end{tabular}
-\end{center}
-\end{small}
-\end{table}
-)LaTeX";
+		// calculate the column spans for this row
+		riscv_arg_ptr arg, larg;
+		bool lbound = false;
+		typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
+		std::vector<arg_tuple> arg_parts;
+		for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
+			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
+			arg = opcode->find_arg(bit);
 
-	static const ssize_t TABLE_COLUMNS = 32;
-	static const ssize_t TABLE_ROWS = 64;
+			// figure out where to break columns
+			if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
+			{
+				std::string str;
+				str += c;
+				arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
+			} else {
+				auto &sz = std::get<2>(arg_parts.back());
+				auto &str = std::get<3>(arg_parts.back());
+				char lastc = str[str.length()-1];
+				if ((lastc == '?' && (c == '1' || c == '0')) ||
+					((lastc == '1' || lastc == '0') && c == '?'))
+				{
+					std::string str;
+					str += c;
+					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
+				} else {
+					sz++;
+					str += c;
+				}
+			}
 
-	// table row data
-	struct riscv_table_row
-	{
-		riscv_extension_ptr extension; // set if this is a title row
-		riscv_opcode_ptr opcode;       // set if this is an opcode row
-		bool table_line;               // set to print a table line
-		bool page_break;               // set to cause a page break
-	};
+			// find the type of this opcode for column boundaries
+			auto named_bitspec = opcode->find_named_bitspec(bit);
+			if (named_bitspec.first.segments.size() == 0) {
+				auto default_type = types_by_name[std::to_string(bit_width)];
+				if (!default_type) panic("can't find default type: %d", bit_width);
+				named_bitspec = default_type->find_named_bitspec(bit);
+			}
+			lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
 
+			larg = arg;
+		}
+
+		// update labels for segments with args
+		ssize_t msb = bit_width-1;
+		for (size_t i = 0; i < arg_parts.size(); i++) {
+			auto &arg = std::get<1>(arg_parts[i]);
+			auto size = std::get<2>(arg_parts[i]);
+			auto &str = std::get<3>(arg_parts[i]);
+			if (arg) {
+				str = arg->label;
+				if (str == "imm" || str == "disp") {
+					auto spec = arg->bitspec;
+					for (auto &seg : spec.segments) {
+						if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+							str += "[";
+							for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+								if (ri != seg.second.begin()) str += "$\\vert$";
+								str += ri->to_string(":");
+							}
+							str += "]";
+							break;
+						}
+					}
+				}
+			} else {
+				std::replace(str.begin(), str.end(), '?', '0');
+			}
+			msb -= size;
+		}
+
+		// construct the LaTeX for this row
+		std::stringstream ls;
+		for (size_t i = 0; i < arg_parts.size(); i++) {
+			auto size = std::get<2>(arg_parts[i]);
+			auto &str = std::get<3>(arg_parts[i]);
+			ls << (i != 0 ? " & " : "")
+			   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
+			   << "{" << (i == 0 ? "|" : "") << "c|}"
+			   << "{" << str << "}";
+		}
+
+		// format the opcode name and arguments
+		auto name = opcode->name;
+		auto arg_comps = split(opcode->format->args, ",", false, false);
+		std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+
+		// print this row
+		printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
+			ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), kLatexTableColumns);
+	}
+
+	// format an extension heading
+	else if (row.extension) {
+		printf("\\multicolumn{%ld}{c}{\\bf %s} & \\\\\n\\cline{1-%ld}\n",
+			kLatexTableColumns, row.extension->description.c_str(), kLatexTableColumns);
+	}
+
+	// format an empty line
+	else {
+		printf("\\multicolumn{%ld}{c}{} & \\\\\n", kLatexTableColumns);
+	}
+}
+
+void riscv_parse_meta::print_latex()
+{
 	// paginate opcodes ordered by extension, adding page breaks and
 	size_t line = 0;
-	std::vector<riscv_table_row> rows;
+	std::vector<riscv_latex_page> pages;
 	for (auto &ext : extensions) {
 		if (ext->opcodes.size() == 0 || (ext_subset.size() > 0 &&
 			std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end())) {
 			continue;
 		}
-		rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr(), false, false });
+		if (pages.size() == 0) pages.push_back(riscv_latex_page());
+		pages.back().rows.push_back(riscv_latex_row{ ext, riscv_opcode_ptr(), false, false });
 		line++;
 		for (auto &opcode : ext->opcodes) {
 			// add a line to the top of the table if we are continuing
-			if (line % TABLE_ROWS == 0) {
-				rows.push_back(riscv_table_row{ ext, riscv_opcode_ptr(), true, false });
+			if (line % kLatexTableRows == 0) {
+				pages.back().rows.push_back(riscv_latex_row{ ext, riscv_opcode_ptr(), true, false });
 			}
-			rows.push_back(riscv_table_row{ riscv_extension_ptr(), opcode, false, false });
+			pages.back().rows.push_back(riscv_latex_row{ riscv_extension_ptr(), opcode, false, false });
 			line++;
-			if (line % TABLE_ROWS == 0) {
-				rows.push_back(riscv_table_row{
+			if (line % kLatexTableRows == 0) {
+				pages.back().rows.push_back(riscv_latex_row{
 					riscv_extension_ptr(), riscv_opcode_ptr(), false, true
 				});
 			}
 		}
-		rows.push_back(riscv_table_row{
+		pages.back().rows.push_back(riscv_latex_row{
 			riscv_extension_ptr(), riscv_opcode_ptr(), false, false
 		});
 		line++;
@@ -1231,9 +328,9 @@ R"LaTeX(\end{tabular}
 	// create the table width specification
 	std::stringstream ts;
 	ts << "{";
-	for (ssize_t i = 0 ; i < TABLE_COLUMNS; i++) ts << "p{0.02in}";
+	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "p{0.02in}";
 	ts << "p{2.0in}l}";
-	for (ssize_t i = 0 ; i < TABLE_COLUMNS; i++) ts << "& ";
+	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "& ";
 	ts << "& \\\\\n";
 
 	// print document header
@@ -1241,125 +338,9 @@ R"LaTeX(\end{tabular}
 	printf("%s%s", kLatexTableBegin, ts.str().c_str());
 
 	// iterate through the table rows
-	for (auto &row : rows) {
-
-		// print table header and page breaks
-		if (row.page_break) {
-			printf("%s", kLatexTableEnd);
-			printf("%s%s", kLatexTableBegin, ts.str().c_str());
-		}
-
-		// format a line
-		else if (row.table_line) {
-			printf("\\cline{1-%ld}\n", TABLE_COLUMNS);
-		}
-
-		// format an opcode row
-		else if (row.opcode) {
-			auto &opcode = row.opcode;
-			ssize_t bit_width = opcode->extensions[0]->insn_width;
-
-			// calculate the column spans for this row
-			riscv_arg_ptr arg, larg;
-			bool lbound = false;
-			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
-			std::vector<arg_tuple> arg_parts;
-			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
-				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
-				arg = opcode->find_arg(bit);
-
-				// figure out where to break columns
-				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
-				{
-					std::string str;
-					str += c;
-					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
-				} else {
-					auto &sz = std::get<2>(arg_parts.back());
-					auto &str = std::get<3>(arg_parts.back());
-					char lastc = str[str.length()-1];
-					if ((lastc == '?' && (c == '1' || c == '0')) ||
-						((lastc == '1' || lastc == '0') && c == '?'))
-					{
-						std::string str;
-						str += c;
-						arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
-					} else {
-						sz++;
-						str += c;
-					}
-				}
-
-				// find the type of this opcode for column boundaries
-				auto named_bitspec = opcode->find_named_bitspec(bit);
-				if (named_bitspec.first.segments.size() == 0) {
-					auto default_type = types_by_name[std::to_string(bit_width)];
-					if (!default_type) panic("can't find default type: %d", bit_width);
-					named_bitspec = default_type->find_named_bitspec(bit);
-				}
-				lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
-
-				larg = arg;
-			}
-
-			// update labels for segments with args
-			ssize_t msb = bit_width-1;
-			for (size_t i = 0; i < arg_parts.size(); i++) {
-				auto &arg = std::get<1>(arg_parts[i]);
-				auto size = std::get<2>(arg_parts[i]);
-				auto &str = std::get<3>(arg_parts[i]);
-				if (arg) {
-					str = arg->label;
-					if (str == "imm" || str == "disp") {
-						auto spec = arg->bitspec;
-						for (auto &seg : spec.segments) {
-							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
-								str += "[";
-								for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
-									if (ri != seg.second.begin()) str += "$\\vert$";
-									str += ri->to_string(":");
-								}
-								str += "]";
-								break;
-							}
-						}
-					}
-				} else {
-					std::replace(str.begin(), str.end(), '?', '0');
-				}
-				msb -= size;
-			}
-
-			// construct the LaTeX for this row
-			std::stringstream ls;
-			for (size_t i = 0; i < arg_parts.size(); i++) {
-				auto size = std::get<2>(arg_parts[i]);
-				auto &str = std::get<3>(arg_parts[i]);
-				ls << (i != 0 ? " & " : "")
-				   << "\\multicolumn{" << (size * TABLE_COLUMNS / bit_width) << "}"
-				   << "{" << (i == 0 ? "|" : "") << "c|}"
-				   << "{" << str << "}";
-			}
-
-			// format the opcode name and arguments
-			auto name = opcode->name;
-			auto arg_comps = split(opcode->format->args, ",", false, false);
-			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-
-			// print this row
-			printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
-				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), TABLE_COLUMNS);
-		}
-
-		// format an extension heading
-		else if (row.extension) {
-			printf("\\multicolumn{%ld}{c}{\\bf %s} & \\\\\n\\cline{1-%ld}\n",
-				TABLE_COLUMNS, row.extension->description.c_str(), TABLE_COLUMNS);
-		}
-
-		// format an empty line
-		else {
-			printf("\\multicolumn{%ld}{c}{} & \\\\\n", TABLE_COLUMNS);
+	for (auto &page : pages) {
+		for (auto &row : page.rows) {
+			print_latex_row(row, ts.str());
 		}
 	}
 
@@ -1368,7 +349,7 @@ R"LaTeX(\end{tabular}
 	printf("%s", kLatexDocumentEnd);
 }
 
-void riscv_inst_set::print_map()
+void riscv_parse_meta::print_map()
 {
 	bool enable_colorize = enable_color && isatty(fileno(stdout));
 
@@ -1376,13 +357,13 @@ void riscv_inst_set::print_map()
 	for (auto &opcode : opcodes) {
 		if (i % 22 == 0) {
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
-			for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
+			for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
 				char c = (bit % 10) == 0 ? (bit / 10) + '0' : ' ';
 				printf("%c", c);
 			}
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
-			for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
+			for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
 				char c = (bit % 10) + '0';
 				printf("%c", c);
 			}
@@ -1392,7 +373,7 @@ void riscv_inst_set::print_map()
 		i++;
 		printf("// ");
 		ssize_t bit_width = opcode->extensions[0]->insn_width;
-		for (ssize_t i = 0; i < MAX_INSN_WIDTH-bit_width; i++) printf(" ");
+		for (ssize_t i = 0; i < kMaxInstructionWidth-bit_width; i++) printf(" ");
 		for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '.');
 			switch (c) {
@@ -1440,7 +421,7 @@ void riscv_inst_set::print_map()
 	}
 }
 
-void riscv_inst_set::print_opcodes_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 {
 	printf("//\n");
 	printf("//  riscv-meta.h\n");
@@ -1544,7 +525,7 @@ static void print_array_unknown_int(uint32_t num, bool no_comment)
 	printf("\t%s0x%08x,\n", no_comment ? "" : unknown_op_comment, num);
 }
 
-void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 {
 	printf("//\n");
 	printf("//  riscv-meta.cc\n");
@@ -1684,7 +665,7 @@ void riscv_inst_set::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 }
 
-void riscv_inst_set::print_switch_c(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_switch_c(bool no_comment, bool zero_not_oh)
 {
 	std::vector<std::string> mnems;
 
@@ -1728,27 +709,27 @@ void riscv_inst_set::print_switch_c(bool no_comment, bool zero_not_oh)
 	printf("}\n");
 }
 
-void riscv_inst_set::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list)
+void riscv_parse_meta::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list)
 {
 	// calculate row coverage for each column
 	std::vector<ssize_t> sum;
 	sum.resize(32);
 	for (auto &opcode : opcode_list) {
-		for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
+		for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
 			if ((opcode->mask & (1 << bit)) && !(opcode->done & (1 << bit))) sum[bit]++;
 		}
 	}
 
 	// find column with maximum row coverage
 	ssize_t max_rows = 0;
-	for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
+	for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
 		if (sum[bit] > max_rows) max_rows = sum[bit];
 	}
 
 	if (max_rows == 0) return; // no bits to match
 
 	// select bits that cover maximum number of rows
-	for (ssize_t bit = MAX_INSN_WIDTH-1; bit >= 0; bit--) {
+	for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
 		if (sum[bit] == max_rows) node.bits.push_back(bit);
 	}
 
@@ -1804,7 +785,7 @@ void riscv_inst_set::generate_codec_node(riscv_codec_node &node, riscv_opcode_li
 	}
 }
 
-void riscv_inst_set::print_switch_decoder_node(riscv_codec_node &node, size_t indent)
+void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t indent)
 {
 	for (size_t i = 0; i < indent; i++) printf("\t");
 	printf("switch (%s) {\n", format_bitmask(node.bits, "inst", true).c_str());
@@ -1901,7 +882,7 @@ void riscv_inst_set::print_switch_decoder_node(riscv_codec_node &node, size_t in
 
 int main(int argc, const char *argv[])
 {
-	riscv_inst_set inst_set;
+	riscv_parse_meta inst_set;
 
 	bool print_latex = false;
 	bool print_map = false;
