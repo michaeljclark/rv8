@@ -323,8 +323,25 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 			for (size_t i = 0; i < type->parts.size(); i++) {
 				auto &named_bitspec = type->parts[i];
 				auto &range = named_bitspec.first;
-				auto &str = named_bitspec.second;
-				auto size = range.segments.front().first.msb - range.segments.back().first.lsb + 1;
+				auto str = named_bitspec.second;
+				ssize_t msb = range.segments.front().first.msb;
+				ssize_t lsb = range.segments.back().first.lsb;
+				ssize_t size = msb - lsb + 1;
+
+				if (str == "imm" || str == "disp") {
+					for (auto &seg : range.segments) {
+						if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+							str += "[";
+							for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+								if (ri != seg.second.begin()) str += "$\\vert$";
+								str += ri->to_string(":");
+							}
+							str += "]";
+							break;
+						}
+					}
+				}
+
 				ls << (i != 0 ? " & " : "")
 				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
 				   << "{" << (i == 0 ? "|" : "") << "c|}"
