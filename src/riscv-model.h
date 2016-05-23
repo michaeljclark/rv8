@@ -70,7 +70,7 @@ struct riscv_bitrange
 	riscv_bitrange(ssize_t msb, ssize_t lsb) : msb(msb), lsb(lsb) {}
 	riscv_bitrange(const riscv_bitrange &o) : msb(o.msb), lsb(o.lsb) {}
 
-	std::string to_string(std::string sep);
+	std::string to_string(std::string sep, bool collapse_single_bit_range = true);
 };
 
 struct riscv_bitspec

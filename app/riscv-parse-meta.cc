@@ -855,7 +855,14 @@ void riscv_parse_meta::print_switch_c(bool no_comment, bool zero_not_oh)
 			format_string("riscv_decode_%s(dec, inst);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
-	printf("}\n");
+	printf("}\n\n");
+
+	// print immediate decoders
+	for (auto arg: args) {
+		printf("typedef %-67s riscv_arg_%s;\n",
+			arg->bitspec.to_template().c_str(), arg->name.c_str());
+	}
+	printf("\n");
 }
 
 void riscv_parse_meta::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list)

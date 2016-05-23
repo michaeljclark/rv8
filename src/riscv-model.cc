@@ -56,11 +56,11 @@ riscv_bitrange::riscv_bitrange(std::string bitrange)
 	}
 }
 
-std::string riscv_bitrange::to_string(std::string sep)
+std::string riscv_bitrange::to_string(std::string sep, bool collapse_single_bit_range)
 {
 	std::stringstream ss;
 	ss << msb;
-	if (msb != lsb) {
+	if (!collapse_single_bit_range || msb != lsb) {
 		ss << sep << lsb;
 	}
 	return ss.str();
@@ -134,7 +134,7 @@ std::string riscv_bitspec::to_template()
 	ss << "imm_t<" << (msb + 1) << ", ";
 	for (auto si = segments.begin(); si != segments.end(); si++) {
 		if (si != segments.begin()) ss << ", ";
-		ss << "S<" << si->first.to_string(",") << ", ";
+		ss << "S<" << si->first.to_string(",", false) << ", ";
 		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
 			if (ti != si->second.begin()) ss << ",";
 			ss << "B<" << ti->to_string(",") << ">";

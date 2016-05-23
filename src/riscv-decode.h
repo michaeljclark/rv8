@@ -20,27 +20,50 @@ struct riscv_decode
 	riscv_bu  rs3;
 };
 
-/* Decode immediate */
+/* Decode arg */
 
-typedef imm_t<6,  S<12,12, B<5>>,           S<6,2,  B<4,0>>>                riscv_arg_cimmi;
-typedef imm_t<18, S<12,12, B<17>>,          S<6,2,  B<16,12>>>              riscv_arg_cimmui;
-typedef imm_t<8,  S<12,12, B<5>>,           S<6,2,  B<4,2>,B<7,6>>>         riscv_arg_cimmlwsp;
-typedef imm_t<9,  S<12,12, B<5>>,           S<6,2,  B<4,3>,B<8,6>>>         riscv_arg_cimmldsp;
-typedef imm_t<10, S<12,12, B<9>>,           S<6,2,  B<4>,B<6>,B<8,7>,B<5>>> riscv_arg_cimm16sp;
-typedef imm_t<8,  S<12,7,  B<5,2>,B<7,6>>>                                  riscv_arg_cimmswsp;
-typedef imm_t<9,  S<12,7,  B<5,3>,B<8,6>>>                                  riscv_arg_cimmsdsp;
-typedef imm_t<10, S<12,7,  B<5,4>,B<9,6>>>                                  riscv_arg_cimmsqsp;
-typedef imm_t<10, S<12,5,  B<5,4>,B<9,6>,B<2>,B<3>>>                        riscv_arg_cimm4spn;
-typedef imm_t<7,  S<12,10, B<5,3>>,         S<6,5,  B<2>,B<6>>>             riscv_arg_cimmw;
-typedef imm_t<8,  S<12,10, B<5,3>>,         S<6,5,  B<7,6>>>                riscv_arg_cimmd;
-typedef imm_t<9,  S<12,10, B<5,4>,B<8>>,    S<6,5,  B<7,6>>>                riscv_arg_cimmq;
-typedef imm_t<9,  S<12,10, B<8>,B<4,3>>,    S<6,2,  B<7,6>,B<2,1>,B<5>>>    riscv_arg_cimmb;
-typedef imm_t<12, S<12,2,  B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>>  riscv_arg_cimmj;
-typedef imm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_imm12;
-typedef imm_t<12, S<31,25, B<11,5>>,        S<11,7, B<4,0>>>                riscv_arg_simm12;
-typedef imm_t<13, S<31,25, B<12>,B<10,5>>,  S<11,7, B<4,1>,B<11>>>          riscv_arg_sbimm12;
+typedef imm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_rd;
+typedef imm_t<5, S<19,15, B<4,0>>>                                          riscv_arg_rs1;
+typedef imm_t<5, S<24,20, B<4,0>>>                                          riscv_arg_rs2;
+typedef imm_t<5, S<31,27, B<4,0>>>                                          riscv_arg_rs3;
+typedef imm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_frd;
+typedef imm_t<5, S<19,15, B<4,0>>>                                          riscv_arg_frs1;
+typedef imm_t<5, S<24,20, B<4,0>>>                                          riscv_arg_frs2;
+typedef imm_t<5, S<31,27, B<4,0>>>                                          riscv_arg_frs3;
+typedef imm_t<2, S<26,25, B<1,0>>>                                          riscv_arg_aqrl;
+typedef imm_t<4, S<27,24, B<3,0>>>                                          riscv_arg_pred;
+typedef imm_t<4, S<23,20, B<3,0>>>                                          riscv_arg_succ;
+typedef imm_t<3, S<14,12, B<2,0>>>                                          riscv_arg_rm;
 typedef imm_t<32, S<31,12, B<31,12>>>                                       riscv_arg_imm20;
 typedef imm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   riscv_arg_jimm20;
+typedef imm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_imm12;
+typedef imm_t<12, S<31,25, B<11,5>>, S<11,7, B<4,0>>>                       riscv_arg_simm12;
+typedef imm_t<13, S<31,25, B<12>,B<10,5>>, S<11,7, B<4,1>,B<11>>>           riscv_arg_sbimm12;
+typedef imm_t<5, S<19,15, B<4,0>>>                                          riscv_arg_zimm;
+typedef imm_t<5, S<24,20, B<4,0>>>                                          riscv_arg_shamt5;
+typedef imm_t<6, S<25,20, B<5,0>>>                                          riscv_arg_shamt6;
+typedef imm_t<3, S<4,2, B<2,0>>>                                            riscv_arg_crdq;
+typedef imm_t<3, S<9,7, B<2,0>>>                                            riscv_arg_crs1q;
+typedef imm_t<3, S<9,7, B<2,0>>>                                            riscv_arg_crs1rdq;
+typedef imm_t<3, S<4,2, B<2,0>>>                                            riscv_arg_crs2q;
+typedef imm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_crd;
+typedef imm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_crs1;
+typedef imm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_crs1rd;
+typedef imm_t<5, S<6,2, B<4,0>>>                                            riscv_arg_crs2;
+typedef imm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmi;
+typedef imm_t<18, S<12,12, B<17>>, S<6,2, B<16,12>>>                        riscv_arg_cimmui;
+typedef imm_t<8, S<12,12, B<5>>, S<6,2, B<4,2>,B<7,6>>>                     riscv_arg_cimmlwsp;
+typedef imm_t<9, S<12,12, B<5>>, S<6,2, B<4,3>,B<8,6>>>                     riscv_arg_cimmldsp;
+typedef imm_t<10, S<12,12, B<9>>, S<6,2, B<4>,B<6>,B<8,7>,B<5>>>            riscv_arg_cimm16sp;
+typedef imm_t<12, S<12,2, B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>>   riscv_arg_cimmj;
+typedef imm_t<9, S<12,10, B<8>,B<4,3>>, S<6,2, B<7,6>,B<2,1>,B<5>>>         riscv_arg_cimmb;
+typedef imm_t<8, S<12,7, B<5,2>,B<7,6>>>                                    riscv_arg_cimmswsp;
+typedef imm_t<9, S<12,7, B<5,3>,B<8,6>>>                                    riscv_arg_cimmsdsp;
+typedef imm_t<10, S<12,7, B<5,4>,B<9,6>>>                                   riscv_arg_cimmsqsp;
+typedef imm_t<10, S<12,5, B<5,4>,B<9,6>,B<2>,B<3>>>                         riscv_arg_cimm4spn;
+typedef imm_t<7, S<12,10, B<5,3>>, S<6,5, B<2>,B<6>>>                       riscv_arg_cimmw;
+typedef imm_t<8, S<12,10, B<5,3>>, S<6,5, B<7,6>>>                          riscv_arg_cimmd;
+typedef imm_t<9, S<12,10, B<5,4>,B<8>>, S<6,5, B<7,6>>>                     riscv_arg_cimmq;
 
 /* Decode none */
 inline void riscv_decode_none(riscv_decode &dec, riscv_lu inst) {}
