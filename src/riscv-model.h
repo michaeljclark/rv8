@@ -106,9 +106,10 @@ struct riscv_arg
 	char char_code() {
 		if (type == "ireg") return 'R';
 		else if (type == "freg") return 'R';
+		else if (type == "creg") return 'R';
 		else if (type == "arg") return 'A';
-		else if (type == "imm") return 'I';
-		else if (type == "disp") return 'D';
+		else if (type == "simm") return 'I';
+		else if (type == "uimm") return 'I';
 		else return '?';
 	}
 };
