@@ -275,15 +275,21 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 					str = arg->label;
 					if (str == "imm") {
 						auto spec = arg->bitspec;
-						for (auto &seg : spec.segments) {
-							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
-								str += "[";
-								for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
-									if (ri != seg.second.begin()) str += "$\\vert$";
-									str += ri->to_string(":");
+						if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
+							// indicate size for immediates with no custom bit decoding spec
+							str += std::to_string(size);
+						} else {
+							// indicate pattern for immediates with custom bit decoding spec
+							for (auto &seg : spec.segments) {
+								if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+									str += "[";
+									for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+										if (ri != seg.second.begin()) str += "$\\vert$";
+										str += ri->to_string(":");
+									}
+									str += "]";
+									break;
 								}
-								str += "]";
-								break;
 							}
 						}
 					}
@@ -322,22 +328,28 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 			size_t bit_width = type->parts[0].first.segments.front().first.msb + 1;
 			for (size_t i = 0; i < type->parts.size(); i++) {
 				auto &named_bitspec = type->parts[i];
-				auto &range = named_bitspec.first;
+				auto &spec = named_bitspec.first;
 				auto str = named_bitspec.second;
-				ssize_t msb = range.segments.front().first.msb;
-				ssize_t lsb = range.segments.back().first.lsb;
+				ssize_t msb = spec.segments.front().first.msb;
+				ssize_t lsb = spec.segments.back().first.lsb;
 				ssize_t size = msb - lsb + 1;
 
 				if (str == "imm") {
-					for (auto &seg : range.segments) {
-						if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
-							str += "[";
-							for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
-								if (ri != seg.second.begin()) str += "$\\vert$";
-								str += ri->to_string(":");
+					if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
+						// indicate size for immediates with no custom bit decoding spec
+						str += std::to_string(size);
+					} else {
+						// indicate pattern for immediates with custom bit decoding spec
+						for (auto &seg : spec.segments) {
+							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
+								str += "[";
+								for (auto ri = seg.second.begin(); ri != seg.second.end(); ri++) {
+									if (ri != seg.second.begin()) str += "$\\vert$";
+									str += ri->to_string(":");
+								}
+								str += "]";
+								break;
 							}
-							str += "]";
-							break;
 						}
 					}
 				}

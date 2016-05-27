@@ -94,7 +94,7 @@ riscv_bitspec::riscv_bitspec(std::string bitspec)
 			segments.push_back(riscv_bitseg(gather, scatter));
 		} else {
 			riscv_bitrange gather(comp);
-			riscv_bitrange_list scatter({ riscv_bitrange(gather.msb - gather.lsb, 0) });
+			riscv_bitrange_list scatter;
 			segments.push_back(riscv_bitseg(gather, scatter));
 		}
 	}
