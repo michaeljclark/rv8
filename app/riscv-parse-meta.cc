@@ -859,8 +859,10 @@ void riscv_parse_meta::print_switch_c(bool no_comment, bool zero_not_oh)
 
 	// print immediate decoders
 	for (auto arg: args) {
-		printf("typedef %-67s riscv_arg_%s;\n",
-			arg->bitspec.to_template().c_str(), arg->name.c_str());
+		printf("typedef %c%-67s riscv_arg_%s;\n",
+			arg->type == "simm" ? 's' : 'u',
+			arg->bitspec.to_template().c_str(),
+			arg->name.c_str());
 	}
 	printf("\n");
 }

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cerrno>
+#include <cassert>
 #include <algorithm>
 #include <functional>
 #include <limits>

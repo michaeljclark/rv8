@@ -12,7 +12,7 @@
 #
 # when [scatter] is ommitted, bits are right justified from bit 0
 #
-# type is one of ireg, freg, arg, imm, ipc
+# type is one of ireg, freg, arg, simm, uimm, ipc
 #
 # color is one of none, black, red, green, yellow, blue, magenta, cyan, white
 
@@ -28,14 +28,14 @@ aqrl       26:25                        arg   "aqrl"      green   none     # Acq
 pred       27:24                        arg   "pred"      green   none     # Predecessor
 succ       23:20                        arg   "succ"      green   none     # Successor
 rm         14:12                        arg   "rm"        green   none     # Rounding Mode
-imm20      31:12[31:12]                 imm   "imm"       green   none
-jimm20     31:12[20|10:1|11|19:12]      imm   "imm"       green   none     # PC relative jump
-imm12      31:20                        imm   "imm"       green   none
-simm12     31:25[11:5],11:7[4:0]        imm   "imm"       green   none
-sbimm12    31:25[12|10:5],11:7[4:1|11]  imm   "imm"       green   none     # PC relative branch
-zimm       19:15                        imm   "imm"       green   none
-shamt5     24:20                        imm   "shamt5"    green   none     # 32-bit shift amount
-shamt6     25:20                        imm   "shamt6"    green   none     # 64-bit shift amount
+imm20      31:12[31:12]                 simm  "imm"       green   none
+jimm20     31:12[20|10:1|11|19:12]      simm  "imm"       green   none     # PC relative jump
+imm12      31:20                        simm  "imm"       green   none
+simm12     31:25[11:5],11:7[4:0]        simm  "imm"       green   none
+sbimm12    31:25[12|10:5],11:7[4:1|11]  simm  "imm"       green   none     # PC relative branch
+zimm       19:15                        simm  "imm"       green   none
+shamt5     24:20                        uimm  "shamt5"    green   none     # 32-bit shift amount
+shamt6     25:20                        uimm  "shamt6"    green   none     # 64-bit shift amount
 crdq       4:2                          creg  "rd'"       white   magenta
 crs1q      9:7                          creg  "rs1'"      white   cyan
 crs1rdq    9:7                          creg  "rs1'/rd'"  white   magenta
@@ -44,17 +44,17 @@ crd        11:7                         ireg  "rd"        white   magenta
 crs1       11:7                         ireg  "rs1"       white   cyan
 crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
 crs2       6:2                          ireg  "rs2"       white   green
-cimmi      12[5],6:2[4:0]               imm   "imm"       green   none
-cimmui     12[17],6:2[16:12]            imm   "imm"       green   none
-cimmlwsp   12[5],6:2[4:2|7:6]           imm   "imm"       green   none
-cimmldsp   12[5],6:2[4:3|8:6]           imm   "imm"       green   none
-cimm16sp   12[9],6:2[4|6|8:7|5]         imm   "imm"       green   none
-cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  imm   "imm"       green   none     # PC relative jump
-cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  imm   "imm"       green   none     # PC relative branch
-cimmswsp   12:7[5:2|7:6]                imm   "imm"       green   none
-cimmsdsp   12:7[5:3|8:6]                imm   "imm"       green   none
-cimmsqsp   12:7[5:4|9:6]                imm   "imm"       green   none
-cimm4spn   12:5[5:4|9:6|2|3]            imm   "imm"       green   none
-cimmw      12:10[5:3],6:5[2|6]          imm   "imm"       green   none
-cimmd      12:10[5:3],6:5[7:6]          imm   "imm"       green   none
-cimmq      12:10[5:4|8],6:5[7:6]        imm   "imm"       green   none
+cimmi      12[5],6:2[4:0]               simm  "imm"       green   none
+cimmui     12[17],6:2[16:12]            simm  "imm"       green   none
+cimmlwsp   12[5],6:2[4:2|7:6]           simm  "imm"       green   none
+cimmldsp   12[5],6:2[4:3|8:6]           simm  "imm"       green   none
+cimm16sp   12[9],6:2[4|6|8:7|5]         simm  "imm"       green   none
+cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  simm  "imm"       green   none     # PC relative jump
+cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  simm  "imm"       green   none     # PC relative branch
+cimmswsp   12:7[5:2|7:6]                simm  "imm"       green   none
+cimmsdsp   12:7[5:3|8:6]                simm  "imm"       green   none
+cimmsqsp   12:7[5:4|9:6]                simm  "imm"       green   none
+cimm4spn   12:5[5:4|9:6|2|3]            simm  "imm"       green   none
+cimmw      12:10[5:3],6:5[2|6]          simm  "imm"       green   none
+cimmd      12:10[5:3],6:5[7:6]          simm  "imm"       green   none
+cimmq      12:10[5:4|8],6:5[7:6]        simm  "imm"       green   none

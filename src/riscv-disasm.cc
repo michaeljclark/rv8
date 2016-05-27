@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
+#include <cassert>
 #include <map>
 #include <algorithm>
 #include <functional>

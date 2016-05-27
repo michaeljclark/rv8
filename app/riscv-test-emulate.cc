@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cerrno>
+#include <cassert>
 #include <vector>
 #include <map>
 #include <string>

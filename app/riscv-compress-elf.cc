@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cerrno>
+#undef NDEBUG /* enable assertions */
+#include <cassert>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -102,6 +104,11 @@ struct riscv_compress_elf
 		while (pc < end) {
 			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
 			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_decode_compress(dec)) {
+
+				#ifndef NDEBUG
+				riscv_lu pre_comp_inst = dec.inst;
+				#endif
+
 				dec.inst = riscv_encode(dec);
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
@@ -109,6 +116,13 @@ struct riscv_compress_elf
 					false);
 				bytes += 2;
 				saving += 2;
+
+				#ifndef NDEBUG
+				riscv_decode_decompress(dec);
+				riscv_lu post_decomp_inst = dec.inst = riscv_encode(dec);
+				assert(pre_comp_inst == post_decomp_inst);
+				#endif
+
 			} else {
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
