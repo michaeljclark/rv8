@@ -14,10 +14,11 @@ struct riscv_decode
 	riscv_l   imm;
 	riscv_hu  op;
 	riscv_hu  codec;
-	riscv_bu  rd;
-	riscv_bu  rs1;
-	riscv_bu  rs2;
-	riscv_bu  rs3;
+	riscv_wu  rd   : 6;
+	riscv_wu  rs1  : 6;
+	riscv_wu  rs2  : 6;
+	riscv_wu  rs3  : 6;
+	riscv_wu  arg  : 8;
 };
 
 /* Decode arg */
@@ -1291,8 +1292,8 @@ inline void riscv_decode_decompress(riscv_decode &dec)
 
 inline bool riscv_decode_decompress_check(riscv_decode &dec, const rvc_constraint *c)
 {
-	auto &imm = dec.imm;
-	auto &rd = dec.rd, &rs1 = dec.rs1, &rs2 = dec.rs2;
+	auto imm = dec.imm;
+	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
 			case rvc_imm_6:         if (!(imm <= (imm & 0b111111))) return false; break;
