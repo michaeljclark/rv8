@@ -247,8 +247,10 @@ struct riscv_opcode
 struct riscv_constraint
 {
 	std::string name;
+	std::string expression;
 
-	riscv_constraint(std::string name) : name(name) {}
+	riscv_constraint(std::string name, std::string expression)
+		: name(name), expression(expression) {}
 };
 
 struct riscv_compressed
@@ -329,6 +331,7 @@ struct riscv_meta_model
 	void parse_cause(std::vector<std::string> &part);
 	void parse_csr(std::vector<std::string> &part);
 	void parse_opcode(std::vector<std::string> &part);
+	void parse_constraint(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
 	void parse_instruction(std::vector<std::string> &part);
 	void parse_description(std::vector<std::string> &part);

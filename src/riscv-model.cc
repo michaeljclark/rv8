@@ -28,6 +28,7 @@ static const char* REGISTERS_FILE      = "registers";
 static const char* CAUSES_FILE         = "causes";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
+static const char* CONSTRAINTS_FILE    = "constraints";
 static const char* COMPRESSION_FILE    = "compression";
 static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
@@ -630,6 +631,17 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 	}
 }
 
+void riscv_meta_model::parse_constraint(std::vector<std::string> &part)
+{
+	if (part.size() < 2) {
+		panic("constraints requires 2 parameters: %s", join(part, " ").c_str());
+	}
+	auto constraint = constraints_by_name[part[0]] = std::make_shared<riscv_constraint>(
+		part[0], part[1]
+	);
+	constraints.push_back(constraint);
+}
+
 void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
@@ -642,17 +654,10 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 			for (size_t i = 2; i < part.size(); i++) {
 				auto ci = constraints_by_name.find(part[i]);
 				if (ci == constraints_by_name.end()) {
-					auto constraint = std::make_shared<riscv_constraint>(part[i]);
-					constraints_by_name[part[i]] = constraint;
-					auto cli = std::find_if(constraints.begin(), constraints.end(),
-						[&constraint] (const riscv_constraint_ptr &c) {
-							return constraint->name < c->name;
-					});
-					constraints.insert(cli, constraint);
-					constraint_list.push_back(constraint);
-				} else {
-					constraint_list.push_back(ci->second);
+					panic("compressed opcode %s references unknown constraint %s",
+						part[0].c_str(), part[i].c_str());
 				}
+				constraint_list.push_back(ci->second);
 			}
 			auto comp = std::make_shared<riscv_compressed>(
 				comp_opcode, opcode, constraint_list
@@ -697,6 +702,7 @@ bool riscv_meta_model::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + CAUSES_FILE)) parse_cause(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
+	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
 	for (auto part : read_file(dirname + std::string("/") + INSTRUCTIONS_FILE)) parse_instruction(part);
 	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);

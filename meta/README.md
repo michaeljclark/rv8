@@ -13,6 +13,7 @@ This directory contains metadata for the RISC-V Instruction Set
 |`causes`      |Trap codes and causes|
 |`csrs`        |CPU Specific Registers|
 |`opcodes`     |Opcode encoding information|
-|`compression` |Compressed instruction constraints|
+|`constraints` |Constraint definitions|
+|`compression` |Compressed instruction metadata|
 |`instructions`|Instruction pseudo code|
 |`descriptions`|Instruction long descriptions|

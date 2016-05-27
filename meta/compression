@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <compressed opcode> <decompressed opcode> [<constraint> ...]
+# <compressed opcode> <decompressed opcode> [<constraint name> ...]
 #
 # <constraint> is on of imm_6, imm_7, imm_8, imm_9, imm_10, imm_12, imm_18,
 # imm_not_zero, imm_scale_2, imm_scale_4, imm_scale_8, rd_comp, rs1_comp,
