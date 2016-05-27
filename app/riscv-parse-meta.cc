@@ -273,7 +273,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 				auto &str = std::get<3>(arg_parts[i]);
 				if (arg) {
 					str = arg->label;
-					if (str == "imm" || str == "disp") {
+					if (str == "imm") {
 						auto spec = arg->bitspec;
 						for (auto &seg : spec.segments) {
 							if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
@@ -328,7 +328,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 				ssize_t lsb = range.segments.back().first.lsb;
 				ssize_t size = msb - lsb + 1;
 
-				if (str == "imm" || str == "disp") {
+				if (str == "imm") {
 					for (auto &seg : range.segments) {
 						if (seg.first.msb == msb && seg.first.lsb == (msb - size) + 1) {
 							str += "[";
