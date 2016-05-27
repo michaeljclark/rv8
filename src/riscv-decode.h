@@ -1295,17 +1295,17 @@ inline bool riscv_decode_decompress_check(riscv_decode &dec, const rvc_constrain
 	auto &rd = dec.rd, &rs1 = dec.rs1, &rs2 = dec.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
-			case rvc_imm_6:         if (!(imm <= (imm & 0x0000003F))) return false; break;
-			case rvc_imm_7:         if (!(imm <= (imm & 0x0000007F))) return false; break;
-			case rvc_imm_8:         if (!(imm <= (imm & 0x000000FF))) return false; break;
-			case rvc_imm_9:         if (!(imm <= (imm & 0x000001FF))) return false; break;
-			case rvc_imm_10:        if (!(imm <= (imm & 0x000003FF))) return false; break;
-			case rvc_imm_12:        if (!(imm <= (imm & 0x00000FFF))) return false; break;
-			case rvc_imm_18:        if (!(imm <= (imm & 0x0003FFFF))) return false; break;
+			case rvc_imm_6:         if (!(imm <= (imm & 0b111111))) return false; break;
+			case rvc_imm_7:         if (!(imm <= (imm & 0b1111111))) return false; break;
+			case rvc_imm_8:         if (!(imm <= (imm & 0b11111111))) return false; break;
+			case rvc_imm_9:         if (!(imm <= (imm & 0b111111111))) return false; break;
+			case rvc_imm_10:        if (!(imm <= (imm & 0b1111111111))) return false; break;
+			case rvc_imm_12:        if (!(imm <= (imm & 0b111111111111))) return false; break;
+			case rvc_imm_18:        if (!(imm <= (imm & 0b111111111111111111))) return false; break;
 			case rvc_imm_not_zero:  if (!(imm != 0)) return false; break;
-			case rvc_imm_scale_2:   if (!((imm & 0x1) == 0)) return false; break;
-			case rvc_imm_scale_4:   if (!((imm & 0x3) == 0)) return false; break;
-			case rvc_imm_scale_8:   if (!((imm & 0x7) == 0)) return false; break;
+			case rvc_imm_scale_2:   if (!((imm & 0b1) == 0)) return false; break;
+			case rvc_imm_scale_4:   if (!((imm & 0b11) == 0)) return false; break;
+			case rvc_imm_scale_8:   if (!((imm & 0b111) == 0)) return false; break;
 			case rvc_rd_comp:       if (!(rd  >= 8 && rd  <= 15)) return false; break;
 			case rvc_rs1_comp:      if (!(rs1 >= 8 && rs1 <= 15)) return false; break;
 			case rvc_rs2_comp:      if (!(rs2 >= 8 && rs2 <= 15)) return false; break;

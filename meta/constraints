@@ -1,13 +1,13 @@
 # format of a line in this file:
 # <constraint name> <constraint expression>
 
-imm_6         "imm <= (imm & 0x0000003F)"
-imm_7         "imm <= (imm & 0x0000007F)"
-imm_8         "imm <= (imm & 0x000000FF)"
-imm_9         "imm <= (imm & 0x000001FF)"
-imm_10        "imm <= (imm & 0x000003FF)"
-imm_12        "imm <= (imm & 0x00000FFF)"
-imm_18        "imm <= (imm & 0x0003FFFF)"
+imm_6         "imm <= (imm & 0b111111)"
+imm_7         "imm <= (imm & 0b1111111)"
+imm_8         "imm <= (imm & 0b11111111)"
+imm_9         "imm <= (imm & 0b111111111)"
+imm_10        "imm <= (imm & 0b1111111111)"
+imm_12        "imm <= (imm & 0b111111111111)"
+imm_18        "imm <= (imm & 0b111111111111111111)"
 imm_not_zero  "imm != 0"
 imm_scale_2   "(imm & 0x1) == 0"
 imm_scale_4   "(imm & 0x3) == 0"
