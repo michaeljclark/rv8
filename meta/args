@@ -36,10 +36,10 @@ sbimm12    31:25[12|10:5],11:7[4:1|11]  imm   "imm"       green   none     # PC 
 zimm       19:15                        imm   "imm"       green   none
 shamt5     24:20                        imm   "shamt5"    green   none     # 32-bit shift amount
 shamt6     25:20                        imm   "shamt6"    green   none     # 64-bit shift amount
-crdq       4:2                          ireg  "rd'"       white   magenta
-crs1q      9:7                          ireg  "rs1'"      white   cyan
-crs1rdq    9:7                          ireg  "rs1'/rd'"  white   magenta
-crs2q      4:2                          ireg  "rs2'"      white   green
+crdq       4:2                          creg  "rd'"       white   magenta
+crs1q      9:7                          creg  "rs1'"      white   cyan
+crs1rdq    9:7                          creg  "rs1'/rd'"  white   magenta
+crs2q      4:2                          creg  "rs2'"      white   green
 crd        11:7                         ireg  "rd"        white   magenta
 crs1       11:7                         ireg  "rs1"       white   cyan
 crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
