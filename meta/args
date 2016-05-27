@@ -30,7 +30,7 @@ succ       23:20                        arg   "succ"      green   none     # Suc
 rm         14:12                        arg   "rm"        green   none     # Rounding Mode
 imm20      31:12[31:12]                 simm  "imm"       green   none
 jimm20     31:12[20|10:1|11|19:12]      simm  "imm"       green   none     # PC relative jump
-imm12      31:20                        simm  "imm"       green   none
+imm12      31:20[11:0]                  simm  "imm"       green   none
 simm12     31:25[11:5],11:7[4:0]        simm  "imm"       green   none
 sbimm12    31:25[12|10:5],11:7[4:1|11]  simm  "imm"       green   none     # PC relative branch
 zimm       19:15                        simm  "imm"       green   none
