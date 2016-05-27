@@ -7,6 +7,54 @@
 #ifndef riscv_meta_h
 #define riscv_meta_h
 
+enum riscv_rm
+{
+	riscv_rm_RNE = 0,
+	riscv_rm_RTZ = 1,
+	riscv_rm_RDN = 2,
+	riscv_rm_RUP = 3,
+	riscv_rm_RMM = 4,
+};
+
+enum riscv_aqrl
+{
+	riscv_aqrl_relaxed = 0,
+	riscv_aqrl_acquire = 2,
+	riscv_aqrl_release = 1,
+	riscv_aqrl_acq_rel = 3,
+};
+
+enum riscv_fcsr
+{
+	riscv_fcsr_NV = 1,
+	riscv_fcsr_DZ = 2,
+	riscv_fcsr_OF = 4,
+	riscv_fcsr_UF = 8,
+	riscv_fcsr_NX = 16,
+};
+
+enum riscv_cause
+{
+	riscv_cause_misaligned_fetch = 0,
+	riscv_cause_fault_fetch = 1,
+	riscv_cause_illegal_instruction = 2,
+	riscv_cause_breakpoint = 3,
+	riscv_cause_misaligned_load = 4,
+	riscv_cause_fault_load = 5,
+	riscv_cause_misaligned_store = 6,
+	riscv_cause_fault_store = 7,
+	riscv_cause_user_ecall = 8,
+	riscv_cause_supervisor_ecall = 9,
+	riscv_cause_hypervisor_ecall = 10,
+	riscv_cause_machine_ecall = 11,
+};
+
+enum riscv_intr
+{
+	riscv_intr_software = 0,
+	riscv_intr_timer = 1,
+};
+
 enum rvc_constraint
 {
 	rvc_end,

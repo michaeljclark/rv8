@@ -1,0 +1,40 @@
+# format of a line in this file:
+# <enum group> <enum name> <enum value> "<enum description>"
+
+# Round Mode
+rm      RNE                 0b000   "Round to Nearest, ties to Even"
+rm      RTZ                 0b001   "Round towards Zero"
+rm      RDN                 0b010   "Round Down (towards -∞)"
+rm      RUP                 0b011   "Round Up (towards +∞)"
+rm      RMM                 0b100   "Round to Nearest, ties to Max Magnitude"
+
+# Memory order (AMO aqrl argument)
+aqrl   relaxed              0       "Atomicity - no explicit synchronisation or ordering"
+aqrl   acquire              2       "Acquire memory operation - prior writes from other harts visible"
+aqrl   release              1       "Release memory operation - visible to other harts in subsequent reads"
+aqrl   acq_rel              3       "Read-modify-write - global order of reads and writes"
+
+# Floating Point Exception Register (fcsr)
+fcsr    NV                  1       "Invalid Operation"
+fcsr    DZ                  2       "Divide by Zero"
+fcsr    OF                  4       "Overflow"
+fcsr    UF                  8       "Underflow"
+fcsr    NX                  16      "Inexact"
+
+# Machine Cause Register faults (mcause), interrupt bit clear
+cause  misaligned_fetch     0       "Instruction address misaligned"
+cause  fault_fetch          1       "Instruction access fault"
+cause  illegal_instruction  2       "Illegal instruction"
+cause  breakpoint           3       "Breakpoint"
+cause  misaligned_load      4       "Load address misaligned"
+cause  fault_load           5       "Load access fault"
+cause  misaligned_store     6       "Store/AMO address misaligned"
+cause  fault_store          7       "Store/AMO access fault"
+cause  user_ecall           8       "Environment call from U-mode"
+cause  supervisor_ecall     9       "Environment call from S-mode"
+cause  hypervisor_ecall     10      "Environment call from H-mode"
+cause  machine_ecall        11      "Environment call from M-mode"
+
+# Machine Cause Register interrupts (mcause) interrupt bit set
+intr   software             0       "Software interrupt"
+intr   timer                1       "Timer interrupt"

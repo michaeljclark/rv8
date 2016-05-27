@@ -104,16 +104,18 @@ all_src_deps =	$(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DI
 
 # riscv meta data
 RV_META_DATA =  $(META_DIR$)/args \
-                $(META_DIR$)/causes \
                 $(META_DIR$)/codecs \
                 $(META_DIR$)/compression \
+                $(META_DIR$)/constraints \
                 $(META_DIR$)/csrs \
                 $(META_DIR$)/descriptions \
+                $(META_DIR$)/enums \
                 $(META_DIR$)/extensions \
-                $(META_DIR$)/formats \
                 $(META_DIR$)/instructions \
+                $(META_DIR$)/formats \
                 $(META_DIR$)/opcodes \
-                $(META_DIR$)/registers
+                $(META_DIR$)/registers \
+                $(META_DIR$)/types
 
 # libriscv_util
 RV_UTIL_SRCS =	$(LIB_SRC_DIR)/riscv-cmdline.cc \

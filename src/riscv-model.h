@@ -8,12 +8,12 @@
 struct riscv_bitrange;
 struct riscv_bitspec;
 struct riscv_arg;
+struct riscv_enum;
 struct riscv_type;
 struct riscv_codec;
 struct riscv_extension;
 struct riscv_format;
 struct riscv_register;
-struct riscv_cause;
 struct riscv_csr;
 struct riscv_opcode;
 struct riscv_constraint;
@@ -26,6 +26,9 @@ typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
 typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
 typedef std::vector<riscv_arg_ptr> riscv_arg_list;
 typedef std::map<std::string,riscv_arg_ptr> riscv_arg_map;
+typedef std::shared_ptr<riscv_enum> riscv_enum_ptr;
+typedef std::vector<riscv_enum_ptr> riscv_enum_list;
+typedef std::map<std::string,riscv_enum_ptr> riscv_enum_map;
 typedef std::shared_ptr<riscv_type> riscv_type_ptr;
 typedef std::vector<riscv_type_ptr> riscv_type_list;
 typedef std::map<std::string,riscv_type_ptr> riscv_type_map;
@@ -41,9 +44,6 @@ typedef std::map<std::string,riscv_format_ptr> riscv_format_map;
 typedef std::shared_ptr<riscv_register> riscv_register_ptr;
 typedef std::vector<riscv_register_ptr> riscv_register_list;
 typedef std::map<std::string,riscv_register_ptr> riscv_register_map;
-typedef std::shared_ptr<riscv_cause> riscv_cause_ptr;
-typedef std::vector<riscv_cause_ptr> riscv_cause_list;
-typedef std::map<std::string,riscv_cause_ptr> riscv_cause_map;
 typedef std::shared_ptr<riscv_csr> riscv_csr_ptr;
 typedef std::vector<riscv_csr_ptr> riscv_csr_list;
 typedef std::map<std::string,riscv_csr_ptr> riscv_csr_map;
@@ -59,6 +59,8 @@ typedef std::vector<riscv_compressed_ptr> riscv_compressed_list;
 typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
 typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
 typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
+
+int64_t riscv_parse_value(const char* valstr);
 
 struct riscv_bitrange
 {
@@ -112,6 +114,17 @@ struct riscv_arg
 		else if (type == "uimm") return 'I';
 		else return '?';
 	}
+};
+
+struct riscv_enum
+{
+	std::string group;
+	std::string name;
+	int64_t value;
+	std::string description;
+
+	riscv_enum(std::string group, std::string name, std::string value, std::string description)
+		: group(group), name(name), value(riscv_parse_value(value.c_str())), description(description) {}
 };
 
 struct riscv_type
@@ -176,15 +189,6 @@ struct riscv_register
 
 	riscv_register(std::string name, std::string alias, std::string type, std::string save, std::string description)
 		: name(name), alias(alias), type(type), save(save), description(description) {}
-};
-
-struct riscv_cause
-{
-	std::string number;
-	std::string name;
-
-	riscv_cause(std::string number, std::string name)
-		: number(number), name(name) {}
 };
 
 struct riscv_csr
@@ -278,6 +282,8 @@ struct riscv_meta_model
 
 	riscv_arg_list           args;
 	riscv_arg_map            args_by_name;
+	riscv_enum_list          enums;
+	riscv_enum_map           enums_by_name;
 	riscv_type_list          types;
 	riscv_type_map           types_by_name;
 	riscv_codec_list         codecs;
@@ -288,8 +294,6 @@ struct riscv_meta_model
 	riscv_format_map         formats_by_name;
 	riscv_register_list      registers;
 	riscv_register_map       registers_by_name;
-	riscv_cause_list         causes;
-	riscv_cause_map          causes_by_name;
 	riscv_csr_list           csrs;
 	riscv_csr_map            csrs_by_name;
 	riscv_opcode_list        opcodes;
@@ -309,9 +313,9 @@ struct riscv_meta_model
 	static std::string codec_type_name(riscv_codec_ptr codec);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
+	static std::vector<std::string> parse_line(std::string line);
+	static std::vector<std::vector<std::string>> read_file(std::string filename);
 
-	std::vector<std::string> parse_line(std::string line);
-	std::vector<std::vector<std::string>> read_file(std::string filename);
 	riscv_extension_list decode_isa_extensions(std::string isa_spec);
 	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
 	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
@@ -324,12 +328,12 @@ struct riscv_meta_model
 	bool is_extension(std::string mnem);
 
 	void parse_arg(std::vector<std::string> &part);
+	void parse_enum(std::vector<std::string> &part);
 	void parse_type(std::vector<std::string> &part);
 	void parse_codec(std::vector<std::string> &part);
 	void parse_extension(std::vector<std::string> &part);
 	void parse_format(std::vector<std::string> &part);
 	void parse_register(std::vector<std::string> &part);
-	void parse_cause(std::vector<std::string> &part);
 	void parse_csr(std::vector<std::string> &part);
 	void parse_opcode(std::vector<std::string> &part);
 	void parse_constraint(std::vector<std::string> &part);

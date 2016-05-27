@@ -20,12 +20,12 @@
 #include "riscv-model.h"
 
 static const char* ARGS_FILE           = "args";
+static const char* ENUMS_FILE          = "enums";
 static const char* TYPES_FILE          = "types";
 static const char* FORMATS_FILE        = "formats";
 static const char* CODECS_FILE         = "codecs";
 static const char* EXTENSIONS_FILE     = "extensions";
 static const char* REGISTERS_FILE      = "registers";
-static const char* CAUSES_FILE         = "causes";
 static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* CONSTRAINTS_FILE    = "constraints";
@@ -41,6 +41,21 @@ std::string join(std::vector<T> list, std::string sep)
 		ss << (i != list.begin() ? sep : "") << *i;
 	}
 	return ss.str();
+}
+
+int64_t riscv_parse_value(const char* valstr)
+{
+	int64_t val;
+	if (strncmp(valstr, "0x", 2) == 0) {
+		val = strtoull(valstr + 2, nullptr, 16);
+	} else if (strncmp(valstr, "0b", 2) == 0) {
+		val = strtoull(valstr + 2, nullptr, 2);
+	} else if (strncmp(valstr, "0", 1) == 0) {
+		val = strtoull(valstr + 1, nullptr, 8);
+	} else {
+		val = strtoull(valstr, nullptr, 10);
+	}
+	return val;
 }
 
 riscv_bitrange::riscv_bitrange(std::string bitrange)
@@ -491,6 +506,17 @@ void riscv_meta_model::parse_arg(std::vector<std::string> &part)
 	args.push_back(arg);
 }
 
+void riscv_meta_model::parse_enum(std::vector<std::string> &part)
+{
+	if (part.size() < 4) {
+		panic("args requires 4 parameters: %s", join(part, " ").c_str());
+	}
+	auto enumv = enums_by_name[part[0]] = std::make_shared<riscv_enum>(
+		part[0], part[1], part[2], part[3]
+	);
+	enums.push_back(enumv);
+}
+
 void riscv_meta_model::parse_type(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
@@ -549,17 +575,6 @@ void riscv_meta_model::parse_register(std::vector<std::string> &part)
 		part[0], part[1], part[2], part[3], part[4]
 	);
 	registers.push_back(reg);
-}
-
-void riscv_meta_model::parse_cause(std::vector<std::string> &part)
-{
-	if (part.size() < 2) {
-		panic("causes requires 2 parameters: %s", join(part, " ").c_str());
-	}
-	auto cause = causes_by_name[part[1]] = std::make_shared<riscv_cause>(
-		part[0], part[1]
-	);
-	causes.push_back(cause);
 }
 
 void riscv_meta_model::parse_csr(std::vector<std::string> &part)
@@ -694,12 +709,12 @@ void riscv_meta_model::parse_description(std::vector<std::string> &part)
 bool riscv_meta_model::read_metadata(std::string dirname)
 {
 	for (auto part : read_file(dirname + std::string("/") + ARGS_FILE)) parse_arg(part);
+	for (auto part : read_file(dirname + std::string("/") + ENUMS_FILE)) parse_enum(part);
 	for (auto part : read_file(dirname + std::string("/") + TYPES_FILE)) parse_type(part);
 	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);
 	for (auto part : read_file(dirname + std::string("/") + CODECS_FILE)) parse_codec(part);
 	for (auto part : read_file(dirname + std::string("/") + EXTENSIONS_FILE)) parse_extension(part);
 	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
-	for (auto part : read_file(dirname + std::string("/") + CAUSES_FILE)) parse_cause(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
 	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);

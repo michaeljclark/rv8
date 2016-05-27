@@ -5,15 +5,15 @@ This directory contains metadata for the RISC-V Instruction Set
 |File|Description|
 |:---|:----------|
 |`args`        |Bit encodings of opcode arguments|
-|`types`       |Instruction types|
 |`codecs`      |Instruction encodings|
+|`compression` |Compressed instruction metadata|
+|`constraints` |Constraint definitions|
+|`csrs`        |CPU Specific Registers|
+|`descriptions`|Instruction long descriptions|
+|`enums`       |Enumerated types|
 |`extensions`  |Instruction set extensions|
 |`formats`     |Disassembly formats|
-|`registers`   |Registers and their ABI names|
-|`causes`      |Trap codes and causes|
-|`csrs`        |CPU Specific Registers|
-|`opcodes`     |Opcode encoding information|
-|`constraints` |Constraint definitions|
-|`compression` |Compressed instruction metadata|
 |`instructions`|Instruction pseudo code|
-|`descriptions`|Instruction long descriptions|
+|`opcodes`     |Opcode encoding information|
+|`registers`   |Registers and their ABI names|
+|`types`       |Instruction types|

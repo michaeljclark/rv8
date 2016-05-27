@@ -577,18 +577,36 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("#define riscv_meta_h\n");
 	printf("\n");
 
+	// Enums
+	std::string last_group;
+	for (auto &enumv : enums) {
+		if (last_group != enumv->group) {
+			if (last_group.size() != 0) printf("};\n\n");
+			printf("enum riscv_%s\n{\n", enumv->group.c_str());
+		}
+		printf("\triscv_%s_%s = %lld,%s\n",
+			enumv->group.c_str(), enumv->name.c_str(), enumv->value,
+			no_comment || enumv->description.size() == 0 ? "" :
+				format_string("\t/* %s */", enumv->description.c_str()).c_str());
+		last_group = enumv->group;
+	}
+	if (last_group.size() != 0) printf("};\n\n");
+
 	// Constraint enum
 	printf("enum rvc_constraint\n{\n");
 	printf("\trvc_end,\n");
 	for (auto &constraint : constraints) {
-		printf("\trvc_%s,\n", constraint->name.c_str());
+		printf("\trvc_%s,%s\n", constraint->name.c_str(),
+			no_comment ? "" : format_string("\t/* %s */", constraint->expression.c_str()).c_str());
 	}
 	printf("};\n\n");
 
 	// CSR enum
 	printf("enum riscv_csr\n{\n");
 	for (auto &csr : csrs) {
-		printf("\triscv_csr_%s = %s,\n", csr->name.c_str(), csr->number.c_str());
+		printf("\triscv_csr_%s = %s,%s\n", csr->name.c_str(), csr->number.c_str(),
+			no_comment || csr->description.size() == 0 ? "" :
+				format_string("\t/* %s */", csr->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -596,7 +614,9 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_ireg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
-		printf("\triscv_ireg_%s,\n", reg->name.c_str());
+		printf("\triscv_ireg_%s,%s\n", reg->name.c_str(),
+			no_comment || reg->description.size() == 0 ? "" :
+				format_string("\t/* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -604,7 +624,9 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_ireg_abi\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
-		printf("\triscv_ireg_%s,\n", reg->alias.c_str());
+		printf("\triscv_ireg_%s,%s\n", reg->alias.c_str(),
+			no_comment || reg->description.size() == 0 ? "" :
+				format_string("\t/* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -612,7 +634,9 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_freg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
-		printf("\triscv_freg_%s,\n", reg->name.c_str());
+		printf("\triscv_freg_%s,%s\n", reg->name.c_str(),
+			no_comment || reg->description.size() == 0 ? "" :
+				format_string("\t/* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -620,7 +644,9 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_freg_abi\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
-		printf("\triscv_freg_%s,\n", reg->alias.c_str());
+		printf("\triscv_freg_%s,%s\n", reg->alias.c_str(),
+			no_comment || reg->description.size() == 0 ? "" :
+				format_string("\t/* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -636,7 +662,9 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown = 0,\n");
 	for (auto &opcode : opcodes) {
-		printf("\t%s = %lu,\n", opcode_format("riscv_op_", opcode, '_').c_str(), opcode->num);
+		printf("\t%s = %lu,%s\n", opcode_format("riscv_op_", opcode, '_').c_str(), opcode->num,
+			no_comment || opcode->long_name.size() == 0 ? "" :
+				format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -690,7 +718,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("#include \"riscv-types.h\"\n");
 	printf("#include \"riscv-format.h\"\n");
 	printf("#include \"riscv-meta.h\"\n");
-	printf("\n");
+	printf("\n");	
 
 	// Integer register names
 	printf("const char* riscv_i_registers[] = {\n");
