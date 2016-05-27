@@ -198,7 +198,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 {
 	switch (row.row_type) {
 		case riscv_latex_type_empty:
-			printf("\\multicolumn{%ld}{c}{} & \\\\\n", kLatexTableColumns);
+			printf("\\tabularnewline\n");
 			break;
 		case riscv_latex_type_line:
 			printf("\\cline{1-%ld}\n", kLatexTableColumns);
@@ -372,12 +372,12 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 				auto size = msb - lsb + 1;
 				auto tsize = size * kLatexTableColumns / bit_width;
 				if (size == 1) {
-					ls << "\\multicolumn{" << tsize << "}{c}{\\textbf{\\scriptsize{" << msb << "}}} & ";
+					ls << "\\multicolumn{" << tsize << "}{c}{\\scriptsize{" << msb << "}} & ";
 				} else {
 					auto lsize = size >> 1;
 					auto rsize = tsize - lsize;
-					ls << "\\multicolumn{" << lsize << "}{l}{\\textbf{\\scriptsize{" << msb << "}}} & "
-					   << "\\multicolumn{" << rsize << "}{r}{\\textbf{\\scriptsize{" << lsb << "}}} & ";
+					ls << "\\multicolumn{" << lsize << "}{l}{\\scriptsize{" << msb << "}} & "
+					   << "\\multicolumn{" << rsize << "}{r}{\\scriptsize{" << lsb << "}} & ";
 				}
 			}
 			// print this row
@@ -403,15 +403,8 @@ void riscv_parse_meta::print_latex()
 		}
 		if (pages.size() == 0) pages.push_back(riscv_latex_page());
 
-		// page break if the instruction width has changed
-		if (lwidth != 0 && lwidth != ext->insn_width) {
-			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
-			line = 0;
-		} else {
-			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
-		}
-
 		// add extension heading
+		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
 		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_extension_heading, ext));
 		line++;
 
@@ -467,8 +460,8 @@ void riscv_parse_meta::print_latex()
 	// create the table width specification
 	std::stringstream ts;
 	ts << "{";
-	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "p{0.02in}";
-	ts << "p{2.0in}l}";
+	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "p{0.05mm}";
+	ts << "p{50mm}l}";
 	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "& ";
 	ts << "& \\\\\n";
 
