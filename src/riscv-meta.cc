@@ -1174,7 +1174,7 @@ const rvf* riscv_instruction_format[] = {
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_rs1_imm,
-	riscv_fmt_rs1_rs2_disp,
+	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,

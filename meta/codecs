@@ -9,6 +9,7 @@
 none       none
 none+c     none
 cb         rs1_rs2_disp
+cb+imm     rd_rs1_imm
 cb_sh5     rd_rs1_imm
 ci         rd_rs1_imm
 ci_sh5     rd_rs1_imm

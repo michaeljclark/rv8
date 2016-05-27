@@ -50,6 +50,7 @@ typedef uimm_t<5, S<11,7, B<4,0>>>                                           ris
 typedef uimm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_crs1;
 typedef uimm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_crs1rd;
 typedef uimm_t<5, S<6,2, B<4,0>>>                                            riscv_arg_crs2;
+typedef uimm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmsh;
 typedef simm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmi;
 typedef simm_t<18, S<12,12, B<17>>, S<6,2, B<16,12>>>                        riscv_arg_cimmui;
 typedef simm_t<8, S<12,12, B<5>>, S<6,2, B<4,2>,B<7,6>>>                     riscv_arg_cimmlwsp;
@@ -114,7 +115,7 @@ inline void riscv_decode_ci(riscv_decode &dec, riscv_lu inst)
 inline void riscv_decode_ci_sh5(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(inst);
-	dec.imm = riscv_arg_cimmi::decode(inst);
+	dec.imm = riscv_arg_cimmsh::decode(inst);
 }
 
 /* Decode CI li */
@@ -231,7 +232,7 @@ inline void riscv_decode_cb(riscv_decode &dec, riscv_lu inst)
 inline void riscv_decode_cb_sh5(riscv_decode &dec, riscv_lu inst)
 {
 	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
-	dec.imm = riscv_arg_cimmi::decode(inst);
+	dec.imm = riscv_arg_cimmsh::decode(inst);
 }
 
 /* Decode CJ - imm */
@@ -366,7 +367,7 @@ inline riscv_lu riscv_encode_ci_sh5(riscv_decode &dec)
 {
 	assert(dec.rd == dec.rs1);
 	return riscv_arg_crs1rd::encode(dec.rs1) |
-		riscv_arg_cimmi::encode(dec.imm);
+		riscv_arg_cimmsh::encode(dec.imm);
 }
 
 /* Encode CI li */
@@ -484,7 +485,7 @@ inline riscv_lu riscv_encode_cb(riscv_decode &dec)
 inline riscv_lu riscv_encode_cb_sh5(riscv_decode &dec)
 {
 	return riscv_arg_crs1q::encode(dec.rs1 + 8)  |
-		riscv_arg_cimmi::encode(dec.imm);
+		riscv_arg_cimmsh::encode(dec.imm);
 }
 
 /* Encode CJ - imm */
