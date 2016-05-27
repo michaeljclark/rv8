@@ -1290,32 +1290,34 @@ inline void riscv_decode_decompress(riscv_decode &dec)
 
 inline bool riscv_decode_decompress_check(riscv_decode &dec, const rvc_constraint *c)
 {
+	auto &imm = dec.imm;
+	auto &rd = dec.rd, &rs1 = dec.rs1, &rs2 = dec.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
-			case rvc_imm_6:         if (!(dec.imm <= (dec.imm & 0x0000003F))) return false; break;
-			case rvc_imm_7:         if (!(dec.imm <= (dec.imm & 0x0000007F))) return false; break;
-			case rvc_imm_8:         if (!(dec.imm <= (dec.imm & 0x000000FF))) return false; break;
-			case rvc_imm_9:         if (!(dec.imm <= (dec.imm & 0x000001FF))) return false; break;
-			case rvc_imm_10:        if (!(dec.imm <= (dec.imm & 0x000003FF))) return false; break;
-			case rvc_imm_12:        if (!(dec.imm <= (dec.imm & 0x00000FFF))) return false; break;
-			case rvc_imm_18:        if (!(dec.imm <= (dec.imm & 0x0003FFFF))) return false; break;
-			case rvc_imm_not_zero:  if (!(dec.imm != 0)) return false; break;
-			case rvc_imm_scale_2:   if (!((dec.imm & 0x1) == 0)) return false; break;
-			case rvc_imm_scale_4:   if (!((dec.imm & 0x3) == 0)) return false; break;
-			case rvc_imm_scale_8:   if (!((dec.imm & 0x7) == 0)) return false; break;
-			case rvc_rd_comp:       if (!(dec.rd  >= 8 && dec.rd  <= 15)) return false; break;
-			case rvc_rs1_comp:      if (!(dec.rs1 >= 8 && dec.rs1 <= 15)) return false; break;
-			case rvc_rs2_comp:      if (!(dec.rs2 >= 8 && dec.rs2 <= 15)) return false; break;
-			case rvc_rd_eq_rs1:     if (!(dec.rd == dec.rs1)) return false; break;
-			case rvc_rd_eq_ra:      if (!(dec.rd == 1)) return false; break;
-			case rvc_rd_eq_sp:      if (!(dec.rd == 2)) return false; break;
-			case rvc_rd_eq_zero:    if (!(dec.rd == 0)) return false; break;
-			case rvc_rs1_eq_sp:     if (!(dec.rs1 == 2)) return false; break;
-			case rvc_rs1_eq_zero:   if (!(dec.rs1 == 0)) return false; break;
-			case rvc_rs2_eq_zero:   if (!(dec.rs2 == 0)) return false; break;
-			case rvc_rd_not_sp:     if (!(dec.rd != 2)) return false; break;
-			case rvc_rd_not_zero:   if (!(dec.rd != 0)) return false; break;
-			case rvc_rs2_not_zero:  if (!(dec.rs2 != 0)) return false; break;
+			case rvc_imm_6:         if (!(imm <= (imm & 0x0000003F))) return false; break;
+			case rvc_imm_7:         if (!(imm <= (imm & 0x0000007F))) return false; break;
+			case rvc_imm_8:         if (!(imm <= (imm & 0x000000FF))) return false; break;
+			case rvc_imm_9:         if (!(imm <= (imm & 0x000001FF))) return false; break;
+			case rvc_imm_10:        if (!(imm <= (imm & 0x000003FF))) return false; break;
+			case rvc_imm_12:        if (!(imm <= (imm & 0x00000FFF))) return false; break;
+			case rvc_imm_18:        if (!(imm <= (imm & 0x0003FFFF))) return false; break;
+			case rvc_imm_not_zero:  if (!(imm != 0)) return false; break;
+			case rvc_imm_scale_2:   if (!((imm & 0x1) == 0)) return false; break;
+			case rvc_imm_scale_4:   if (!((imm & 0x3) == 0)) return false; break;
+			case rvc_imm_scale_8:   if (!((imm & 0x7) == 0)) return false; break;
+			case rvc_rd_comp:       if (!(rd  >= 8 && rd  <= 15)) return false; break;
+			case rvc_rs1_comp:      if (!(rs1 >= 8 && rs1 <= 15)) return false; break;
+			case rvc_rs2_comp:      if (!(rs2 >= 8 && rs2 <= 15)) return false; break;
+			case rvc_rd_eq_rs1:     if (!(rd == rs1)) return false; break;
+			case rvc_rd_eq_ra:      if (!(rd == 1)) return false; break;
+			case rvc_rd_eq_sp:      if (!(rd == 2)) return false; break;
+			case rvc_rd_eq_zero:    if (!(rd == 0)) return false; break;
+			case rvc_rs1_eq_sp:     if (!(rs1 == 2)) return false; break;
+			case rvc_rs1_eq_zero:   if (!(rs1 == 0)) return false; break;
+			case rvc_rs2_eq_zero:   if (!(rs2 == 0)) return false; break;
+			case rvc_rd_not_sp:     if (!(rd != 2)) return false; break;
+			case rvc_rd_not_zero:   if (!(rd != 0)) return false; break;
+			case rvc_rs2_not_zero:  if (!(rs2 != 0)) return false; break;
 			case rvc_end:           break;
 		}
 		c++;
