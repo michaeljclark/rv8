@@ -250,6 +250,24 @@ inline void riscv_decode_r(riscv_decode &dec, riscv_lu inst)
 	dec.rs2 = riscv_arg_rs2::decode(inst);
 }
 
+/* Decode R RM */
+inline void riscv_decode_rm(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rd = riscv_arg_rd::decode(inst);
+	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rs2 = riscv_arg_rs2::decode(inst);
+	dec.arg = riscv_arg_rm::decode(inst);
+}
+
+/* Decode R AMO */
+inline void riscv_decode_ra(riscv_decode &dec, riscv_lu inst)
+{
+	dec.rd = riscv_arg_rd::decode(inst);
+	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rs2 = riscv_arg_rs2::decode(inst);
+	dec.arg = riscv_arg_aqrl::decode(inst);
+}
+
 /* Decode R 4f */
 inline void riscv_decode_r4(riscv_decode &dec, riscv_lu inst)
 {
@@ -257,6 +275,7 @@ inline void riscv_decode_r4(riscv_decode &dec, riscv_lu inst)
 	dec.rs1 = riscv_arg_rs1::decode(inst);
 	dec.rs2 = riscv_arg_rs2::decode(inst);
 	dec.rs3 = riscv_arg_rs3::decode(inst);
+	dec.arg = riscv_arg_rm::decode(inst);
 }
 
 /* Decode I */
@@ -503,13 +522,32 @@ inline riscv_lu riscv_encode_r(riscv_decode &dec)
 		riscv_arg_rs2::encode(dec.rs2);
 }
 
+/* Encode R RM */
+inline riscv_lu riscv_encode_rm(riscv_decode &dec)
+{
+	return riscv_arg_rd::encode(dec.rd) |
+		riscv_arg_rs1::encode(dec.rs1) |
+		riscv_arg_rs2::encode(dec.rs2) |
+		riscv_arg_rm::encode(dec.arg);
+}
+
+/* Encode R AMO */
+inline riscv_lu riscv_encode_ra(riscv_decode &dec)
+{
+	return riscv_arg_rd::encode(dec.rd) |
+		riscv_arg_rs1::encode(dec.rs1) |
+		riscv_arg_rs2::encode(dec.rs2) |
+		riscv_arg_aqrl::encode(dec.arg);
+}
+
 /* Encode R 4f */
 inline riscv_lu riscv_encode_r4(riscv_decode &dec)
 {
 	return riscv_arg_rd::encode(dec.rd) |
 		riscv_arg_rs1::encode(dec.rs1) |
 		riscv_arg_rs2::encode(dec.rs2) |
-		riscv_arg_rs3::encode(dec.rs3);
+		riscv_arg_rs3::encode(dec.rs3) |
+		riscv_arg_rm::encode(dec.arg);
 }
 
 /* Encode I */
