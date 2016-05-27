@@ -173,7 +173,7 @@ void riscv_disasm_instruction(riscv_decode &dec, std::deque<riscv_decode> &dec_h
 			case rvf_frs1: print_add(offset, riscv_f_registers[dec.rs1]); break;
 			case rvf_frs2: print_add(offset, riscv_f_registers[dec.rs2]); break;
 			case rvf_frs3: print_add(offset, riscv_f_registers[dec.rs3]); break;
-			case rvf_irs1: print_fmt(offset, "%d", dec.rs1); break;
+			case rvf_imm5: print_fmt(offset, "%d", dec.rs1); break;
 			case rvf_imm:  print_fmt(offset, "%lld", dec.imm); break;
 			case rvf_disp:
 			{

@@ -17,7 +17,7 @@ rd_rs1_imm         rd,rs1,imm
 rd_imm_rs1         rd,imm(rs1)
 frd_imm_rs1        frd,imm(rs1)
 rd_csr_rs1         rd,csr,rs1
-rd_csr_irs1        rd,csr,irs1
+rd_csr_imm5        rd,csr,imm5
 rs2_imm_rs1        rs2,imm(rs1)
 frs2_imm_rs1       frs2,imm(rs1)
 rs1_rs2_disp       rs1,rs2,disp
