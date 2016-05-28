@@ -126,9 +126,9 @@ RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 
 # libriscv_meta
 RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
-RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc \
-                $(LIB_SRC_DIR)/riscv-format.cc
-RV_META_OBJS =  $(call lib_src_objs, $(RV_META_SRC))
+RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
+RV_META_FMT =   $(LIB_SRC_DIR)/riscv-format.cc
+RV_META_OBJS =  $(call lib_src_objs, $(RV_META_SRC) $(RV_META_FMT))
 RV_META_LIB =   $(LIB_DIR)/libriscv_meta.a
 
 # libriscv_model
@@ -222,9 +222,9 @@ c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
 c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
-$(LIB_SRC_DIR)/riscv-meta.h: $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $@
-$(LIB_SRC_DIR)/riscv-meta.cc: $(PARSE_META_BIN) $(RV_META_DATA) $(LIB_SRC_DIR)/riscv-meta.h
+$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA) $(RV_META_HDR)
 	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $@
 
 # build targets
