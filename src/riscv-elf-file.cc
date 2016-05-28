@@ -54,10 +54,8 @@ void elf_file::load(std::string filename)
 	// clear current data
 	clear();
 
-	// set filename
-	this->filename = filename;
-
 	// open file
+	this->filename = filename;
 	file = fopen(filename.c_str(), "r");
 	if (!file) {
 		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
@@ -69,7 +67,7 @@ void elf_file::load(std::string filename)
 		panic("error fstat: %s: %s", filename.c_str(), strerror(errno));
 	}
 
-	// read magic
+	// read file magic
 	if (stat_buf.st_size < EI_NIDENT) {
 		fclose(file);
 		panic("error invalid ELF file: %s", filename.c_str());
@@ -84,17 +82,19 @@ void elf_file::load(std::string filename)
 	ei_class = buf[EI_CLASS];
 	ei_data = buf[EI_DATA];
 
-	// read remaining data
-	// TODO - read incrementally so we don't use double the required memory
-	buf.resize(filesize);
-	bytes_read = fread(buf.data() + EI_NIDENT, 1, filesize - EI_NIDENT, file);
-	if (bytes_read != (size_t)filesize - EI_NIDENT) {
+	// read, byteswap and normalize file header
+	switch (ei_class) {
+		case ELFCLASS32: buf.resize(sizeof(Elf32_Ehdr)); break;
+		case ELFCLASS64: buf.resize(sizeof(Elf64_Ehdr)); break;
+		default:
+			fclose(file);
+			panic("error invalid ELF class: %s", filename.c_str());
+	}
+	fseek(file, 0, SEEK_SET);
+	if (fread(buf.data(), 1, buf.size(), file) != buf.size()) {
 		fclose(file);
 		panic("error fread: %s", filename.c_str());
 	}
-	fclose(file);
-
-	// byteswap and normalize file header
 	switch (ei_class) {
 		case ELFCLASS32:
 			elf_bswap_ehdr32((Elf32_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
@@ -104,27 +104,38 @@ void elf_file::load(std::string filename)
 			elf_bswap_ehdr64((Elf64_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
 			memcpy(&ehdr, (Elf64_Ehdr*)buf.data(), sizeof(Elf64_Ehdr));
 			break;
-		default:
-			panic("error invalid ELF class: %s", filename.c_str());
 	}
 
 	// check header version
 	if (ehdr.e_version != EV_CURRENT) {
+		fclose(file);
 		panic("error invalid ELF version: %s", filename.c_str());
 	}
 
-	// byteswap and normalize program and section headers
+	// read, byteswap and normalize program and section headers
 	switch (ei_class) {
 		case ELFCLASS32:
+			buf.resize(sizeof(Elf32_Phdr));
 			for (int i = 0; i < ehdr.e_phnum; i++) {
-				Elf32_Phdr *phdr32 = (Elf32_Phdr*)(buf.data() + ehdr.e_phoff + i * sizeof(Elf32_Phdr));
+				fseek(file, ehdr.e_phoff + i * sizeof(Elf32_Phdr), SEEK_SET);
+				if (fread(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
+					panic("error fread: %s", filename.c_str());
+				}
+				Elf32_Phdr *phdr32 = (Elf32_Phdr*)buf.data();
 				Elf64_Phdr phdr64;
 				elf_bswap_phdr32(phdr32, ei_data, ELFENDIAN_HOST);
 				elf_phdr32_to_phdr64(&phdr64, phdr32);
 				phdrs.push_back(phdr64);
 			}
+			buf.resize(sizeof(Elf32_Shdr));
 			for (int i = 0; i < ehdr.e_shnum; i++) {
-				Elf32_Shdr *shdr32 = (Elf32_Shdr*)(buf.data() + ehdr.e_shoff + i * sizeof(Elf32_Shdr));
+				fseek(file, ehdr.e_shoff + i * sizeof(Elf32_Shdr), SEEK_SET);
+				if (fread(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
+					panic("error fread: %s", filename.c_str());
+				}
+				Elf32_Shdr *shdr32 = (Elf32_Shdr*)buf.data();
 				Elf64_Shdr shdr64;
 				elf_bswap_shdr32(shdr32, ei_data, ELFENDIAN_HOST);
 				elf_shdr32_to_shdr64(&shdr64, shdr32);
@@ -132,13 +143,25 @@ void elf_file::load(std::string filename)
 			}
 			break;
 		case ELFCLASS64:
+			buf.resize(sizeof(Elf64_Phdr));
 			for (int i = 0; i < ehdr.e_phnum; i++) {
-				Elf64_Phdr *phdr64 = (Elf64_Phdr*)(buf.data() + ehdr.e_phoff + i * sizeof(Elf64_Phdr));
+				fseek(file, ehdr.e_phoff + i * sizeof(Elf64_Phdr), SEEK_SET);
+				if (fread(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
+					panic("error fread: %s", filename.c_str());
+				}
+				Elf64_Phdr *phdr64 = (Elf64_Phdr*)buf.data();
 				elf_bswap_phdr64(phdr64, ei_data, ELFENDIAN_HOST);
 				phdrs.push_back(*phdr64);
 			}
+			buf.resize(sizeof(Elf64_Shdr));
 			for (int i = 0; i < ehdr.e_shnum; i++) {
-				Elf64_Shdr *shdr64 = (Elf64_Shdr*)(buf.data() + ehdr.e_shoff + i * sizeof(Elf64_Shdr));
+				fseek(file, ehdr.e_shoff + i * sizeof(Elf64_Shdr), SEEK_SET);
+				if (fread(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
+					panic("error fread: %s", filename.c_str());
+				}
+				Elf64_Shdr *shdr64 = (Elf64_Shdr*)buf.data();
 				elf_bswap_shdr64(shdr64, ei_data, ELFENDIAN_HOST);
 				shdrs.push_back(*shdr64);
 			}
@@ -158,16 +181,21 @@ void elf_file::load(std::string filename)
 		}
 	}
 
-	// copy section data into buffers
+	// read section data into buffers
 	sections.resize(shdrs.size());
 	for (size_t i = 0; i < shdrs.size(); i++) {
 		sections[i].offset = shdrs[i].sh_offset;
 		sections[i].size = shdrs[i].sh_size;
-		if (shdrs[i].sh_type != SHT_NOBITS) {
-			sections[i].buf.resize(shdrs[i].sh_size);
-			std::memcpy(sections[i].buf.data(), buf.data() + shdrs[i].sh_offset, shdrs[i].sh_size);
+		if (shdrs[i].sh_type == SHT_NOBITS) continue;
+		fseek(file, shdrs[i].sh_offset, SEEK_SET);
+		sections[i].buf.resize(shdrs[i].sh_size);
+		if (fread(sections[i].buf.data(), 1, shdrs[i].sh_size, file) != shdrs[i].sh_size) {
+			fclose(file);
+			panic("error fread: %s", filename.c_str());
 		}
 	}
+	fclose(file);
+	buf.resize(0);
 
 	if (!symtab) return;
 
@@ -176,12 +204,12 @@ void elf_file::load(std::string filename)
 	switch (ei_class) {
 		case ELFCLASS32:
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf32_Sym *sym32 = (Elf32_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf32_Sym));
+				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
 				Elf64_Sym sym64;
 				elf_bswap_sym32(sym32, ei_data, ELFENDIAN_HOST);
 				elf_sym32_to_sym64(&sym64, sym32);
 				if (sym64.st_shndx != SHN_UNDEF && sym64.st_info != STT_FILE && sym64.st_value != 0) {
-					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64.st_name;
+					const char* name = (const char*)offset(strtab->sh_offset + sym64.st_name);
 					if (strlen(name)) addr_symbol_map[sym64.st_value] = symbols.size();
 				}
 				symbols.push_back(sym64);
@@ -189,10 +217,10 @@ void elf_file::load(std::string filename)
 			break;
 		case ELFCLASS64:
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
+				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data, ELFENDIAN_HOST);
 				if (sym64->st_shndx != SHN_UNDEF && sym64->st_info != STT_FILE && sym64->st_value != 0) {
-					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64->st_name;
+					const char* name = (const char*)offset(strtab->sh_offset + sym64->st_name);
 					if (strlen(name)) addr_symbol_map[sym64->st_value] = symbols.size();
 				}
 				symbols.push_back(*sym64);
@@ -204,7 +232,7 @@ void elf_file::load(std::string filename)
 	if (strtab) {
 		for (size_t i = 0; i < num_symbols; i++) {
 			Elf64_Sym &sym64 = symbols[i];
-			const char* name = (const char*)buf.data() + strtab->sh_offset + sym64.st_name;
+			const char* name = (const char*)offset(strtab->sh_offset + sym64.st_name);
 			name_symbol_map[name] = i;
 		}
 	}
@@ -215,10 +243,8 @@ void elf_file::save(std::string filename)
 	FILE *file;
 	std::vector<uint8_t> buf;
 
-	// set filename
-	this->filename = filename;
-
 	// open file
+	this->filename = filename;
 	file = fopen(filename.c_str(), "w");
 	if (!file) {
 		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
@@ -237,9 +263,11 @@ void elf_file::save(std::string filename)
 			elf_bswap_ehdr64((Elf64_Ehdr*)buf.data(), ei_data, ELFENDIAN_TARGET);
 			break;
 		default:
+			fclose(file);
 			panic("error invalid ELF class: %s", filename.c_str());
 	}
 	if (fwrite(buf.data(), 1, buf.size(), file) != buf.size()) {
+		fclose(file);
 		panic("error fwrite: %s", filename.c_str());
 	}
 
@@ -252,6 +280,7 @@ void elf_file::save(std::string filename)
 				elf_bswap_phdr32((Elf32_Phdr*)buf.data(), ei_data, ELFENDIAN_TARGET);
 				fseek(file, ehdr.e_phoff + i * sizeof(Elf32_Phdr), SEEK_SET);
 				if (fwrite(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
 					panic("error fwrite: %s", filename.c_str());
 				}
 			}
@@ -261,6 +290,7 @@ void elf_file::save(std::string filename)
 				elf_bswap_shdr32((Elf32_Shdr*)buf.data(), ei_data, ELFENDIAN_TARGET);
 				fseek(file, ehdr.e_shoff + i * sizeof(Elf32_Shdr), SEEK_SET);
 				if (fwrite(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
 					panic("error fwrite: %s", filename.c_str());
 				}
 			}
@@ -272,6 +302,7 @@ void elf_file::save(std::string filename)
 				elf_bswap_phdr64((Elf64_Phdr*)buf.data(), ei_data, ELFENDIAN_TARGET);
 				fseek(file, ehdr.e_phoff + i * sizeof(Elf64_Phdr), SEEK_SET);
 				if (fwrite(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
 					panic("error fwrite: %s", filename.c_str());
 				}
 			}
@@ -281,6 +312,7 @@ void elf_file::save(std::string filename)
 				elf_bswap_shdr64((Elf64_Shdr*)buf.data(), ei_data, ELFENDIAN_TARGET);
 				fseek(file, ehdr.e_shoff + i * sizeof(Elf64_Shdr), SEEK_SET);
 				if (fwrite(buf.data(), 1, buf.size(), file) != buf.size()) {
+					fclose(file);
 					panic("error fwrite: %s", filename.c_str());
 				}
 			}
@@ -292,6 +324,7 @@ void elf_file::save(std::string filename)
 		if (shdrs[i].sh_type == SHT_NOBITS) continue;
 		fseek(file, shdrs[i].sh_offset, SEEK_SET);
 		if (fwrite(sections[i].buf.data(), 1, shdrs[i].sh_size, file) != shdrs[i].sh_size) {
+			fclose(file);
 			panic("error fwrite: %s", filename.c_str());
 		}
 	}
