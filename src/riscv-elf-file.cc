@@ -96,11 +96,11 @@ void elf_file::load(std::string filename)
 	// byteswap and normalize file header
 	switch (ei_class) {
 		case ELFCLASS32:
-			elf_bswap_ehdr32((Elf32_Ehdr*)buf.data(), ei_data);
-			elf_convert_to_ehdr64(&ehdr, (Elf32_Ehdr*)buf.data());
+			elf_bswap_ehdr32((Elf32_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
+			elf_ehdr32_to_ehdr64(&ehdr, (Elf32_Ehdr*)buf.data());
 			break;
 		case ELFCLASS64:
-			elf_bswap_ehdr64((Elf64_Ehdr*)buf.data(), ei_data);
+			elf_bswap_ehdr64((Elf64_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
 			memcpy(&ehdr, (Elf64_Ehdr*)buf.data(), sizeof(Elf64_Ehdr));
 			break;
 		default:
@@ -118,27 +118,27 @@ void elf_file::load(std::string filename)
 			for (int i = 0; i < ehdr.e_phnum; i++) {
 				Elf32_Phdr *phdr32 = (Elf32_Phdr*)(buf.data() + ehdr.e_phoff + i * sizeof(Elf32_Phdr));
 				Elf64_Phdr phdr64;
-				elf_bswap_phdr32(phdr32, ei_data);
-				elf_convert_to_phdr64(&phdr64, phdr32);
+				elf_bswap_phdr32(phdr32, ei_data, ELFENDIAN_HOST);
+				elf_phdr32_to_phdr64(&phdr64, phdr32);
 				phdrs.push_back(phdr64);
 			}
 			for (int i = 0; i < ehdr.e_shnum; i++) {
 				Elf32_Shdr *shdr32 = (Elf32_Shdr*)(buf.data() + ehdr.e_shoff + i * sizeof(Elf32_Shdr));
 				Elf64_Shdr shdr64;
-				elf_bswap_shdr32(shdr32, ei_data);
-				elf_convert_to_shdr64(&shdr64, shdr32);
+				elf_bswap_shdr32(shdr32, ei_data, ELFENDIAN_HOST);
+				elf_shdr32_to_shdr64(&shdr64, shdr32);
 				shdrs.push_back(shdr64);
 			}
 			break;
 		case ELFCLASS64:
 			for (int i = 0; i < ehdr.e_phnum; i++) {
 				Elf64_Phdr *phdr64 = (Elf64_Phdr*)(buf.data() + ehdr.e_phoff + i * sizeof(Elf64_Phdr));
-				elf_bswap_phdr64(phdr64, ei_data);
+				elf_bswap_phdr64(phdr64, ei_data, ELFENDIAN_HOST);
 				phdrs.push_back(*phdr64);
 			}
 			for (int i = 0; i < ehdr.e_shnum; i++) {
 				Elf64_Shdr *shdr64 = (Elf64_Shdr*)(buf.data() + ehdr.e_shoff + i * sizeof(Elf64_Shdr));
-				elf_bswap_shdr64(shdr64, ei_data);
+				elf_bswap_shdr64(shdr64, ei_data, ELFENDIAN_HOST);
 				shdrs.push_back(*shdr64);
 			}
 			break;
@@ -177,8 +177,8 @@ void elf_file::load(std::string filename)
 			for (size_t i = 0; i < num_symbols; i++) {
 				Elf32_Sym *sym32 = (Elf32_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf32_Sym));
 				Elf64_Sym sym64;
-				elf_bswap_sym32(sym32, ei_data);
-				elf_convert_to_sym64(&sym64, sym32);
+				elf_bswap_sym32(sym32, ei_data, ELFENDIAN_HOST);
+				elf_sym32_to_sym64(&sym64, sym32);
 				if (sym64.st_shndx != SHN_UNDEF && sym64.st_info != STT_FILE && sym64.st_value != 0) {
 					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64.st_name;
 					if (strlen(name)) addr_symbol_map[sym64.st_value] = symbols.size();
@@ -189,7 +189,7 @@ void elf_file::load(std::string filename)
 		case ELFCLASS64:
 			for (size_t i = 0; i < num_symbols; i++) {
 				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
-				elf_bswap_sym64(sym64, ei_data);
+				elf_bswap_sym64(sym64, ei_data, ELFENDIAN_HOST);
 				if (sym64->st_shndx != SHN_UNDEF && sym64->st_info != STT_FILE && sym64->st_value != 0) {
 					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64->st_name;
 					if (strlen(name)) addr_symbol_map[sym64->st_value] = symbols.size();

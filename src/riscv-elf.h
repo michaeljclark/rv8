@@ -522,18 +522,27 @@ typedef struct {
 	} d_un;
 } Elf64_Dyn;
 
+enum ELFENDIAN {
+	ELFENDIAN_HOST,
+	ELFENDIAN_TARGET,
+};
+
 bool elf_check_magic(uint8_t *e_ident);
-void elf_bswap_ehdr32(Elf32_Ehdr *ehdr32, int ei_data);
-void elf_bswap_phdr32(Elf32_Phdr *phdr32, int ei_data);
-void elf_bswap_shdr32(Elf32_Shdr *shdr32, int ei_data);
-void elf_bswap_sym32(Elf32_Sym *sym32, int ei_data);
-void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data);
-void elf_bswap_phdr64(Elf64_Phdr *phdr64, int ei_data);
-void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data);
-void elf_bswap_sym64(Elf64_Sym *sym64, int ei_data);
-void elf_convert_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32);
-void elf_convert_to_phdr64(Elf64_Phdr *phdr64, Elf32_Phdr *phdr32);
-void elf_convert_to_shdr64(Elf64_Shdr *shdr64, Elf32_Shdr *shdr32);
-void elf_convert_to_sym64(Elf64_Sym *sym64, Elf32_Sym *sym32);
+void elf_bswap_ehdr32(Elf32_Ehdr *ehdr32, int ei_data, ELFENDIAN endian);
+void elf_bswap_phdr32(Elf32_Phdr *phdr32, int ei_data, ELFENDIAN endian);
+void elf_bswap_shdr32(Elf32_Shdr *shdr32, int ei_data, ELFENDIAN endian);
+void elf_bswap_sym32(Elf32_Sym *sym32, int ei_data, ELFENDIAN endian);
+void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data, ELFENDIAN endian);
+void elf_bswap_phdr64(Elf64_Phdr *phdr64, int ei_data, ELFENDIAN endian);
+void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data, ELFENDIAN endian);
+void elf_bswap_sym64(Elf64_Sym *sym64, int ei_data, ELFENDIAN endian);
+void elf_ehdr32_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32);
+void elf_phdr32_to_phdr64(Elf64_Phdr *phdr64, Elf32_Phdr *phdr32);
+void elf_shdr32_to_shdr64(Elf64_Shdr *shdr64, Elf32_Shdr *shdr32);
+void elf_sym32_to_sym64(Elf64_Sym *sym64, Elf32_Sym *sym32);
+void elf_ehdr64_to_ehdr32(Elf32_Ehdr *ehdr32, Elf64_Ehdr *ehdr64);
+void elf_phdr64_to_phdr32(Elf32_Phdr *phdr32, Elf64_Phdr *phdr64);
+void elf_shdr64_to_shdr32(Elf32_Shdr *shdr32, Elf64_Shdr *shdr64);
+void elf_sym64_to_sym32(Elf32_Sym *sym32, Elf64_Sym *sym64);
 
 #endif
