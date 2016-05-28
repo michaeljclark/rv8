@@ -213,9 +213,9 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 	while(rvxi->addr != rva_none) {
 		if (rvxi->op2 == dec.op) {
 			for (auto li = dec_hist.rbegin(); li != dec_hist.rend(); li++) {
-				if (rvxi->op1 != li->op && dec.rs1 == li->rd) break;
-				if (rvxi->op1 != li->op) continue;
-				if (dec.rs1 != li->rd) continue;
+				if (rvxi->op1 != li->op && dec.rs1 == li->rd) break; // break: another primitive encountered
+				if (rvxi->op1 != li->op && dec.rd == li->rd) break;  // break: destination register touched
+				if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
 				switch (rvxi->addr) {
 					case rva_abs:
 						addr = li->imm + dec.imm;
