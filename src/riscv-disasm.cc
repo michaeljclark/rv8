@@ -108,13 +108,10 @@ const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_instruction(riscv_decode &dec, std::deque<riscv_decode> &dec_hist,
+void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize,
-	bool decompress)
+	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
-	if (decompress) riscv_decode_decompress(dec);
-
 	size_t offset = 0;
 	const char *fmt = riscv_instruction_format[dec.op];
 	const uint64_t addr = pc - pc_offset;

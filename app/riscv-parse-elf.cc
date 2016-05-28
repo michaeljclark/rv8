@@ -82,12 +82,13 @@ struct riscv_parse_elf
 		ssize_t branch_num = 1;
 		char branch_label[32];
 
-		riscv_decode dec;
-		riscv_ptr pc = start;
+		riscv_disasm dec;
+		riscv_ptr pc = start, next_pc;
 		uint64_t addr = 0;
 		while (pc < end) {
-			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
-			riscv_decode_decompress(dec);
+			dec.pc = pc;
+			dec.inst = riscv_get_instruction(pc, &next_pc);
+			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
 			switch (dec.codec) {
 				case riscv_codec_sb:
 				case riscv_codec_uj:
@@ -118,11 +119,13 @@ struct riscv_parse_elf
 
 	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
-		riscv_decode dec;
-		std::deque<riscv_decode> dec_hist;
-		riscv_ptr pc = start;
+		riscv_disasm dec;
+		std::deque<riscv_disasm> dec_hist;
+		riscv_ptr pc = start, next_pc;
 		while (pc < end) {
-			riscv_ptr next_pc = riscv_decode_instruction(dec, pc);
+			dec.pc = pc;
+			dec.inst = riscv_get_instruction(pc, &next_pc);
+			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
 			riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));

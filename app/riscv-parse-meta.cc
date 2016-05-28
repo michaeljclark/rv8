@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cinttypes>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -582,7 +583,7 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 			if (last_group.size() != 0) printf("};\n\n");
 			printf("enum riscv_%s\n{\n", enumv->group.c_str());
 		}
-		printf("\triscv_%s_%s = %ld,%s\n",
+		printf("\triscv_%s_%s = %" PRId64 ",%s\n",
 			enumv->group.c_str(), enumv->name.c_str(), enumv->value,
 			no_comment || enumv->description.size() == 0 ? "" :
 				format_string("\t/* %s */", enumv->description.c_str()).c_str());
