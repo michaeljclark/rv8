@@ -113,9 +113,10 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
+	uint64_t addr = pc - pc_offset;
 	const char *fmt = riscv_instruction_format[dec.op];
-	const uint64_t addr = pc - pc_offset;
-	const char* symbol_name = symlookup((riscv_ptr)addr);
+	const char *symbol_name = symlookup((riscv_ptr)addr);
+	const riscv_csr_metadata *csr = nullptr;
 
 	// print symbol name if present
 	if (symbol_name) {
@@ -160,32 +161,28 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 	// print arguments
 	while (*fmt) {
 		switch (*fmt) {
-			case '(':    print_add(offset, "("); break;
-			case ',':    print_add(offset, ","); break;
-			case ')':    print_add(offset, ")"); break;
-			case '0':   print_add(offset, riscv_i_registers[dec.rd]); break;
-			case '1':  print_add(offset, riscv_i_registers[dec.rs1]); break;
-			case '2':  print_add(offset, riscv_i_registers[dec.rs2]); break;
-			case '3':  print_add(offset, riscv_f_registers[dec.rd]); break;
+			case '(': print_add(offset, "("); break;
+			case ',': print_add(offset, ","); break;
+			case ')': print_add(offset, ")"); break;
+			case '0': print_add(offset, riscv_i_registers[dec.rd]); break;
+			case '1': print_add(offset, riscv_i_registers[dec.rs1]); break;
+			case '2': print_add(offset, riscv_i_registers[dec.rs2]); break;
+			case '3': print_add(offset, riscv_f_registers[dec.rd]); break;
 			case '4': print_add(offset, riscv_f_registers[dec.rs1]); break;
 			case '5': print_add(offset, riscv_f_registers[dec.rs2]); break;
 			case '6': print_add(offset, riscv_f_registers[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
-			case 'i':  print_fmt(offset, "%lld", dec.imm); break;
+			case 'i': print_fmt(offset, "%lld", dec.imm); break;
  			case 'd':
-			{
-				uint64_t addr = pc - pc_offset + dec.imm;
+				addr = pc - pc_offset + dec.imm;
 				print_fmt(offset, "%lld", dec.imm);
 				print_addr(offset, addr, symlookup, colorize);
 				break;
-			}
 			case 'c':
-			{
-				const riscv_csr_metadata *csr = riscv_lookup_csr_metadata(dec.imm);
+				csr = riscv_lookup_csr_metadata(dec.imm);
 				if (csr) print_fmt(offset, "%s", csr->csr_name);
 				else print_fmt(offset, "%llu", dec.imm);
 				break;
-			}
 			case 'r':
 				switch(dec.arg) {
 					case riscv_rm_rne: print_add(offset, "rne"); break;
@@ -210,10 +207,8 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 		fmt++;
 	}
 
-	// decoded address
-	uint64_t sym_addr = 0;
-
 	// decode address using instruction pair constraints
+	addr = 0;
 	const rvx* rvxi = rvx_constraints;
 	while(rvxi->addr != rva_none) {
 		if (rvxi->op2 == dec.op) {
@@ -223,10 +218,10 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 				if (dec.rs1 != li->rd) continue;
 				switch (rvxi->addr) {
 					case rva_abs:
-						sym_addr = li->imm + dec.imm;
+						addr = li->imm + dec.imm;
 						goto out;
 					case rva_pcrel:
-						sym_addr = li->pc - pc_offset + li->imm + dec.imm;
+						addr = li->pc - pc_offset + li->imm + dec.imm;
 						goto out;
 					case rva_none:
 					default:
@@ -240,7 +235,7 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 out:
 
 	// decode address for loads and stores from the global pointer
-	if (sym_addr == 0 && gp && dec.rs1 == riscv_ireg_gp)
+	if (addr == 0 && gp && dec.rs1 == riscv_ireg_gp)
 	{
 		switch (dec.op) {
 			case riscv_op_addi:
@@ -259,15 +254,15 @@ out:
 			case riscv_op_sd:
 			case riscv_op_fsw:
 			case riscv_op_fsd:
-				sym_addr = int64_t(gp + dec.imm);
+				addr = int64_t(gp + dec.imm);
 			default:
 				break;
 		}
 	}
 
 	// print address if present
-	if (sym_addr != 0) {
-		print_addr(offset, sym_addr, symlookup, colorize);
+	if (addr != 0) {
+		print_addr(offset, addr, symlookup, colorize);
 	}
 
 	// save instruction in deque
