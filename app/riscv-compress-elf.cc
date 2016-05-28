@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cinttypes>
 #include <cstdarg>
 #include <cerrno>
-#undef NDEBUG /* enable assertions */
 #include <cassert>
 #include <algorithm>
 #include <functional>
@@ -58,7 +58,7 @@ struct riscv_compress_elf
 				static char symbol_tmpname[256];
 				int64_t offset = int64_t(addr) - sym->st_value;
 				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"%s%s0x%llx", elf_sym_name(elf, sym),
+					"%s%s0x%" PRIx64, elf_sym_name(elf, sym),
 					offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
 				return symbol_tmpname;
 			}
@@ -119,24 +119,12 @@ struct riscv_compress_elf
 			dec.inst = riscv_get_instruction(pc, &next_pc);
 			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
 			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_encode_compress(dec)) {
-
-				#ifndef NDEBUG
-				riscv_lu pre_comp_inst = dec.inst;
-				#endif
-
 				dec.inst = riscv_encode(dec);
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 2;
 				saving += 2;
-
-				#ifndef NDEBUG
-				riscv_decode_decompress(dec);
-				riscv_lu post_decomp_inst = dec.inst = riscv_encode(dec);
-				assert(pre_comp_inst == post_decomp_inst);
-				#endif
-
 			} else {
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cinttypes>
 #include <cstdarg>
 #include <cerrno>
 #include <cassert>
@@ -80,7 +81,7 @@ struct riscv_parse_elf
 				static char symbol_tmpname[256];
 				int64_t offset = int64_t(addr) - sym->st_value;
 				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"%s%s0x%llx", elf_sym_name(elf, sym),
+					"%s%s0x%" PRIx64, elf_sym_name(elf, sym),
 					offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
 				return symbol_tmpname;
 			}
