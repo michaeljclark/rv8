@@ -39,6 +39,7 @@ const rvx rvx_constraints[] = {
 	{ riscv_op_lui,     riscv_op_addi,     rva_abs   },
 	{ riscv_op_auipc,   riscv_op_addi,     rva_pcrel },
 	{ riscv_op_auipc,   riscv_op_jalr,     rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_ld,       rva_pcrel },
 	{ riscv_op_unknown, riscv_op_unknown,  rva_none },
 };
 
