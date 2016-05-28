@@ -575,7 +575,7 @@ extern "C" {
 	extern const riscv_codec riscv_instruction_codec[];
 	extern const riscv_wu riscv_instruction_match[];
 	extern const riscv_wu riscv_instruction_mask[];
-	extern const rvf* riscv_instruction_format[];
+	extern const char* riscv_instruction_format[];
 	extern const riscv_comp_data* riscv_instruction_comp[];
 	extern const int riscv_instruction_decomp[];
 }

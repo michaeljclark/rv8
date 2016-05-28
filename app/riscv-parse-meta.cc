@@ -680,7 +680,7 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("\textern const riscv_codec riscv_instruction_codec[];\n");
 	printf("\textern const riscv_wu riscv_instruction_match[];\n");
 	printf("\textern const riscv_wu riscv_instruction_mask[];\n");
-	printf("\textern const rvf* riscv_instruction_format[];\n");
+	printf("\textern const char* riscv_instruction_format[];\n");
 	printf("\textern const riscv_comp_data* riscv_instruction_comp[];\n");
 	printf("\textern const int riscv_instruction_decomp[];\n");
 	printf("}\n");
@@ -777,7 +777,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction formats
-	printf("const rvf* riscv_instruction_format[] = {\n");
+	printf("const char* riscv_instruction_format[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%sriscv_fmt_%s,\n",

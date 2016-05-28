@@ -978,7 +978,7 @@ const riscv_wu riscv_instruction_mask[] = {
 	0x0000e003,
 };
 
-const rvf* riscv_instruction_format[] = {
+const char* riscv_instruction_format[] = {
 	0x00000000,
 	riscv_fmt_rd_imm,
 	riscv_fmt_rd_imm,
