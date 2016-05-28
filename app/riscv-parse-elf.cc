@@ -155,6 +155,7 @@ struct riscv_parse_elf
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf_shdr_name(elf, i), colorize("reset"));
 				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
 					riscv_ptr(gp_sym ? gp_sym->st_value : 0));
+				printf("\n");
 			}
 		}
 	}
@@ -240,7 +241,6 @@ struct riscv_parse_elf
 			scan_branch_labels();
 			print_disassembly();
 		}
-		printf("\n");
 	}
 };
 
