@@ -175,7 +175,25 @@ void riscv_disasm_instruction(riscv_decode &dec, std::deque<riscv_decode> &dec_h
 			case rvf_frs3: print_add(offset, riscv_f_registers[dec.rs3]); break;
 			case rvf_imm5: print_fmt(offset, "%d", dec.rs1); break;
 			case rvf_imm:  print_fmt(offset, "%lld", dec.imm); break;
-			case rvf_disp:
+			case rvf_rm:
+				switch(dec.arg) {
+					case riscv_rm_rne: print_add(offset, "rne"); break;
+					case riscv_rm_rtz: print_add(offset, "rtz"); break;
+					case riscv_rm_rdn: print_add(offset, "rdn"); break;
+					case riscv_rm_rup: print_add(offset, "rup"); break;
+					case riscv_rm_rmm: print_add(offset, "rmm"); break;
+					default:           print_add(offset, "unk"); break;
+				}
+				break;
+			case rvf_aqrl:
+				switch(dec.arg) {
+					case riscv_aqrl_relaxed: print_add(offset, "relaxed"); break;
+					case riscv_aqrl_acquire: print_add(offset, "acquire"); break;
+					case riscv_aqrl_release: print_add(offset, "release"); break;
+					case riscv_aqrl_acq_rel: print_add(offset, "acq_rel"); break;
+				}
+ 				break;
+ 			case rvf_disp:
 			{
 				uint64_t addr = pc - pc_offset + dec.imm;
 				print_fmt(offset, "%lld", dec.imm);

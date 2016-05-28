@@ -9,11 +9,11 @@
 
 enum riscv_rm
 {
-	riscv_rm_RNE = 0,
-	riscv_rm_RTZ = 1,
-	riscv_rm_RDN = 2,
-	riscv_rm_RUP = 3,
-	riscv_rm_RMM = 4,
+	riscv_rm_rne = 0,
+	riscv_rm_rtz = 1,
+	riscv_rm_rdn = 2,
+	riscv_rm_rup = 3,
+	riscv_rm_rmm = 4,
 };
 
 enum riscv_aqrl
@@ -326,7 +326,10 @@ enum riscv_codec
 	riscv_codec_i_sh5,
 	riscv_codec_i_sh6,
 	riscv_codec_r,
-	riscv_codec_r4,
+	riscv_codec_r_m,
+	riscv_codec_r_4,
+	riscv_codec_r_a,
+	riscv_codec_r_l,
 	riscv_codec_s,
 	riscv_codec_sb,
 	riscv_codec_u,

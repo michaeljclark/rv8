@@ -2,24 +2,26 @@
 # <format name> <format template>
 
 none
-disp               disp
-rs1_rs2            rs1,rs2
-rd_imm             rd,imm
-rd_disp            rd,disp
-rd_rs1_rs2         rd,rs1,rs2
-frd_frs1_frs2      frd,frs1,frs2
-rd_frs1_frs2       frd,rs1,frs2
-frd_frs1_frs2_frs3 frd,frs1,frs2,frs3
-frd_rs1            frd,rs1
-frd_frs1           frd,frs1
-rd_frs1            rd,frs1
-rd_rs1_imm         rd,rs1,imm
-rd_imm_rs1         rd,imm(rs1)
-frd_imm_rs1        frd,imm(rs1)
-rd_csr_rs1         rd,csr,rs1
-rd_csr_imm5        rd,csr,imm5
-rs2_imm_rs1        rs2,imm(rs1)
-frs2_imm_rs1       frs2,imm(rs1)
-rs1_rs2_disp       rs1,rs2,disp
-rd_rs2_b_rs1       rd,rs2,(rs1)
-rd_b_rs1           rd,(rs1)
+disp                  disp
+rs1_rs2               rs1,rs2
+rd_imm                rd,imm
+rd_disp               rd,disp
+rd_rs1_rs2            rd,rs1,rs2
+frd_rs1               frd,rs1
+rd_frs1               rd,frs1
+rd_frs1_frs2          frd,rs1,frs2
+rm_frd_frs1           rm,frd,frs1
+rm_frd_rs1            rm,frd,rs1
+rm_rd_frs1            rm,rd,frs1
+rm_frd_frs1_frs2      rm,frd,frs1,frs2
+rm_frd_frs1_frs2_frs3 rm,frd,frs1,frs2,frs3
+rd_rs1_imm            rd,rs1,imm
+rd_imm_rs1            rd,imm(rs1)
+frd_imm_rs1           frd,imm(rs1)
+rd_csr_rs1            rd,csr,rs1
+rd_csr_imm5           rd,csr,imm5
+rs2_imm_rs1           rs2,imm(rs1)
+frs2_imm_rs1          frs2,imm(rs1)
+rs1_rs2_disp          rs1,rs2,disp
+aqrl_rd_rs2_b_rs1     aqrl,rd,rs2,(rs1)
+aqrl_rd_b_rs1         aqrl,rd,(rs1)

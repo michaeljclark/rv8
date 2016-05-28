@@ -316,7 +316,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
 			// print this row
-			printf("%s & %s %s \\\\\n\\cline{1-%ld}\n",
+			printf("%s & \\scriptsize{%s %s} \\\\\n\\cline{1-%ld}\n",
 				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), kLatexTableColumns);
 			break;
 		}
@@ -366,7 +366,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 			name = "Type-" + name;
 
 			// print this row
-			printf("%s & %s \\\\\n\\cline{1-%ld}\n",
+			printf("%s & \\scriptsize{\\bf %s} \\\\\n\\cline{1-%ld}\n",
 				ls.str().c_str(), name.c_str(), kLatexTableColumns);
 			break;
 		}
