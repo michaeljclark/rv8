@@ -41,6 +41,13 @@ struct elf_file
 	void load(std::string filename);
 	uint8_t* offset(size_t offset);
 	elf_section* section(size_t offset);
+
+	const char* shdr_name(int i);
+	const char* sym_name(int i);
+	const char* sym_name(const Elf64_Sym *sym);
+	const Elf64_Sym* sym_by_nearest_addr(Elf64_Addr addr);
+	const Elf64_Sym* sym_by_addr(Elf64_Addr addr);
+	const Elf64_Sym* sym_by_name(const char *name);
 };
 
 #endif

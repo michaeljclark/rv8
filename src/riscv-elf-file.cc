@@ -229,3 +229,44 @@ elf_section* elf_file::section(size_t offset)
 	}
 	return nullptr;
 }
+
+const char* elf_file::shdr_name(int i)
+{
+	return shstrtab ?
+		(const char*)offset(shstrtab->sh_offset + shdrs[i].sh_name) : "";
+}
+
+const char* elf_file::sym_name(int i)
+{
+	return strtab ?
+		(const char*)offset(strtab->sh_offset + symbols[i].st_name) : "";
+}
+
+const char* elf_file::sym_name(const Elf64_Sym *sym)
+{
+	return strtab ?
+		(const char*)offset(strtab->sh_offset + sym->st_name) : "";
+}
+
+const Elf64_Sym* elf_file::sym_by_nearest_addr(Elf64_Addr addr)
+{
+	auto ai = addr_symbol_map.lower_bound(addr);
+	if (ai == addr_symbol_map.end()) return nullptr;
+	if (ai->second == addr) return &symbols[ai->second];
+	if (ai != addr_symbol_map.begin()) ai--;
+	return &symbols[ai->second];
+}
+
+const Elf64_Sym* elf_file::sym_by_addr(Elf64_Addr addr)
+{
+	auto ai = addr_symbol_map.find(addr);
+	if (ai == addr_symbol_map.end()) return nullptr;
+	return &symbols[ai->second];
+}
+
+const Elf64_Sym* elf_file::sym_by_name(const char *name)
+{
+	size_t i = name_symbol_map[name];
+	if (i == 0 || i >= symbols.size()) return nullptr;
+	return &symbols[i];
+}

@@ -190,7 +190,7 @@ const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 		colorize("legend"),
 		i,
 		colorize("reset"),
-		elf_shdr_name(elf, i),
+		elf.shdr_name(i),
 		elf_sh_type_name(shdr.sh_type),
 		elf_sh_flags_name(shdr.sh_flags).c_str(),
 		colorize("address"),
@@ -219,49 +219,8 @@ const std::string elf_sym_info(elf_file &elf, int i, elf_symbol_colorize_fn colo
 		elf_st_other_name(sym.st_other),
 		elf_sh_shndx_name(sym.st_shndx).c_str(),
 		colorize("symbol"),
-		elf_sym_name(elf, i),
+		elf.sym_name(i),
 		colorize("reset"));
-}
-
-const char* elf_shdr_name(elf_file &elf, int i)
-{
-	return elf.shstrtab ?
-		(const char*)elf.offset(elf.shstrtab->sh_offset + elf.shdrs[i].sh_name) : "";
-}
-
-const char* elf_sym_name(elf_file &elf, int i)
-{
-	return elf.strtab ?
-		(const char*)elf.offset(elf.strtab->sh_offset + elf.symbols[i].st_name) : "";
-}
-
-const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
-{
-	return elf.strtab ?
-		(const char*)elf.offset(elf.strtab->sh_offset + sym->st_name) : "";
-}
-
-const Elf64_Sym* elf_sym_by_nearest_addr(elf_file &elf, Elf64_Addr addr)
-{
-	auto ai = elf.addr_symbol_map.lower_bound(addr);
-	if (ai == elf.addr_symbol_map.end()) return nullptr;
-	if (ai->second == addr) return &elf.symbols[ai->second];
-	if (ai != elf.addr_symbol_map.begin()) ai--;
-	return &elf.symbols[ai->second];
-}
-
-const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr)
-{
-	auto ai = elf.addr_symbol_map.find(addr);
-	if (ai == elf.addr_symbol_map.end()) return nullptr;
-	return &elf.symbols[ai->second];
-}
-
-const Elf64_Sym* elf_sym_by_name(elf_file &elf, const char *name)
-{
-	size_t i = elf.name_symbol_map[name];
-	if (i == 0 || i >= elf.symbols.size()) return nullptr;
-	return &elf.symbols[i];
 }
 
 void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
