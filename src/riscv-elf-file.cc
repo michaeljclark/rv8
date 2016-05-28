@@ -179,8 +179,9 @@ void elf_file::load(std::string filename)
 				Elf64_Sym sym64;
 				elf_bswap_sym32(sym32, ei_data);
 				elf_convert_to_sym64(&sym64, sym32);
-				if (sym64.st_shndx != SHN_UNDEF) {
-					addr_symbol_map[sym64.st_value] = symbols.size();
+				if (sym64.st_shndx != SHN_UNDEF && sym64.st_info != STT_FILE && sym64.st_value != 0) {
+					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64.st_name;
+					if (strlen(name)) addr_symbol_map[sym64.st_value] = symbols.size();
 				}
 				symbols.push_back(sym64);
 			}
@@ -189,8 +190,9 @@ void elf_file::load(std::string filename)
 			for (size_t i = 0; i < num_symbols; i++) {
 				Elf64_Sym *sym64 = (Elf64_Sym*)(buf.data() + symtab->sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data);
-				if (sym64->st_shndx != SHN_UNDEF) {
-					addr_symbol_map[sym64->st_value] = symbols.size();
+				if (sym64->st_shndx != SHN_UNDEF && sym64->st_info != STT_FILE && sym64->st_value != 0) {
+					const char* name = (const char*)buf.data() + strtab->sh_offset + sym64->st_name;
+					if (strlen(name)) addr_symbol_map[sym64->st_value] = symbols.size();
 				}
 				symbols.push_back(*sym64);
 			}

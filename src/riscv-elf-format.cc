@@ -241,6 +241,15 @@ const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym)
 		(const char*)elf.offset(elf.strtab->sh_offset + sym->st_name) : "";
 }
 
+const Elf64_Sym* elf_sym_by_nearest_addr(elf_file &elf, Elf64_Addr addr)
+{
+	auto ai = elf.addr_symbol_map.lower_bound(addr);
+	if (ai == elf.addr_symbol_map.end()) return nullptr;
+	if (ai->second == addr) return &elf.symbols[ai->second];
+	if (ai != elf.addr_symbol_map.begin()) ai--;
+	return &elf.symbols[ai->second];
+}
+
 const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr)
 {
 	auto ai = elf.addr_symbol_map.find(addr);

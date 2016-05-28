@@ -46,12 +46,23 @@ struct riscv_compress_elf
 		return "";
 	}
 
-	const char* symlookup(riscv_ptr addr)
+	const char* symlookup(riscv_ptr addr, bool nearest)
 	{
 		auto sym = elf_sym_by_addr(elf, (Elf64_Addr)addr);
 		if (sym) return elf_sym_name(elf, sym);
 		auto bli = branch_labels.find(addr);
 		if (bli != branch_labels.end()) return bli->second.c_str();
+		if (nearest) {
+			sym = elf_sym_by_nearest_addr(elf, (Elf64_Addr)addr);
+			if (sym) {
+				static char symbol_tmpname[256];
+				int64_t offset = int64_t(addr) - sym->st_value;
+				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"%s%s0x%llx", elf_sym_name(elf, sym),
+					offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
+				return symbol_tmpname;
+			}
+		}
 		return nullptr;
 	}
 
@@ -115,7 +126,7 @@ struct riscv_compress_elf
 
 				dec.inst = riscv_encode(dec);
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
-					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
+					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 2;
 				saving += 2;
@@ -128,7 +139,7 @@ struct riscv_compress_elf
 
 			} else {
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
-					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1),
+					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 4;
 			}

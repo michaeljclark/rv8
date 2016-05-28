@@ -30,6 +30,7 @@ const std::string elf_sym_info(elf_file &elf, int i,
 const char* elf_shdr_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, int i);
 const char* elf_sym_name(elf_file &elf, const Elf64_Sym *sym);
+const Elf64_Sym* elf_sym_by_nearest_addr(elf_file &elf, Elf64_Addr addr);
 const Elf64_Sym* elf_sym_by_addr(elf_file &elf, Elf64_Addr addr);
 const Elf64_Sym* elf_sym_by_name(elf_file &elf, const char *name);
 void elf_print_header_info(elf_file &elf,

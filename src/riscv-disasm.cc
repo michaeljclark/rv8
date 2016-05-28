@@ -44,7 +44,7 @@ const rvx rvx_constraints[] = {
 
 const size_t rvx_instruction_buffer_len = 16;
 
-const char* riscv_null_symbol_lookup(riscv_ptr) { return nullptr; }
+const char* riscv_null_symbol_lookup(riscv_ptr, bool nearest) { return nullptr; }
 const char* riscv_null_symbol_colorize(const char *type) { return ""; }
 
 const void print_add(size_t &offset, const char *str)
@@ -94,7 +94,7 @@ const void print_addr(size_t &offset, uint64_t addr,
 	print_add(offset, "# ");
 	print_fmt(offset, "0x%016tx", addr);
 	printf("%s", colorize("reset"));
-	const char* symbol_name = symlookup((riscv_ptr)addr);
+	const char* symbol_name = symlookup((riscv_ptr)addr, true);
 	if (symbol_name) {
 		if (strncmp(symbol_name, "LOC_", 4) == 0) {
 			printf(" %s", colorize("location"));
@@ -115,7 +115,7 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
 	const char *fmt = riscv_instruction_format[dec.op];
-	const char *symbol_name = symlookup((riscv_ptr)addr);
+	const char *symbol_name = symlookup((riscv_ptr)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
 
 	// print symbol name if present
