@@ -1469,7 +1469,7 @@ void riscv_decode_instruction(T &dec, riscv_lu inst)
 /* Check constraint */
 
 template <typename T>
-inline bool riscv_decode_decompress_check(T &dec, const rvc_constraint *c)
+inline bool riscv_encode_compress_check(T &dec, const rvc_constraint *c)
 {
 	auto imm = dec.imm;
 	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
@@ -1509,12 +1509,12 @@ inline bool riscv_decode_decompress_check(T &dec, const rvc_constraint *c)
 /* Compress Instruction */
 
 template <typename T>
-inline bool riscv_decode_compress(T &dec)
+inline bool riscv_encode_compress(T &dec)
 {
 	const riscv_comp_data *comp_data = riscv_instruction_comp[dec.op];
 	if (!comp_data) return false;
 	while (comp_data->constraints) {
-		if (riscv_decode_decompress_check(dec, comp_data->constraints)) {
+		if (riscv_encode_compress_check(dec, comp_data->constraints)) {
 			dec.op = comp_data->op;
 			dec.codec = riscv_instruction_codec[dec.op];
 			return true;

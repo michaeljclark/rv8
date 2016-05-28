@@ -107,7 +107,7 @@ struct riscv_compress_elf
 			dec.pc = pc;
 			dec.inst = riscv_get_instruction(pc, &next_pc);
 			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
-			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_decode_compress(dec)) {
+			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_encode_compress(dec)) {
 
 				#ifndef NDEBUG
 				riscv_lu pre_comp_inst = dec.inst;
