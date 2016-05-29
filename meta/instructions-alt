@@ -100,8 +100,8 @@ amomaxu.d  "Atomic Maximum Unsigned Double Word"            "rd ← s64[rs1] ∥
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
-ecall      "System Call"
-ebreak     "System Break to Debugger"
+ecall      "Environment Call"
+ebreak     "Environment Break to Debugger"
 uret       "User Return"
 sret       "System Return"
 hret       "Hypervisor Return"
