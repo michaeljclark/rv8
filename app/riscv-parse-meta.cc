@@ -105,7 +105,7 @@ struct riscv_parse_meta : riscv_meta_model
 
 	void print_latex_row(riscv_latex_row &row, std::string ts);
 	void print_latex();
-	void print_map();
+	void print_map(bool print_map_instructions);
 	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
 	void print_opcodes_c(bool no_comment = false, bool zero_not_oh = false);
 	void print_switch_c(bool no_comment = false, bool zero_not_oh = false);
@@ -492,7 +492,7 @@ void riscv_parse_meta::print_latex()
 	printf("%s", kLatexDocumentEnd);
 }
 
-void riscv_parse_meta::print_map()
+void riscv_parse_meta::print_map(bool print_map_instructions)
 {
 	bool enable_colorize = enable_color && isatty(fileno(stdout));
 
@@ -553,14 +553,15 @@ void riscv_parse_meta::print_map()
 			printf(" %s %s",
 				opcode->name.c_str(), opcode->format->args.c_str());
 		}
-		ssize_t len = 34 - (opcode->name.length() + opcode->format->args.length());
+		ssize_t len = 30 - (opcode->name.length() + opcode->format->args.length());
 		std::string ws;
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
-		printf("%s%s# %s%s\n",
+		printf("%s%s# %s%s%s\n",
 			ws.c_str(),
 			enable_colorize ? _COLOR_EXT : "",
 			opcode->extensions.front()->name.c_str(),
-			enable_colorize ? _COLOR_RESET : "");
+			enable_colorize ? _COLOR_RESET : "",
+			print_map_instructions ? format_string("   %s", opcode->instruction.c_str()).c_str() : "");
 	}
 }
 
@@ -1076,6 +1077,7 @@ int main(int argc, const char *argv[])
 
 	bool print_latex = false;
 	bool print_map = false;
+	bool print_map_instructions = false;
 	bool no_comment = false;
 	bool zero_not_oh = false;
 	bool print_switch_c = false;
@@ -1101,6 +1103,9 @@ int main(int argc, const char *argv[])
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
+		{ "-x", "--print-map-instructions", cmdline_arg_type_none,
+			"Print map with instructions",
+			[&](std::string s) { return (print_map = print_map_instructions = true); } },
 		{ "-N", "--no-comment", cmdline_arg_type_none,
 			"Don't emit comments in generated source",
 			[&](std::string s) { return (no_comment = true); } },
@@ -1147,7 +1152,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if (print_map) {
-		inst_set.print_map();
+		inst_set.print_map(print_map_instructions);
 	}
 
 	if (print_opcodes_h) {

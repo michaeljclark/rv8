@@ -206,6 +206,7 @@ usage: riscv-parse-meta [<options>]
                     --read-isa, -r <string>   Read instruction set metadata from directory
                  --print-latex, -l            Print LaTeX
                    --print-map, -m            Print map
+      --print-map-instructions, -x            Print map with instructions
                   --no-comment, -N            Don't emit comments in generated source
                  --zero-not-oh, -0            Use numeric constants in generated source
              --print-opcodes-h, -H            Print C header
