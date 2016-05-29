@@ -82,12 +82,10 @@ struct riscv_compress_elf
 			switch (dec.codec) {
 				case riscv_codec_sb:
 				case riscv_codec_uj:
-				{
 					addr = pc - pc_offset + dec.imm;
 					snprintf(branch_label, sizeof(branch_label), "LOC_%06lu", branch_num++);
 					branch_labels[(riscv_ptr)addr] = branch_label;
 					break;
-				}
 				default:
 					break;
 			}
