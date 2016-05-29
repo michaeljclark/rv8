@@ -9,7 +9,7 @@ rd_disp               rd,disp
 rd_rs1_rs2            rd,rs1,rs2
 frd_rs1               frd,rs1
 rd_frs1               rd,frs1
-rd_frs1_frs2          frd,rs1,frs2
+rd_frs1_frs2          rd,frs1,frs2
 rm_frd_frs1           rm,frd,frs1
 rm_frd_rs1            rm,frd,rs1
 rm_rd_frs1            rm,rd,frs1
