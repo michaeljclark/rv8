@@ -40,7 +40,13 @@ const rvx rvx_constraints[] = {
 	{ riscv_op_auipc,   riscv_op_addi,     rva_pcrel },
 	{ riscv_op_auipc,   riscv_op_jalr,     rva_pcrel },
 	{ riscv_op_auipc,   riscv_op_ld,       rva_pcrel },
-	{ riscv_op_unknown, riscv_op_unknown,  rva_none },
+	{ riscv_op_auipc,   riscv_op_lb,       rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_lh,       rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_lw,       rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_lbu,      rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_lhu,      rva_pcrel },
+	{ riscv_op_auipc,   riscv_op_lwu,      rva_pcrel },
+	{ riscv_op_unknown, riscv_op_unknown,  rva_none  },
 };
 
 const size_t rvx_instruction_buffer_len = 16;
