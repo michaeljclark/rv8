@@ -173,6 +173,20 @@ To run the proof of concept emulator: ```make emulate```
 
 ## Parse ELF Utility
 
+Parse ELF usage command line options:
+
+```
+usage: riscv-parse-elf [<options>] <elf_file>
+                       --color, -c            Enable Color
+            --print-elf-header, -e            Print ELF header
+       --print-section-headers, -s            Print Section headers
+       --print-program-headers, -p            Print Program headers
+          --print-symbol-table, -t            Print Symbol Table
+           --print-disassembly, -d            Print Disassembly
+                   --print-all, -a            Print All
+                        --help, -h            Show help
+```
+
 To run the ELF parser and disassembler:
 
 ```
@@ -181,7 +195,24 @@ make test
 ./build/darwin_x86_64/bin/riscv-parse-elf -c -a test/hello-world-pcrel
 ```
 
-## Parse Opcodes Utility
+## Parse Meta Utility
+
+Parse Meta usage command line options:
+
+```
+usage: riscv-parse-meta
+                       --color, -c            Enable Color
+                  --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
+                    --read-isa, -r <string>   Read instruction set metadata from directory
+                 --print-latex, -l            Print LaTeX
+                   --print-map, -m            Print map
+                  --no-comment, -N            Don't emit comments in generated source
+                 --zero-not-oh, -0            Use numeric constants in generated source
+             --print-opcodes-h, -H            Print C header
+             --print-opcodes-c, -C            Print C source
+              --print-switch-c, -S            Print C switch
+                        --help, -h            Show help
+```
 
 To print a colour opcode map for the RV32IMA ISA subset:
 
@@ -208,6 +239,17 @@ To output LaTeX for the RV64G ISA subset:
 ```
 
 ## RISC-V ELF Histogram Utility
+
+ELF Histogram usage command line options:
+
+```
+usage: riscv-histogram-elf [<options>] <elf_file>
+                        --help, -h            Show help
+                        --char, -c <string>   Character to use in bars
+                        --bars, -b            Print bars next to counts
+                   --max-chars, -m <string>   Maximum number of characters for bars
+                --reverse-sort, -r            Sort in Reverse
+```
 
 To print the top 20 instructions in a RISC-V ELF binary:
 
