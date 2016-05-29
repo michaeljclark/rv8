@@ -1133,7 +1133,7 @@ int main(int argc, const char *argv[])
 	if ((help_or_error |= !print_latex && !print_map &&
 		!print_switch_c && !print_opcodes_h && !print_opcodes_c))
 	{
-		printf("usage: %s\n", argv[0]);
+		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
 		return false;
 	}

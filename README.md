@@ -200,7 +200,7 @@ make test
 Parse Meta usage command line options:
 
 ```
-usage: riscv-parse-meta
+usage: riscv-parse-meta [<options>]
                        --color, -c            Enable Color
                   --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
                     --read-isa, -r <string>   Read instruction set metadata from directory
