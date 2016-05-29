@@ -886,9 +886,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
-uint64_t riscv_decode_instruction(uint64_t inst)
+riscv_lu riscv_decode_instruction(riscv_lu inst)
 {
-	uint64_t op = 0;
+	riscv_lu op = 0;
 
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
 	case 0:
