@@ -30,7 +30,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
 	riscv_ptr next_pc;
 	riscv_lu inst = riscv_get_instruction(proc->pc, &next_pc);
-	riscv_decode_instruction<riscv_decode>(dec, inst);
+	riscv_decode_instruction(dec, inst);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;

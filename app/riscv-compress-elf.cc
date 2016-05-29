@@ -77,7 +77,7 @@ struct riscv_compress_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
+			riscv_decode_instruction(dec, dec.inst);
 			riscv_decode_decompress(dec);
 			switch (dec.codec) {
 				case riscv_codec_sb:
@@ -109,7 +109,6 @@ struct riscv_compress_elf
 
 	void compress(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
 	{
-		// NOTE - work in progress
 		riscv_disasm dec;
 		std::deque<riscv_disasm> dec_hist;
 		riscv_ptr pc = start, next_pc;
@@ -117,7 +116,7 @@ struct riscv_compress_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
+			riscv_decode_instruction(dec, dec.inst);
 			if (riscv_get_instruction_length(dec.inst) == 4 && riscv_encode_compress(dec)) {
 				dec.inst = riscv_encode(dec);
 				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
@@ -133,7 +132,8 @@ struct riscv_compress_elf
 			}
 			pc = next_pc;
 		}
-		printf("old_total=%lu new_total=%lu saving=%lu", bytes + saving, bytes, saving);
+		printf("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save\n",
+			bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
 	}
 
 	void compress()

@@ -100,7 +100,7 @@ struct riscv_parse_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
+			riscv_decode_instruction(dec, dec.inst);
 			switch (dec.codec) {
 				case riscv_codec_sb:
 				case riscv_codec_uj:
@@ -137,7 +137,7 @@ struct riscv_parse_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction<riscv_disasm>(dec, dec.inst);
+			riscv_decode_instruction(dec, dec.inst);
 			riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
