@@ -1471,7 +1471,7 @@ const riscv_comp_data* riscv_instruction_comp[] = {
 };
 
 const int riscv_instruction_decomp[] = {
-	riscv_op_unknown,
+	0,
 	0,
 	0,
 	0,

@@ -841,7 +841,8 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 
 	// RVC decompression table
 	printf("const int riscv_instruction_decomp[] = {\n");
-	print_array_unknown_enum("riscv_op_unknown", no_comment);
+	if (zero_not_oh) print_array_unknown_enum("0", no_comment);
+	else print_array_unknown_enum("riscv_op_unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_key = opcode_format("", opcode, '.');
 		printf("\t%s%s,\n",
