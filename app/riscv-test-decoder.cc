@@ -1028,23 +1028,32 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				}
 				break;
 			case 4:
-				// addi slti sltiu xori ori andi slli srli srai
+				// addi slti sltiu xori ori andi slli srli srai slli srli srai
 				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 					case 0: if (rvi) op = riscv_op_addi; break;
 					case 1:
-						// slli
+						// slli slli
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: if (rvi) op = riscv_op_slli_rv64i; break;
+							case 0: 
+								if (rvi && rv32) op = riscv_op_slli_rv32i;
+								else if (rvi && rv64) op = riscv_op_slli_rv64i;
+								break;
 						}
 						break;
 					case 2: if (rvi) op = riscv_op_slti; break;
 					case 3: if (rvi) op = riscv_op_sltiu; break;
 					case 4: if (rvi) op = riscv_op_xori; break;
 					case 5:
-						// srli srai
+						// srli srai srli srai
 						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
-							case 0: if (rvi) op = riscv_op_srli_rv64i; break;
-							case 16: if (rvi) op = riscv_op_srai_rv64i; break;
+							case 0: 
+								if (rvi && rv32) op = riscv_op_srli_rv32i;
+								else if (rvi && rv64) op = riscv_op_srli_rv64i;
+								break;
+							case 16: 
+								if (rvi && rv32) op = riscv_op_srai_rv32i;
+								else if (rvi && rv64) op = riscv_op_srai_rv64i;
+								break;
 						}
 						break;
 					case 6: if (rvi) op = riscv_op_ori; break;
@@ -1316,9 +1325,9 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						}
 						break;
 					case 113:
-						// fmv.x.d fclass.d
+						// fclass.d fmv.x.d
 						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-							case 0: if (rvd) op = riscv_op_fmv_x_d; break;
+							case 0: if (rvd && rv64) op = riscv_op_fmv_x_d; break;
 							case 1: if (rvd) op = riscv_op_fclass_d; break;
 						}
 						break;
@@ -1331,7 +1340,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 					case 121:
 						// fmv.d.x
 						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-							case 0: if (rvd) op = riscv_op_fmv_d_x; break;
+							case 0: if (rvd && rv64) op = riscv_op_fmv_d_x; break;
 						}
 						break;
 				}
