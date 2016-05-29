@@ -73,7 +73,7 @@ struct riscv_histogram_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uint8_t *offset = elf.offset(shdr.sh_offset);
+				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
 				histogram(hist, offset, offset + shdr.sh_size);
 			}
 		}

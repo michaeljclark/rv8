@@ -1424,17 +1424,17 @@ inline size_t riscv_get_instruction_length(riscv_lu inst)
 
 /* Fetch Instruction */
 
-inline riscv_lu riscv_get_instruction(unsigned char *pc, unsigned char **next_pc = nullptr)
+inline riscv_lu riscv_get_instruction(riscv_ptr pc, riscv_ptr *next_pc = nullptr)
 {
 	// NOTE: currenttly supports maximum of 64-bit
 	riscv_lu inst;
-	if ((*(uint8_t*)pc & 0b11) != 0b11) {
+	if ((*(uint16_t*)pc & 0b11) != 0b11) {
 		inst = htole16(*(uint16_t*)pc);
 		if (next_pc) *next_pc = pc + 2;
-	} else if ((*(uint8_t*)pc & 0b11100) != 0b11100) {
+	} else if ((*(uint16_t*)pc & 0b11100) != 0b11100) {
 		inst = htole32(*(uint32_t*)pc);
 		if (next_pc) *next_pc = pc + 4;
-	} else if ((*(uint8_t*)pc & 0b111111) == 0b011111) {
+	} else if ((*(uint16_t*)pc & 0b111111) == 0b011111) {
 		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
 		if (next_pc) *next_pc = pc + 6;
 	} else {

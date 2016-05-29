@@ -121,8 +121,8 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uint8_t *offset = elf.offset(shdr.sh_offset);
-				scan_branch_labels(offset, offset + shdr.sh_size, offset- shdr.sh_addr);
+				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
+				scan_branch_labels(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 			}
 		}
 	}
@@ -149,7 +149,7 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uint8_t *offset = elf.offset(shdr.sh_offset);
+				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
 					riscv_ptr(gp_sym ? gp_sym->st_value : 0));

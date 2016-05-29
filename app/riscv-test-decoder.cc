@@ -23,15 +23,22 @@
 
 /* common */
 
-uint64_t get_instruction(unsigned char **pc)
+inline riscv_lu get_instruction(riscv_ptr &pc)
 {
-	unsigned int inst = htole16(*(unsigned short*)*pc);
-	unsigned int op1 = inst & 0b11;
-	if (op1 == 3) {
-		inst |= htole16(*(unsigned short*)(*pc + 2)) << 16;
-		*pc += 4;
+	// NOTE: currenttly supports maximum of 64-bit
+	riscv_lu inst;
+	if ((*(uint16_t*)pc & 0b11) != 0b11) {
+		inst = htole16(*(uint16_t*)pc);
+		pc += 2;
+	} else if ((*(uint16_t*)pc & 0b11100) != 0b11100) {
+		inst = htole32(*(uint32_t*)pc);
+		pc += 4;
+	} else if ((*(uint16_t*)pc & 0b111111) == 0b011111) {
+		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
+		pc += 6;
 	} else {
-		*pc += 2;
+		inst = htole64(*(uint64_t*)pc);
+		pc += 8;
 	}
 	return inst;
 }
@@ -1519,9 +1526,9 @@ void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
 	size_t decoded = 0;
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		unsigned char* pc = (unsigned char*)start;
+		riscv_ptr pc = start;
 		while (pc < end) {
-			riscv_decode_instruction<false, true, true, true, true, true, true, true, true>(get_instruction(&pc));
+			riscv_decode_instruction<false, true, true, true, true, true, true, true, true>(get_instruction(pc));
 			decoded++;
 		}
 	}
@@ -1538,9 +1545,9 @@ void decode_spike_nocache(riscv_ptr start, riscv_ptr end, const char* code)
 	proc.register_base_instructions();
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		unsigned char* pc = (unsigned char*)start;
+		riscv_ptr pc = start;
 		while (pc < end) {
-			proc.decode_insn_nocache(get_instruction(&pc));
+			proc.decode_insn_nocache(get_instruction(pc));
 			decoded++;
 		}
 	}
@@ -1557,9 +1564,9 @@ void decode_spike_cache(riscv_ptr start, riscv_ptr end, const char* code)
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	size_t decoded = 0;
 	for (size_t i = 0; i < count; i++) {
-		unsigned char* pc = (unsigned char*)start;
+		riscv_ptr pc = start;
 		while (pc < end) {
-			proc.decode_insn(get_instruction(&pc));
+			proc.decode_insn(get_instruction(pc));
 			decoded++;
 		}
 	}
@@ -1597,7 +1604,7 @@ int main(int argc, const char *argv[])
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				printf("Section[%2lu] %s\n", i, elf.shdr_name(i));
-				riscv_ptr start = elf.offset(shdr.sh_offset);
+				riscv_ptr start = (riscv_ptr)elf.offset(shdr.sh_offset);
 				riscv_ptr end = start + shdr.sh_size;
 				TEST_DECODER_ELF(decode_switch, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_nocache, start, end, count_elf, "RV64C");

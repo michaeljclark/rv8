@@ -9,7 +9,7 @@
 
 /* Types */
 
-typedef uint8_t* riscv_ptr;
+typedef uintptr_t riscv_ptr;
 typedef int8_t riscv_b;
 typedef uint8_t riscv_bu;
 typedef int16_t riscv_h;
