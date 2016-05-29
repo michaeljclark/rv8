@@ -959,7 +959,7 @@ const riscv_wu riscv_instruction_mask[] = {
 };
 
 const char* riscv_instruction_format[] = {
-	0x00000000,
+	riscv_fmt_none,
 	riscv_fmt_rd_imm,
 	riscv_fmt_rd_imm,
 	riscv_fmt_rd_disp,

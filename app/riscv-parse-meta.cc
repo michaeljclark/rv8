@@ -790,7 +790,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 
 	// Instruction formats
 	printf("const char* riscv_instruction_format[] = {\n");
-	print_array_unknown_int(0, no_comment);
+	print_array_unknown_enum("riscv_fmt_none", no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%sriscv_fmt_%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
