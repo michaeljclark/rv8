@@ -1364,21 +1364,27 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 27: if (rvi) op = riscv_op_jal; break;
 			case 28:
-				// scall sbreak sret sfence.vm wfi mrth mrts hrts rdcycle rdtime rdinstret rdcycleh ...
+				// ecall ebreak uret sret hret mret dret sfence.vm wfi csrrw csrrs csrrc ...
 				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 					case 0:
-						// scall sbreak sret sfence.vm wfi mrth mrts hrts
+						// ecall ebreak uret sret hret mret dret sfence.vm wfi
 						switch (((inst >> 15) & 0b11111111111100000) | ((inst >> 7) & 0b00000000000011111) /* inst[31:20|11:7] */) {
 							case 0:
-								// scall
+								// ecall
 								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-									case 0: if (rvs) op = riscv_op_scall; break;
+									case 0: if (rvs) op = riscv_op_ecall; break;
 								}
 								break;
 							case 32:
-								// sbreak
+								// ebreak
 								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-									case 0: if (rvs) op = riscv_op_sbreak; break;
+									case 0: if (rvs) op = riscv_op_ebreak; break;
+								}
+								break;
+							case 64:
+								// uret
+								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+									case 0: if (rvs) op = riscv_op_uret; break;
 								}
 								break;
 							case 8192:
@@ -1394,22 +1400,22 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 									case 0: if (rvs) op = riscv_op_wfi; break;
 								}
 								break;
-							case 16544:
-								// hrts
+							case 16448:
+								// hret
 								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-									case 0: if (rvs) op = riscv_op_hrts; break;
+									case 0: if (rvs) op = riscv_op_hret; break;
 								}
 								break;
-							case 24736:
-								// mrts
+							case 24640:
+								// mret
 								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-									case 0: if (rvs) op = riscv_op_mrts; break;
+									case 0: if (rvs) op = riscv_op_mret; break;
 								}
 								break;
-							case 24768:
-								// mrth
+							case 63040:
+								// dret
 								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-									case 0: if (rvs) op = riscv_op_mrth; break;
+									case 0: if (rvs) op = riscv_op_dret; break;
 								}
 								break;
 						}
@@ -1424,17 +1430,11 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						}
 						break;
 					case 2:
-						// rdcycle rdtime rdinstret rdcycleh rdtimeh rdinstreth csrrs frcsr frrm frflags
+						// csrrs frcsr frrm frflags
 						switch (((inst >> 15) & 0b11111111111111111) /* inst[31:15] */) {
 							case 32: if (rvf) op = riscv_op_frflags; break;
 							case 64: if (rvf) op = riscv_op_frrm; break;
 							case 96: if (rvf) op = riscv_op_frcsr; break;
-							case 98304: if (rvs) op = riscv_op_rdcycle; break;
-							case 98336: if (rvs) op = riscv_op_rdtime; break;
-							case 98368: if (rvs) op = riscv_op_rdinstret; break;
-							case 102400: if (rvs && rv32) op = riscv_op_rdcycleh; break;
-							case 102432: if (rvs && rv32) op = riscv_op_rdtimeh; break;
-							case 102464: if (rvs && rv32) op = riscv_op_rdinstreth; break;
 							default: if (rvs) op = riscv_op_csrrs; break;
 						}
 						break;

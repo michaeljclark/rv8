@@ -44,7 +44,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 			proc->i_reg[dec.rd].lu = dec.imm;
 			proc->pc = next_pc;
 			break;
-		case riscv_op_scall:
+		case riscv_op_ecall:
 			switch (proc->i_reg[riscv_ireg_a7].lu) {
 				case 64: /* sys_write */
 					proc->i_reg[riscv_ireg_a0].lu = write(proc->i_reg[riscv_ireg_a0].lu,

@@ -406,6 +406,7 @@ void riscv_parse_meta::print_latex()
 	// paginate opcodes ordered by extension
 	// adding type and extension headings, page breaks and continuations
 	size_t line = 0;
+	ssize_t insn_width = 0;
 	std::vector<riscv_latex_page> pages;
 	for (auto &ext : extensions) {
 		// check if this extension is in the selected subset
@@ -414,6 +415,13 @@ void riscv_parse_meta::print_latex()
 			continue;
 		}
 		if (pages.size() == 0) pages.push_back(riscv_latex_page());
+
+		// break to a new page if the instruction width changes
+		if (insn_width != 0 && insn_width != ext->insn_width) {
+			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
+			pages.push_back(riscv_latex_page());
+			line = 0;
+		}
 
 		// add extension heading
 		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
@@ -440,6 +448,8 @@ void riscv_parse_meta::print_latex()
 		// add empty line
 		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
 		line++;
+
+		insn_width = ext->insn_width;
 	}
 
 	// iterate through the table rows and add types to 

@@ -120,20 +120,15 @@ amomaxu.d  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a 
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
-scall      11..7=0 19..15=0 31..20=0x000      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-sbreak     11..7=0 19..15=0 31..20=0x001      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+ecall      11..7=0 19..15=0 31..20=0x000      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+ebreak     11..7=0 19..15=0 31..20=0x001      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+uret       11..7=0 19..15=0 31..20=0x002      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 sret       11..7=0 19..15=0 31..20=0x100      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+hret       11..7=0 19..15=0 31..20=0x202      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+mret       11..7=0 19..15=0 31..20=0x302      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+dret       11..7=0 19..15=0 31..20=0x7b2      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 sfence.vm  11..7=0 rs1      31..20=0x101      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 wfi        11..7=0 19..15=0 31..20=0x102      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-mrth       11..7=0 19..15=0 31..20=0x306      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-mrts       11..7=0 19..15=0 31..20=0x305      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-hrts       11..7=0 19..15=0 31..20=0x205      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-rdcycle    rd      19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-rdtime     rd      19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-rdinstret  rd      19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-rdcycleh   rd      19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
-rdtimeh    rd      19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
-rdinstreth rd      19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
 csrrw      rd      rs1      imm12             14..12=1 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
 csrrs      rd      rs1      imm12             14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
 csrrc      rd      rs1      imm12             14..12=3 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
