@@ -197,45 +197,11 @@ void elf_file::load(std::string filename)
 	fclose(file);
 	buf.resize(0);
 
-	if (!symtab) return;
+	// byteswap symbol table
+	byteswap_symbol_table(ELFENDIAN_HOST);
 
-	// byteswap and normalize symbol table entries
-	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
-	switch (ei_class) {
-		case ELFCLASS32:
-			for (size_t i = 0; i < num_symbols; i++) {
-				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
-				Elf64_Sym sym64;
-				elf_bswap_sym32(sym32, ei_data, ELFENDIAN_HOST);
-				elf_sym32_to_sym64(&sym64, sym32);
-				if (sym64.st_shndx != SHN_UNDEF && sym64.st_info != STT_FILE && sym64.st_value != 0) {
-					const char* name = (const char*)offset(strtab->sh_offset + sym64.st_name);
-					if (strlen(name)) addr_symbol_map[sym64.st_value] = symbols.size();
-				}
-				symbols.push_back(sym64);
-			}
-			break;
-		case ELFCLASS64:
-			for (size_t i = 0; i < num_symbols; i++) {
-				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
-				elf_bswap_sym64(sym64, ei_data, ELFENDIAN_HOST);
-				if (sym64->st_shndx != SHN_UNDEF && sym64->st_info != STT_FILE && sym64->st_value != 0) {
-					const char* name = (const char*)offset(strtab->sh_offset + sym64->st_name);
-					if (strlen(name)) addr_symbol_map[sym64->st_value] = symbols.size();
-				}
-				symbols.push_back(*sym64);
-			}
-			break;
-	}
-
-	// add symbol names to map
-	if (strtab) {
-		for (size_t i = 0; i < num_symbols; i++) {
-			Elf64_Sym &sym64 = symbols[i];
-			const char* name = (const char*)offset(strtab->sh_offset + sym64.st_name);
-			name_symbol_map[name] = i;
-		}
-	}
+	// update symbol maps
+	copy_from_symbol_table_sections();
 }
 
 void elf_file::save(std::string filename)
@@ -249,6 +215,12 @@ void elf_file::save(std::string filename)
 	if (!file) {
 		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
 	}
+
+	// update symbol table section based on changes to symbols
+	copy_to_symbol_table_sections();
+
+	// recompute section offsets based on changes to headers and sections
+	recalculate_section_offsets();
 
 	// byteswap, de-normalize and write file header
 	switch (ei_class) {
@@ -319,6 +291,9 @@ void elf_file::save(std::string filename)
 			break;
 	}
 
+	// byteswap symbol table
+	byteswap_symbol_table(ELFENDIAN_TARGET);
+
 	// write section buffers to file
 	for (size_t i = 0; i < sections.size(); i++) {
 		if (shdrs[i].sh_type == SHT_NOBITS) continue;
@@ -329,7 +304,80 @@ void elf_file::save(std::string filename)
 		}
 	}
 
+	// byteswap symbol table
+	byteswap_symbol_table(ELFENDIAN_HOST);
+
 	fclose(file);
+}
+
+void elf_file::byteswap_symbol_table(ELFENDIAN endian)
+{
+	if (!symtab) return;
+
+	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
+	switch (ei_class) {
+		case ELFCLASS32:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
+				elf_bswap_sym32(sym32, ei_data, ELFENDIAN_TARGET);
+			}
+			break;
+		case ELFCLASS64:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
+				elf_bswap_sym64(sym64, ei_data, ELFENDIAN_TARGET);
+			}
+			break;
+	}
+}
+
+void elf_file::copy_from_symbol_table_sections()
+{
+	symbols.clear();
+	addr_symbol_map.clear();
+	name_symbol_map.clear();
+
+	if (!symtab) return;
+
+	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
+	switch (ei_class) {
+		case ELFCLASS32:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
+				Elf64_Sym sym64;
+				elf_sym32_to_sym64(&sym64, sym32);
+				symbols.push_back(sym64);
+			}
+			break;
+		case ELFCLASS64:
+			for (size_t i = 0; i < num_symbols; i++) {
+				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
+				symbols.push_back(*sym64);
+			}
+			break;
+	}
+
+	if (!strtab) return;
+
+	for (size_t i = 0; i < symbols.size(); i++) {
+		auto &sym = symbols[i];
+		if (sym.st_shndx != SHN_UNDEF && sym.st_info != STT_FILE && sym.st_value != 0) {
+			const char* name = (const char*)offset(strtab->sh_offset + sym.st_name);
+			if (!strlen(name)) continue;
+			name_symbol_map[name] = i;
+			addr_symbol_map[sym.st_value] = i;
+		}
+	}
+}
+
+void elf_file::copy_to_symbol_table_sections()
+{
+	// TODO
+}
+
+void elf_file::recalculate_section_offsets()
+{
+	// TODO
 }
 
 uint8_t* elf_file::offset(size_t offset)
