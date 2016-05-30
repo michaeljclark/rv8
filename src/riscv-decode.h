@@ -75,7 +75,11 @@ typedef simm_t<9, S<12,10, B<5,4>,B<8>>, S<6,5, B<7,6>>>                     ris
 
 /* Decode none */
 template <typename T>
-inline void riscv_decode_none(T &dec, riscv_lu inst) {}
+inline void riscv_decode_none(T &dec, riscv_lu inst)
+{
+	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.imm = 0;
+}
 
 /* Decode C nop */
 template <typename T>
@@ -1307,6 +1311,7 @@ void riscv_decode_opcode(T &dec, riscv_lu inst)
 					break;
 			}
 			break;
+		default: if (rvi) dec.op = riscv_op_unknown; break;
 	}
 }
 

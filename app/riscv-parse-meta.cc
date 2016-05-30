@@ -141,7 +141,18 @@ void riscv_parse_meta::generate_map()
 
 void riscv_parse_meta::generate_codec()
 {
+	// generate decode tree
+	root_node.clear();
 	generate_codec_node(root_node, opcodes);
+
+	// add top level default value for riscv_op_unknown
+	unknown = std::make_shared<riscv_opcode>("unknown" , "unknown");
+	for (auto &ext : extensions) unknown->extensions.push_back(ext);
+	if (std::find(root_node.vals.begin(), root_node.vals.end(), DEFAULT) == root_node.vals.end()) {
+		root_node.vals.push_back(DEFAULT);
+		root_node.val_opcodes.insert(root_node.val_opcodes.begin(),
+			std::pair<ssize_t,riscv_opcode_list>(DEFAULT, riscv_opcode_list()))->second.push_back(unknown);
+	}
 }
 
 std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)

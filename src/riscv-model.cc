@@ -162,6 +162,14 @@ std::string riscv_bitspec::to_template()
 	return ss.str();
 }
 
+void riscv_codec_node::clear()
+{
+	bits.clear();
+	vals.clear();
+	val_opcodes.clear();
+	val_decodes.clear();
+}
+
 riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=", false, false);
