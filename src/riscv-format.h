@@ -30,8 +30,8 @@ extern "C" {
 	extern const char* riscv_fmt_rs2_imm_rs1;
 	extern const char* riscv_fmt_frs2_imm_rs1;
 	extern const char* riscv_fmt_rs1_rs2_disp;
-	extern const char* riscv_fmt_aqrl_rd_rs2_b_rs1;
-	extern const char* riscv_fmt_aqrl_rd_b_rs1;
+	extern const char* riscv_fmt_aqrl_rd_rs2_rs1;
+	extern const char* riscv_fmt_aqrl_rd_rs1;
 }
 
 #endif

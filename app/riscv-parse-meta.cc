@@ -141,7 +141,7 @@ void riscv_parse_meta::generate_map()
 
 void riscv_parse_meta::generate_codec()
 {
-	// generate decode tree
+	// generate decode
 	root_node.clear();
 	generate_codec_node(root_node, opcodes);
 
@@ -198,7 +198,7 @@ std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 {
 	std::vector<std::string> codec_names;
 	for (auto &codec : codecs) {
-		std::string codec_name = split(codec->name, "+", false, false)[0];
+		std::string codec_name = format_codec("", codec, "_");
 		if (std::find(codec_names.begin(), codec_names.end(), codec_name) == codec_names.end()) {
 			codec_names.push_back(codec_name);
 		}
@@ -683,7 +683,7 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown = 0,\n");
 	for (auto &opcode : opcodes) {
-		printf("\t%s = %lu,%s\n", opcode_format("riscv_op_", opcode, '_').c_str(), opcode->num,
+		printf("\t%s = %lu,%s\n", opcode_format("riscv_op_", opcode, "_").c_str(), opcode->num,
 			no_comment || opcode->long_name.size() == 0 ? "" :
 				format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
 	}
@@ -761,7 +761,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("const char* riscv_instruction_name[] = {\n");
 	print_array_unknown_str("unknown", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_name = opcode_format("", opcode, '.', false);
+		std::string opcode_name = opcode_format("", opcode, ".", false);
 		printf("\t%s\"%s\",\n",
 			opcode_comment(opcode, no_comment).c_str(),
 			opcode_name.c_str());
@@ -772,7 +772,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("const riscv_codec riscv_instruction_codec[] = {\n");
 	print_array_unknown_enum("riscv_codec_unknown", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string codec_name = split(opcode->codec->name, "+", false, false)[0];
+		std::string codec_name = format_codec("", opcode->codec, "_");
 		printf("\t%sriscv_codec_%s,\n",\
 			opcode_comment(opcode, no_comment).c_str(),
 			codec_name.c_str());
@@ -803,16 +803,16 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("const char* riscv_instruction_format[] = {\n");
 	print_array_unknown_enum("riscv_fmt_none", no_comment);
 	for (auto &opcode : opcodes) {
-		printf("\t%sriscv_fmt_%s,\n",
+		printf("\t%s%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
-			opcode->format->name.c_str());
+			format_format("riscv_fmt_", opcode->format, '_').c_str());
 	}
 	printf("};\n\n");
 
 	// Compression constraints
 	for (auto &opcode : opcodes) {
 		if (!opcode->compressed) continue;
-		std::string cop_name = "rvcc_" + opcode_format("", opcode, '_') + "[] =";
+		std::string cop_name = "rvcc_" + opcode_format("", opcode, "_") + "[] =";
 		printf("const rvc_constraint %-30s { ", cop_name.c_str());
 		for (auto &constraint : opcode->compressed->constraint_list) {
 			printf("rvc_%s, ", constraint->name.c_str());
@@ -824,14 +824,14 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	// Compression data
 	for (auto &opcode : opcodes) {
 		if (opcode->compressions.size() == 0) continue;
-		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, '_') + "[] =";
+		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, "_") + "[] =";
 		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
 		for (auto comp : opcode->compressions) {
 			printf("{ %s, %s }, ",
 				(zero_not_oh ?
 					format_string("%lu", comp->comp_opcode->num).c_str() :
-					opcode_format("riscv_op_", comp->comp_opcode, '_').c_str()),
-				opcode_format("rvcc_", comp->comp_opcode, '_').c_str());
+					opcode_format("riscv_op_", comp->comp_opcode, "_").c_str()),
+				opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
 		}
 		printf("{ riscv_op_unknown, nullptr } };\n");
 	}
@@ -841,8 +841,8 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("const riscv_comp_data* riscv_instruction_comp[] = {\n");
 	print_array_unknown_enum("nullptr", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
-		std::string opcode_data = opcode_format("rvcd_", opcode, '_');
+		std::string opcode_key = opcode_format("", opcode, ".");
+		std::string opcode_data = opcode_format("rvcd_", opcode, "_");
 		std::string opcode_constraint = "nullptr";
 		printf("\t%s%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
@@ -855,13 +855,13 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	if (zero_not_oh) print_array_unknown_enum("0", no_comment);
 	else print_array_unknown_enum("riscv_op_unknown", no_comment);
 	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, '.');
+		std::string opcode_key = opcode_format("", opcode, ".");
 		printf("\t%s%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
 			opcode->compressed ?
 				(zero_not_oh ?
 					format_string("%lu", opcode->compressed->decomp_opcode->num).c_str() :
-					opcode_format("riscv_op_", opcode->compressed->decomp_opcode, '_').c_str()) :
+					opcode_format("riscv_op_", opcode->compressed->decomp_opcode, "_").c_str()) :
 				(zero_not_oh ?
 					"0" :
 					"riscv_op_unknown"));
@@ -1035,7 +1035,7 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 					printf("\t\t%sif (%s && rv%lu) dec.op = %s;\n",
 						oi != opcode_list.begin() ? "else " : "",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
-						opcode_format("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, "_").c_str());
 				}
 				for (size_t i = 0; i < indent; i++) printf("\t");
 				printf("\t\tbreak;\n");
@@ -1046,11 +1046,11 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 				if (opcode_widths.size() == 1) {
 					printf("if (%s && rv%lu) dec.op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
-						opcode_format("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, "_").c_str());
 				} else {
 					printf("if (%s) dec.op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(),
-						opcode_format("riscv_op_", opcode, '_').c_str());
+						opcode_format("riscv_op_", opcode, "_").c_str());
 				}
 
 				// if ambiguous, add comment

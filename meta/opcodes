@@ -37,9 +37,9 @@ sltiu      rd rs1 imm12              14..12=3 6..2=0x04 1..0=3            i     
 xori       rd rs1 imm12              14..12=4 6..2=0x04 1..0=3            i     rv32i rv64i
 ori        rd rs1 imm12              14..12=6 6..2=0x04 1..0=3            i     rv32i rv64i
 andi       rd rs1 imm12              14..12=7 6..2=0x04 1..0=3            i     rv32i rv64i
-slli       rd rs1 shamt5   31..26=0  14..12=1 6..2=0x04 1..0=3            i_sh5       rv32i
-srli       rd rs1 shamt5   31..26=0  14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
-srai       rd rs1 shamt5   31..26=16 14..12=5 6..2=0x04 1..0=3            i_sh5       rv32i
+slli       rd rs1 shamt5   31..26=0  14..12=1 6..2=0x04 1..0=3            i·sh5       rv32i
+srli       rd rs1 shamt5   31..26=0  14..12=5 6..2=0x04 1..0=3            i·sh5       rv32i
+srai       rd rs1 shamt5   31..26=16 14..12=5 6..2=0x04 1..0=3            i·sh5       rv32i
 add        rd rs1 rs2      31..25=0  14..12=0 6..2=0x0C 1..0=3            r     rv32i rv64i
 sub        rd rs1 rs2      31..25=32 14..12=0 6..2=0x0C 1..0=3            r     rv32i rv64i
 sll        rd rs1 rs2      31..25=0  14..12=1 6..2=0x0C 1..0=3            r     rv32i rv64i
@@ -58,13 +58,13 @@ fence.i    31..28=ignore 27..20=ignore 19..15=ignore 14..12=1 11..7=ignore 6..2=
 lwu        rd rs1 imm12              14..12=6 6..2=0x00 1..0=3            i+l         rv64i
 ld         rd rs1 imm12              14..12=3 6..2=0x00 1..0=3            i+l         rv64i
 sd         rs1 rs2 simm12            14..12=3 6..2=0x08 1..0=3            s           rv64i
-slli       rd rs1 shamt6   31..26=0  14..12=1 6..2=0x04 1..0=3            i_sh6       rv64i
-srli       rd rs1 shamt6   31..26=0  14..12=5 6..2=0x04 1..0=3            i_sh6       rv64i
-srai       rd rs1 shamt6   31..26=16 14..12=5 6..2=0x04 1..0=3            i_sh6       rv64i
+slli       rd rs1 shamt6   31..26=0  14..12=1 6..2=0x04 1..0=3            i·sh6       rv64i
+srli       rd rs1 shamt6   31..26=0  14..12=5 6..2=0x04 1..0=3            i·sh6       rv64i
+srai       rd rs1 shamt6   31..26=16 14..12=5 6..2=0x04 1..0=3            i·sh6       rv64i
 addiw      rd rs1 imm12              14..12=0 6..2=0x06 1..0=3            i           rv64i
-slliw      rd rs1 shamt5   31..25=0  14..12=1 6..2=0x06 1..0=3            i_sh5       rv64i
-srliw      rd rs1 shamt5   31..25=0  14..12=5 6..2=0x06 1..0=3            i_sh5       rv64i
-sraiw      rd rs1 shamt5   31..25=32 14..12=5 6..2=0x06 1..0=3            i_sh5       rv64i
+slliw      rd rs1 shamt5   31..25=0  14..12=1 6..2=0x06 1..0=3            i·sh5       rv64i
+srliw      rd rs1 shamt5   31..25=0  14..12=5 6..2=0x06 1..0=3            i·sh5       rv64i
+sraiw      rd rs1 shamt5   31..25=32 14..12=5 6..2=0x06 1..0=3            i·sh5       rv64i
 addw       rd rs1 rs2      31..25=0  14..12=0 6..2=0x0E 1..0=3            r           rv64i
 subw       rd rs1 rs2      31..25=32 14..12=0 6..2=0x0E 1..0=3            r           rv64i
 sllw       rd rs1 rs2      31..25=0  14..12=1 6..2=0x0E 1..0=3            r           rv64i
@@ -92,31 +92,31 @@ remuw      rd rs1 rs2       31..25=1 14..12=7 6..2=0x0E 1..0=3            r     
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
-lr.w       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=2 6..2=0x0B 1..0=3 r_l rv32a rv64a
-sc.w       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amoswap.w  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amoadd.w   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amoxor.w   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amoor.w    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amoand.w   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amomin.w   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amomax.w   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amominu.w  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
-amomaxu.w  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=2 6..2=0x0B 1..0=3 r_a rv32a rv64a
+lr.w       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=2 6..2=0x0B 1..0=3 r·l rv32a rv64a
+sc.w       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amoswap.w  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amoadd.w   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amoxor.w   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amoor.w    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amoand.w   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amomin.w   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amomax.w   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amominu.w  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
+amomaxu.w  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=2 6..2=0x0B 1..0=3 r·a rv32a rv64a
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
-lr.d       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=3 6..2=0x0B 1..0=3 r_l       rv64a
-sc.d       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amoswap.d  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amoadd.d   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amoxor.d   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amoor.d    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amoand.d   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amomin.d   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amomax.d   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amominu.d  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
-amomaxu.d  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3 r_a       rv64a
+lr.d       rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=3 6..2=0x0B 1..0=3 r·l       rv64a
+sc.d       rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amoswap.d  rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amoadd.d   rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amoxor.d   rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amoor.d    rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amoand.d   rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amomin.d   rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amomax.d   rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amominu.d  rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
+amomaxu.d  rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·a       rv64a
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
@@ -138,107 +138,107 @@ csrrci     rd      zimm     imm12             14..12=7 6..2=0x1C 1..0=3  i+csri 
 
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
-flw        rd rs1 imm12                14..12=2          6..2=0x01 1..0=3 i+lf  rv32f rv64f
-fsw        rs1 rs2 simm12              14..12=2          6..2=0x09 1..0=3 s+f   rv32f rv64f
-fmadd.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x10 1..0=3 r_4   rv32f rv64f
-fmsub.s    rd rs1 rs2 rs3              rm       26..25=0 6..2=0x11 1..0=3 r_4   rv32f rv64f
-fnmsub.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x12 1..0=3 r_4   rv32f rv64f
-fnmadd.s   rd rs1 rs2 rs3              rm       26..25=0 6..2=0x13 1..0=3 r_4   rv32f rv64f
-fadd.s     rd rs1 rs2      31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fsub.s     rd rs1 rs2      31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fmul.s     rd rs1 rs2      31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fdiv.s     rd rs1 rs2      31..27=0x03 rm       26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fsgnj.s    rd rs1 rs2      31..27=0x04 14..12=0 26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fsgnjn.s   rd rs1 rs2      31..27=0x04 14..12=1 26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fsgnjx.s   rd rs1 rs2      31..27=0x04 14..12=2 26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fmin.s     rd rs1 rs2      31..27=0x05 14..12=0 26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fmax.s     rd rs1 rs2      31..27=0x05 14..12=1 26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fsqrt.s    rd rs1 24..20=0 31..27=0x0B rm       26..25=0 6..2=0x14 1..0=3 r_m   rv32f rv64f
-fle.s      rd rs1 rs2      31..27=0x14 14..12=0 26..25=0 6..2=0x14 1..0=3 r+c   rv32f rv64f
-flt.s      rd rs1 rs2      31..27=0x14 14..12=1 26..25=0 6..2=0x14 1..0=3 r+c   rv32f rv64f
-feq.s      rd rs1 rs2      31..27=0x14 14..12=2 26..25=0 6..2=0x14 1..0=3 r+c   rv32f rv64f
-fcvt.w.s   rd rs1 24..20=0 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r_m+f rv32f rv64f
-fcvt.wu.s  rd rs1 24..20=1 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r_m+f rv32f rv64f
-fcvt.s.w   rd rs1 24..20=0 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r_m+e rv32f rv64f
-fcvt.s.wu  rd rs1 24..20=1 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r_m+e rv32f rv64f
-fmv.x.s    rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3 r+b   rv32f rv64f
-fclass.s   rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=0 6..2=0x14 1..0=3 r+b   rv32f rv64f
-fmv.s.x    rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3 r+a   rv32f rv64f
+flw        frd rs1           imm12       14..12=2          6..2=0x01 1..0=3 i+lf   rv32f rv64f
+fsw        rs1 frs2          simm12      14..12=2          6..2=0x09 1..0=3 s+f    rv32f rv64f
+fmadd.s    frd frs1 frs2 frs3            rm       26..25=0 6..2=0x10 1..0=3 r4·m   rv32f rv64f
+fmsub.s    frd frs1 frs2 frs3            rm       26..25=0 6..2=0x11 1..0=3 r4·m   rv32f rv64f
+fnmsub.s   frd frs1 frs2 frs3            rm       26..25=0 6..2=0x12 1..0=3 r4·m   rv32f rv64f
+fnmadd.s   frd frs1 frs2 frs3            rm       26..25=0 6..2=0x13 1..0=3 r4·m   rv32f rv64f
+fadd.s     frd frs1 frs2     31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fsub.s     frd frs1 frs2     31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fmul.s     frd frs1 frs2     31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fdiv.s     frd frs1 frs2     31..27=0x03 rm       26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fsgnj.s    frd frs1 frs2     31..27=0x04 14..12=0 26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fsgnjn.s   frd frs1 frs2     31..27=0x04 14..12=1 26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fsgnjx.s   frd frs1 frs2     31..27=0x04 14..12=2 26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fmin.s     frd frs1 frs2     31..27=0x05 14..12=0 26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fmax.s     frd frs1 frs2     31..27=0x05 14..12=1 26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fsqrt.s    rd rs1   24..20=0 31..27=0x0B rm       26..25=0 6..2=0x14 1..0=3 r·m+3f rv32f rv64f
+fle.s      rd frs1 frs2      31..27=0x14 14..12=0 26..25=0 6..2=0x14 1..0=3 r+rff  rv32f rv64f
+flt.s      rd frs1 frs2      31..27=0x14 14..12=1 26..25=0 6..2=0x14 1..0=3 r+rff  rv32f rv64f
+feq.s      rd frs1 frs2      31..27=0x14 14..12=2 26..25=0 6..2=0x14 1..0=3 r+rff  rv32f rv64f
+fcvt.w.s   rd frs1  24..20=0 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r·m+rf rv32f rv64f
+fcvt.wu.s  rd frs1  24..20=1 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r·m+rf rv32f rv64f
+fcvt.s.w   frd rs1  24..20=0 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r·m+fr rv32f rv64f
+fcvt.s.wu  frd rs1  24..20=1 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r·m+fr rv32f rv64f
+fmv.x.s    rd frs1  24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3 r+rf   rv32f rv64f
+fclass.s   rd frs1  24..20=0 31..27=0x1C 14..12=1 26..25=0 6..2=0x14 1..0=3 r+rf   rv32f rv64f
+fmv.s.x    frd rs1  24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3 r+fr   rv32f rv64f
 
 # RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.s   rd rs1 24..20=2 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r_m+f       rv64f
-fcvt.lu.s  rd rs1 24..20=3 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r_m+f       rv64f
-fcvt.s.l   rd rs1 24..20=2 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r_m+e       rv64f
-fcvt.s.lu  rd rs1 24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r_m+e       rv64f
+fcvt.l.s   rd frs1  24..20=2 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r·m+rf       rv64f
+fcvt.lu.s  rd frs1  24..20=3 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3 r·m+rf       rv64f
+fcvt.s.l   frd rs1  24..20=2 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r·m+fr       rv64f
+fcvt.s.lu  frd rs1  24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r·m+fr       rv64f
 
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 
-fld        rd rs1 imm12                14..12=3          6..2=0x01 1..0=3 i+lf  rv32d rv64d
-fsd        rs1 rs2 simm12              14..12=3          6..2=0x09 1..0=3 s+f   rv32d rv64d
-fmadd.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x10 1..0=3 r_4   rv32d rv64d
-fmsub.d    rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x11 1..0=3 r_4   rv32d rv64d
-fnmsub.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x12 1..0=3 r_4   rv32d rv64d
-fnmadd.d   rd rs1 rs2 rs3 rm                    26..25=1 6..2=0x13 1..0=3 r_4   rv32d rv64d
-fadd.d     rd rs1 rs2      31..27=0x00 rm       26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fsub.d     rd rs1 rs2      31..27=0x01 rm       26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fmul.d     rd rs1 rs2      31..27=0x02 rm       26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fdiv.d     rd rs1 rs2      31..27=0x03 rm       26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fsgnj.d    rd rs1 rs2      31..27=0x04 14..12=0 26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fsgnjn.d   rd rs1 rs2      31..27=0x04 14..12=1 26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fsgnjx.d   rd rs1 rs2      31..27=0x04 14..12=2 26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fmin.d     rd rs1 rs2      31..27=0x05 14..12=0 26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fmax.d     rd rs1 rs2      31..27=0x05 14..12=1 26..25=1 6..2=0x14 1..0=3 r_m   rv32d rv64d
-fcvt.s.d   rd rs1 24..20=1 31..27=0x08 rm       26..25=0 6..2=0x14 1..0=3 r_m+d rv32d rv64d
-fcvt.d.s   rd rs1 24..20=0 31..27=0x08 rm       26..25=1 6..2=0x14 1..0=3 r_m+d rv32d rv64d
-fsqrt.d    rd rs1 24..20=0 31..27=0x0B rm       26..25=1 6..2=0x14 1..0=3 r_m+d rv32d rv64d
-fle.d      rd rs1 rs2      31..27=0x14 14..12=0 26..25=1 6..2=0x14 1..0=3 r+c   rv32d rv64d
-flt.d      rd rs1 rs2      31..27=0x14 14..12=1 26..25=1 6..2=0x14 1..0=3 r+c   rv32d rv64d
-feq.d      rd rs1 rs2      31..27=0x14 14..12=2 26..25=1 6..2=0x14 1..0=3 r+c   rv32d rv64d
-fcvt.w.d   rd rs1 24..20=0 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r_m+f rv32d rv64d
-fcvt.wu.d  rd rs1 24..20=1 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r_m+f rv32d rv64d
-fcvt.d.w   rd rs1 24..20=0 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r_m+e rv32d rv64d
-fcvt.d.wu  rd rs1 24..20=1 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r_m+e rv32d rv64d
-fclass.d   rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=1 6..2=0x14 1..0=3 r+b   rv32d rv64d
+fld        frd rs1           imm12       14..12=3          6..2=0x01 1..0=3 i+lf   rv32d rv64d
+fsd        rs1 frs2          simm12      14..12=3          6..2=0x09 1..0=3 s+f    rv32d rv64d
+fmadd.d    frd frs1 frs2 frs3            rm       26..25=1 6..2=0x10 1..0=3 r4·m   rv32d rv64d
+fmsub.d    frd frs1 frs2 frs3            rm       26..25=1 6..2=0x11 1..0=3 r4·m   rv32d rv64d
+fnmsub.d   frd frs1 frs2 frs3            rm       26..25=1 6..2=0x12 1..0=3 r4·m   rv32d rv64d
+fnmadd.d   frd frs1 frs2 frs3            rm       26..25=1 6..2=0x13 1..0=3 r4·m   rv32d rv64d
+fadd.d     frd frs1 frs2     31..27=0x00 rm       26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fsub.d     frd frs1 frs2     31..27=0x01 rm       26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fmul.d     frd frs1 frs2     31..27=0x02 rm       26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fdiv.d     frd frs1 frs2     31..27=0x03 rm       26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fsgnj.d    frd frs1 frs2     31..27=0x04 14..12=0 26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fsgnjn.d   frd frs1 frs2     31..27=0x04 14..12=1 26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fsgnjx.d   frd frs1 frs2     31..27=0x04 14..12=2 26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fmin.d     frd frs1 frs2     31..27=0x05 14..12=0 26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fmax.d     frd frs1 frs2     31..27=0x05 14..12=1 26..25=1 6..2=0x14 1..0=3 r·m+3f rv32d rv64d
+fcvt.s.d   frd frs1 24..20=1 31..27=0x08 rm       26..25=0 6..2=0x14 1..0=3 r·m+ff rv32d rv64d
+fcvt.d.s   frd frs1 24..20=0 31..27=0x08 rm       26..25=1 6..2=0x14 1..0=3 r·m+ff rv32d rv64d
+fsqrt.d    frd frs1 24..20=0 31..27=0x0B rm       26..25=1 6..2=0x14 1..0=3 r·m+ff rv32d rv64d
+fle.d      rd frs1 frs2      31..27=0x14 14..12=0 26..25=1 6..2=0x14 1..0=3 r+rff  rv32d rv64d
+flt.d      rd frs1 frs2      31..27=0x14 14..12=1 26..25=1 6..2=0x14 1..0=3 r+rff  rv32d rv64d
+feq.d      rd frs1 frs2      31..27=0x14 14..12=2 26..25=1 6..2=0x14 1..0=3 r+rff  rv32d rv64d
+fcvt.w.d   rd frs1  24..20=0 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r·m+rf rv32d rv64d
+fcvt.wu.d  rd frs1  24..20=1 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r·m+rf rv32d rv64d
+fcvt.d.w   frd rs1  24..20=0 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m+fr rv32d rv64d
+fcvt.d.wu  frd rs1  24..20=1 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m+fr rv32d rv64d
+fclass.d   rd frs1  24..20=0 31..27=0x1C 14..12=1 26..25=1 6..2=0x14 1..0=3 r+rf   rv32d rv64d
 
 # RV64D    "RV64D Standard Extension for Double-Precision Floating-Point (in addition to RV32D)"
 
-fcvt.l.d   rd rs1 24..20=2 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r_m+f      rv64d
-fcvt.lu.d  rd rs1 24..20=3 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r_m+f      rv64d
-fmv.x.d    rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=1 6..2=0x14 1..0=3 r+b        rv64d
-fcvt.d.l   rd rs1 24..20=2 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r_m+e      rv64d
-fcvt.d.lu  rd rs1 24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r_m+e      rv64d
-fmv.d.x    rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+a        rv64d
+fcvt.l.d   rd frs1  24..20=2 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r·m+rf       rv64d
+fcvt.lu.d  rd frs1  24..20=3 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3 r·m+rf       rv64d
+fmv.x.d    rd frs1  24..20=0 31..27=0x1C 14..12=0 26..25=1 6..2=0x14 1..0=3 r+rf         rv64d
+fcvt.d.l   frd rs1  24..20=2 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m+fr       rv64d
+fcvt.d.lu  frd rs1  24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m+fr       rv64d
+fmv.d.x    frd rs1  24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr         rv64d
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 
-frcsr      rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-frrm       rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-frflags    rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-fscsr      rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-fsrm       rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-fsflags    rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3   i+csr     rv32f rv64f
-fsrmi      rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3   i+csri    rv32f rv64f
-fsflagsi   rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3   i+csri    rv32f rv64f
+frcsr      rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+frrm       rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+frflags    rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+fscsr      rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+fsrm       rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+fsflags    rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+fsrmi      rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
+fsflagsi   rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
 
 # RV32C    "RV32C Standard Extension for Compressed Instructions"
 
-c.addi4spn crdq       cimm4spn 1..0=0 15..13=0                       ciw_4spn   rv32c rv64c
-c.fld      crdq  crs1q   cimmd 1..0=0 15..13=1                       cl_ld+f    rv32c rv64c
-c.lw       crdq  crs1q   cimmw 1..0=0 15..13=2                       cl_lw      rv32c rv64c
-c.flw      crdq  crs1q   cimmw 1..0=0 15..13=3                       cl_lw+f          rv32c
-c.fsd      crs1q crs2q   cimmd 1..0=0 15..13=5                       cs_sd+f    rv32c rv64c
-c.sw       crs1q crs2q   cimmw 1..0=0 15..13=6                       cs_sw      rv32c rv64c
-c.fsw      crs1q crs2q   cimmw 1..0=0 15..13=7                       cs_sw+f          rv32c
-c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0   ci_nop     rv32c rv64c
+c.addi4spn crdq       cimm4spn 1..0=0 15..13=0                       ciw·4spn   rv32c rv64c
+c.fld      crdq  crs1q   cimmd 1..0=0 15..13=1                       cl·ld+f    rv32c rv64c
+c.lw       crdq  crs1q   cimmw 1..0=0 15..13=2                       cl·lw      rv32c rv64c
+c.flw      crdq  crs1q   cimmw 1..0=0 15..13=3                       cl·lw+f          rv32c
+c.fsd      crs1q crs2q   cimmd 1..0=0 15..13=5                       cs·sd+f    rv32c rv64c
+c.sw       crs1q crs2q   cimmw 1..0=0 15..13=6                       cs·sw      rv32c rv64c
+c.fsw      crs1q crs2q   cimmw 1..0=0 15..13=7                       cs·sw+f          rv32c
+c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0   ci·nop     rv32c rv64c
 c.addi     crs1rd        cimmi 1..0=1 15..13=0                       ci         rv32c rv64c
 c.jal                    cimmj 1..0=1 15..13=1                       cj               rv32c
-c.li       crs1rd        cimmi 1..0=1 15..13=2                       ci_li      rv32c rv64c
-c.lui      crd          cimmui 1..0=1 15..13=3                       ci_lui     rv32c rv64c
-c.addi16sp crs1rd     cimm16sp 1..0=1 15..13=3 11..7=2               ci_16sp    rv32c rv64c
-c.srli     crs1rdq      cimmsh 1..0=1 15..13=4 11..10=0              cb_sh5     rv32c rv64c
-c.srai     crs1rdq      cimmsh 1..0=1 15..13=4 11..10=1              cb_sh5     rv32c rv64c
-c.andi     crs1rdq       cimmi 1..0=1 15..13=4 11..10=2              cb+imm     rv32c rv64c
+c.li       crs1rd        cimmi 1..0=1 15..13=2                       ci·li      rv32c rv64c
+c.lui      crd          cimmui 1..0=1 15..13=3                       ci·lui     rv32c rv64c
+c.addi16sp crs1rd     cimm16sp 1..0=1 15..13=3 11..7=2               ci·16sp    rv32c rv64c
+c.srli     crs1rdq      cimmsh 1..0=1 15..13=4 11..10=0              cb·sh      rv32c rv64c
+c.srai     crs1rdq      cimmsh 1..0=1 15..13=4 11..10=1              cb·sh      rv32c rv64c
+c.andi     crs1rdq       cimmi 1..0=1 15..13=4 11..10=2              cb·imm     rv32c rv64c
 c.sub      crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=0  cs         rv32c rv64c
 c.xor      crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=1  cs         rv32c rv64c
 c.or       crs1rdq crs2q       1..0=1 15..13=4 12=0 11..10=3 6..5=2  cs         rv32c rv64c
@@ -248,23 +248,23 @@ c.addw     crs1rdq crs2q       1..0=1 15..13=4 12=1 11..10=3 6..5=1  cs         
 c.j                      cimmj 1..0=1 15..13=5                       cj         rv32c rv64c
 c.beqz     crs1q         cimmb 1..0=1 15..13=6                       cb         rv32c rv64c
 c.bnez     crs1q         cimmb 1..0=1 15..13=7                       cb         rv32c rv64c
-c.slli     crd          cimmsh 1..0=2 15..13=0                       ci_sh5     rv32c rv64c
-c.fldsp    crd        cimmldsp 1..0=2 15..13=1                       ci_ldsp+f  rv32c rv64c
-c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                       ci_lwsp    rv32c rv64c
-c.flwsp    crd        cimmlwsp 1..0=2 15..13=3                       ci_lwsp+f        rv32c
-c.jr       crs1                1..0=2 15..13=4 12=0 6..2=0           cr_jr      rv32c rv64c
-c.mv       crd crs2            1..0=2 15..13=4 12=0                  cr_mv      rv32c rv64c
-c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0   none+c     rv32c rv64c
-c.jalr     crs1                1..0=2 15..13=4 12=1 6..2=0           cr_jalr    rv32c rv64c
+c.slli     crs1rd       cimmsh 1..0=2 15..13=0                       ci·sh      rv32c rv64c
+c.fldsp    crd        cimmldsp 1..0=2 15..13=1                       ci·ldsp+f  rv32c rv64c
+c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                       ci·lwsp    rv32c rv64c
+c.flwsp    crd        cimmlwsp 1..0=2 15..13=3                       ci·lwsp+f        rv32c
+c.jr       crs1                1..0=2 15..13=4 12=0 6..2=0           cr·jr      rv32c rv64c
+c.mv       crd crs2            1..0=2 15..13=4 12=0                  cr·mv      rv32c rv64c
+c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0   ci·none    rv32c rv64c
+c.jalr     crs1                1..0=2 15..13=4 12=1 6..2=0           cr·jalr    rv32c rv64c
 c.add      crd crs2            1..0=2 15..13=4 12=1                  cr         rv32c rv64c
-c.fsdsp    crs2       cimmsdsp 1..0=2 15..13=5                       css_sdsp+f rv32c rv64c
-c.swsp     crs2       cimmswsp 1..0=2 15..13=6                       css_swsp   rv32c rv64c
-c.fswsp    crs2       cimmswsp 1..0=2 15..13=7                       css_swsp+f       rv32c
+c.fsdsp    crs2       cimmsdsp 1..0=2 15..13=5                       css·sdsp+f rv32c rv64c
+c.swsp     crs2       cimmswsp 1..0=2 15..13=6                       css·swsp   rv32c rv64c
+c.fswsp    crs2       cimmswsp 1..0=2 15..13=7                       css·swsp+f       rv32c
 
 # RV64C    "RV64C Standard Extension for Compressed Instructions (in addition to RV32C)"
 
-c.ld       crdq  crs1q   cimmd 1..0=0 15..13=3                       cl_ld            rv64c
-c.sd       crs1q crs2q   cimmd 1..0=0 15..13=7                       cs_sd            rv64c
+c.ld       crdq  crs1q   cimmd 1..0=0 15..13=3                       cl·ld            rv64c
+c.sd       crs1q crs2q   cimmd 1..0=0 15..13=7                       cs·sd            rv64c
 c.addiw    crs1rd        cimmi 1..0=1 15..13=1                       ci               rv64c
-c.ldsp     crs1rd     cimmldsp 1..0=2 15..13=3                       ci_ldsp          rv64c
-c.sdsp     crs2       cimmsdsp 1..0=2 15..13=7                       css_sdsp         rv64c
+c.ldsp     crd        cimmldsp 1..0=2 15..13=3                       ci·ldsp          rv64c
+c.sdsp     crs2       cimmsdsp 1..0=2 15..13=7                       css·sdsp         rv64c

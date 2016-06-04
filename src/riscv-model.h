@@ -172,11 +172,11 @@ struct riscv_extension
 
 struct riscv_format
 {
-	std::string name;
 	std::string args;
+	std::string description;
 
-	riscv_format(std::string name, std::string args)
-		: name(name), args(args) {}
+	riscv_format(std::string args, std::string description)
+		: args(args), description(description) {}
 };
 
 struct riscv_register
@@ -310,7 +310,9 @@ struct riscv_meta_model
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
-	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key = true);
+	static std::string format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix = true);
+	static std::string format_format(std::string prefix, riscv_format_ptr format, char special);
+	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key = true);
 	static std::string opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key = true);
 	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
 	static std::string codec_type_name(riscv_codec_ptr codec);

@@ -205,7 +205,7 @@ ASSEMBLY = $(TEST_DECODER_ASM) \
 all: dirs $(PARSE_META_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
 .PHONY: dirs test
 dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
-clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) riscv-instructions.* && (cd test && make clean)
+clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make clean)
 
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}

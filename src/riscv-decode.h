@@ -139,7 +139,7 @@ inline void riscv_decode_ci(T &dec, riscv_lu inst)
 
 /* Decode CI shamt5 */
 template <typename T>
-inline void riscv_decode_ci_sh5(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_sh(T &dec, riscv_lu inst)
 {
 	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(inst);
 	dec.rs2 = riscv_ireg_zero;
@@ -285,12 +285,20 @@ inline void riscv_decode_cb(T &dec, riscv_lu inst)
 	dec.imm = riscv_arg_cimmb::decode(inst);
 }
 
+/* Decode CB imm */
+template <typename T>
+inline void riscv_decode_cb_imm(T &dec, riscv_lu inst)
+{
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(inst) + 8;
+	dec.rs2 = riscv_ireg_zero;
+	dec.imm = riscv_arg_cimmi::decode(inst);
+}
+
 /* Decode CB shamt5 */
 template <typename T>
-inline void riscv_decode_cb_sh5(T &dec, riscv_lu inst)
+inline void riscv_decode_cb_sh(T &dec, riscv_lu inst)
 {
-	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(inst) + 8;
 	dec.rs2 = riscv_ireg_zero;
 	dec.imm = riscv_arg_cimmsh::decode(inst);
 }
@@ -348,7 +356,7 @@ inline void riscv_decode_r_a(T &dec, riscv_lu inst)
 
 /* Decode R 4f */
 template <typename T>
-inline void riscv_decode_r_4(T &dec, riscv_lu inst)
+inline void riscv_decode_r4_m(T &dec, riscv_lu inst)
 {
 	dec.rd = riscv_arg_rd::decode(inst);
 	dec.rs1 = riscv_arg_rs1::decode(inst);
@@ -485,7 +493,7 @@ inline riscv_lu riscv_encode_ci(T &dec)
 
 /* Encode CI shamt5 */
 template <typename T>
-inline riscv_lu riscv_encode_ci_sh5(T &dec)
+inline riscv_lu riscv_encode_ci_sh(T &dec)
 {
 	assert(dec.rd == dec.rs1);
 	return riscv_arg_crs1rd::encode(dec.rs1) |
@@ -613,13 +621,23 @@ inline riscv_lu riscv_encode_cs_sw(T &dec)
 template <typename T>
 inline riscv_lu riscv_encode_cb(T &dec)
 {
-	return riscv_arg_crs1q::encode(dec.rs1 + 8)  |
+	assert(dec.rd == dec.rs1);
+	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
 		riscv_arg_cimmb::encode(dec.imm);
+}
+
+/* Encode CB imm */
+template <typename T>
+inline riscv_lu riscv_encode_cb_imm(T &dec)
+{
+	assert(dec.rd == dec.rs1);
+	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
+		riscv_arg_cimmi::encode(dec.imm);
 }
 
 /* Encode CB shamt5 */
 template <typename T>
-inline riscv_lu riscv_encode_cb_sh5(T &dec)
+inline riscv_lu riscv_encode_cb_sh(T &dec)
 {
 	return riscv_arg_crs1q::encode(dec.rs1 + 8)  |
 		riscv_arg_cimmsh::encode(dec.imm);
@@ -673,7 +691,7 @@ inline riscv_lu riscv_encode_r_a(T &dec)
 
 /* Encode R 4f */
 template <typename T>
-inline riscv_lu riscv_encode_r_4(T &dec)
+inline riscv_lu riscv_encode_r4_m(T &dec)
 {
 	return riscv_arg_rd::encode(dec.rd) |
 		riscv_arg_rs1::encode(dec.rs1) |
@@ -1324,9 +1342,10 @@ inline void riscv_decode_type(T &dec, riscv_lu inst)
 	switch (dec.codec) {
 		case riscv_codec_none:          riscv_decode_none(dec, inst);            break;
 		case riscv_codec_cb:            riscv_decode_cb(dec, inst);              break;
-		case riscv_codec_cb_sh5:        riscv_decode_cb_sh5(dec, inst);          break;
+		case riscv_codec_cb_imm:        riscv_decode_cb_imm(dec, inst);          break;
+		case riscv_codec_cb_sh:         riscv_decode_cb_sh(dec, inst);           break;
 		case riscv_codec_ci:            riscv_decode_ci(dec, inst);              break;
-		case riscv_codec_ci_sh5:        riscv_decode_ci_sh5(dec, inst);          break;
+		case riscv_codec_ci_sh:         riscv_decode_ci_sh(dec, inst);           break;
 		case riscv_codec_ci_16sp:       riscv_decode_ci_16sp(dec, inst);         break;
 		case riscv_codec_ci_lwsp:       riscv_decode_ci_lwsp(dec, inst);         break;
 		case riscv_codec_ci_ldsp:       riscv_decode_ci_ldsp(dec, inst);         break;
@@ -1351,7 +1370,7 @@ inline void riscv_decode_type(T &dec, riscv_lu inst)
 		case riscv_codec_i_sh6:         riscv_decode_i_sh6(dec, inst);           break;
 		case riscv_codec_r:             riscv_decode_r(dec, inst);               break;
 		case riscv_codec_r_m:           riscv_decode_r_m(dec, inst);             break;
-		case riscv_codec_r_4:           riscv_decode_r_4(dec, inst);             break;
+		case riscv_codec_r4_m:        riscv_decode_r4_m(dec, inst);          break;
 		case riscv_codec_r_a:           riscv_decode_r_a(dec, inst);             break;
 		case riscv_codec_r_l:           riscv_decode_r_l(dec, inst);             break;
 		case riscv_codec_s:             riscv_decode_s(dec, inst);               break;
@@ -1372,9 +1391,10 @@ inline riscv_lu riscv_encode(T &dec)
 		case riscv_codec_none:          return inst |= riscv_encode_none(dec);            break;
 		case riscv_codec_ci_nop:        return inst |= riscv_encode_ci_nop(dec);          break;
 		case riscv_codec_cb:            return inst |= riscv_encode_cb(dec);              break;
-		case riscv_codec_cb_sh5:        return inst |= riscv_encode_cb_sh5(dec);          break;
+		case riscv_codec_cb_imm:        return inst |= riscv_encode_cb_imm(dec);          break;
+		case riscv_codec_cb_sh:         return inst |= riscv_encode_cb_sh(dec);           break;
 		case riscv_codec_ci:            return inst |= riscv_encode_ci(dec);              break;
-		case riscv_codec_ci_sh5:        return inst |= riscv_encode_ci_sh5(dec);          break;
+		case riscv_codec_ci_sh:         return inst |= riscv_encode_ci_sh(dec);           break;
 		case riscv_codec_ci_16sp:       return inst |= riscv_encode_ci_16sp(dec);         break;
 		case riscv_codec_ci_ldsp:       return inst |= riscv_encode_ci_ldsp(dec);         break;
 		case riscv_codec_ci_lwsp:       return inst |= riscv_encode_ci_lwsp(dec);         break;
@@ -1398,7 +1418,7 @@ inline riscv_lu riscv_encode(T &dec)
 		case riscv_codec_i_sh6:         return inst |= riscv_encode_i_sh6(dec);           break;
 		case riscv_codec_r:             return inst |= riscv_encode_r(dec);               break;
 		case riscv_codec_r_m:           return inst |= riscv_encode_r_m(dec);             break;
-		case riscv_codec_r_4:           return inst |= riscv_encode_r_4(dec);             break;
+		case riscv_codec_r4_m:        return inst |= riscv_encode_r4_m(dec);          break;
 		case riscv_codec_r_a:           return inst |= riscv_encode_r_a(dec);             break;
 		case riscv_codec_r_l:           return inst |= riscv_encode_r_l(dec);             break;
 		case riscv_codec_s:             return inst |= riscv_encode_s(dec);               break;
@@ -1487,23 +1507,23 @@ inline bool riscv_encode_compress_check(T &dec, const rvc_constraint *c)
 			case rvc_imm_10:        if (!(imm <= (imm & 0b1111111111))) return false; break;
 			case rvc_imm_12:        if (!(imm <= (imm & 0b111111111111))) return false; break;
 			case rvc_imm_18:        if (!(imm <= (imm & 0b111111111111111111))) return false; break;
-			case rvc_imm_not_zero:  if (!(imm != 0)) return false; break;
-			case rvc_imm_scale_2:   if (!((imm & 0b1) == 0)) return false; break;
-			case rvc_imm_scale_4:   if (!((imm & 0b11) == 0)) return false; break;
-			case rvc_imm_scale_8:   if (!((imm & 0b111) == 0)) return false; break;
-			case rvc_rd_comp:       if (!(rd  >= 8 && rd  <= 15)) return false; break;
-			case rvc_rs1_comp:      if (!(rs1 >= 8 && rs1 <= 15)) return false; break;
-			case rvc_rs2_comp:      if (!(rs2 >= 8 && rs2 <= 15)) return false; break;
+			case rvc_imm_nz:        if (!(imm != 0)) return false; break;
+			case rvc_imm_x2:        if (!((imm & 0b1) == 0)) return false; break;
+			case rvc_imm_x4:        if (!((imm & 0b11) == 0)) return false; break;
+			case rvc_imm_x8:        if (!((imm & 0b111) == 0)) return false; break;
+			case rvc_rd_b3:         if (!(rd  >= 8 && rd  <= 15)) return false; break;
+			case rvc_rs1_b3:        if (!(rs1 >= 8 && rs1 <= 15)) return false; break;
+			case rvc_rs2_b3:        if (!(rs2 >= 8 && rs2 <= 15)) return false; break;
 			case rvc_rd_eq_rs1:     if (!(rd == rs1)) return false; break;
 			case rvc_rd_eq_ra:      if (!(rd == 1)) return false; break;
 			case rvc_rd_eq_sp:      if (!(rd == 2)) return false; break;
-			case rvc_rd_eq_zero:    if (!(rd == 0)) return false; break;
+			case rvc_rd_eq_x0:      if (!(rd == 0)) return false; break;
 			case rvc_rs1_eq_sp:     if (!(rs1 == 2)) return false; break;
-			case rvc_rs1_eq_zero:   if (!(rs1 == 0)) return false; break;
-			case rvc_rs2_eq_zero:   if (!(rs2 == 0)) return false; break;
-			case rvc_rd_not_sp:     if (!(rd != 2)) return false; break;
-			case rvc_rd_not_zero:   if (!(rd != 0)) return false; break;
-			case rvc_rs2_not_zero:  if (!(rs2 != 0)) return false; break;
+			case rvc_rs1_eq_x0:     if (!(rs1 == 0)) return false; break;
+			case rvc_rs2_eq_x0:     if (!(rs2 == 0)) return false; break;
+			case rvc_rd_ne_sp:      if (!(rd != 2)) return false; break;
+			case rvc_rd_ne_x0:      if (!(rd != 0)) return false; break;
+			case rvc_rs2_ne_x0:     if (!(rs2 != 0)) return false; break;
 			case rvc_end:           break;
 		}
 		c++;

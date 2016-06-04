@@ -77,6 +77,20 @@ std::string rtrim(std::string s)
 	return s;
 }
 
+std::string ltrim(std::string s, int(*p)(int))
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+			std::not1(std::ptr_fun<int, int>(p))));
+	return s;
+}
+
+std::string rtrim(std::string s, int(*p)(int))
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(),
+			std::not1(std::ptr_fun<int, int>(p))).base(), s.end());
+	return s;
+}
+
 std::vector<std::string> split(std::string str, std::string sep,
 	bool inc_empty, bool inc_sep)
 {
@@ -91,4 +105,14 @@ std::vector<std::string> split(std::string str, std::string sep,
 		comps.push_back(str.substr(j, str.size() - j));
 	}
 	return comps;
+}
+
+std::string replace(std::string haystack, const std::string needle, const std::string noodle)
+{
+    size_t i = 0;
+    while((i = haystack.find(needle, i)) != std::string::npos) {
+         haystack.replace(i, needle.length(), noodle);
+         i += noodle.length();
+    }
+    return haystack;
 }

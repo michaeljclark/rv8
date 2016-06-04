@@ -257,17 +257,37 @@ std::string riscv_meta_model::opcode_mask(riscv_opcode_ptr opcode)
 	return ss.str();
 }
 
-std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr opcode, char dot, bool key)
+std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
 {
-	std::string name = key ? opcode->key : opcode->name;
+	std::string name = strip_suffix ? split(codec->name, "+", false, false)[0] : codec->name;
+	return prefix + replace(name, "·", dot);
+}
+
+std::string riscv_meta_model::format_format(std::string prefix, riscv_format_ptr format, char special)
+{
+	std::string args;
+	for (auto i = format->args.begin(); i != format->args.end(); i++) {
+		if (std::ispunct(*i)) {
+			if (i != format->args.begin() && i + 1 != format->args.end() && !std::ispunct(*(i - 1))) {
+				args += special;
+			}
+		} else {
+			args += *i;
+		}
+	}
+	return prefix + ltrim(rtrim(args, std::ispunct), std::ispunct);
+}
+
+std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key)
+{
+	std::string name = use_key ? opcode->key : opcode->name;
 	if (name.find("@") == 0) name = name.substr(1);
-	std::replace(name.begin(), name.end(), '.', dot);
-	return prefix + name;
+	return prefix + replace(name, ".", dot);
 }
 
 std::string riscv_meta_model::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
 {
-	std::string opcode_name = opcode_format("", opcode, '.', key);
+	std::string opcode_name = opcode_format("", opcode, ".", key);
 	return no_comment ? "" : format_string("/* %20s */ ", opcode_name.c_str());
 }
 
@@ -281,7 +301,7 @@ std::string riscv_meta_model::opcode_isa_shortname(riscv_opcode_ptr opcode)
 
 std::string riscv_meta_model::codec_type_name(riscv_codec_ptr codec)
 {
-	size_t o = codec->name.find("_");
+	size_t o = codec->name.find("·");
 	if (o == std::string::npos) o = codec->name.find("+");
 	if (o == std::string::npos) return codec->name;
 	return codec->name.substr(0, o);

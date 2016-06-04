@@ -5,6 +5,7 @@ none "None"
 
 32   "Base"                 31:25                     24:20     19:15     14:12        11:7              6:0
 r    "Register"             31:27=funct5 26:25=funct2 24:20=rs2 19:15=rs1 14:12=funct3 11:7=rd           6:0=opcode
+r4   "Register"             31:27=rs3    26:25=funct2 24:20=rs2 19:15=rs1 14:12=funct3 11:7=rd           6:0=opcode
 i    "Immediate"            31:20[11:0]=imm                     19:15=rs1 14:12=funct3 11:7=rd           6:0=opcode
 s    "Store"                31:25[11:5]=imm           24:20=rs2 19:15=rs1 14:12=funct3 11:7[4:0]=imm     6:0=opcode
 sb   "Branch"               31:25[12|10:5]=imm        24:20=rs2 19:15=rs1 14:12=funct3 11:7[4:1|11]=imm  6:0=opcode

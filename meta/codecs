@@ -4,62 +4,62 @@
 # <codec> denotes a distinct instruction encoding, decoding
 #
 # Codecs with a + sign denote a format variant for the same codec
-# i.e. <codec(+format_variant)?> where codec is the distinct codec
+# i.e. <codec(+format·variant)?> where codec is the distinct codec
 
 none       none
-none+c     none
-cb         rs1_rs2_disp
-cb+imm     rd_rs1_imm
-cb_sh5     rd_rs1_imm
-ci         rd_rs1_imm
-ci_sh5     rd_rs1_imm
-ci_16sp    rd_rs1_imm
-ci_lwsp    rd_imm_rs1
-ci_ldsp    rd_imm_rs1
-ci_lwsp+f  frd_imm_rs1
-ci_ldsp+f  frd_imm_rs1
-ci_li      rd_rs1_imm
-ci_lui     rd_imm
-ci_nop     none
-ciw_4spn   rd_rs1_imm
-cj         rd_disp
-cl_lw      rd_imm_rs1
-cl_ld      rd_imm_rs1
-cl_lw+f    frd_imm_rs1
-cl_ld+f    frd_imm_rs1
-cr         rd_rs1_rs2
-cr_mv      rd_rs1_rs2
-cr_jalr    rd_rs1_imm
-cr_jr      rd_rs1_imm
-cs         rd_rs1_rs2
-cs_sw+f    frs2_imm_rs1
-cs_sd+f    frs2_imm_rs1
-cs_sw      rs2_imm_rs1
-cs_sd      rs2_imm_rs1
-css_swsp   rs2_imm_rs1
-css_sdsp   rs2_imm_rs1
-css_swsp+f frs2_imm_rs1
-css_sdsp+f frs2_imm_rs1
-i          rd_rs1_imm
-i_sh5      rd_rs1_imm
-i_sh6      rd_rs1_imm
-i+csr      rd_csr_rs1
-i+csri     rd_csr_imm5
-i+l        rd_imm_rs1
-i+lf       frd_imm_rs1
-r          rd_rs1_rs2
-r+a        frd_rs1
-r+b        rd_frs1
-r+c        rd_frs1_frs2
-r_m+d      rm_frd_frs1
-r_m+e      rm_frd_rs1
-r_m+f      rm_rd_frs1
-r_m        rm_frd_frs1_frs2
-r_4        rm_frd_frs1_frs2_frs3
-r_a        aqrl_rd_rs2_b_rs1
-r_l        aqrl_rd_b_rs1
-s          rs2_imm_rs1
-sb         rs1_rs2_disp
-s+f        frs2_imm_rs1
-u          rd_imm
-uj         rd_disp
+u          rd,imm                 # rd imm20
+uj         rd,disp                # rd jimm20
+i          rd,rs1,imm             # rd rs1 imm12
+i·sh5      rd,rs1,imm             # rd rs1 shamt5
+i·sh6      rd,rs1,imm             # rd rs1 shamt6
+i+csr      rd,csr,rs1             # rd rs1
+i+csri     rd,csr,imm5            # rd zimm
+i+l        rd,imm(rs1)            # rd rs1 imm12
+i+lf       frd,imm(rs1)           # frd rs1 imm12
+s          rs2,imm(rs1)           # rs1 rs2 simm12
+sb         rs1,rs2,disp           # rs1 rs2 sbimm12
+s+f        frs2,imm(rs1)          # rs1 frs2 simm12
+r          rd,rs1,rs2             # rd rs1 rs2
+r+fr       frd,rs1                # frd rs1
+r+rf       rd,frs1                # rd frs1
+r+rff      rd,frs1,frs2           # rd frs1 frs2
+r·m+ff     rm,frd,frs1            # frd frs1 rm
+r·m+fr     rm,frd,rs1             # frd rs1 rm
+r·m+rf     rm,rd,frs1             # rd frs1 rm
+r·m+3f     rm,frd,frs1,frs2       # frd frs1 frs2 rm
+r4·m       rm,frd,frs1,frs2,frs3  # frd frs1 frs2 frs3 rm
+r·a        aqrl,rd,rs2,(rs1)      # rd rs1 rs2 aqrl
+r·l        aqrl,rd,(rs1)          # rd rs1 aqrl
+cb         rs1,rs2,disp           # crs1q cimmb       rd=zero rs2=zero
+cb·imm     rd,rs1,imm             # crs1rdq cimmi     rd=rs1 rs2=zero
+cb·sh      rd,rs1,imm             # crs1rdq cimmsh    rd=rs1 rs2=zero
+ci         rd,rs1,imm             # crs1rd cimmi
+ci·sh      rd,rs1,imm             # crs1rd cimmsh
+ci·16sp    rd,rs1,imm             # crs1rd cimm16sp
+ci·lwsp    rd,imm(rs1)            # crd cimmlwsp      [¿1] trd=ireg
+ci·ldsp    rd,imm(rs1)            # crd cimmldsp      [¿2] trd=ireg
+ci·lwsp+f  frd,imm(rs1)           # crd cimmlwsp      [¿1] trd=freg
+ci·ldsp+f  frd,imm(rs1)           # crd cimmldsp      [¿2] trd=freg
+ci·li      rd,rs1,imm             # crs1rd cimmi
+ci·lui     rd,imm                 # crd cimmui
+ci·nop     none
+ci·none    none
+ciw·4spn   rd,rs1,imm             # crdq cimm4spn     rs1=sp
+cj         rd,disp                # cimmj             rd=zero
+cl·lw      rd,imm(rs1)            # crdq crs1q cimmw  [¿3] trd=ireg
+cl·ld      rd,imm(rs1)            # crdq crs1q cimmd  [¿4] trd=ireg
+cl·lw+f    frd,imm(rs1)           # crdq crs1q cimmw  [¿3] trd=freg
+cl·ld+f    frd,imm(rs1)           # crdq crs1q cimmd  [¿4] trd=freg
+cr         rd,rs1,rs2             # crd crs2          [¿5] rs1=rd
+cr·mv      rd,rs1,rs2             # crd crs2          [¿5] rs1=zero
+cr·jalr    rd,rs1,imm             # crs1              [¿6] rd=ra
+cr·jr      rd,rs1,imm             # crs1              [¿6] rd=zero
+cs         rd,rs1,rs2             # crs1rdq crs2q     rd=rs1
+cs·sw+f    frs2,imm(rs1)          # crs1q crs2q cimmw [¿7] trs2=freg
+cs·sd+f    frs2,imm(rs1)          # crs1q crs2q cimmd [¿8] trs2=freg
+cs·sw      rs2,imm(rs1)           # crs1q crs2q cimmw [¿7] trs2=ireg
+cs·sd      rs2,imm(rs1)           # crs1q crs2q cimmd [¿8] trs2=ireg
+css·swsp   rs2,imm(rs1)           # crs2 cimmswsp     [¿9] trs2=ireg rs1=sp
+css·sdsp   rs2,imm(rs1)           # crs2 cimmsdsp     [¿A] trs2=ireg rs1=sp
+css·swsp+f frs2,imm(rs1)          # crs2 cimmswsp     [¿9] trs2=freg rs1=sp
+css·sdsp+f frs2,imm(rs1)          # crs2 cimmsdsp     [¿A] trs2=freg rs1=sp

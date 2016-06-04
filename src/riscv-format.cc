@@ -47,5 +47,5 @@ const char* riscv_fmt_rd_csr_imm5 =           "0,c,7";
 const char* riscv_fmt_rs2_imm_rs1 =           "2,i(1)";
 const char* riscv_fmt_frs2_imm_rs1 =          "5,i(1)";
 const char* riscv_fmt_rs1_rs2_disp =          "1,2,d";
-const char* riscv_fmt_aqrl_rd_rs2_b_rs1 =     "a,0,2,(1)";
-const char* riscv_fmt_aqrl_rd_b_rs1 =         "a,0,(1)";
+const char* riscv_fmt_aqrl_rd_rs2_rs1 =       "a,0,2,(1)";
+const char* riscv_fmt_aqrl_rd_rs1 =           "a,0,(1)";

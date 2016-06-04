@@ -13,7 +13,10 @@ extern void debug(const char* fmt, ...);
 
 extern std::string ltrim(std::string s);
 extern std::string rtrim(std::string s);
+extern std::string ltrim(std::string s, int(*p)(int));
+extern std::string rtrim(std::string s, int(*p)(int));
 extern std::vector<std::string> split(std::string str, std::string sep,
 	bool inc_empty, bool inc_sep);
+extern std::string replace(std::string haystack, const std::string needle, const std::string noodle);
 
 #endif
