@@ -26,21 +26,21 @@
 inline riscv_lu get_instruction(riscv_ptr &pc)
 {
 	// NOTE: currenttly supports maximum of 64-bit
-	riscv_lu inst;
+	riscv_lu insn;
 	if ((*(uint16_t*)pc & 0b11) != 0b11) {
-		inst = htole16(*(uint16_t*)pc);
+		insn = htole16(*(uint16_t*)pc);
 		pc += 2;
 	} else if ((*(uint16_t*)pc & 0b11100) != 0b11100) {
-		inst = htole32(*(uint32_t*)pc);
+		insn = htole32(*(uint32_t*)pc);
 		pc += 4;
 	} else if ((*(uint16_t*)pc & 0b111111) == 0b011111) {
-		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
+		insn = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
 		pc += 6;
 	} else {
-		inst = htole64(*(uint64_t*)pc);
+		insn = htole64(*(uint64_t*)pc);
 		pc += 8;
 	}
-	return inst;
+	return insn;
 }
 
 /*
@@ -886,14 +886,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
-riscv_lu riscv_decode_instruction(riscv_lu inst)
+riscv_lu riscv_decode_instruction(riscv_lu insn)
 {
 	riscv_lu op = 0;
 
-	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
+	switch (((insn >> 0) & 0b11) /* insn[1:0] */) {
 	case 0:
 		// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd
-		switch (((inst >> 13) & 0b111) /* inst[15:13] */) {
+		switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
 			case 0: if (rvc) op = riscv_op_c_addi4spn; break;
 			case 1: if (rvc) op = riscv_op_c_fld; break;
 			case 2: if (rvc) op = riscv_op_c_lw; break;
@@ -911,10 +911,10 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 		break;
 	case 1:
 		// c.nop c.addi c.jal c.li c.lui c.addi16sp c.srli c.srai c.andi c.sub c.xor c.or ...
-		switch (((inst >> 13) & 0b111) /* inst[15:13] */) {
+		switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
 			case 0:
 				// c.nop c.addi
-				switch (((inst >> 2) & 0b11111111111) /* inst[12:2] */) {
+				switch (((insn >> 2) & 0b11111111111) /* insn[12:2] */) {
 					case 0: if (rvc) op = riscv_op_c_nop; break;
 					default: if (rvc) op = riscv_op_c_addi; break;
 				}
@@ -926,20 +926,20 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 			case 2: if (rvc) op = riscv_op_c_li; break;
 			case 3:
 				// c.lui c.addi16sp
-				switch (((inst >> 7) & 0b11111) /* inst[11:7] */) {
+				switch (((insn >> 7) & 0b11111) /* insn[11:7] */) {
 					case 2: if (rvc) op = riscv_op_c_addi16sp; break;
 					default: if (rvc) op = riscv_op_c_lui; break;
 				}
 				break;
 			case 4:
 				// c.srli c.srai c.andi c.sub c.xor c.or c.and c.subw c.addw
-				switch (((inst >> 10) & 0b11) /* inst[11:10] */) {
+				switch (((insn >> 10) & 0b11) /* insn[11:10] */) {
 					case 0: if (rvc) op = riscv_op_c_srli; break;
 					case 1: if (rvc) op = riscv_op_c_srai; break;
 					case 2: if (rvc) op = riscv_op_c_andi; break;
 					case 3:
 						// c.sub c.xor c.or c.and c.subw c.addw
-						switch (((inst >> 10) & 0b100) | ((inst >> 5) & 0b011) /* inst[12|6:5] */) {
+						switch (((insn >> 10) & 0b100) | ((insn >> 5) & 0b011) /* insn[12|6:5] */) {
 							case 0: if (rvc) op = riscv_op_c_sub; break;
 							case 1: if (rvc) op = riscv_op_c_xor; break;
 							case 2: if (rvc) op = riscv_op_c_or; break;
@@ -957,7 +957,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 		break;
 	case 2:
 		// c.slli c.fldsp c.lwsp c.flwsp c.jr c.mv c.ebreak c.jalr c.add c.fsdsp c.swsp c.fswsp ...
-		switch (((inst >> 13) & 0b111) /* inst[15:13] */) {
+		switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
 			case 0: if (rvc) op = riscv_op_c_slli; break;
 			case 1: if (rvc) op = riscv_op_c_fldsp; break;
 			case 2: if (rvc) op = riscv_op_c_lwsp; break;
@@ -967,20 +967,20 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 4:
 				// c.jr c.mv c.ebreak c.jalr c.add
-				switch (((inst >> 12) & 0b1) /* inst[12] */) {
+				switch (((insn >> 12) & 0b1) /* insn[12] */) {
 					case 0:
 						// c.jr c.mv
-						switch (((inst >> 2) & 0b11111) /* inst[6:2] */) {
+						switch (((insn >> 2) & 0b11111) /* insn[6:2] */) {
 							case 0: if (rvc) op = riscv_op_c_jr; break;
 							default: if (rvc) op = riscv_op_c_mv; break;
 						}
 						break;
 					case 1:
 						// c.ebreak c.jalr c.add
-						switch (((inst >> 2) & 0b11111) /* inst[6:2] */) {
+						switch (((insn >> 2) & 0b11111) /* insn[6:2] */) {
 							case 0:
 								// c.ebreak c.jalr
-								switch (((inst >> 7) & 0b11111) /* inst[11:7] */) {
+								switch (((insn >> 7) & 0b11111) /* insn[11:7] */) {
 									case 0: if (rvc) op = riscv_op_c_ebreak; break;
 									default: if (rvc) op = riscv_op_c_jalr; break;
 								}
@@ -1000,10 +1000,10 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 		break;
 	case 3:
 		// lui auipc jal jalr beq bne blt bge bltu bgeu lb lh ...
-		switch (((inst >> 2) & 0b11111) /* inst[6:2] */) {
+		switch (((insn >> 2) & 0b11111) /* insn[6:2] */) {
 			case 0:
 				// lb lh lw lbu lhu lwu ld
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_lb; break;
 					case 1: if (rvi) op = riscv_op_lh; break;
 					case 2: if (rvi) op = riscv_op_lw; break;
@@ -1015,25 +1015,25 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 1:
 				// flw fld
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 2: if (rvf) op = riscv_op_flw; break;
 					case 3: if (rvd) op = riscv_op_fld; break;
 				}
 				break;
 			case 3:
 				// fence fence.i
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_fence; break;
 					case 1: if (rvi) op = riscv_op_fence_i; break;
 				}
 				break;
 			case 4:
 				// addi slti sltiu xori ori andi slli srli srai slli srli srai
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_addi; break;
 					case 1:
 						// slli slli
-						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+						switch (((insn >> 26) & 0b111111) /* insn[31:26] */) {
 							case 0: 
 								if (rvi && rv32) op = riscv_op_slli_rv32i;
 								else if (rvi && rv64) op = riscv_op_slli_rv64i;
@@ -1045,7 +1045,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 					case 4: if (rvi) op = riscv_op_xori; break;
 					case 5:
 						// srli srai srli srai
-						switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+						switch (((insn >> 26) & 0b111111) /* insn[31:26] */) {
 							case 0: 
 								if (rvi && rv32) op = riscv_op_srli_rv32i;
 								else if (rvi && rv64) op = riscv_op_srli_rv64i;
@@ -1063,17 +1063,17 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 			case 5: if (rvi) op = riscv_op_auipc; break;
 			case 6:
 				// addiw slliw srliw sraiw
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi && rv64) op = riscv_op_addiw; break;
 					case 1:
 						// slliw
-						switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
+						switch (((insn >> 25) & 0b1111111) /* insn[31:25] */) {
 							case 0: if (rvi && rv64) op = riscv_op_slliw; break;
 						}
 						break;
 					case 5:
 						// srliw sraiw
-						switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
+						switch (((insn >> 25) & 0b1111111) /* insn[31:25] */) {
 							case 0: if (rvi && rv64) op = riscv_op_srliw; break;
 							case 32: if (rvi && rv64) op = riscv_op_sraiw; break;
 						}
@@ -1082,7 +1082,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 8:
 				// sb sh sw sd
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_sb; break;
 					case 1: if (rvi) op = riscv_op_sh; break;
 					case 2: if (rvi) op = riscv_op_sw; break;
@@ -1091,27 +1091,27 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 9:
 				// fsw fsd
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 2: if (rvf) op = riscv_op_fsw; break;
 					case 3: if (rvd) op = riscv_op_fsd; break;
 				}
 				break;
 			case 11:
 				// lr.w sc.w amoswap.w amoadd.w amoxor.w amoor.w amoand.w amomin.w amomax.w amominu.w amomaxu.w lr.d ...
-				switch (((inst >> 24) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[31:27|14:12] */) {
+				switch (((insn >> 24) & 0b11111000) | ((insn >> 12) & 0b00000111) /* insn[31:27|14:12] */) {
 					case 2: if (rva) op = riscv_op_amoadd_w; break;
 					case 3: if (rva && rv64) op = riscv_op_amoadd_d; break;
 					case 10: if (rva) op = riscv_op_amoswap_w; break;
 					case 11: if (rva && rv64) op = riscv_op_amoswap_d; break;
 					case 18:
 						// lr.w
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rva) op = riscv_op_lr_w; break;
 						}
 						break;
 					case 19:
 						// lr.d
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rva && rv64) op = riscv_op_lr_d; break;
 						}
 						break;
@@ -1135,7 +1135,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 12:
 				// add sub sll slt sltu xor srl sra or and mul mulh ...
-				switch (((inst >> 22) & 0b1111111000) | ((inst >> 12) & 0b0000000111) /* inst[31:25|14:12] */) {
+				switch (((insn >> 22) & 0b1111111000) | ((insn >> 12) & 0b0000000111) /* insn[31:25|14:12] */) {
 					case 0: if (rvi) op = riscv_op_add; break;
 					case 1: if (rvi) op = riscv_op_sll; break;
 					case 2: if (rvi) op = riscv_op_slt; break;
@@ -1159,7 +1159,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 			case 13: if (rvi) op = riscv_op_lui; break;
 			case 14:
 				// addw subw sllw srlw sraw mulw divw divuw remw remuw
-				switch (((inst >> 22) & 0b1111111000) | ((inst >> 12) & 0b0000000111) /* inst[31:25|14:12] */) {
+				switch (((insn >> 22) & 0b1111111000) | ((insn >> 12) & 0b0000000111) /* insn[31:25|14:12] */) {
 					case 0: if (rvi && rv64) op = riscv_op_addw; break;
 					case 1: if (rvi && rv64) op = riscv_op_sllw; break;
 					case 5: if (rvi && rv64) op = riscv_op_srlw; break;
@@ -1174,35 +1174,35 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 16:
 				// fmadd.s fmadd.d
-				switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
+				switch (((insn >> 25) & 0b11) /* insn[26:25] */) {
 					case 0: if (rvf) op = riscv_op_fmadd_s; break;
 					case 1: if (rvd) op = riscv_op_fmadd_d; break;
 				}
 				break;
 			case 17:
 				// fmsub.s fmsub.d
-				switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
+				switch (((insn >> 25) & 0b11) /* insn[26:25] */) {
 					case 0: if (rvf) op = riscv_op_fmsub_s; break;
 					case 1: if (rvd) op = riscv_op_fmsub_d; break;
 				}
 				break;
 			case 18:
 				// fnmsub.s fnmsub.d
-				switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
+				switch (((insn >> 25) & 0b11) /* insn[26:25] */) {
 					case 0: if (rvf) op = riscv_op_fnmsub_s; break;
 					case 1: if (rvd) op = riscv_op_fnmsub_d; break;
 				}
 				break;
 			case 19:
 				// fnmadd.s fnmadd.d
-				switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
+				switch (((insn >> 25) & 0b11) /* insn[26:25] */) {
 					case 0: if (rvf) op = riscv_op_fnmadd_s; break;
 					case 1: if (rvd) op = riscv_op_fnmadd_d; break;
 				}
 				break;
 			case 20:
 				// fadd.s fsub.s fmul.s fdiv.s fsgnj.s fsgnjn.s fsgnjx.s fmin.s fmax.s fsqrt.s fle.s flt.s ...
-				switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
+				switch (((insn >> 25) & 0b1111111) /* insn[31:25] */) {
 					case 0: if (rvf) op = riscv_op_fadd_s; break;
 					case 1: if (rvd) op = riscv_op_fadd_d; break;
 					case 4: if (rvf) op = riscv_op_fsub_s; break;
@@ -1213,7 +1213,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 					case 13: if (rvd) op = riscv_op_fdiv_d; break;
 					case 16:
 						// fsgnj.s fsgnjn.s fsgnjx.s
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvf) op = riscv_op_fsgnj_s; break;
 							case 1: if (rvf) op = riscv_op_fsgnjn_s; break;
 							case 2: if (rvf) op = riscv_op_fsgnjx_s; break;
@@ -1221,7 +1221,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 17:
 						// fsgnj.d fsgnjn.d fsgnjx.d
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvd) op = riscv_op_fsgnj_d; break;
 							case 1: if (rvd) op = riscv_op_fsgnjn_d; break;
 							case 2: if (rvd) op = riscv_op_fsgnjx_d; break;
@@ -1229,45 +1229,45 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 20:
 						// fmin.s fmax.s
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvf) op = riscv_op_fmin_s; break;
 							case 1: if (rvf) op = riscv_op_fmax_s; break;
 						}
 						break;
 					case 21:
 						// fmin.d fmax.d
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvd) op = riscv_op_fmin_d; break;
 							case 1: if (rvd) op = riscv_op_fmax_d; break;
 						}
 						break;
 					case 32:
 						// fcvt.s.d
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 1: if (rvd) op = riscv_op_fcvt_s_d; break;
 						}
 						break;
 					case 33:
 						// fcvt.d.s
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvd) op = riscv_op_fcvt_d_s; break;
 						}
 						break;
 					case 44:
 						// fsqrt.s
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvf) op = riscv_op_fsqrt_s; break;
 						}
 						break;
 					case 45:
 						// fsqrt.d
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvd) op = riscv_op_fsqrt_d; break;
 						}
 						break;
 					case 80:
 						// fle.s flt.s feq.s
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvf) op = riscv_op_fle_s; break;
 							case 1: if (rvf) op = riscv_op_flt_s; break;
 							case 2: if (rvf) op = riscv_op_feq_s; break;
@@ -1275,7 +1275,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 81:
 						// fle.d flt.d feq.d
-						switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 							case 0: if (rvd) op = riscv_op_fle_d; break;
 							case 1: if (rvd) op = riscv_op_flt_d; break;
 							case 2: if (rvd) op = riscv_op_feq_d; break;
@@ -1283,7 +1283,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 96:
 						// fcvt.w.s fcvt.wu.s fcvt.l.s fcvt.lu.s
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvf) op = riscv_op_fcvt_w_s; break;
 							case 1: if (rvf) op = riscv_op_fcvt_wu_s; break;
 							case 2: if (rvf && rv64) op = riscv_op_fcvt_l_s; break;
@@ -1292,7 +1292,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 97:
 						// fcvt.w.d fcvt.wu.d fcvt.l.d fcvt.lu.d
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvd) op = riscv_op_fcvt_w_d; break;
 							case 1: if (rvd) op = riscv_op_fcvt_wu_d; break;
 							case 2: if (rvd && rv64) op = riscv_op_fcvt_l_d; break;
@@ -1301,7 +1301,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 104:
 						// fcvt.s.w fcvt.s.wu fcvt.s.l fcvt.s.lu
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvf) op = riscv_op_fcvt_s_w; break;
 							case 1: if (rvf) op = riscv_op_fcvt_s_wu; break;
 							case 2: if (rvf && rv64) op = riscv_op_fcvt_s_l; break;
@@ -1310,7 +1310,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 105:
 						// fcvt.d.w fcvt.d.wu fcvt.d.l fcvt.d.lu
-						switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+						switch (((insn >> 20) & 0b11111) /* insn[24:20] */) {
 							case 0: if (rvd) op = riscv_op_fcvt_d_w; break;
 							case 1: if (rvd) op = riscv_op_fcvt_d_wu; break;
 							case 2: if (rvd && rv64) op = riscv_op_fcvt_d_l; break;
@@ -1319,27 +1319,27 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 						break;
 					case 112:
 						// fmv.x.s fclass.s
-						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+						switch (((insn >> 17) & 0b11111000) | ((insn >> 12) & 0b00000111) /* insn[24:20|14:12] */) {
 							case 0: if (rvf) op = riscv_op_fmv_x_s; break;
 							case 1: if (rvf) op = riscv_op_fclass_s; break;
 						}
 						break;
 					case 113:
 						// fclass.d fmv.x.d
-						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+						switch (((insn >> 17) & 0b11111000) | ((insn >> 12) & 0b00000111) /* insn[24:20|14:12] */) {
 							case 0: if (rvd && rv64) op = riscv_op_fmv_x_d; break;
 							case 1: if (rvd) op = riscv_op_fclass_d; break;
 						}
 						break;
 					case 120:
 						// fmv.s.x
-						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+						switch (((insn >> 17) & 0b11111000) | ((insn >> 12) & 0b00000111) /* insn[24:20|14:12] */) {
 							case 0: if (rvf) op = riscv_op_fmv_s_x; break;
 						}
 						break;
 					case 121:
 						// fmv.d.x
-						switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+						switch (((insn >> 17) & 0b11111000) | ((insn >> 12) & 0b00000111) /* insn[24:20|14:12] */) {
 							case 0: if (rvd && rv64) op = riscv_op_fmv_d_x; break;
 						}
 						break;
@@ -1347,7 +1347,7 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 24:
 				// beq bne blt bge bltu bgeu
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_beq; break;
 					case 1: if (rvi) op = riscv_op_bne; break;
 					case 4: if (rvi) op = riscv_op_blt; break;
@@ -1358,63 +1358,63 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 				break;
 			case 25:
 				// jalr
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0: if (rvi) op = riscv_op_jalr; break;
 				}
 				break;
 			case 27: if (rvi) op = riscv_op_jal; break;
 			case 28:
 				// ecall ebreak uret sret hret mret dret sfence.vm wfi csrrw csrrs csrrc ...
-				switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+				switch (((insn >> 12) & 0b111) /* insn[14:12] */) {
 					case 0:
 						// ecall ebreak uret sret hret mret dret sfence.vm wfi
-						switch (((inst >> 15) & 0b11111111111100000) | ((inst >> 7) & 0b00000000000011111) /* inst[31:20|11:7] */) {
+						switch (((insn >> 15) & 0b11111111111100000) | ((insn >> 7) & 0b00000000000011111) /* insn[31:20|11:7] */) {
 							case 0:
 								// ecall
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_ecall; break;
 								}
 								break;
 							case 32:
 								// ebreak
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_ebreak; break;
 								}
 								break;
 							case 64:
 								// uret
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_uret; break;
 								}
 								break;
 							case 8192:
 								// sret
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_sret; break;
 								}
 								break;
 							case 8224: if (rvs) op = riscv_op_sfence_vm; break;
 							case 8256:
 								// wfi
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_wfi; break;
 								}
 								break;
 							case 16448:
 								// hret
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_hret; break;
 								}
 								break;
 							case 24640:
 								// mret
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_mret; break;
 								}
 								break;
 							case 63040:
 								// dret
-								switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+								switch (((insn >> 15) & 0b11111) /* insn[19:15] */) {
 									case 0: if (rvs) op = riscv_op_dret; break;
 								}
 								break;
@@ -1508,7 +1508,7 @@ riscv_hu decode_code_2[] = {
 };
 
 template <const size_t count>
-void decode_switch(riscv_ptr start, riscv_ptr end, const char *code)
+void decode_meta(riscv_ptr start, riscv_ptr end, const char *code)
 {
 	size_t decoded = 0;
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
@@ -1576,11 +1576,11 @@ int main(int argc, const char *argv[])
 	printf("%-20s %15s %15s %15s\n", "#decoder", "insn_count", "nanoseconds", "code");
 
 	if (argc < 2) {
-		TEST_DECODER_MICRO(decode_switch, decode_code_1, count, "RV64");
+		TEST_DECODER_MICRO(decode_meta, decode_code_1, count, "RV64");
 		TEST_DECODER_MICRO(decode_spike_nocache, decode_code_1, count, "RV64");
 		TEST_DECODER_MICRO(decode_spike_cache, decode_code_1, count, "RV64");
 
-		TEST_DECODER_MICRO(decode_switch, decode_code_2, count, "RV64C");
+		TEST_DECODER_MICRO(decode_meta, decode_code_2, count, "RV64C");
 		TEST_DECODER_MICRO(decode_spike_nocache, decode_code_2, count, "RV64C");
 		TEST_DECODER_MICRO(decode_spike_cache, decode_code_2, count, "RV64C");
 	}
@@ -1593,7 +1593,7 @@ int main(int argc, const char *argv[])
 				printf("Section[%2lu] %s\n", i, elf.shdr_name(i));
 				riscv_ptr start = (riscv_ptr)elf.offset(shdr.sh_offset);
 				riscv_ptr end = start + shdr.sh_size;
-				TEST_DECODER_ELF(decode_switch, start, end, count_elf, "RV64C");
+				TEST_DECODER_ELF(decode_meta, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_nocache, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_cache, start, end, count_elf, "RV64C");
 			}

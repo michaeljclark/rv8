@@ -24,14 +24,14 @@ struct riscv_decode
 struct riscv_disasm : riscv_decode
 {
 	riscv_ptr pc;
-	riscv_lu  inst;
+	riscv_lu  insn;
 };
 
 #include "riscv-decode-args.h"
 
 /* Decode none */
 template <typename T>
-inline void riscv_decode_none(T &dec, riscv_lu inst)
+inline void riscv_decode_none(T &dec, riscv_lu insn)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
@@ -39,7 +39,7 @@ inline void riscv_decode_none(T &dec, riscv_lu inst)
 
 /* Decode C nop */
 template <typename T>
-inline void riscv_decode_ci_none(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_none(T &dec, riscv_lu insn)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
@@ -47,347 +47,347 @@ inline void riscv_decode_ci_none(T &dec, riscv_lu inst)
 
 /* Decode CR */
 template <typename T>
-inline void riscv_decode_cr(T &dec, riscv_lu inst)
+inline void riscv_decode_cr(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(inst);
-	dec.rs2 = riscv_arg_crs2::decode(inst);
+	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(insn);
+	dec.rs2 = riscv_arg_crs2::decode(insn);
 	dec.imm = 0;
 }
 
 /* Decode CR mv */
 template <typename T>
-inline void riscv_decode_cr_mv(T &dec, riscv_lu inst)
+inline void riscv_decode_cr_mv(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crd::decode(inst);
+	dec.rd = riscv_arg_crd::decode(insn);
 	dec.rs1 = riscv_ireg_zero;
-	dec.rs2 = riscv_arg_crs2::decode(inst);
+	dec.rs2 = riscv_arg_crs2::decode(insn);
 	dec.imm = 0;
 }
 
 /* Decode CR jalr */
 template <typename T>
-inline void riscv_decode_cr_jalr(T &dec, riscv_lu inst)
+inline void riscv_decode_cr_jalr(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_ra;
-	dec.rs1 = riscv_arg_crs1::decode(inst);
+	dec.rs1 = riscv_arg_crs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode CR jr */
 template <typename T>
-inline void riscv_decode_cr_jr(T &dec, riscv_lu inst)
+inline void riscv_decode_cr_jr(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_crs1::decode(inst);
+	dec.rs1 = riscv_arg_crs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode CI */
 template <typename T>
-inline void riscv_decode_ci(T &dec, riscv_lu inst)
+inline void riscv_decode_ci(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(inst);
+	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmi::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(insn);
 }
 
 /* Decode CI shamt5 */
 template <typename T>
-inline void riscv_decode_ci_sh(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_sh(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(inst);
+	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmsh::decode(inst);
+	dec.imm = riscv_arg_cimmsh::decode(insn);
 }
 
 /* Decode CI li */
 template <typename T>
-inline void riscv_decode_ci_li(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_li(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crd::decode(inst);
+	dec.rd = riscv_arg_crd::decode(insn);
 	dec.rs1 = riscv_ireg_zero;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmi::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(insn);
 }
 
 /* Decode CI lui */
 template <typename T>
-inline void riscv_decode_ci_lui(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_lui(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crd::decode(inst);
+	dec.rd = riscv_arg_crd::decode(insn);
 	dec.rs1 = riscv_ireg_zero;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmui::decode(inst);
+	dec.imm = riscv_arg_cimmui::decode(insn);
 }
 
 /* Decode CI lwsp */
 template <typename T>
-inline void riscv_decode_ci_lwsp(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_lwsp(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crd::decode(inst);
+	dec.rd = riscv_arg_crd::decode(insn);
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmlwsp::decode(inst);
+	dec.imm = riscv_arg_cimmlwsp::decode(insn);
 }
 
 /* Decode CI ldsp */
 template <typename T>
-inline void riscv_decode_ci_ldsp(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_ldsp(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crd::decode(inst);
+	dec.rd = riscv_arg_crd::decode(insn);
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmldsp::decode(inst);
+	dec.imm = riscv_arg_cimmldsp::decode(insn);
 }
 
 /* Decode CI 16sp */
 template <typename T>
-inline void riscv_decode_ci_16sp(T &dec, riscv_lu inst)
+inline void riscv_decode_ci_16sp(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimm16sp::decode(inst);
+	dec.imm = riscv_arg_cimm16sp::decode(insn);
 }
 
 /* Decode CSS swsp */
 template <typename T>
-inline void riscv_decode_css_swsp(T &dec, riscv_lu inst)
+inline void riscv_decode_css_swsp(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_arg_crs2::decode(inst);
-	dec.imm = riscv_arg_cimmswsp::decode(inst);
+	dec.rs2 = riscv_arg_crs2::decode(insn);
+	dec.imm = riscv_arg_cimmswsp::decode(insn);
 }
 
 /* Decode CSS sdsp */
 template <typename T>
-inline void riscv_decode_css_sdsp(T &dec, riscv_lu inst)
+inline void riscv_decode_css_sdsp(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_arg_crs2::decode(inst);
-	dec.imm = riscv_arg_cimmsdsp::decode(inst);
+	dec.rs2 = riscv_arg_crs2::decode(insn);
+	dec.imm = riscv_arg_cimmsdsp::decode(insn);
 }
 
 /* Decode CIW 4spn */
 template <typename T>
-inline void riscv_decode_ciw_4spn(T &dec, riscv_lu inst)
+inline void riscv_decode_ciw_4spn(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crdq::decode(inst) + 8;
+	dec.rd = riscv_arg_crdq::decode(insn) + 8;
 	dec.rs1 = riscv_ireg_sp;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimm4spn::decode(inst);
+	dec.imm = riscv_arg_cimm4spn::decode(insn);
 }
 
 /* Decode CL lw */
 template <typename T>
-inline void riscv_decode_cl_lw(T &dec, riscv_lu inst)
+inline void riscv_decode_cl_lw(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crdq::decode(inst) + 8;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
+	dec.rd = riscv_arg_crdq::decode(insn) + 8;
+	dec.rs1 = riscv_arg_crs1q::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmw::decode(inst);
+	dec.imm = riscv_arg_cimmw::decode(insn);
 }
 
 /* Decode CL ld */
 template <typename T>
-inline void riscv_decode_cl_ld(T &dec, riscv_lu inst)
+inline void riscv_decode_cl_ld(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_crdq::decode(inst) + 8;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
+	dec.rd = riscv_arg_crdq::decode(insn) + 8;
+	dec.rs1 = riscv_arg_crs1q::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmd::decode(inst);
+	dec.imm = riscv_arg_cimmd::decode(insn);
 }
 
 /* Decode CS f */
 template <typename T>
-inline void riscv_decode_cs(T &dec, riscv_lu inst)
+inline void riscv_decode_cs(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(inst) + 8;
-	dec.rs2 = riscv_arg_crs2q::decode(inst) + 8;
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(insn) + 8;
+	dec.rs2 = riscv_arg_crs2q::decode(insn) + 8;
 	dec.imm = 0;
 }
 
 /* Decode CS sd */
 template <typename T>
-inline void riscv_decode_cs_sd(T &dec, riscv_lu inst)
+inline void riscv_decode_cs_sd(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
-	dec.rs2 = riscv_arg_crs2q::decode(inst) + 8;
-	dec.imm = riscv_arg_cimmd::decode(inst);
+	dec.rs1 = riscv_arg_crs1q::decode(insn) + 8;
+	dec.rs2 = riscv_arg_crs2q::decode(insn) + 8;
+	dec.imm = riscv_arg_cimmd::decode(insn);
 }
 
 /* Decode CS sw */
 template <typename T>
-inline void riscv_decode_cs_sw(T &dec, riscv_lu inst)
+inline void riscv_decode_cs_sw(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
-	dec.rs2 = riscv_arg_crs2q::decode(inst) + 8;
-	dec.imm = riscv_arg_cimmw::decode(inst);
+	dec.rs1 = riscv_arg_crs1q::decode(insn) + 8;
+	dec.rs2 = riscv_arg_crs2q::decode(insn) + 8;
+	dec.imm = riscv_arg_cimmw::decode(insn);
 }
 
 /* Decode CB */
 template <typename T>
-inline void riscv_decode_cb(T &dec, riscv_lu inst)
+inline void riscv_decode_cb(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_crs1q::decode(inst) + 8;
+	dec.rs1 = riscv_arg_crs1q::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmb::decode(inst);
+	dec.imm = riscv_arg_cimmb::decode(insn);
 }
 
 /* Decode CB imm */
 template <typename T>
-inline void riscv_decode_cb_imm(T &dec, riscv_lu inst)
+inline void riscv_decode_cb_imm(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(inst) + 8;
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmi::decode(inst);
+	dec.imm = riscv_arg_cimmi::decode(insn);
 }
 
 /* Decode CB shamt5 */
 template <typename T>
-inline void riscv_decode_cb_sh(T &dec, riscv_lu inst)
+inline void riscv_decode_cb_sh(T &dec, riscv_lu insn)
 {
-	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(inst) + 8;
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmsh::decode(inst);
+	dec.imm = riscv_arg_cimmsh::decode(insn);
 }
 
 /* Decode CJ - imm */
 template <typename T>
-inline void riscv_decode_cj(T &dec, riscv_lu inst)
+inline void riscv_decode_cj(T &dec, riscv_lu insn)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmj::decode(inst);
+	dec.imm = riscv_arg_cimmj::decode(insn);
 }
 
 /* Decode R */
 template <typename T>
-inline void riscv_decode_r(T &dec, riscv_lu inst)
+inline void riscv_decode_r(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.imm = 0;
 }
 
 /* Decode R RM */
 template <typename T>
-inline void riscv_decode_r_m(T &dec, riscv_lu inst)
+inline void riscv_decode_r_m(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_rm::decode(inst);
+	dec.arg = riscv_arg_rm::decode(insn);
 }
 
 /* Decode R AMO L */
 template <typename T>
-inline void riscv_decode_r_l(T &dec, riscv_lu inst)
+inline void riscv_decode_r_l(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
-	dec.arg = riscv_arg_aqrl::decode(inst);
+	dec.arg = riscv_arg_aqrl::decode(insn);
 }
 
 /* Decode R AMO S */
 template <typename T>
-inline void riscv_decode_r_a(T &dec, riscv_lu inst)
+inline void riscv_decode_r_a(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_aqrl::decode(inst);
+	dec.arg = riscv_arg_aqrl::decode(insn);
 }
 
 /* Decode R 4f */
 template <typename T>
-inline void riscv_decode_r4_m(T &dec, riscv_lu inst)
+inline void riscv_decode_r4_m(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
-	dec.rs3 = riscv_arg_rs3::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
+	dec.rs3 = riscv_arg_rs3::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_rm::decode(inst);
+	dec.arg = riscv_arg_rm::decode(insn);
 }
 
 /* Decode I */
 template <typename T>
-inline void riscv_decode_i(T &dec, riscv_lu inst)
+inline void riscv_decode_i(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_imm12::decode(inst);
+	dec.imm = riscv_arg_imm12::decode(insn);
 }
 
 /* Decode I sh5 */
 template <typename T>
-inline void riscv_decode_i_sh5(T &dec, riscv_lu inst)
+inline void riscv_decode_i_sh5(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_shamt5::decode(inst);
+	dec.imm = riscv_arg_shamt5::decode(insn);
 }
 
 /* Decode I sh6 */
 template <typename T>
-inline void riscv_decode_i_sh6(T &dec, riscv_lu inst)
+inline void riscv_decode_i_sh6(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
-	dec.rs1 = riscv_arg_rs1::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_shamt6::decode(inst);
+	dec.imm = riscv_arg_shamt6::decode(insn);
 }
 
 /* Decode S Store */
 template <typename T>
-inline void riscv_decode_s(T &dec, riscv_lu inst)
+inline void riscv_decode_s(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
-	dec.imm = riscv_arg_simm12::decode(inst);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
+	dec.imm = riscv_arg_simm12::decode(insn);
 }
 
 /* Decode SB Branch */
 template <typename T>
-inline void riscv_decode_sb(T &dec, riscv_lu inst)
+inline void riscv_decode_sb(T &dec, riscv_lu insn)
 {
 	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_arg_rs1::decode(inst);
-	dec.rs2 = riscv_arg_rs2::decode(inst);
-	dec.imm = riscv_arg_sbimm12::decode(inst);
+	dec.rs1 = riscv_arg_rs1::decode(insn);
+	dec.rs2 = riscv_arg_rs2::decode(insn);
+	dec.imm = riscv_arg_sbimm12::decode(insn);
 }
 
 /* Decode U */
 template <typename T>
-inline void riscv_decode_u(T &dec, riscv_lu inst)
+inline void riscv_decode_u(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
 	dec.rs1 = dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_imm20::decode(inst);
+	dec.imm = riscv_arg_imm20::decode(insn);
 }
 
 /* Decode UJ */
 template <typename T>
-inline void riscv_decode_uj(T &dec, riscv_lu inst)
+inline void riscv_decode_uj(T &dec, riscv_lu insn)
 {
-	dec.rd = riscv_arg_rd::decode(inst);
+	dec.rd = riscv_arg_rd::decode(insn);
 	dec.rs1 = dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_jimm20::decode(inst);
+	dec.imm = riscv_arg_jimm20::decode(insn);
 }
 
 /* Encode none */
@@ -721,7 +721,7 @@ inline riscv_lu riscv_encode_uj(T &dec)
 
 /* Instruction length */
 
-inline size_t riscv_get_instruction_length(riscv_lu inst)
+inline size_t riscv_get_instruction_length(riscv_lu insn)
 {
 	// instruction length coding
 
@@ -731,9 +731,9 @@ inline size_t riscv_get_instruction_length(riscv_lu inst)
 	// 0111111 - 64 bit
 
 	// NOTE: currenttly supports maximum of 64-bit
-	return (inst &      0b11) != 0b11      ? 2
-		 : (inst &   0b11100) != 0b11100   ? 4
-		 : (inst &  0b111111) == 0b011111  ? 6
+	return (insn &      0b11) != 0b11      ? 2
+		 : (insn &   0b11100) != 0b11100   ? 4
+		 : (insn &  0b111111) == 0b011111  ? 6
 		 : 8;
 }
 
@@ -742,21 +742,21 @@ inline size_t riscv_get_instruction_length(riscv_lu inst)
 inline riscv_lu riscv_get_instruction(riscv_ptr pc, riscv_ptr *next_pc = nullptr)
 {
 	// NOTE: currenttly supports maximum of 64-bit
-	riscv_lu inst;
+	riscv_lu insn;
 	if ((*(uint16_t*)pc & 0b11) != 0b11) {
-		inst = htole16(*(uint16_t*)pc);
+		insn = htole16(*(uint16_t*)pc);
 		if (next_pc) *next_pc = pc + 2;
 	} else if ((*(uint16_t*)pc & 0b11100) != 0b11100) {
-		inst = htole32(*(uint32_t*)pc);
+		insn = htole32(*(uint32_t*)pc);
 		if (next_pc) *next_pc = pc + 4;
 	} else if ((*(uint16_t*)pc & 0b111111) == 0b011111) {
-		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
+		insn = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
 		if (next_pc) *next_pc = pc + 6;
 	} else {
-		inst = htole64(*(uint64_t*)pc);
+		insn = htole64(*(uint64_t*)pc);
 		if (next_pc) *next_pc = pc + 8;
 	}
-	return inst;
+	return insn;
 }
 
 /* Decompress Instruction */
@@ -774,10 +774,10 @@ inline void riscv_decode_decompress(T &dec)
 /* Decode Instruction */
 
 template <typename T, bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
-void riscv_decode_instruction(T &dec, riscv_lu inst)
+void riscv_decode_instruction(T &dec, riscv_lu insn)
 {
-	riscv_decode_opcode<T,rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, inst);
-	riscv_decode_type<T>(dec, inst);
+	riscv_decode_opcode<T,rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, insn);
+	riscv_decode_type<T>(dec, insn);
 	riscv_decode_decompress<T>(dec);
 }
 
