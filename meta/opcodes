@@ -212,14 +212,14 @@ fmv.d.x    frd rs1  24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 
-frcsr      rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-frrm       rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-frflags    rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-fscsr      rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-fsrm       rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-fsflags    rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-fsrmi      rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
-fsflagsi   rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
+@frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@frflags   rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@fscsr     rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@fsrm      rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@fsflags   rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
+@fsrmi     rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
+@fsflagsi  rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
 
 # RV32C    "RV32C Standard Extension for Compressed Instructions"
 
