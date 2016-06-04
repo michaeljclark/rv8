@@ -99,7 +99,7 @@ struct riscv_latex_page
 struct riscv_parse_meta : riscv_meta_model
 {
 	void generate_map();
-	void generate_codec();
+	void generate_codec(bool include_pseudo);
 
 	std::string colorize_args(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
@@ -140,11 +140,19 @@ void riscv_parse_meta::generate_map()
 	}
 }
 
-void riscv_parse_meta::generate_codec()
+void riscv_parse_meta::generate_codec(bool include_pseudo)
 {
+	// make list of opcodes to include
+	riscv_opcode_list opcodes_copy;
+	for (auto &opcode : opcodes) {
+		if (include_pseudo || opcode->key.find("@") == std::string::npos) {
+			opcodes_copy.push_back(opcode);
+		}
+	}
+
 	// generate decode
 	root_node.clear();
-	generate_codec_node(root_node, opcodes);
+	generate_codec_node(root_node, opcodes_copy);
 
 	// add top level default value for riscv_op_unknown
 	unknown = std::make_shared<riscv_opcode>("unknown" , "unknown");
@@ -1122,6 +1130,7 @@ int main(int argc, const char *argv[])
 	bool print_map_instructions = false;
 	bool no_comment = false;
 	bool zero_not_oh = false;
+	bool include_pseudo = false;
 	bool print_switch_c = false;
 	bool print_opcodes_h = false;
 	bool print_opcodes_c = false;
@@ -1154,6 +1163,9 @@ int main(int argc, const char *argv[])
 		{ "-0", "--zero-not-oh", cmdline_arg_type_none,
 			"Use numeric constants in generated source",
 			[&](std::string s) { return (zero_not_oh = true); } },
+		{ "-p", "--include-pseudo", cmdline_arg_type_none,
+			"Include pseudo opcode in switch decoder",
+			[&](std::string s) { return (include_pseudo = true); } },
 		{ "-H", "--print-opcodes-h", cmdline_arg_type_none,
 			"Print C header",
 			[&](std::string s) { return (print_opcodes_h = true); } },
@@ -1206,7 +1218,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if (print_switch_c) {
-		inst_set.generate_codec();
+		inst_set.generate_codec(include_pseudo);
 		inst_set.print_switch_c(no_comment, zero_not_oh);
 	}
 

@@ -1420,39 +1420,17 @@ riscv_lu riscv_decode_instruction(riscv_lu inst)
 								break;
 						}
 						break;
-					case 1:
-						// csrrw fscsr fsrm fsflags
-						switch (((inst >> 20) & 0b111111111111) /* inst[31:20] */) {
-							case 1: if (rvf) op = riscv_op_fsflags; break;
-							case 2: if (rvf) op = riscv_op_fsrm; break;
-							case 3: if (rvf) op = riscv_op_fscsr; break;
-							default: if (rvs) op = riscv_op_csrrw; break;
-						}
-						break;
-					case 2:
-						// csrrs frcsr frrm frflags
-						switch (((inst >> 15) & 0b11111111111111111) /* inst[31:15] */) {
-							case 32: if (rvf) op = riscv_op_frflags; break;
-							case 64: if (rvf) op = riscv_op_frrm; break;
-							case 96: if (rvf) op = riscv_op_frcsr; break;
-							default: if (rvs) op = riscv_op_csrrs; break;
-						}
-						break;
+					case 1: if (rvs) op = riscv_op_csrrw; break;
+					case 2: if (rvs) op = riscv_op_csrrs; break;
 					case 3: if (rvs) op = riscv_op_csrrc; break;
-					case 5:
-						// csrrwi fsrmi fsflagsi
-						switch (((inst >> 20) & 0b111111111111) /* inst[31:20] */) {
-							case 1: if (rvf) op = riscv_op_fsflagsi; break;
-							case 2: if (rvf) op = riscv_op_fsrmi; break;
-							default: if (rvs) op = riscv_op_csrrwi; break;
-						}
-						break;
+					case 5: if (rvs) op = riscv_op_csrrwi; break;
 					case 6: if (rvs) op = riscv_op_csrrsi; break;
 					case 7: if (rvs) op = riscv_op_csrrci; break;
 				}
 				break;
 		}
 		break;
+	default: if (rvi) op = riscv_op_unknown; break;
 	}
 
 	return op;
