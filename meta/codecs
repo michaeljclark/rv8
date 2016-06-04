@@ -50,16 +50,16 @@ cl·lw      rd,imm(rs1)            # crdq crs1q cimmw  [¿3] trd=ireg
 cl·ld      rd,imm(rs1)            # crdq crs1q cimmd  [¿4] trd=ireg
 cl·lw+f    frd,imm(rs1)           # crdq crs1q cimmw  [¿3] trd=freg
 cl·ld+f    frd,imm(rs1)           # crdq crs1q cimmd  [¿4] trd=freg
-cr         rd,rs1,rs2             # crd crs2          [¿5] rs1=rd
-cr·mv      rd,rs1,rs2             # crd crs2          [¿5] rs1=zero
-cr·jalr    rd,rs1,imm             # crs1              [¿6] rd=ra
-cr·jr      rd,rs1,imm             # crs1              [¿6] rd=zero
+cr         rd,rs1,rs2             # crs1rd crs2       rs1=rd
+cr·mv      rd,rs1,rs2             # crd crs2          rs1=zero
+cr·jalr    rd,rs1,imm             # crs1              [¿5] rd=ra
+cr·jr      rd,rs1,imm             # crs1              [¿5] rd=zero
 cs         rd,rs1,rs2             # crs1rdq crs2q     rd=rs1
-cs·sw+f    frs2,imm(rs1)          # crs1q crs2q cimmw [¿7] trs2=freg
-cs·sd+f    frs2,imm(rs1)          # crs1q crs2q cimmd [¿8] trs2=freg
-cs·sw      rs2,imm(rs1)           # crs1q crs2q cimmw [¿7] trs2=ireg
-cs·sd      rs2,imm(rs1)           # crs1q crs2q cimmd [¿8] trs2=ireg
-css·swsp   rs2,imm(rs1)           # crs2 cimmswsp     [¿9] trs2=ireg rs1=sp
-css·sdsp   rs2,imm(rs1)           # crs2 cimmsdsp     [¿A] trs2=ireg rs1=sp
-css·swsp+f frs2,imm(rs1)          # crs2 cimmswsp     [¿9] trs2=freg rs1=sp
-css·sdsp+f frs2,imm(rs1)          # crs2 cimmsdsp     [¿A] trs2=freg rs1=sp
+cs·sw+f    frs2,imm(rs1)          # crs1q crs2q cimmw [¿6] trs2=freg
+cs·sd+f    frs2,imm(rs1)          # crs1q crs2q cimmd [¿7] trs2=freg
+cs·sw      rs2,imm(rs1)           # crs1q crs2q cimmw [¿6] trs2=ireg
+cs·sd      rs2,imm(rs1)           # crs1q crs2q cimmd [¿7] trs2=ireg
+css·swsp   rs2,imm(rs1)           # crs2 cimmswsp     [¿8] trs2=ireg rs1=sp
+css·sdsp   rs2,imm(rs1)           # crs2 cimmsdsp     [¿9] trs2=ireg rs1=sp
+css·swsp+f frs2,imm(rs1)          # crs2 cimmswsp     [¿8] trs2=freg rs1=sp
+css·sdsp+f frs2,imm(rs1)          # crs2 cimmsdsp     [¿9] trs2=freg rs1=sp
