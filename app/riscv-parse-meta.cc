@@ -327,6 +327,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 			auto name = opcode->name;
 			auto arg_comps = split(opcode->format->args, ",", false, false);
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+			if (arg_comps.size() == 1 && arg_comps[0] == "none") arg_comps[0] = ""; 
 
 			// print this row
 			printf("%s & \\scriptsize{%s %s} \\\\\n\\cline{1-%ld}\n",
