@@ -34,6 +34,7 @@ const char* riscv_fmt_rd_rs1_rs2 =            "0,1,2";
 const char* riscv_fmt_frd_rs1 =               "3,1";
 const char* riscv_fmt_rd_frs1 =               "0,4";
 const char* riscv_fmt_rd_frs1_frs2 =          "0,4,5";
+const char* riscv_fmt_frd_frs1_frs2 =         "3,4,5";
 const char* riscv_fmt_rm_frd_frs1 =           "r,3,4";
 const char* riscv_fmt_rm_frd_rs1 =            "r,3,1";
 const char* riscv_fmt_rm_rd_frs1 =            "r,0,4";

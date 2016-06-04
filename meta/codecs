@@ -23,6 +23,7 @@ r          rd,rs1,rs2             # rd rs1 rs2
 r+fr       frd,rs1                # frd rs1
 r+rf       rd,frs1                # rd frs1
 r+rff      rd,frs1,frs2           # rd frs1 frs2
+r+3f       frd,frs1,frs2          # frd frs1 frs2
 r·m+ff     rm,frd,frs1            # frd frs1 rm
 r·m+fr     rm,frd,rs1             # frd rs1 rm
 r·m+rf     rm,rd,frs1             # rd frs1 rm

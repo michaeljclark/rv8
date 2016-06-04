@@ -10,6 +10,7 @@ rd,rs1,rs2
 frd,rs1
 rd,frs1
 rd,frs1,frs2
+frd,frs1,frs2
 rm,frd,frs1
 rm,frd,rs1
 rm,rd,frs1
