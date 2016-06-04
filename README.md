@@ -164,11 +164,13 @@ To output a LaTeX opcode tex: ```make latex```
 
 To output a LaTeX opcode pdf: ```make pdf```
 
-To print decoder C switch: ```make c_switch```
+To print arg templates: ```make c_args```
 
-To print opcodes C header: ```make c_header```
+To print decoder switch: ```make c_switch```
 
-To print opcodes C source: ```make c_source```
+To print opcodes header: ```make c_header```
+
+To print opcodes source: ```make c_source```
 
 To run the proof of concept emulator: ```make emulate```
 

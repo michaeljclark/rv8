@@ -125,6 +125,8 @@ RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 
 # libriscv_meta
+RV_ARGS_HDR =   $(LIB_SRC_DIR)/riscv-decode-args.h
+RV_CODEC_HDR =  $(LIB_SRC_DIR)/riscv-decode-codec.h
 RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
 RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
 RV_META_FMT =   $(LIB_SRC_DIR)/riscv-format.cc
@@ -218,14 +220,16 @@ test: ; (cd test && make)
 emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
+c_args: all ; @$(PARSE_META_BIN) -A -r $(META_DIR)
 c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
 c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
-$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $@
-$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA) $(RV_META_HDR)
-	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $@
+$(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_META_HDR) $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
+	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
+	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
+	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
 
 # build targets
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)

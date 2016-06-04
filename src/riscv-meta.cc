@@ -481,7 +481,7 @@ const riscv_codec riscv_instruction_codec[] = {
 	riscv_codec_cs_sd,
 	riscv_codec_cs_sw,
 	riscv_codec_cs_sw,
-	riscv_codec_ci_nop,
+	riscv_codec_ci_none,
 	riscv_codec_ci,
 	riscv_codec_cj,
 	riscv_codec_ci_li,

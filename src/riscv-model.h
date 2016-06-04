@@ -19,7 +19,6 @@ struct riscv_opcode;
 struct riscv_constraint;
 struct riscv_compressed;
 struct riscv_bitrange;
-struct riscv_codec_node;
 struct riscv_latex_row;
 
 typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
@@ -270,16 +269,6 @@ struct riscv_compressed
 		: comp_opcode(comp_opcode), decomp_opcode(decomp_opcode), constraint_list(constraint_list) {}
 };
 
-struct riscv_codec_node
-{
-	std::vector<ssize_t> bits;
-	std::vector<ssize_t> vals;
-	std::map<ssize_t,riscv_opcode_list> val_opcodes;
-	std::map<ssize_t,riscv_codec_node> val_decodes;
-
-	void clear();
-};
-
 struct riscv_meta_model
 {
 	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
@@ -307,9 +296,6 @@ struct riscv_meta_model
 	riscv_constraint_list    constraints;
 	riscv_constraint_map     constraints_by_name;
 	riscv_compressed_list    compressions;
-	riscv_extension_list     ext_subset;
-	riscv_codec_node         root_node;
-	riscv_opcode_ptr         unknown;
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);

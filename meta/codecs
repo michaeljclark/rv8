@@ -45,7 +45,6 @@ ci·lwsp+f  frd,offset(rs1)        cfrd cimmlwsp
 ci·ldsp+f  frd,offset(rs1)        cfrd cimmldsp
 ci·li      rd,rs1,imm             crs1rd cimmi
 ci·lui     rd,imm                 crd cimmui
-ci·nop     none
 ci·none    none
 ciw·4spn   rd,rs1,imm             crdq cimm4spn         # rs1=sp
 cj         rd,offset              cimmj                 # rd=zero

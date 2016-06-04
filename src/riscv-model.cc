@@ -143,8 +143,12 @@ std::string riscv_bitspec::to_template()
 {
 	ssize_t msb = 0;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
-		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti->msb > msb) msb = ti->msb;
+		if (si->second.size() == 0) {
+			msb = si->first.msb - si->first.lsb;
+		} else {
+			for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
+				if (ti->msb > msb) msb = ti->msb;
+			}
 		}
 	}
 	std::stringstream ss;
@@ -152,22 +156,18 @@ std::string riscv_bitspec::to_template()
 	for (auto si = segments.begin(); si != segments.end(); si++) {
 		if (si != segments.begin()) ss << ", ";
 		ss << "S<" << si->first.to_string(",", false) << ", ";
-		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti != si->second.begin()) ss << ",";
-			ss << "B<" << ti->to_string(",") << ">";
+		if (si->second.size() == 0) {
+			ss << "B<" << (si->first.msb - si->first.lsb) << ",0>";
+		} else {
+			for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
+				if (ti != si->second.begin()) ss << ",";
+				ss << "B<" << ti->to_string(",") << ">";
+			}
 		}
 		ss << ">";
 	}
 	ss << ">";
 	return ss.str();
-}
-
-void riscv_codec_node::clear()
-{
-	bits.clear();
-	vals.clear();
-	val_opcodes.clear();
-	val_decodes.clear();
 }
 
 riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)

@@ -321,7 +321,6 @@ enum riscv_codec
 	riscv_codec_ci_ldsp,
 	riscv_codec_ci_li,
 	riscv_codec_ci_lui,
-	riscv_codec_ci_nop,
 	riscv_codec_ci_none,
 	riscv_codec_ciw_4spn,
 	riscv_codec_cj,

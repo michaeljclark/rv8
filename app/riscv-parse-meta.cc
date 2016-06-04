@@ -96,8 +96,22 @@ struct riscv_latex_page
 	std::vector<riscv_latex_row> rows;
 };
 
+struct riscv_codec_node
+{
+	std::vector<ssize_t> bits;
+	std::vector<ssize_t> vals;
+	std::map<ssize_t,riscv_opcode_list> val_opcodes;
+	std::map<ssize_t,riscv_codec_node> val_decodes;
+
+	void clear();
+};
+
 struct riscv_parse_meta : riscv_meta_model
 {
+	riscv_extension_list     ext_subset;
+	riscv_codec_node         root_node;
+	riscv_opcode_ptr         unknown;
+
 	void generate_map();
 	void generate_codec(bool include_pseudo);
 
@@ -107,9 +121,11 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_latex_row(riscv_latex_row &row, std::string ts);
 	void print_latex();
 	void print_map(bool print_map_instructions);
+	void print_c_header(std::string filename);
 	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
 	void print_opcodes_c(bool no_comment = false, bool zero_not_oh = false);
-	void print_switch_c(bool no_comment = false, bool zero_not_oh = false);
+	void print_args_h();
+	void print_codec_h(bool no_comment = false, bool zero_not_oh = false);
 
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_codec_node &node, size_t indent);
@@ -123,6 +139,14 @@ std::string join(std::vector<T> list, std::string sep)
 		ss << (i != list.begin() ? sep : "") << *i;
 	}
 	return ss.str();
+}
+
+void riscv_codec_node::clear()
+{
+	bits.clear();
+	vals.clear();
+	val_opcodes.clear();
+	val_decodes.clear();
 }
 
 void riscv_parse_meta::generate_map()
@@ -614,14 +638,18 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 	}
 }
 
-void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_c_header(std::string filename)
 {
 	printf("//\n");
-	printf("//  riscv-meta.h\n");
+	printf("//  %s\n", filename.c_str());
 	printf("//\n");
 	printf("//  DANGER - This is machine generated code\n");
 	printf("//\n\n");
+}
 
+void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
+{
+	print_c_header("riscv-meta.h");
 	printf("#ifndef riscv_meta_h\n");
 	printf("#define riscv_meta_h\n");
 	printf("\n");
@@ -758,11 +786,7 @@ static void print_array_unknown_int(uint32_t num, bool no_comment)
 
 void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 {
-	printf("//\n");
-	printf("//  riscv-meta.cc\n");
-	printf("//\n");
-	printf("//  DANGER - This is machine generated code\n");
-	printf("//\n\n");
+	print_c_header("riscv-meta.cc");
 
 	printf("#include \"riscv-types.h\"\n");
 	printf("#include \"riscv-format.h\"\n");
@@ -897,8 +921,31 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 }
 
-void riscv_parse_meta::print_switch_c(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_args_h()
 {
+	print_c_header("riscv-decode-args.h");
+	printf("#ifndef riscv_decode_args_h\n");
+	printf("#define riscv_decode_args_h\n");
+	printf("\n");
+
+	// print immediate decoders
+	for (auto arg: args) {
+		printf("typedef %c%-67s riscv_arg_%s;\n",
+			arg->type == "simm" ? 's' : 'u',
+			arg->bitspec.to_template().c_str(),
+			arg->name.c_str());
+	}
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
+{
+	print_c_header("riscv-decode-codec.h");
+	printf("#ifndef riscv_decode_codec_h\n");
+	printf("#define riscv_decode_codec_h\n");
+	printf("\n");
+
 	std::vector<std::string> mnems;
 
 	// create mnemonics for instruction set widths
@@ -916,38 +963,50 @@ void riscv_parse_meta::print_switch_c(bool no_comment, bool zero_not_oh)
 	}
 
 	// print opcode decoder
-	printf("template <");
+	printf("/* Decode Instruction Opcode */\n\n");
+	printf("template <typename T, ");
 	for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {
 		if (mi != mnems.begin()) printf(", ");
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)\n");
+	printf("inline void riscv_decode_opcode(riscv_decode &dec, riscv_lu inst)\n");
 	printf("{\n");
 	print_switch_decoder_node(root_node, 1);
 	printf("}\n\n");
 
 	// print type decoder
-	printf("void riscv_decode_type(riscv_decode &dec, riscv_lu inst)\n");
+	printf("/* Decode Instruction Type */\n\n");
+	printf("template <typename T>\n");
+	printf("inline void riscv_decode_type(T &dec, riscv_lu inst)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_instruction_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
-		printf("\t\tcase %-30s %-40s break;\n",
+		printf("\t\tcase %-26s %-50s break;\n",
 			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
 			format_string("riscv_decode_%s(dec, inst);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
 	printf("}\n\n");
 
-	// print immediate decoders
-	for (auto arg: args) {
-		printf("typedef %c%-67s riscv_arg_%s;\n",
-			arg->type == "simm" ? 's' : 'u',
-			arg->bitspec.to_template().c_str(),
-			arg->name.c_str());
+	// print encoder
+	printf("/* Encode Instruction */\n\n");
+	printf("template <typename T>\n");
+	printf("inline riscv_lu riscv_encode(T &dec)\n");
+	printf("{\n");
+	printf("\tdec.codec = riscv_instruction_codec[dec.op];\n");
+	printf("\triscv_lu inst = riscv_instruction_match[dec.op];\n");
+	printf("\tswitch (dec.codec) {\n");
+	for (auto &codec : get_unique_codecs()) {
+		printf("\t\tcase %-26s %-50s break;\n",
+			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
+			format_string("return inst |= riscv_encode_%s(dec);", codec.c_str()).c_str());
 	}
-	printf("\n");
+	printf("\t};\n");
+	printf("\treturn inst;\n");
+	printf("}\n\n");
+	printf("#endif\n");
 }
 
 void riscv_parse_meta::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list)
@@ -1131,7 +1190,8 @@ int main(int argc, const char *argv[])
 	bool no_comment = false;
 	bool zero_not_oh = false;
 	bool include_pseudo = false;
-	bool print_switch_c = false;
+	bool print_args_h = false;
+	bool print_codec_h = false;
 	bool print_opcodes_h = false;
 	bool print_opcodes_c = false;
 	bool help_or_error = false;
@@ -1172,9 +1232,12 @@ int main(int argc, const char *argv[])
 		{ "-C", "--print-opcodes-c", cmdline_arg_type_none,
 			"Print C source",
 			[&](std::string s) { return (print_opcodes_c = true); } },
-		{ "-S", "--print-switch-c", cmdline_arg_type_none,
-			"Print C switch",
-			[&](std::string s) { return (print_switch_c = true); } },
+		{ "-A", "--print-args-h", cmdline_arg_type_none,
+			"Print C args header",
+			[&](std::string s) { return (print_args_h = true); } },
+		{ "-S", "--print-codec-h", cmdline_arg_type_none,
+			"Print C codec header",
+			[&](std::string s) { return (print_codec_h = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1190,7 +1253,8 @@ int main(int argc, const char *argv[])
 	}
 
 	if ((help_or_error |= !print_latex && !print_map &&
-		!print_switch_c && !print_opcodes_h && !print_opcodes_c))
+		!print_codec_h && !print_args_h &&
+		!print_opcodes_h && !print_opcodes_c))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
@@ -1217,9 +1281,13 @@ int main(int argc, const char *argv[])
 		inst_set.print_opcodes_c(no_comment, zero_not_oh);
 	}
 
-	if (print_switch_c) {
+	if (print_args_h) {
+		inst_set.print_args_h();
+	}
+
+	if (print_codec_h) {
 		inst_set.generate_codec(include_pseudo);
-		inst_set.print_switch_c(no_comment, zero_not_oh);
+		inst_set.print_codec_h(no_comment, zero_not_oh);
 	}
 
 	exit(0);
