@@ -285,6 +285,18 @@ std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr
 	return prefix + replace(name, ".", dot);
 }
 
+std::string riscv_meta_model::opcode_codec_key(riscv_opcode_ptr opcode)
+{
+	if (opcode->args.size() == 0) {
+		return "none";
+	}
+	std::vector<std::string> codec_args;
+	for (auto arg : opcode->args) {
+		codec_args.push_back(arg->name);
+	}
+	return join(codec_args, "·");
+}
+
 std::string riscv_meta_model::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
 {
 	std::string opcode_name = opcode_format("", opcode, ".", key);
@@ -569,6 +581,22 @@ void riscv_meta_model::parse_codec(std::vector<std::string> &part)
 	auto codec = codecs_by_name[part[0]] = std::make_shared<riscv_codec>(
 		part[0], part[1]
 	);
+	std::string codec_key;
+	std::vector<std::string> codec_args;
+	for (size_t i = 2; i < part.size(); i++) {
+		auto arg = args_by_name[part[i]];
+		if (!arg) {
+			panic("codec %s has unknown arg: %s",
+				codec->name.c_str(), part[i].c_str());
+		}
+		codec->args.push_back(arg);
+		codec_args.push_back(part[i]);
+	}
+	codec->codec_key = join(codec_args, "·");
+	if (codec->codec_key.size() == 0) {
+		codec->codec_key = "none";
+	}
+	codecs_by_key[codec->codec_key] = codec;
 	codecs.push_back(codec);
 }
 
@@ -665,6 +693,20 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 		} else {
 			debug("opcode %s: unknown arg: %s", opcode_name.c_str(), mnem.c_str());
 		}
+	}
+
+	// lookup codec by key and log warning if it does not exist
+	std::string codec_key = opcode_codec_key(opcode);
+	auto codec = codecs_by_key[codec_key];
+	if (!codec) {
+		debug("WARNING: codec deduction failure: %-20s  codec_key: %s",
+			opcode->name.c_str(), codec_key.c_str());
+	} else if (codec->codec_key != codec_key) {
+		debug("WARNING: codec deduction mismatch: %-20s  codec_key: %s "
+			"(opcode:%s != deduced:%s)",
+			opcode->name.c_str(), codec_key.c_str(),
+			opcode->codec->name.c_str(),
+			codec->name.c_str());
 	}
 
 	if (!opcode->codec) {
