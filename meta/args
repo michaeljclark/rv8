@@ -44,6 +44,10 @@ crd        11:7                         ireg  "rd"        white   magenta
 crs1       11:7                         ireg  "rs1"       white   cyan
 crs1rd     11:7                         ireg  "rs1/rd"    white   magenta
 crs2       6:2                          ireg  "rs2"       white   green
+cfrdq      4:2                          creg  "frd'"      white   magenta
+cfrs2q     4:2                          creg  "frs2'"     white   green
+cfrs2      6:2                          freg  "frs2"      white   green
+cfrd       11:7                         freg  "frd"       white   magenta
 cimmsh     12[5],6:2[4:0]               uimm  "imm"       green   none
 cimmi      12[5],6:2[4:0]               simm  "imm"       green   none
 cimmui     12[17],6:2[16:12]            simm  "imm"       green   none
