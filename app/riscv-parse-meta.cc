@@ -32,7 +32,8 @@ static bool enable_color = false;
 
 static const ssize_t kMaxInstructionWidth = 32;
 static const ssize_t kLatexTableColumns = 32;
-static const ssize_t kLatexTableRows = 50;
+static const ssize_t kLatexTableRows = 52;
+static const ssize_t kLatexReserveRows = 5;
 
 static const char* kLatexDocumentBegin =
 R"LaTeX(\documentclass{report}
@@ -425,10 +426,26 @@ void riscv_parse_meta::print_latex()
 			std::find(ext_subset.begin(), ext_subset.end(), ext) == ext_subset.end())) {
 			continue;
 		}
+
+		// check we have opcodes in this section (excluding pseudo opcodes)
+		size_t count = 0;
+		for (auto opcode : ext->opcodes) {
+			count += opcode->name.find("@") == 0 ? 0 : 1;
+		}
+		if (count == 0) continue;
+
+		// add new page
 		if (pages.size() == 0) pages.push_back(riscv_latex_page());
 
 		// break to a new page if the instruction width changes
 		if (insn_width != 0 && insn_width != ext->insn_width) {
+			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
+			pages.push_back(riscv_latex_page());
+			line = 0;
+		}
+
+		// don't start new extension heading unless we have reserved space
+		if (line % kLatexTableRows > kLatexTableRows - kLatexReserveRows) {
 			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
 			pages.push_back(riscv_latex_page());
 			line = 0;
@@ -441,6 +458,8 @@ void riscv_parse_meta::print_latex()
 
 		// add opcodes
 		for (auto &opcode : ext->opcodes) {
+			// skip psuedo opcode
+			if (opcode->name.find("@") == 0) continue;
 			// add a line to the top of the page if there is a continuation
 			if (line % kLatexTableRows == 0) {
 				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
