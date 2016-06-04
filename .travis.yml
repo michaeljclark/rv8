@@ -10,7 +10,6 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.7
     packages:
     - gcc-5
     - g++-5
