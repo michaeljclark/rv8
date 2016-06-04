@@ -1178,7 +1178,7 @@ const char* riscv_instruction_format[] = {
 	riscv_fmt_rs2_imm_rs1,
 };
 
-const rvc_constraint rvcc_c_addi4spn[] =            { rvc_imm_10, rvc_imm_x4, rvc_rd_b3, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_addi4spn[] =            { rvc_imm_10, rvc_imm_x4, rvc_imm_nz, rvc_rd_b3, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_fld[] =                 { rvc_imm_8, rvc_imm_x8, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_lw[] =                  { rvc_imm_7, rvc_imm_x4, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_flw[] =                 { rvc_imm_7, rvc_imm_x4, rvc_rd_b3, rvc_rs1_b3, rvc_end };
@@ -1190,7 +1190,7 @@ const rvc_constraint rvcc_c_addi[] =                { rvc_imm_6, rvc_rd_ne_x0, r
 const rvc_constraint rvcc_c_jal[] =                 { rvc_imm_12, rvc_imm_x2, rvc_rd_eq_ra, rvc_end };
 const rvc_constraint rvcc_c_li[] =                  { rvc_imm_6, rvc_rd_ne_x0, rvc_rs1_eq_x0, rvc_end };
 const rvc_constraint rvcc_c_lui[] =                 { rvc_imm_18, rvc_imm_nz, rvc_rd_ne_x0, rvc_rd_ne_sp, rvc_end };
-const rvc_constraint rvcc_c_addi16sp[] =            { rvc_imm_10, rvc_imm_x4, rvc_rd_eq_sp, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_addi16sp[] =            { rvc_imm_10, rvc_imm_x4, rvc_imm_nz, rvc_rd_eq_sp, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_srli[] =                { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_srai[] =                { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_andi[] =                { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };

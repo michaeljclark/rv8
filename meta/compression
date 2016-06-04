@@ -6,7 +6,7 @@
 # rs1_eq_sp, rd_eq_x0, rs1_eq_x0, rs2_eq_x0, rd_ne_x0,
 # rs2_ne_x0, rd_eq_rs1, rd_eq_ra, rd_ne_sp, rd_eq_sp
 
-c.addi4spn   addi   imm_10 imm_x4        rd_b3 rs1_eq_sp
+c.addi4spn   addi   imm_10 imm_x4 imm_nz rd_b3 rs1_eq_sp
 c.fld        fld    imm_8  imm_x8        rd_b3 rs1_b3
 c.lw         lw     imm_7  imm_x4        rd_b3 rs1_b3
 c.flw        flw    imm_7  imm_x4        rd_b3 rs1_b3
@@ -18,7 +18,7 @@ c.addi       addi   imm_6                rd_ne_x0 rd_eq_rs1
 c.jal        jal    imm_12 imm_x2        rd_eq_ra
 c.li         addi   imm_6                rd_ne_x0 rs1_eq_x0
 c.lui        lui    imm_18 imm_nz        rd_ne_x0 rd_ne_sp
-c.addi16sp   addi   imm_10 imm_x4        rd_eq_sp rs1_eq_sp
+c.addi16sp   addi   imm_10 imm_x4 imm_nz rd_eq_sp rs1_eq_sp
 c.srli       srli   imm_nz               rd_eq_rs1 rd_b3 rs1_b3
 c.srai       srai   imm_nz               rd_eq_rs1 rd_b3 rs1_b3
 c.andi       andi   imm_nz               rd_eq_rs1 rd_b3 rs1_b3
