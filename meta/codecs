@@ -12,8 +12,8 @@ uj         rd,disp                # rd jimm20
 i          rd,rs1,imm             # rd rs1 imm12
 i·sh5      rd,rs1,imm             # rd rs1 shamt5
 i·sh6      rd,rs1,imm             # rd rs1 shamt6
-i+csr      rd,csr,rs1             # rd rs1
-i+csri     rd,csr,imm5            # rd zimm
+i+csr      rd,csr,rs1             # rd rs1 csr12
+i+csri     rd,csr,imm5            # rd zimm csr12
 i+l        rd,imm(rs1)            # rd rs1 imm12
 i+lf       frd,imm(rs1)           # frd rs1 imm12
 s          rs2,imm(rs1)           # rs1 rs2 simm12
