@@ -1079,7 +1079,7 @@ const char* riscv_instruction_format[] = {
 	riscv_fmt_frd_frs1_frs2,
 	riscv_fmt_frd_frs1_frs2,
 	riscv_fmt_frd_frs1_frs2,
-	riscv_fmt_rm_frd_frs1_frs2,
+	riscv_fmt_rm_frd_frs1,
 	riscv_fmt_rd_frs1_frs2,
 	riscv_fmt_rd_frs1_frs2,
 	riscv_fmt_rd_frs1_frs2,
