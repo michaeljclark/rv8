@@ -61,6 +61,7 @@ The future goals of the RISC-V Meta project are:
 - [Yocto Project](https://www.yoctoproject.org/)
 - [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
+- [A Secure Processor Architecture for Encrypted Computation on Untrusted Programs](https://people.csail.mit.edu/devadas/pubs/ascend-stc12.pdf)
 - [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
 - [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
 - [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
