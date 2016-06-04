@@ -676,13 +676,15 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 			opcode->format = formats_by_name[opcode->codec->format];
 			if (!opcode->format) {
 				panic("opcode %s codec %s has unknown format: %s",
-					opcode_name.c_str(), opcode->codec->format.c_str());
+					opcode_name.c_str(), opcode->codec->name.c_str(),
+					opcode->codec->format.c_str());
 			}
 			std::string type_name = codec_type_name(opcode->codec);
 			opcode->type = types_by_name[type_name];
 			if (!opcode->type) {
 				panic("opcode %s codec %s has unknown type: %s",
-					opcode_name.c_str(), opcode->codec->name.c_str(), type_name.c_str());
+					opcode_name.c_str(), opcode->codec->name.c_str(),
+					type_name.c_str());
 			}
 		} else if (is_extension(mnem)) {
 			auto extension = extensions_by_name[mnem];
@@ -691,7 +693,8 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 				extension->opcodes.push_back(opcode);
 			}
 		} else {
-			debug("opcode %s: unknown arg: %s", opcode_name.c_str(), mnem.c_str());
+			debug("opcode %s: unknown arg: %s",
+				opcode_name.c_str(), mnem.c_str());
 		}
 	}
 

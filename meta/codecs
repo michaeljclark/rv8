@@ -8,17 +8,19 @@
 
 none       none
 u          rd,imm                 rd imm20
-uj         rd,disp                rd jimm20
+u+o        rd,offset              rd imm20
+uj         rd,offset              rd jimm20
+i+o        rd,rs1,offset          rd rs1 imm12
 i          rd,rs1,imm             rd rs1 imm12
 i·sh5      rd,rs1,imm             rd rs1 shamt5
 i·sh6      rd,rs1,imm             rd rs1 shamt6
 i+csr      rd,csr,rs1             rd rs1 csr12
 i+csri     rd,csr,imm5            rd zimm csr12
-i+l        rd,imm(rs1)            rd rs1 imm12
-i+lf       frd,imm(rs1)           frd rs1 imm12
-s          rs2,imm(rs1)           rs1 rs2 simm12
-sb         rs1,rs2,disp           rs1 rs2 sbimm12
-s+f        frs2,imm(rs1)          rs1 frs2 simm12
+i+l        rd,offset(rs1)         rd rs1 imm12
+i+lf       frd,offset(rs1)        frd rs1 imm12
+s          rs2,offset(rs1)        rs1 rs2 simm12
+sb         rs1,rs2,offset         rs1 rs2 sbimm12
+s+f        frs2,offset(rs1)       rs1 frs2 simm12
 r          rd,rs1,rs2             rd rs1 rs2
 r+fr       frd,rs1                frd rs1
 r+rf       rd,frs1                rd frs1
@@ -31,36 +33,36 @@ r·m+3f     rm,frd,frs1,frs2       frd frs1 frs2 rm
 r4·m       rm,frd,frs1,frs2,frs3  frd frs1 frs2 frs3 rm
 r·a        aqrl,rd,rs2,(rs1)      rd rs1 rs2 aqrl
 r·l        aqrl,rd,(rs1)          rd rs1 aqrl
-cb         rs1,rs2,disp           crs1q cimmb           # rd=zero rs2=zero
+cb         rs1,rs2,offset         crs1q cimmb           # rd=zero rs2=zero
 cb·imm     rd,rs1,imm             crs1rdq cimmi         # rd=rs1 rs2=zero
 cb·sh      rd,rs1,imm             crs1rdq cimmsh        # rd=rs1 rs2=zero
 ci         rd,rs1,imm             crs1rd cimmi
 ci·sh      rd,rs1,imm             crs1rd cimmsh
 ci·16sp    rd,rs1,imm             crs1rd cimm16sp
-ci·lwsp    rd,imm(rs1)            crd cimmlwsp
-ci·ldsp    rd,imm(rs1)            crd cimmldsp
-ci·lwsp+f  frd,imm(rs1)           cfrd cimmlwsp
-ci·ldsp+f  frd,imm(rs1)           cfrd cimmldsp
+ci·lwsp    rd,offset(rs1)         crd cimmlwsp
+ci·ldsp    rd,offset(rs1)         crd cimmldsp
+ci·lwsp+f  frd,offset(rs1)        cfrd cimmlwsp
+ci·ldsp+f  frd,offset(rs1)        cfrd cimmldsp
 ci·li      rd,rs1,imm             crs1rd cimmi
 ci·lui     rd,imm                 crd cimmui
 ci·nop     none
 ci·none    none
 ciw·4spn   rd,rs1,imm             crdq cimm4spn         # rs1=sp
-cj         rd,disp                cimmj                 # rd=zero
-cl·lw      rd,imm(rs1)            crdq crs1q cimmw
-cl·ld      rd,imm(rs1)            crdq crs1q cimmd
-cl·lw+f    frd,imm(rs1)           cfrdq crs1q cimmw
-cl·ld+f    frd,imm(rs1)           cfrdq crs1q cimmd
+cj         rd,offset              cimmj                 # rd=zero
+cl·lw      rd,offset(rs1)         crdq crs1q cimmw
+cl·ld      rd,offset(rs1)         crdq crs1q cimmd
+cl·lw+f    frd,offset(rs1)        cfrdq crs1q cimmw
+cl·ld+f    frd,offset(rs1)        cfrdq crs1q cimmd
 cr         rd,rs1,rs2             crs1rd crs2           # rs1=rd
 cr·mv      rd,rs1,rs2             crd crs2              # rs1=zero
-cr·jalr    rd,rs1,imm             crd0 crs1             # rd=ra
-cr·jr      rd,rs1,imm             crd0 crs1             # rd=zero
+cr·jalr    rd,rs1,offset          crd0 crs1             # rd=ra
+cr·jr      rd,rs1,offset          crd0 crs1             # rd=zero
 cs         rd,rs1,rs2             crs1rdq crs2q         # rd=rs1
-cs·sw+f    frs2,imm(rs1)          crs1q cfrs2q cimmw
-cs·sd+f    frs2,imm(rs1)          crs1q cfrs2q cimmd
-cs·sw      rs2,imm(rs1)           crs1q crs2q cimmw
-cs·sd      rs2,imm(rs1)           crs1q crs2q cimmd
-css·swsp   rs2,imm(rs1)           crs2 cimmswsp         # rs1=sp
-css·sdsp   rs2,imm(rs1)           crs2 cimmsdsp         # rs1=sp
-css·swsp+f frs2,imm(rs1)          cfrs2 cimmswsp        # rs1=sp
-css·sdsp+f frs2,imm(rs1)          cfrs2 cimmsdsp        # rs1=sp
+cs·sw+f    frs2,offset(rs1)       crs1q cfrs2q cimmw
+cs·sd+f    frs2,offset(rs1)       crs1q cfrs2q cimmd
+cs·sw      rs2,offset(rs1)        crs1q crs2q cimmw
+cs·sd      rs2,offset(rs1)        crs1q crs2q cimmd
+css·swsp   rs2,offset(rs1)        crs2 cimmswsp         # rs1=sp
+css·sdsp   rs2,offset(rs1)        crs2 cimmsdsp         # rs1=sp
+css·swsp+f frs2,offset(rs1)       cfrs2 cimmswsp        # rs1=sp
+css·sdsp+f frs2,offset(rs1)       cfrs2 cimmsdsp        # rs1=sp

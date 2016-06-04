@@ -2,10 +2,10 @@
 # <format> <format description>
 
 none
-disp
+offset
 rs1,rs2
 rd,imm
-rd,disp
+rd,offset
 rd,rs1,rs2
 frd,rs1
 rd,frs1
@@ -17,12 +17,13 @@ rm,rd,frs1
 rm,frd,frs1,frs2
 rm,frd,frs1,frs2,frs3
 rd,rs1,imm
-rd,imm(rs1)
-frd,imm(rs1)
+rd,rs1,offset
+rd,offset(rs1)
+frd,offset(rs1)
 rd,csr,rs1
 rd,csr,imm5
-rs2,imm(rs1)
-frs2,imm(rs1)
-rs1,rs2,disp
+rs2,offset(rs1)
+frs2,offset(rs1)
+rs1,rs2,offset
 aqrl,rd,rs2,(rs1)
 aqrl,rd,(rs1)

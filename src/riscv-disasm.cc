@@ -188,7 +188,7 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 			case '6': print_add(offset, riscv_f_registers[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
 			case 'i': print_fmt(offset, "%lld", dec.imm); break;
- 			case 'd':
+ 			case 'o':
 				addr = pc - pc_offset + dec.imm;
 				print_fmt(offset, "%lld", dec.imm);
 				print_addr(offset, addr, symlookup, colorize);
