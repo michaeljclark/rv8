@@ -252,10 +252,10 @@ c.slli     crs1rd       cimmsh 1..0=2 15..13=0                       ci·sh     
 c.fldsp    cfrd       cimmldsp 1..0=2 15..13=1                       ci·ldsp+f  rv32c rv64c
 c.lwsp     crd        cimmlwsp 1..0=2 15..13=2                       ci·lwsp    rv32c rv64c
 c.flwsp    cfrd       cimmlwsp 1..0=2 15..13=3                       ci·lwsp+f        rv32c
-c.jr       crs1                1..0=2 15..13=4 12=0 6..2=0           cr·jr      rv32c rv64c
+c.jr       crd0 crs1           1..0=2 15..13=4 12=0 6..2=0           cr·jr      rv32c rv64c
 c.mv       crd crs2            1..0=2 15..13=4 12=0                  cr·mv      rv32c rv64c
 c.ebreak                       1..0=2 15..13=4 12=1 11..7=0 6..2=0   ci·none    rv32c rv64c
-c.jalr     crs1                1..0=2 15..13=4 12=1 6..2=0           cr·jalr    rv32c rv64c
+c.jalr     crd0 crs1           1..0=2 15..13=4 12=1 6..2=0           cr·jalr    rv32c rv64c
 c.add      crs1rd crs2         1..0=2 15..13=4 12=1                  cr         rv32c rv64c
 c.fsdsp    cfrs2      cimmsdsp 1..0=2 15..13=5                       css·sdsp+f rv32c rv64c
 c.swsp     crs2       cimmswsp 1..0=2 15..13=6                       css·swsp   rv32c rv64c

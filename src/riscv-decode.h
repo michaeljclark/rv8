@@ -621,8 +621,7 @@ inline riscv_lu riscv_encode_cs_sw(T &dec)
 template <typename T>
 inline riscv_lu riscv_encode_cb(T &dec)
 {
-	assert(dec.rd == dec.rs1);
-	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
+	return riscv_arg_crs1q::encode(dec.rs1 + 8)  |
 		riscv_arg_cimmb::encode(dec.imm);
 }
 
@@ -639,7 +638,8 @@ inline riscv_lu riscv_encode_cb_imm(T &dec)
 template <typename T>
 inline riscv_lu riscv_encode_cb_sh(T &dec)
 {
-	return riscv_arg_crs1q::encode(dec.rs1 + 8)  |
+	assert(dec.rd == dec.rs1);
+	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
 		riscv_arg_cimmsh::encode(dec.imm);
 }
 

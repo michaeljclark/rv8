@@ -52,8 +52,8 @@ cl·lw+f    frd,imm(rs1)           # cfrdq crs1q cimmw
 cl·ld+f    frd,imm(rs1)           # cfrdq crs1q cimmd
 cr         rd,rs1,rs2             # crs1rd crs2       rs1=rd
 cr·mv      rd,rs1,rs2             # crd crs2          rs1=zero
-cr·jalr    rd,rs1,imm             # crs1              [¿1] rd=ra
-cr·jr      rd,rs1,imm             # crs1              [¿1] rd=zero
+cr·jalr    rd,rs1,imm             # crd0 crs1         rd=ra
+cr·jr      rd,rs1,imm             # crd0 crs1         rd=zero
 cs         rd,rs1,rs2             # crs1rdq crs2q     rd=rs1
 cs·sw+f    frs2,imm(rs1)          # crs1q cfrs2q cimmw
 cs·sd+f    frs2,imm(rs1)          # crs1q cfrs2q cimmd
