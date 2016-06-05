@@ -721,7 +721,7 @@ inline riscv_lu riscv_encode_uj(T &dec)
 
 /* Instruction length */
 
-inline size_t riscv_get_instruction_length(riscv_lu insn)
+inline size_t riscv_get_insn_length(riscv_lu insn)
 {
 	// instruction length coding
 
@@ -739,7 +739,7 @@ inline size_t riscv_get_instruction_length(riscv_lu insn)
 
 /* Fetch Instruction */
 
-inline riscv_lu riscv_get_instruction(riscv_ptr pc, riscv_ptr *next_pc = nullptr)
+inline riscv_lu riscv_get_insn(riscv_ptr pc, riscv_ptr *next_pc = nullptr)
 {
 	// NOTE: currenttly supports maximum of 64-bit
 	riscv_lu insn;
@@ -764,27 +764,39 @@ inline riscv_lu riscv_get_instruction(riscv_ptr pc, riscv_ptr *next_pc = nullptr
 template <typename T>
 inline void riscv_decode_decompress(T &dec)
 {
-    int decomp_op = riscv_instruction_decomp[dec.op];
+    int decomp_op = riscv_insn_decomp[dec.op];
     if (decomp_op != riscv_op_unknown) {
         dec.op = decomp_op;
-        dec.codec = riscv_instruction_codec[decomp_op];
+        dec.codec = riscv_insn_codec[decomp_op];
     }
 }
 
 /* Decode Instruction */
 
-template <typename T, bool rv32 = false, bool rv64 = true, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
-void riscv_decode_instruction(T &dec, riscv_lu insn)
+template <typename T, bool rv32, bool rv64, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
+inline void riscv_decode_insn(T &dec, riscv_lu insn)
 {
-	riscv_decode_opcode<T,rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(dec, insn);
+	dec.op = riscv_decode_op<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(insn);
 	riscv_decode_type<T>(dec, insn);
 	riscv_decode_decompress<T>(dec);
+}
+
+template <typename T>
+inline void riscv_decode_rv32(T &dec, riscv_lu insn)
+{
+	riscv_decode_insn<T,true,false>(dec, insn);
+}
+
+template <typename T>
+inline void riscv_decode_rv64(T &dec, riscv_lu insn)
+{
+	riscv_decode_insn<T,false,true>(dec, insn);
 }
 
 /* Check constraint */
 
 template <typename T>
-inline bool riscv_encode_compress_check(T &dec, const rvc_constraint *c)
+inline bool riscv_compress_check(T &dec, const rvc_constraint *c)
 {
 	auto imm = dec.imm;
 	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
@@ -824,14 +836,14 @@ inline bool riscv_encode_compress_check(T &dec, const rvc_constraint *c)
 /* Compress Instruction */
 
 template <typename T>
-inline bool riscv_encode_compress(T &dec)
+inline bool riscv_compress_insn(T &dec)
 {
-	const riscv_comp_data *comp_data = riscv_instruction_comp[dec.op];
+	const riscv_comp_data *comp_data = riscv_insn_comp[dec.op];
 	if (!comp_data) return false;
 	while (comp_data->constraints) {
-		if (riscv_encode_compress_check(dec, comp_data->constraints)) {
+		if (riscv_compress_check(dec, comp_data->constraints)) {
 			dec.op = comp_data->op;
-			dec.codec = riscv_instruction_codec[dec.op];
+			dec.codec = riscv_insn_codec[dec.op];
 			return true;
 		}
 		comp_data++;

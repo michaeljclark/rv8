@@ -49,8 +49,8 @@ struct riscv_histogram_elf
 		riscv_decode dec;
 		riscv_ptr pc = start, next_pc;
 		while (pc < end) {
-			riscv_lu insn = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction(dec, insn);
+			riscv_lu insn = riscv_get_insn(pc, &next_pc);
+			riscv_decode_rv64(dec, insn);
 			auto hi = hist.find(dec.op);
 			if (hi == hist.end()) hist.insert(pair_t(dec.op, 1));
 			else hi->second++;
@@ -91,7 +91,7 @@ struct riscv_histogram_elf
 		size_t i = 0;
 		for (auto ent : hist_s) {
 			printf("%5lu. %-10s[%-6lu]%s%s%s\n",
-				++i, riscv_instruction_name[ent.first], ent.second,
+				++i, riscv_insn_name[ent.first], ent.second,
 				hash_bars ? " " : "",
 				hash_bars ? use_char.c_str() : "",
 				hash_bars ? repeat_str(use_char, ent.second * (max_chars - 1) / max).c_str() : "");

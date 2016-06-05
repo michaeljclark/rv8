@@ -755,13 +755,13 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("extern \"C\" {\n");
 	printf("\textern const char* riscv_i_registers[];\n");
 	printf("\textern const char* riscv_f_registers[];\n");
-	printf("\textern const char* riscv_instruction_name[];\n");
-	printf("\textern const riscv_codec riscv_instruction_codec[];\n");
-	printf("\textern const riscv_wu riscv_instruction_match[];\n");
-	printf("\textern const riscv_wu riscv_instruction_mask[];\n");
-	printf("\textern const char* riscv_instruction_format[];\n");
-	printf("\textern const riscv_comp_data* riscv_instruction_comp[];\n");
-	printf("\textern const int riscv_instruction_decomp[];\n");
+	printf("\textern const char* riscv_insn_name[];\n");
+	printf("\textern const riscv_codec riscv_insn_codec[];\n");
+	printf("\textern const riscv_wu riscv_insn_match[];\n");
+	printf("\textern const riscv_wu riscv_insn_mask[];\n");
+	printf("\textern const char* riscv_insn_format[];\n");
+	printf("\textern const riscv_comp_data* riscv_insn_comp[];\n");
+	printf("\textern const int riscv_insn_decomp[];\n");
 	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
@@ -810,7 +810,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction names
-	printf("const char* riscv_instruction_name[] = {\n");
+	printf("const char* riscv_insn_name[] = {\n");
 	print_array_unknown_str("unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_name = opcode_format("", opcode, ".", false);
@@ -821,7 +821,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction codecs
-	printf("const riscv_codec riscv_instruction_codec[] = {\n");
+	printf("const riscv_codec riscv_insn_codec[] = {\n");
 	print_array_unknown_enum("riscv_codec_unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string codec_name = format_codec("", opcode->codec, "_");
@@ -832,7 +832,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction match bits
-	printf("const riscv_wu riscv_instruction_match[] = {\n");
+	printf("const riscv_wu riscv_insn_match[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%08x,\n",
@@ -842,7 +842,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction mask bits
-	printf("const riscv_wu riscv_instruction_mask[] = {\n");
+	printf("const riscv_wu riscv_insn_mask[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%08x,\n",
@@ -852,7 +852,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction formats
-	printf("const char* riscv_instruction_format[] = {\n");
+	printf("const char* riscv_insn_format[] = {\n");
 	print_array_unknown_enum("riscv_fmt_none", no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s%s,\n",
@@ -890,7 +890,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("\n");
 
 	// RVC compression table
-	printf("const riscv_comp_data* riscv_instruction_comp[] = {\n");
+	printf("const riscv_comp_data* riscv_insn_comp[] = {\n");
 	print_array_unknown_enum("nullptr", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_key = opcode_format("", opcode, ".");
@@ -903,7 +903,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// RVC decompression table
-	printf("const int riscv_instruction_decomp[] = {\n");
+	printf("const int riscv_insn_decomp[] = {\n");
 	if (zero_not_oh) print_array_unknown_enum("0", no_comment);
 	else print_array_unknown_enum("riscv_op_unknown", no_comment);
 	for (auto &opcode : opcodes) {
@@ -964,15 +964,17 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 
 	// print opcode decoder
 	printf("/* Decode Instruction Opcode */\n\n");
-	printf("template <typename T, ");
+	printf("template <");
 	for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {
 		if (mi != mnems.begin()) printf(", ");
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline void riscv_decode_opcode(riscv_decode &dec, riscv_lu insn)\n");
+	printf("inline riscv_lu riscv_decode_op(riscv_lu insn)\n");
 	printf("{\n");
+	printf("\triscv_lu op;\n");
 	print_switch_decoder_node(root_node, 1);
+	printf("\treturn op;\n");
 	printf("}\n\n");
 
 	// print type decoder
@@ -980,7 +982,7 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	printf("template <typename T>\n");
 	printf("inline void riscv_decode_type(T &dec, riscv_lu insn)\n");
 	printf("{\n");
-	printf("\tdec.codec = riscv_instruction_codec[dec.op];\n");
+	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
@@ -993,10 +995,10 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	// print encoder
 	printf("/* Encode Instruction */\n\n");
 	printf("template <typename T>\n");
-	printf("inline riscv_lu riscv_encode(T &dec)\n");
+	printf("inline riscv_lu riscv_encode_insn(T &dec)\n");
 	printf("{\n");
-	printf("\tdec.codec = riscv_instruction_codec[dec.op];\n");
-	printf("\triscv_lu insn = riscv_instruction_match[dec.op];\n");
+	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
+	printf("\triscv_lu insn = riscv_insn_match[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
@@ -1119,7 +1121,7 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 				for (auto oi = opcode_list.begin(); oi != opcode_list.end(); oi++) {
 					auto opcode = *oi;
 					for (size_t i = 0; i < indent; i++) printf("\t");
-					printf("\t\t%sif (%s && rv%lu) dec.op = %s;\n",
+					printf("\t\t%sif (%s && rv%lu) op = %s;\n",
 						oi != opcode_list.begin() ? "else " : "",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
 						opcode_format("riscv_op_", opcode, "_").c_str());
@@ -1131,11 +1133,11 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 			{
 				// if ambiguous, chooses first opcode
 				if (opcode_widths.size() == 1) {
-					printf("if (%s && rv%lu) dec.op = %s; break;",
+					printf("if (%s && rv%lu) op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(), opcode->extensions.front()->isa_width,
 						opcode_format("riscv_op_", opcode, "_").c_str());
 				} else {
-					printf("if (%s) dec.op = %s; break;",
+					printf("if (%s) op = %s; break;",
 						opcode_isa_shortname(opcode).c_str(),
 						opcode_format("riscv_op_", opcode, "_").c_str());
 				}

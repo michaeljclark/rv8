@@ -123,13 +123,13 @@ const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
+void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
-	const char *fmt = riscv_instruction_format[dec.op];
+	const char *fmt = riscv_insn_format[dec.op];
 	const char *symbol_name = symlookup((riscv_ptr)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
 
@@ -160,7 +160,7 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 	print_pad(offset, 24);
 
 	// print instruction bytes
-	switch (riscv_get_instruction_length(dec.insn)) {
+	switch (riscv_get_insn_length(dec.insn)) {
 		case 2: print_fmt(offset, "%04llx", dec.insn); break;
 		case 4: print_fmt(offset, "%08llx", dec.insn); break;
 		case 6: print_fmt(offset, "%012llx", dec.insn); break;
@@ -170,7 +170,7 @@ void riscv_disasm_instruction(riscv_disasm &dec, std::deque<riscv_disasm> &dec_h
 
 	// print opcode
 	printf("%s", colorize("opcode"));
-	print_pad(offset, 55, riscv_instruction_name[dec.op]);
+	print_pad(offset, 55, riscv_insn_name[dec.op]);
 	printf("%s", colorize("reset"));
 
 	// print arguments

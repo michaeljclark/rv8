@@ -76,8 +76,8 @@ struct riscv_compress_elf
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.insn = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction(dec, dec.insn);
+			dec.insn = riscv_get_insn(pc, &next_pc);
+			riscv_decode_rv64(dec, dec.insn);
 			riscv_decode_decompress(dec);
 			switch (dec.codec) {
 				case riscv_codec_sb:
@@ -113,17 +113,17 @@ struct riscv_compress_elf
 		size_t bytes = 0, saving = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.insn = riscv_get_instruction(pc, &next_pc);
-			riscv_decode_instruction(dec, dec.insn);
-			if (riscv_get_instruction_length(dec.insn) == 4 && riscv_encode_compress(dec)) {
-				dec.insn = riscv_encode(dec);
-				riscv_disasm_instruction(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
+			dec.insn = riscv_get_insn(pc, &next_pc);
+			riscv_decode_rv64(dec, dec.insn);
+			if (riscv_get_insn_length(dec.insn) == 4 && riscv_compress_insn(dec)) {
+				dec.insn = riscv_encode_insn(dec);
+				riscv_disasm_insn(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 2;
 				saving += 2;
 			} else {
-				riscv_disasm_instruction(dec, dec_hist, pc, next_pc, pc_offset, gp,
+				riscv_disasm_insn(dec, dec_hist, pc, next_pc, pc_offset, gp,
 					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 4;

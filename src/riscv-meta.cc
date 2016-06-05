@@ -78,7 +78,7 @@ const char* riscv_f_registers[] = {
 	"ft11",
 };
 
-const char* riscv_instruction_name[] = {
+const char* riscv_insn_name[] = {
 	"unknown",
 	"lui",
 	"auipc",
@@ -298,7 +298,7 @@ const char* riscv_instruction_name[] = {
 	"c.sdsp",
 };
 
-const riscv_codec riscv_instruction_codec[] = {
+const riscv_codec riscv_insn_codec[] = {
 	riscv_codec_unknown,
 	riscv_codec_u,
 	riscv_codec_u,
@@ -518,7 +518,7 @@ const riscv_codec riscv_instruction_codec[] = {
 	riscv_codec_css_sdsp,
 };
 
-const riscv_wu riscv_instruction_match[] = {
+const riscv_wu riscv_insn_match[] = {
 	0x00000000,
 	0x00000037,
 	0x00000017,
@@ -738,7 +738,7 @@ const riscv_wu riscv_instruction_match[] = {
 	0x0000e002,
 };
 
-const riscv_wu riscv_instruction_mask[] = {
+const riscv_wu riscv_insn_mask[] = {
 	0x00000000,
 	0x0000007f,
 	0x0000007f,
@@ -958,7 +958,7 @@ const riscv_wu riscv_instruction_mask[] = {
 	0x0000e003,
 };
 
-const char* riscv_instruction_format[] = {
+const char* riscv_insn_format[] = {
 	riscv_fmt_none,
 	riscv_fmt_rd_imm,
 	riscv_fmt_rd_offset,
@@ -1250,7 +1250,7 @@ const riscv_comp_data rvcd_fsw[] =                   { { 181, rvcc_c_fsw }, { 21
 const riscv_comp_data rvcd_fld[] =                   { { 176, rvcc_c_fld }, { 201, rvcc_c_fldsp }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_fsd[] =                   { { 179, rvcc_c_fsd }, { 209, rvcc_c_fsdsp }, { riscv_op_unknown, nullptr } };
 
-const riscv_comp_data* riscv_instruction_comp[] = {
+const riscv_comp_data* riscv_insn_comp[] = {
 	nullptr,
 	rvcd_lui,
 	nullptr,
@@ -1470,7 +1470,7 @@ const riscv_comp_data* riscv_instruction_comp[] = {
 	nullptr,
 };
 
-const int riscv_instruction_decomp[] = {
+const int riscv_insn_decomp[] = {
 	0,
 	0,
 	0,

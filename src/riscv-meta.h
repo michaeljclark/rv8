@@ -567,13 +567,13 @@ struct riscv_comp_data
 extern "C" {
 	extern const char* riscv_i_registers[];
 	extern const char* riscv_f_registers[];
-	extern const char* riscv_instruction_name[];
-	extern const riscv_codec riscv_instruction_codec[];
-	extern const riscv_wu riscv_instruction_match[];
-	extern const riscv_wu riscv_instruction_mask[];
-	extern const char* riscv_instruction_format[];
-	extern const riscv_comp_data* riscv_instruction_comp[];
-	extern const int riscv_instruction_decomp[];
+	extern const char* riscv_insn_name[];
+	extern const riscv_codec riscv_insn_codec[];
+	extern const riscv_wu riscv_insn_match[];
+	extern const riscv_wu riscv_insn_mask[];
+	extern const char* riscv_insn_format[];
+	extern const riscv_comp_data* riscv_insn_comp[];
+	extern const int riscv_insn_decomp[];
 }
 
 #endif

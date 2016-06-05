@@ -268,6 +268,23 @@ typedef struct {
 } Elf64_Shdr;
 
 
+// ELF Note Header (PT_NOTE)
+
+// Elf64_Nhdr
+typedef struct {
+	Elf64_Word n_namesz;             /* Name size */
+	Elf64_Word n_descsz;             /* Content size */
+	Elf64_Word n_type;               /* Content type */
+} Elf64_Nhdr;
+
+// Elf32_Nhdr
+typedef struct {
+	Elf32_Word n_namesz;             /* Name size */
+	Elf32_Word n_descsz;             /* Content size */
+	Elf32_Word n_type;               /* Content type */
+} Elf32_Nhdr;
+
+
 // ELF Symbol Table
 
 inline const Elf32_Byte ELF32_ST_BIND(Elf32_Word i) { return i >> 4; }

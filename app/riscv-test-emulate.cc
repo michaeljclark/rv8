@@ -29,8 +29,8 @@
 void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
 	riscv_ptr next_pc;
-	riscv_lu insn = riscv_get_instruction(proc->pc, &next_pc);
-	riscv_decode_instruction(dec, insn);
+	riscv_lu insn = riscv_get_insn(proc->pc, &next_pc);
+	riscv_decode_rv64(dec, insn);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;
@@ -59,7 +59,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 			proc->pc = next_pc;
 			break;
 		default:
-			panic("illegal instruciton: %s", riscv_instruction_name[dec.op]);
+			panic("illegal instruciton: %s", riscv_insn_name[dec.op]);
 	}
 }
 
