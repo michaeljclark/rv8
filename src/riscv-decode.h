@@ -868,8 +868,9 @@ inline bool riscv_compress_check(T &dec, const rvc_constraint *c)
 			case rvc_rs1_eq_sp:     if (!(rs1 == 2)) return false; break;
 			case rvc_rs1_eq_x0:     if (!(rs1 == 0)) return false; break;
 			case rvc_rs2_eq_x0:     if (!(rs2 == 0)) return false; break;
-			case rvc_rd_ne_sp:      if (!(rd != 2)) return false; break;
+			case rvc_rd_ne_x0_x2:   if (!(rd != 0 && rd != 2)) return false; break;
 			case rvc_rd_ne_x0:      if (!(rd != 0)) return false; break;
+			case rvc_rs1_ne_x0:     if (!(rs1 != 0)) return false; break;
 			case rvc_rs2_ne_x0:     if (!(rs2 != 0)) return false; break;
 			case rvc_end:           break;
 		}

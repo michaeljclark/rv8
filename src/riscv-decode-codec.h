@@ -33,7 +33,7 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 			}
 			break;
 		case 1:
-			// c.nop c.addi c.jal c.li c.lui c.addi16sp c.srli c.srai c.andi c.sub c.xor c.or ...
+			// c.nop c.addi c.jal c.li c.addi16sp c.lui c.srli c.srai c.andi c.sub c.xor c.or ...
 			switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
 				case 0:
 					// c.nop c.addi
@@ -48,7 +48,7 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 					break;
 				case 2: if (rvc) op = riscv_op_c_li; break;
 				case 3:
-					// c.lui c.addi16sp
+					// c.addi16sp c.lui
 					switch (((insn >> 7) & 0b11111) /* insn[11:7] */) {
 						case 2: if (rvc) op = riscv_op_c_addi16sp; break;
 						default: if (rvc) op = riscv_op_c_lui; break;

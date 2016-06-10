@@ -265,8 +265,8 @@ const char* riscv_insn_name[] = {
 	"c.addi",
 	"c.jal",
 	"c.li",
-	"c.lui",
 	"c.addi16sp",
+	"c.lui",
 	"c.srli",
 	"c.srai",
 	"c.andi",
@@ -488,8 +488,8 @@ const riscv_codec riscv_insn_codec[] = {
 	riscv_codec_ci,
 	riscv_codec_cj,
 	riscv_codec_ci_li,
-	riscv_codec_ci_lui,
 	riscv_codec_ci_16sp,
+	riscv_codec_ci_lui,
 	riscv_codec_cb_sh5,
 	riscv_codec_cb_sh5,
 	riscv_codec_cb_imm,
@@ -711,8 +711,8 @@ const riscv_wu riscv_insn_match[] = {
 	0x00000001,
 	0x00002001,
 	0x00004001,
-	0x00006001,
 	0x00006101,
+	0x00006001,
 	0x00008001,
 	0x00008401,
 	0x00008801,
@@ -934,8 +934,8 @@ const riscv_wu riscv_insn_mask[] = {
 	0x0000e003,
 	0x0000e003,
 	0x0000e003,
-	0x0000e003,
 	0x0000ef83,
+	0x0000e003,
 	0x0000fc03,
 	0x0000fc03,
 	0x0000ec03,
@@ -1157,8 +1157,8 @@ const char* riscv_insn_format[] = {
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_offset,
 	riscv_fmt_rd_rs1_imm,
-	riscv_fmt_rd_imm,
 	riscv_fmt_rd_rs1_imm,
+	riscv_fmt_rd_imm,
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_rd_rs1_imm,
@@ -1204,8 +1204,8 @@ const rvc_constraint rvcc_c_nop[] =                 { rvc_rd_eq_x0, rvc_rs1_eq_x
 const rvc_constraint rvcc_c_addi[] =                { rvc_imm_6, rvc_rd_ne_x0, rvc_rd_eq_rs1, rvc_end };
 const rvc_constraint rvcc_c_jal[] =                 { rvc_imm_12, rvc_imm_x2, rvc_rd_eq_ra, rvc_end };
 const rvc_constraint rvcc_c_li[] =                  { rvc_imm_6, rvc_rd_ne_x0, rvc_rs1_eq_x0, rvc_end };
-const rvc_constraint rvcc_c_lui[] =                 { rvc_imm_18, rvc_imm_nz, rvc_rd_ne_x0, rvc_rd_ne_sp, rvc_end };
 const rvc_constraint rvcc_c_addi16sp[] =            { rvc_imm_10, rvc_imm_x4, rvc_imm_nz, rvc_rd_eq_sp, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_lui[] =                 { rvc_imm_18, rvc_imm_nz, rvc_rd_ne_x0_x2, rvc_end };
 const rvc_constraint rvcc_c_srli_rv32c[] =          { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_srai_rv32c[] =          { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_andi[] =                { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
@@ -1220,11 +1220,11 @@ const rvc_constraint rvcc_c_beqz[] =                { rvc_imm_9, rvc_imm_x2, rvc
 const rvc_constraint rvcc_c_bnez[] =                { rvc_imm_9, rvc_imm_x2, rvc_rs1_b3, rvc_rs2_eq_x0, rvc_end };
 const rvc_constraint rvcc_c_slli_rv32c[] =          { rvc_imm_nz, rvc_rd_ne_x0, rvc_rd_eq_rs1, rvc_end };
 const rvc_constraint rvcc_c_fldsp[] =               { rvc_imm_9, rvc_imm_x8, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvcc_c_lwsp[] =                { rvc_imm_8, rvc_imm_x4, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_lwsp[] =                { rvc_imm_8, rvc_imm_x4, rvc_rd_ne_x0, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_flwsp[] =               { rvc_imm_8, rvc_imm_x4, rvc_rs1_eq_sp, rvc_end };
-const rvc_constraint rvcc_c_jr[] =                  { rvc_rd_eq_x0, rvc_rs2_eq_x0, rvc_end };
+const rvc_constraint rvcc_c_jr[] =                  { rvc_rd_eq_x0, rvc_rs1_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_mv[] =                  { rvc_rs1_eq_x0, rvc_rd_ne_x0, rvc_rs2_ne_x0, rvc_end };
-const rvc_constraint rvcc_c_jalr[] =                { rvc_rd_eq_ra, rvc_rs2_eq_x0, rvc_end };
+const rvc_constraint rvcc_c_jalr[] =                { rvc_rd_eq_ra, rvc_rs1_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_add[] =                 { rvc_rd_eq_rs1, rvc_rd_ne_x0, rvc_rs2_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_fsdsp[] =               { rvc_imm_9, rvc_imm_x8, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_swsp[] =                { rvc_imm_8, rvc_imm_x4, rvc_rs1_eq_sp, rvc_end };
@@ -1235,17 +1235,17 @@ const rvc_constraint rvcc_c_addiw[] =               { rvc_imm_6, rvc_rd_ne_x0, r
 const rvc_constraint rvcc_c_srli_rv64c[] =          { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_srai_rv64c[] =          { rvc_imm_nz, rvc_rd_eq_rs1, rvc_rd_b3, rvc_rs1_b3, rvc_end };
 const rvc_constraint rvcc_c_slli_rv64c[] =          { rvc_imm_nz, rvc_rd_ne_x0, rvc_rd_eq_rs1, rvc_end };
-const rvc_constraint rvcc_c_ldsp[] =                { rvc_imm_9, rvc_imm_x8, rvc_rs1_eq_sp, rvc_end };
+const rvc_constraint rvcc_c_ldsp[] =                { rvc_imm_9, rvc_imm_x8, rvc_rd_ne_x0, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_sdsp[] =                { rvc_imm_9, rvc_imm_x8, rvc_rs1_eq_sp, rvc_end };
 
-const riscv_comp_data rvcd_lui[] =                   { { 186, rvcc_c_lui }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_lui[] =                   { { 187, rvcc_c_lui }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_jal[] =                   { { 184, rvcc_c_jal }, { 197, rvcc_c_j }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_jalr[] =                  { { 204, rvcc_c_jr }, { 207, rvcc_c_jalr }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_beq[] =                   { { 198, rvcc_c_beqz }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_bne[] =                   { { 199, rvcc_c_bnez }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_lw[] =                    { { 177, rvcc_c_lw }, { 202, rvcc_c_lwsp }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_sw[] =                    { { 180, rvcc_c_sw }, { 210, rvcc_c_swsp }, { riscv_op_unknown, nullptr } };
-const riscv_comp_data rvcd_addi[] =                  { { 175, rvcc_c_addi4spn }, { 182, rvcc_c_nop }, { 183, rvcc_c_addi }, { 185, rvcc_c_li }, { 187, rvcc_c_addi16sp }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_addi[] =                  { { 175, rvcc_c_addi4spn }, { 182, rvcc_c_nop }, { 183, rvcc_c_addi }, { 185, rvcc_c_li }, { 186, rvcc_c_addi16sp }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_andi[] =                  { { 190, rvcc_c_andi }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_slli_rv32i[] =            { { 200, rvcc_c_slli_rv32c }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_srli_rv32i[] =            { { 188, rvcc_c_srli_rv32c }, { riscv_op_unknown, nullptr } };
@@ -1678,8 +1678,8 @@ const int riscv_insn_decomp[] = {
 	19,
 	3,
 	19,
-	1,
 	19,
+	1,
 	26,
 	27,
 	24,

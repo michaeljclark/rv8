@@ -79,8 +79,9 @@ enum rvc_constraint
 	rvc_rs1_eq_sp,
 	rvc_rs1_eq_x0,
 	rvc_rs2_eq_x0,
-	rvc_rd_ne_sp,
+	rvc_rd_ne_x0_x2,
 	rvc_rd_ne_x0,
+	rvc_rs1_ne_x0,
 	rvc_rs2_ne_x0,
 };
 
@@ -527,8 +528,8 @@ enum riscv_op
 	riscv_op_c_addi = 183,
 	riscv_op_c_jal = 184,
 	riscv_op_c_li = 185,
-	riscv_op_c_lui = 186,
-	riscv_op_c_addi16sp = 187,
+	riscv_op_c_addi16sp = 186,
+	riscv_op_c_lui = 187,
 	riscv_op_c_srli_rv32c = 188,
 	riscv_op_c_srai_rv32c = 189,
 	riscv_op_c_andi = 190,
