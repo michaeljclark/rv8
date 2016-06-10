@@ -118,6 +118,8 @@ struct riscv_parse_meta : riscv_meta_model
 	std::string colorize_args(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
 
+	static std::string latex_utf_substitute(std::string str);
+
 	void print_latex_row(riscv_latex_row &row, std::string ts);
 	void print_latex();
 	void print_map(bool print_map_instructions);
@@ -229,11 +231,32 @@ std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 	return codec_names;
 }
 
-static std::string latex_utf_substitute(std::string str)
+std::string riscv_parse_meta::latex_utf_substitute(std::string str)
 {
+	str = replace(str, "∞", "\\infty");
 	str = replace(str, "{", "\\left\\{");
 	str = replace(str, "}", "\\right\\}");
 	str = replace(str, "≠", "\\neq");
+	str = replace(str, "≤", "\\leq");
+	str = replace(str, "≥", "\\geq");
+	str = replace(str, "⊂", "\\subset");
+	str = replace(str, "⊃", "\\supset");
+	str = replace(str, "⊆", "\\subseteq");
+	str = replace(str, "⊇", "\\supseteq");
+	str = replace(str, "⊕", "\\oplus");
+	str = replace(str, "⊗", "\\otimes");
+	str = replace(str, "⊖", "\\ominus");
+	str = replace(str, "→", "\\rightarrow");
+	str = replace(str, "←", "\\leftarrow");
+	str = replace(str, "∨", "\\vee");
+	str = replace(str, "∧", "\\wedge");
+	str = replace(str, "⊻", "\\veebar");
+	str = replace(str, "⊼", "\\wedgebar");
+	str = replace(str, "×", "\\times");
+	str = replace(str, "÷", "\\div");
+	str = replace(str, "«", "\\ll");
+	str = replace(str, "»", "\\gg");
+	str = replace(str, "∥", "\\parallel");
 	return str;
 }
 
