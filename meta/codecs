@@ -15,7 +15,7 @@ i          rd,rs1,imm             rd rs1 imm12
 i·sh5      rd,rs1,imm             rd rs1 shamt5
 i·sh6      rd,rs1,imm             rd rs1 shamt6
 i+csr      rd,csr,rs1             rd rs1 csr12
-i+csri     rd,csr,imm5            rd zimm csr12
+i+csri     rd,csr,zimm            rd zimm csr12
 i+l        rd,offset(rs1)         rd rs1 imm12
 i+lf       frd,offset(rs1)        frd rs1 imm12
 s          rs2,offset(rs1)        rs1 rs2 simm12

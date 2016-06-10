@@ -35,7 +35,7 @@ imm12      31:20[11:0]                  simm  "imm"       green   none
 csr12      31:20[11:0]                  csr   "csr"       green   none
 simm12     31:25[11:5],11:7[4:0]        simm  "imm"       green   none
 sbimm12    31:25[12|10:5],11:7[4:1|11]  simm  "imm"       green   none     # PC relative branch
-zimm       19:15                        simm  "zimm"      green   none
+zimm       19:15                        uimm  "zimm"      green   none
 shamt5     24:20                        uimm  "shamt5"    green   none     # 32-bit shift amount
 shamt6     25:20                        uimm  "shamt6"    green   none     # 64-bit shift amount
 crd0       12                           creg  "rd,"       white   magenta
