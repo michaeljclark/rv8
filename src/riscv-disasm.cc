@@ -104,7 +104,7 @@ const void print_pad(size_t &offset, size_t pad_to, const char *str)
 const void print_addr(size_t &offset, uint64_t addr,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
-	print_pad(offset, 75);
+	print_pad(offset, 80);
 	printf("%s", colorize("address"));
 	print_add(offset, "# ");
 	print_fmt(offset, "0x%016tx", addr);
@@ -168,11 +168,6 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	}
 	print_pad(offset, 45);
 
-	// print opcode
-	printf("%s", colorize("opcode"));
-	print_pad(offset, 55, riscv_insn_name[dec.op]);
-	printf("%s", colorize("reset"));
-
 	// print arguments
 	while (*fmt) {
 		switch (*fmt) {
@@ -199,7 +194,7 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 				else print_fmt(offset, "%llu", dec.imm);
 				break;
 			case 'r':
-				switch(dec.arg) {
+				switch(dec.rm) {
 					case riscv_rm_rne: print_add(offset, "rne"); break;
 					case riscv_rm_rtz: print_add(offset, "rtz"); break;
 					case riscv_rm_rdn: print_add(offset, "rdn"); break;
@@ -208,13 +203,18 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 					default:           print_add(offset, "unk"); break;
 				}
 				break;
-			case 'a':
-				switch(dec.arg) {
-					case riscv_aqrl_relaxed: print_add(offset, "relaxed"); break;
-					case riscv_aqrl_acquire: print_add(offset, "acquire"); break;
-					case riscv_aqrl_release: print_add(offset, "release"); break;
-					case riscv_aqrl_acq_rel: print_add(offset, "acq_rel"); break;
-				}
+			case 'O':
+				printf("%s", colorize("opcode"));
+				print_add(offset, riscv_insn_name[dec.op]);
+ 				break;
+			case '\t':
+				print_pad(offset, 60, "");
+				printf("%s", colorize("reset"));
+ 				break;
+			case 'A':
+				if (dec.aq) print_add(offset, ".aq"); break;
+			case 'R':
+				if (dec.rl) print_add(offset, ".rl"); break;
  				break;
 			default:
 				break;

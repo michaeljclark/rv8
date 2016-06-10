@@ -15,7 +15,8 @@ typedef uimm_t<5, S<11,7, B<4,0>>>                                           ris
 typedef uimm_t<5, S<19,15, B<4,0>>>                                          riscv_arg_frs1;
 typedef uimm_t<5, S<24,20, B<4,0>>>                                          riscv_arg_frs2;
 typedef uimm_t<5, S<31,27, B<4,0>>>                                          riscv_arg_frs3;
-typedef uimm_t<2, S<26,25, B<1,0>>>                                          riscv_arg_aqrl;
+typedef uimm_t<1, S<26,26, B<0,0>>>                                          riscv_arg_aq;
+typedef uimm_t<1, S<25,25, B<0,0>>>                                          riscv_arg_rl;
 typedef uimm_t<4, S<27,24, B<3,0>>>                                          riscv_arg_pred;
 typedef uimm_t<4, S<23,20, B<3,0>>>                                          riscv_arg_succ;
 typedef uimm_t<3, S<14,12, B<2,0>>>                                          riscv_arg_rm;

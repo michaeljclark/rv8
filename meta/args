@@ -24,7 +24,8 @@ frd        11:7                         freg  "frd"       white   magenta
 frs1       19:15                        freg  "frs1"      white   cyan
 frs2       24:20                        freg  "frs2"      white   green
 frs3       31:27                        freg  "frs3"      white   yellow
-aqrl       26:25                        arg   "aqrl"      green   none     # Acquire / Release
+aq         26                           arg   "aq"        green   none     # Acquire
+rl         25                           arg   "rl"        green   none     # Release
 pred       27:24                        arg   "pred"      green   none     # Predecessor
 succ       23:20                        arg   "succ"      green   none     # Successor
 rm         14:12                        arg   "rm"        green   none     # Rounding Mode

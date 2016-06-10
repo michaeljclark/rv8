@@ -16,7 +16,10 @@ struct riscv_decode
 	riscv_wu  rs1  : 6;
 	riscv_wu  rs2  : 6;
 	riscv_wu  rs3  : 6;
-	riscv_wu  arg  : 8;
+	riscv_wu  rm   : 3;
+	riscv_wu  aq   : 1;
+	riscv_wu  rl   : 1;
+	riscv_wu  pad  : 4;
 };
 
 /* Disassembled Instruction */
@@ -304,7 +307,7 @@ inline void riscv_decode_r_m(T &dec, riscv_lu insn)
 	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_rm::decode(insn);
+	dec.rm = riscv_arg_rm::decode(insn);
 }
 
 /* Decode R AMO L */
@@ -315,7 +318,8 @@ inline void riscv_decode_r_l(T &dec, riscv_lu insn)
 	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
-	dec.arg = riscv_arg_aqrl::decode(insn);
+	dec.aq = riscv_arg_aq::decode(insn);
+	dec.rl = riscv_arg_rl::decode(insn);
 }
 
 /* Decode R AMO S */
@@ -326,7 +330,8 @@ inline void riscv_decode_r_a(T &dec, riscv_lu insn)
 	dec.rs1 = riscv_arg_rs1::decode(insn);
 	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_aqrl::decode(insn);
+	dec.aq = riscv_arg_aq::decode(insn);
+	dec.rl = riscv_arg_rl::decode(insn);
 }
 
 /* Decode R 4f */
@@ -338,7 +343,7 @@ inline void riscv_decode_r4_m(T &dec, riscv_lu insn)
 	dec.rs2 = riscv_arg_rs2::decode(insn);
 	dec.rs3 = riscv_arg_rs3::decode(insn);
 	dec.imm = 0;
-	dec.arg = riscv_arg_rm::decode(insn);
+	dec.rm = riscv_arg_rm::decode(insn);
 }
 
 /* Decode I */
@@ -660,7 +665,7 @@ inline riscv_lu riscv_encode_r_m(T &dec)
 	return riscv_arg_rd::encode(dec.rd) |
 		riscv_arg_rs1::encode(dec.rs1) |
 		riscv_arg_rs2::encode(dec.rs2) |
-		riscv_arg_rm::encode(dec.arg);
+		riscv_arg_rm::encode(dec.rm);
 }
 
 /* Encode R AMO Load */
@@ -670,7 +675,8 @@ inline riscv_lu riscv_encode_r_l(T &dec)
 	assert(dec.rs2 == 0);
 	return riscv_arg_rd::encode(dec.rd) |
 		riscv_arg_rs1::encode(dec.rs1) |
-		riscv_arg_aqrl::encode(dec.arg);
+		riscv_arg_aq::encode(dec.aq) |
+		riscv_arg_rl::encode(dec.rl);
 }
 
 /* Encode R AMO */
@@ -680,7 +686,8 @@ inline riscv_lu riscv_encode_r_a(T &dec)
 	return riscv_arg_rd::encode(dec.rd) |
 		riscv_arg_rs1::encode(dec.rs1) |
 		riscv_arg_rs2::encode(dec.rs2) |
-		riscv_arg_aqrl::encode(dec.arg);
+		riscv_arg_aq::encode(dec.aq) |
+		riscv_arg_rl::encode(dec.rl);
 }
 
 /* Encode R 4f */
@@ -691,7 +698,7 @@ inline riscv_lu riscv_encode_r4_m(T &dec)
 		riscv_arg_rs1::encode(dec.rs1) |
 		riscv_arg_rs2::encode(dec.rs2) |
 		riscv_arg_rs3::encode(dec.rs3) |
-		riscv_arg_rm::encode(dec.arg);
+		riscv_arg_rm::encode(dec.rm);
 }
 
 /* Encode I */
