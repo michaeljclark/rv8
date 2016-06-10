@@ -175,9 +175,12 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 						case 1:
 							// slli slli
 							switch (((insn >> 26) & 0b111111) /* insn[31:26] */) {
-								case 0: 
-									if (rvi && rv32) op = riscv_op_slli_rv32i;
-									else if (rvi && rv64) op = riscv_op_slli_rv64i;
+								case 0:
+									// slli slli
+									switch (((insn >> 25) & 0b1) /* insn[25] */) {
+										case 0: if (rvi && rv32) op = riscv_op_slli_rv32i; break;
+										default: if (rvi && rv64) op = riscv_op_slli_rv64i; break;
+									}
 									break;
 							}
 							break;
@@ -187,13 +190,19 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 						case 5:
 							// srli srai srli srai
 							switch (((insn >> 26) & 0b111111) /* insn[31:26] */) {
-								case 0: 
-									if (rvi && rv32) op = riscv_op_srli_rv32i;
-									else if (rvi && rv64) op = riscv_op_srli_rv64i;
+								case 0:
+									// srli srli
+									switch (((insn >> 25) & 0b1) /* insn[25] */) {
+										case 0: if (rvi && rv32) op = riscv_op_srli_rv32i; break;
+										default: if (rvi && rv64) op = riscv_op_srli_rv64i; break;
+									}
 									break;
-								case 16: 
-									if (rvi && rv32) op = riscv_op_srai_rv32i;
-									else if (rvi && rv64) op = riscv_op_srai_rv64i;
+								case 16:
+									// srai srai
+									switch (((insn >> 25) & 0b1) /* insn[25] */) {
+										case 0: if (rvi && rv32) op = riscv_op_srai_rv32i; break;
+										default: if (rvi && rv64) op = riscv_op_srai_rv64i; break;
+									}
 									break;
 							}
 							break;
