@@ -35,9 +35,11 @@ r·a        aqrl,rd,rs2,(rs1)      rd rs1 rs2 aqrl
 r·l        aqrl,rd,(rs1)          rd rs1 aqrl
 cb         rs1,rs2,offset         crs1q cimmb           # rd=zero rs2=zero
 cb·imm     rd,rs1,imm             crs1rdq cimmi         # rd=rs1 rs2=zero
-cb·sh      rd,rs1,imm             crs1rdq cimmsh        # rd=rs1 rs2=zero
+cb·sh5     rd,rs1,imm             crs1rdq cimmsh5       # rd=rs1 rs2=zero
+cb·sh6     rd,rs1,imm             crs1rdq cimmsh6       # rd=rs1 rs2=zero
 ci         rd,rs1,imm             crs1rd cimmi
-ci·sh      rd,rs1,imm             crs1rd cimmsh
+ci·sh5     rd,rs1,imm             crs1rd cimmsh5
+ci·sh6     rd,rs1,imm             crs1rd cimmsh6
 ci·16sp    rd,rs1,imm             crs1rd cimm16sp
 ci·lwsp    rd,offset(rs1)         crd cimmlwsp
 ci·ldsp    rd,offset(rs1)         crd cimmldsp

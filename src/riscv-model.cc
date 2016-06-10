@@ -739,6 +739,12 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 	}
 	for (auto comp_opcode : lookup_opcode_by_name(part[0])) {
 		for (auto opcode : lookup_opcode_by_name(part[1])) {
+
+			// skip opcodes that don't match isa width
+			if (opcode->extensions.size() == 1 && comp_opcode->extensions.size() == 1 &&
+				opcode->extensions[0]->isa_width != comp_opcode->extensions[0]->isa_width) continue;
+
+			// create compression for this pair of opcodes
 			riscv_constraint_list constraint_list;
 			for (size_t i = 2; i < part.size(); i++) {
 				auto ci = constraints_by_name.find(part[i]);

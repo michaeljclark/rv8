@@ -95,11 +95,20 @@ inline void riscv_decode_ci(T &dec, riscv_lu insn)
 
 /* Decode CI shamt5 */
 template <typename T>
-inline void riscv_decode_ci_sh(T &dec, riscv_lu insn)
+inline void riscv_decode_ci_sh5(T &dec, riscv_lu insn)
 {
 	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(insn);
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmsh::decode(insn);
+	dec.imm = riscv_arg_cimmsh5::decode(insn);
+}
+
+/* Decode CI shamt6 */
+template <typename T>
+inline void riscv_decode_ci_sh6(T &dec, riscv_lu insn)
+{
+	dec.rd = dec.rs1 = riscv_arg_crs1rd::decode(insn);
+	dec.rs2 = riscv_ireg_zero;
+	dec.imm = riscv_arg_cimmsh6::decode(insn);
 }
 
 /* Decode CI li */
@@ -252,12 +261,22 @@ inline void riscv_decode_cb_imm(T &dec, riscv_lu insn)
 
 /* Decode CB shamt5 */
 template <typename T>
-inline void riscv_decode_cb_sh(T &dec, riscv_lu insn)
+inline void riscv_decode_cb_sh5(T &dec, riscv_lu insn)
 {
 	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(insn) + 8;
 	dec.rs2 = riscv_ireg_zero;
-	dec.imm = riscv_arg_cimmsh::decode(insn);
+	dec.imm = riscv_arg_cimmsh5::decode(insn);
 }
+
+/* Decode CB shamt6 */
+template <typename T>
+inline void riscv_decode_cb_sh6(T &dec, riscv_lu insn)
+{
+	dec.rd = dec.rs1 = riscv_arg_crs1rdq::decode(insn) + 8;
+	dec.rs2 = riscv_ireg_zero;
+	dec.imm = riscv_arg_cimmsh6::decode(insn);
+}
+
 
 /* Decode CJ - imm */
 template <typename T>
@@ -449,11 +468,20 @@ inline riscv_lu riscv_encode_ci(T &dec)
 
 /* Encode CI shamt5 */
 template <typename T>
-inline riscv_lu riscv_encode_ci_sh(T &dec)
+inline riscv_lu riscv_encode_ci_sh5(T &dec)
 {
 	assert(dec.rd == dec.rs1);
 	return riscv_arg_crs1rd::encode(dec.rs1) |
-		riscv_arg_cimmsh::encode(dec.imm);
+		riscv_arg_cimmsh5::encode(dec.imm);
+}
+
+/* Encode CI shamt6 */
+template <typename T>
+inline riscv_lu riscv_encode_ci_sh6(T &dec)
+{
+	assert(dec.rd == dec.rs1);
+	return riscv_arg_crs1rd::encode(dec.rs1) |
+		riscv_arg_cimmsh6::encode(dec.imm);
 }
 
 /* Encode CI li */
@@ -592,12 +620,22 @@ inline riscv_lu riscv_encode_cb_imm(T &dec)
 
 /* Encode CB shamt5 */
 template <typename T>
-inline riscv_lu riscv_encode_cb_sh(T &dec)
+inline riscv_lu riscv_encode_cb_sh5(T &dec)
 {
 	assert(dec.rd == dec.rs1);
 	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
-		riscv_arg_cimmsh::encode(dec.imm);
+		riscv_arg_cimmsh5::encode(dec.imm);
 }
+
+/* Encode CB shamt6 */
+template <typename T>
+inline riscv_lu riscv_encode_cb_sh6(T &dec)
+{
+	assert(dec.rd == dec.rs1);
+	return riscv_arg_crs1rdq::encode(dec.rs1 + 8)  |
+		riscv_arg_cimmsh6::encode(dec.imm);
+}
+
 
 /* Encode CJ - imm */
 template <typename T>

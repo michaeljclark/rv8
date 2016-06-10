@@ -41,7 +41,8 @@ typedef uimm_t<3, S<4,2, B<2,0>>>                                            ris
 typedef uimm_t<3, S<4,2, B<2,0>>>                                            riscv_arg_cfrs2q;
 typedef uimm_t<5, S<6,2, B<4,0>>>                                            riscv_arg_cfrs2;
 typedef uimm_t<5, S<11,7, B<4,0>>>                                           riscv_arg_cfrd;
-typedef uimm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmsh;
+typedef uimm_t<5, S<6,2, B<4,0>>>                                            riscv_arg_cimmsh5;
+typedef uimm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmsh6;
 typedef simm_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                            riscv_arg_cimmi;
 typedef simm_t<18, S<12,12, B<17>>, S<6,2, B<16,12>>>                        riscv_arg_cimmui;
 typedef simm_t<8, S<12,12, B<5>>, S<6,2, B<4,2>,B<7,6>>>                     riscv_arg_cimmlwsp;

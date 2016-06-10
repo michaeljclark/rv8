@@ -50,7 +50,8 @@ cfrdq      4:2                          creg  "frd'"      white   magenta
 cfrs2q     4:2                          creg  "frs2'"     white   green
 cfrs2      6:2                          freg  "frs2"      white   green
 cfrd       11:7                         freg  "frd"       white   magenta
-cimmsh     12[5],6:2[4:0]               uimm  "imm"       green   none
+cimmsh5    6:2[4:0]                     uimm  "imm"       green   none
+cimmsh6    12[5],6:2[4:0]               uimm  "imm"       green   none
 cimmi      12[5],6:2[4:0]               simm  "imm"       green   none
 cimmui     12[17],6:2[16:12]            simm  "imm"       green   none
 cimmlwsp   12[5],6:2[4:2|7:6]           simm  "imm"       green   none

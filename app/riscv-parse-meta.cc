@@ -177,15 +177,6 @@ void riscv_parse_meta::generate_codec(bool include_pseudo)
 	// generate decode
 	root_node.clear();
 	generate_codec_node(root_node, opcodes_copy);
-
-	// add top level default value for riscv_op_unknown
-	unknown = std::make_shared<riscv_opcode>("unknown" , "unknown");
-	for (auto &ext : extensions) unknown->extensions.push_back(ext);
-	if (std::find(root_node.vals.begin(), root_node.vals.end(), DEFAULT) == root_node.vals.end()) {
-		root_node.vals.push_back(DEFAULT);
-		root_node.val_opcodes.insert(root_node.val_opcodes.begin(),
-			std::pair<ssize_t,riscv_opcode_list>(DEFAULT, riscv_opcode_list()))->second.push_back(unknown);
-	}
 }
 
 std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)
@@ -879,6 +870,8 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, "_") + "[] =";
 		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
 		for (auto comp : opcode->compressions) {
+			if (opcode->extensions.size() == 1 && comp->comp_opcode->extensions.size() == 1 &&
+				opcode->extensions[0]->isa_width != comp->comp_opcode->extensions[0]->isa_width) continue;
 			printf("{ %s, %s }, ",
 				(zero_not_oh ?
 					format_string("%lu", comp->comp_opcode->num).c_str() :
@@ -972,7 +965,7 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	printf(">\n");
 	printf("inline riscv_lu riscv_decode_op(riscv_lu insn)\n");
 	printf("{\n");
-	printf("\triscv_lu op;\n");
+	printf("\triscv_lu op = riscv_op_unknown;\n");
 	print_switch_decoder_node(root_node, 1);
 	printf("\treturn op;\n");
 	printf("}\n\n");

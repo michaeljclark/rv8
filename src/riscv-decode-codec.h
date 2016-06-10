@@ -12,7 +12,7 @@
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
 inline riscv_lu riscv_decode_op(riscv_lu insn)
 {
-	riscv_lu op;
+	riscv_lu op = riscv_op_unknown;
 	switch (((insn >> 0) & 0b11) /* insn[1:0] */) {
 		case 0:
 			// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd
@@ -55,10 +55,22 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 					}
 					break;
 				case 4:
-					// c.srli c.srai c.andi c.sub c.xor c.or c.and c.subw c.addw
+					// c.srli c.srai c.andi c.sub c.xor c.or c.and c.subw c.addw c.srli c.srai
 					switch (((insn >> 10) & 0b11) /* insn[11:10] */) {
-						case 0: if (rvc) op = riscv_op_c_srli; break;
-						case 1: if (rvc) op = riscv_op_c_srai; break;
+						case 0:
+							// c.srli c.srli
+							switch (((insn >> 12) & 0b1) /* insn[12] */) {
+								case 0: if (rvc && rv32) op = riscv_op_c_srli_rv32c; break;
+								default: if (rvc && rv64) op = riscv_op_c_srli_rv64c; break;
+							}
+							break;
+						case 1:
+							// c.srai c.srai
+							switch (((insn >> 12) & 0b1) /* insn[12] */) {
+								case 0: if (rvc && rv32) op = riscv_op_c_srai_rv32c; break;
+								default: if (rvc && rv64) op = riscv_op_c_srai_rv64c; break;
+							}
+							break;
 						case 2: if (rvc) op = riscv_op_c_andi; break;
 						case 3:
 							// c.sub c.xor c.or c.and c.subw c.addw
@@ -81,7 +93,13 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 		case 2:
 			// c.slli c.fldsp c.lwsp c.flwsp c.jr c.mv c.ebreak c.jalr c.add c.fsdsp c.swsp c.fswsp ...
 			switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
-				case 0: if (rvc) op = riscv_op_c_slli; break;
+				case 0:
+					// c.slli c.slli
+					switch (((insn >> 12) & 0b1) /* insn[12] */) {
+						case 0: if (rvc && rv32) op = riscv_op_c_slli_rv32c; break;
+						default: if (rvc && rv64) op = riscv_op_c_slli_rv64c; break;
+					}
+					break;
 				case 1: if (rvc) op = riscv_op_c_fldsp; break;
 				case 2: if (rvc) op = riscv_op_c_lwsp; break;
 				case 3: 
@@ -553,7 +571,6 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 					break;
 			}
 			break;
-		default: if (rvi) op = riscv_op_unknown; break;
 	}
 	return op;
 }
@@ -580,9 +597,11 @@ inline void riscv_decode_type(T &dec, riscv_lu insn)
 		case riscv_codec_r_l:           riscv_decode_r_l(dec, insn);                       break;
 		case riscv_codec_cb:            riscv_decode_cb(dec, insn);                        break;
 		case riscv_codec_cb_imm:        riscv_decode_cb_imm(dec, insn);                    break;
-		case riscv_codec_cb_sh:         riscv_decode_cb_sh(dec, insn);                     break;
+		case riscv_codec_cb_sh5:        riscv_decode_cb_sh5(dec, insn);                    break;
+		case riscv_codec_cb_sh6:        riscv_decode_cb_sh6(dec, insn);                    break;
 		case riscv_codec_ci:            riscv_decode_ci(dec, insn);                        break;
-		case riscv_codec_ci_sh:         riscv_decode_ci_sh(dec, insn);                     break;
+		case riscv_codec_ci_sh5:        riscv_decode_ci_sh5(dec, insn);                    break;
+		case riscv_codec_ci_sh6:        riscv_decode_ci_sh6(dec, insn);                    break;
 		case riscv_codec_ci_16sp:       riscv_decode_ci_16sp(dec, insn);                   break;
 		case riscv_codec_ci_lwsp:       riscv_decode_ci_lwsp(dec, insn);                   break;
 		case riscv_codec_ci_ldsp:       riscv_decode_ci_ldsp(dec, insn);                   break;
@@ -628,9 +647,11 @@ inline riscv_lu riscv_encode_insn(T &dec)
 		case riscv_codec_r_l:           return insn |= riscv_encode_r_l(dec);              break;
 		case riscv_codec_cb:            return insn |= riscv_encode_cb(dec);               break;
 		case riscv_codec_cb_imm:        return insn |= riscv_encode_cb_imm(dec);           break;
-		case riscv_codec_cb_sh:         return insn |= riscv_encode_cb_sh(dec);            break;
+		case riscv_codec_cb_sh5:        return insn |= riscv_encode_cb_sh5(dec);           break;
+		case riscv_codec_cb_sh6:        return insn |= riscv_encode_cb_sh6(dec);           break;
 		case riscv_codec_ci:            return insn |= riscv_encode_ci(dec);               break;
-		case riscv_codec_ci_sh:         return insn |= riscv_encode_ci_sh(dec);            break;
+		case riscv_codec_ci_sh5:        return insn |= riscv_encode_ci_sh5(dec);           break;
+		case riscv_codec_ci_sh6:        return insn |= riscv_encode_ci_sh6(dec);           break;
 		case riscv_codec_ci_16sp:       return insn |= riscv_encode_ci_16sp(dec);          break;
 		case riscv_codec_ci_lwsp:       return insn |= riscv_encode_ci_lwsp(dec);          break;
 		case riscv_codec_ci_ldsp:       return insn |= riscv_encode_ci_ldsp(dec);          break;
