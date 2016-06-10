@@ -120,8 +120,8 @@ struct riscv_parse_meta : riscv_meta_model
 
 	static std::string latex_utf_substitute(std::string str);
 
-	void print_latex_row(riscv_latex_row &row, std::string ts);
-	void print_latex();
+	void print_latex_row(riscv_latex_row &row, std::string ts, bool remove_question_marks);
+	void print_latex(bool remove_question_marks);
 	void print_map(bool print_map_instructions);
 	void print_c_header(std::string filename);
 	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
@@ -260,7 +260,7 @@ std::string riscv_parse_meta::latex_utf_substitute(std::string str)
 	return str;
 }
 
-void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
+void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, bool remove_question_marks)
 {
 	switch (row.row_type) {
 		case riscv_latex_type_empty:
@@ -368,6 +368,8 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 							str += "$" + latex_utf_substitute(render_hint) + "$";
 						}
 					}
+				}
+				if (remove_question_marks) {
 					std::replace(str.begin(), str.end(), '?', '0');
 				}
 				msb -= size;
@@ -475,7 +477,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 	}
 }
 
-void riscv_parse_meta::print_latex()
+void riscv_parse_meta::print_latex(bool remove_question_marks)
 {
 	// paginate opcodes ordered by extension
 	// adding type and extension headings, page breaks and continuations
@@ -585,7 +587,7 @@ void riscv_parse_meta::print_latex()
 	// iterate through pages and rows and printing them
 	for (auto &page : pages) {
 		for (auto &row : page.rows) {
-			print_latex_row(row, ts.str());
+			print_latex_row(row, ts.str(), remove_question_marks);
 		}
 	}
 
@@ -1222,6 +1224,7 @@ int main(int argc, const char *argv[])
 	bool print_map_instructions = false;
 	bool no_comment = false;
 	bool zero_not_oh = false;
+	bool remove_question_marks = false;
 	bool include_pseudo = false;
 	bool print_args_h = false;
 	bool print_codec_h = false;
@@ -1244,6 +1247,9 @@ int main(int argc, const char *argv[])
 		{ "-l", "--print-latex", cmdline_arg_type_none,
 			"Print LaTeX",
 			[&](std::string s) { return (print_latex = true); } },
+		{ "-¿", "--substitute-question-marks", cmdline_arg_type_none,
+			"Substitute question marks for zeros in LaTeX output",
+			[&](std::string s) { return (remove_question_marks = true); } },
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print map",
 			[&](std::string s) { return (print_map = true); } },
@@ -1299,7 +1305,7 @@ int main(int argc, const char *argv[])
 	insn_set.generate_map();
 
 	if (print_latex) {
-		insn_set.print_latex();
+		insn_set.print_latex(remove_question_marks);
 	}
 
 	if (print_map) {
