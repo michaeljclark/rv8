@@ -254,6 +254,7 @@ struct riscv_constraint
 {
 	std::string name;
 	std::string expression;
+	std::string hint;
 
 	riscv_constraint(std::string name, std::string expression)
 		: name(name), expression(expression) {}

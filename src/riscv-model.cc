@@ -728,6 +728,9 @@ void riscv_meta_model::parse_constraint(std::vector<std::string> &part)
 	auto constraint = constraints_by_name[part[0]] = std::make_shared<riscv_constraint>(
 		part[0], part[1]
 	);
+	if (part.size() >= 3) {
+		constraint->hint = part[2];
+	}
 	constraints.push_back(constraint);
 }
 

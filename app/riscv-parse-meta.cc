@@ -217,7 +217,6 @@ std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)
 	return join(comps, "");
 }
 
-
 std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 {
 	std::vector<std::string> codec_names;
@@ -228,6 +227,14 @@ std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 		}
 	}
 	return codec_names;
+}
+
+static std::string latex_utf_substitute(std::string str)
+{
+	str = replace(str, "{", "\\left\\{");
+	str = replace(str, "}", "\\right\\}");
+	str = replace(str, "≠", "\\neq");
+	return str;
 }
 
 void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
@@ -329,35 +336,15 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts)
 							}
 						}
 					}
-					if (str == "rs1/rd" || str == "rd" || str == "frd") {
-						if (opcode->compressed) {
-							for (auto &constraint : opcode->compressed->constraint_list) {
-								std::string xname = constraint->name;
-								if (xname == "rd_eq_ra") str += "=1";
-								if (xname == "rd_eq_sp") str += "=2";
-								if (xname == "rd_eq_x0") str += "=0";
-								if (xname == "rd_ne_x0") str += "$\\neq0$";
-								if (xname == "rd_ne_x0_x2") str += "$\\neq\\left\\{0,2\\right\\}$";
-							}
+					if (opcode->compressed) {
+						for (auto &constraint : opcode->compressed->constraint_list) {
+							if (constraint->hint.size() == 0) continue;
+							std::string arg = split(constraint->name, "_", false, false)[0];
+							if (str.find(arg) != str.length() - arg.length()) continue;
+							std::string render_hint = replace(constraint->hint, arg, "");
+							str += "$" + latex_utf_substitute(render_hint) + "$";
 						}
 					}
-					if (str == "rs1") {
-						if (opcode->compressed) {
-							for (auto &constraint : opcode->compressed->constraint_list) {
-								std::string xname = constraint->name;
-								if (xname == "rs1_ne_x0")  str += "$\\neq0$";
-							}
-						}
-					}
-					if (str == "rs2") {
-						if (opcode->compressed) {
-							for (auto &constraint : opcode->compressed->constraint_list) {
-								std::string xname = constraint->name;
-								if (xname == "rs2_eq_x0") str += "=0";
-								if (xname == "rs2_ne_x0") str += "$\\neq$0";
-							}
-						}
-					}				} else {
 					std::replace(str.begin(), str.end(), '?', '0');
 				}
 				msb -= size;

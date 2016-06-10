@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <constraint name> <constraint expression>
+# <constraint name> <constraint expression> <hint>
 
 imm_6         "imm <= (imm & 0b111111)"
 imm_7         "imm <= (imm & 0b1111111)"
@@ -16,13 +16,13 @@ rd_b3         "rd  >= 8 && rd  <= 15"
 rs1_b3        "rs1 >= 8 && rs1 <= 15"
 rs2_b3        "rs2 >= 8 && rs2 <= 15"
 rd_eq_rs1     "rd == rs1"
-rd_eq_ra      "rd == 1"
-rd_eq_sp      "rd == 2"
-rd_eq_x0      "rd == 0"
+rd_eq_ra      "rd == 1"                             "rd=1"
+rd_eq_sp      "rd == 2"                             "rd=2"
+rd_eq_x0      "rd == 0"                             "rd=0"
 rs1_eq_sp     "rs1 == 2"
 rs1_eq_x0     "rs1 == 0"
-rs2_eq_x0     "rs2 == 0"
-rd_ne_x0_x2   "rd != 0 && rd != 2"
-rd_ne_x0      "rd != 0"
+rs2_eq_x0     "rs2 == 0"                            "rs2=0"
+rd_ne_x0_x2   "rd != 0 && rd != 2"                  "rd≠{0,2}"
+rd_ne_x0      "rd != 0"                             "rd≠0"
 rs1_ne_x0     "rs1 != 0"
-rs2_ne_x0     "rs2 != 0"
+rs2_ne_x0     "rs2 != 0"                            "rs2≠0"
