@@ -8,9 +8,9 @@
 
 none       none
 u          rd,imm                 rd imm20
-u+o        rd,offset              rd oimm20
+u+o        rd,offset              rd imm20
 uj         rd,offset              rd jimm20
-i+o        rd,rs1,offset          rd rs1 oimm12
+i+o        rd,rs1,offset          rd rs1 imm12
 i          rd,rs1,imm             rd rs1 imm12
 i·sh5      rd,rs1,imm             rd rs1 shamt5
 i·sh6      rd,rs1,imm             rd rs1 shamt6

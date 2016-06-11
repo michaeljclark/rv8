@@ -21,10 +21,8 @@ typedef uimm_t<4, S<27,24, B<3,0>>>                                          ris
 typedef uimm_t<4, S<23,20, B<3,0>>>                                          riscv_arg_succ;
 typedef uimm_t<3, S<14,12, B<2,0>>>                                          riscv_arg_rm;
 typedef simm_t<32, S<31,12, B<31,12>>>                                       riscv_arg_imm20;
-typedef simm_t<32, S<31,12, B<31,12>>>                                       riscv_arg_oimm20;
 typedef simm_t<21, S<31,12, B<20>,B<10,1>,B<11>,B<19,12>>>                   riscv_arg_jimm20;
 typedef simm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_imm12;
-typedef simm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_oimm12;
 typedef uimm_t<12, S<31,20, B<11,0>>>                                        riscv_arg_csr12;
 typedef simm_t<12, S<31,25, B<11,5>>, S<11,7, B<4,0>>>                       riscv_arg_simm12;
 typedef simm_t<13, S<31,25, B<12>,B<10,5>>, S<11,7, B<4,1>,B<11>>>           riscv_arg_sbimm12;
