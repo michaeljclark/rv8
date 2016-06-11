@@ -30,13 +30,13 @@ pred       27:24                        arg   "pred"      green   none     # Pre
 succ       23:20                        arg   "succ"      green   none     # Successor
 rm         14:12                        arg   "rm"        green   none     # Rounding Mode
 imm20      31:12[31:12]                 simm  "imm"       green   none
-oimm20     31:12[31:12]                 simm  "offset"    green   none
-jimm20     31:12[20|10:1|11|19:12]      simm  "offset"    green   none     # PC relative jump
+oimm20     31:12[31:12]                 simm  "imm"       green   none
+jimm20     31:12[20|10:1|11|19:12]      simm  "imm"       green   none     # PC relative jump
 imm12      31:20[11:0]                  simm  "imm"       green   none
-oimm12     31:20[11:0]                  simm  "offset"    green   none
+oimm12     31:20[11:0]                  simm  "imm"       green   none
 csr12      31:20[11:0]                  uimm  "csr"       green   none
 simm12     31:25[11:5],11:7[4:0]        simm  "imm"       green   none
-sbimm12    31:25[12|10:5],11:7[4:1|11]  simm  "offset"    green   none     # PC relative branch
+sbimm12    31:25[12|10:5],11:7[4:1|11]  simm  "imm"       green   none     # PC relative branch
 zimm       19:15[4:0]                   uimm  "zimm"      green   none
 shamt5     24:20[4:0]                   uimm  "shamt"     green   none     # 32-bit shift amount
 shamt6     25:20[5:0]                   uimm  "shamt"     green   none     # 64-bit shift amount
