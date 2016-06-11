@@ -95,15 +95,32 @@ void elf_file::load(std::string filename)
 		fclose(file);
 		panic("error fread: %s", filename.c_str());
 	}
+	uint64_t phdr_end, shdr_end;
 	switch (ei_class) {
 		case ELFCLASS32:
 			elf_bswap_ehdr32((Elf32_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
 			elf_ehdr32_to_ehdr64(&ehdr, (Elf32_Ehdr*)buf.data());
+			phdr_end = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf32_Phdr);
+			shdr_end = ehdr.e_shoff + ehdr.e_shnum * sizeof(Elf32_Shdr);
 			break;
 		case ELFCLASS64:
 			elf_bswap_ehdr64((Elf64_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);
 			memcpy(&ehdr, (Elf64_Ehdr*)buf.data(), sizeof(Elf64_Ehdr));
+			phdr_end = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf64_Phdr);
+			shdr_end = ehdr.e_shoff + ehdr.e_shnum * sizeof(Elf64_Shdr);
 			break;
+	}
+
+	// check program and section header offsets are within the file size
+	if (phdr_end > (uint64_t)stat_buf.st_size) {
+		fclose(file);
+		panic("program header offset %ld > %d range: %s",
+			phdr_end, stat_buf.st_size, filename.c_str());
+	}
+	if (shdr_end > (uint64_t)stat_buf.st_size) {
+		fclose(file);
+		panic("section header offset %ld > %d range: %s",
+			shdr_end, stat_buf.st_size, filename.c_str());
 	}
 
 	// check header version
@@ -187,6 +204,11 @@ void elf_file::load(std::string filename)
 		sections[i].offset = shdrs[i].sh_offset;
 		sections[i].size = shdrs[i].sh_size;
 		if (shdrs[i].sh_type == SHT_NOBITS) continue;
+		if (shdrs[i].sh_offset + shdrs[i].sh_size > (uint64_t)stat_buf.st_size) {
+			fclose(file);
+			panic("section offset %ld > %d range: %s",
+				shdrs[i].sh_offset + shdrs[i].sh_size, stat_buf.st_size, filename.c_str());
+		}
 		fseek(file, shdrs[i].sh_offset, SEEK_SET);
 		sections[i].buf.resize(shdrs[i].sh_size);
 		if (fread(sections[i].buf.data(), 1, shdrs[i].sh_size, file) != shdrs[i].sh_size) {
