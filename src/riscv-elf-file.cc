@@ -50,6 +50,7 @@ void elf_file::load(std::string filename)
 	FILE *file;
 	struct stat stat_buf;
 	std::vector<uint8_t> buf;
+	std::vector<std::pair<size_t,size_t>> bounds;
 
 	// clear current data
 	clear();
@@ -122,6 +123,13 @@ void elf_file::load(std::string filename)
 		panic("section header offset %ld > %d range: %s",
 			shdr_end, stat_buf.st_size, filename.c_str());
 	}
+	if (ehdr.e_phoff < shdr_end && ehdr.e_shoff < phdr_end) {
+		fclose(file);
+		panic("section and program headers overlap: %s",
+			filename.c_str());
+	}
+	bounds.push_back(std::pair<size_t,size_t>(ehdr.e_phoff, phdr_end));
+	bounds.push_back(std::pair<size_t,size_t>(ehdr.e_shoff, shdr_end));
 
 	// check header version
 	if (ehdr.e_version != EV_CURRENT) {
@@ -201,13 +209,21 @@ void elf_file::load(std::string filename)
 	// read section data into buffers
 	sections.resize(shdrs.size());
 	for (size_t i = 0; i < shdrs.size(); i++) {
+		uint64_t section_end = shdrs[i].sh_offset + shdrs[i].sh_size;
+		for (auto &bound : bounds) {
+			if (shdrs[i].sh_offset < bound.second && bound.first < section_end) {
+				fclose(file);
+				panic("section %d overlap: %s",
+					i, filename.c_str());
+			}
+		}
 		sections[i].offset = shdrs[i].sh_offset;
 		sections[i].size = shdrs[i].sh_size;
 		if (shdrs[i].sh_type == SHT_NOBITS) continue;
 		if (shdrs[i].sh_offset + shdrs[i].sh_size > (uint64_t)stat_buf.st_size) {
 			fclose(file);
 			panic("section offset %ld > %d range: %s",
-				shdrs[i].sh_offset + shdrs[i].sh_size, stat_buf.st_size, filename.c_str());
+				section_end, stat_buf.st_size, filename.c_str());
 		}
 		fseek(file, shdrs[i].sh_offset, SEEK_SET);
 		sections[i].buf.resize(shdrs[i].sh_size);
@@ -215,6 +231,7 @@ void elf_file::load(std::string filename)
 			fclose(file);
 			panic("error fread: %s", filename.c_str());
 		}
+		bounds.push_back(std::pair<size_t,size_t>(shdrs[i].sh_offset, section_end));
 	}
 	fclose(file);
 	buf.resize(0);
