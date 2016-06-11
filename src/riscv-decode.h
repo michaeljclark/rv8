@@ -20,6 +20,9 @@ struct riscv_decode
 	riscv_wu  aq   : 1;
 	riscv_wu  rl   : 1;
 	riscv_wu  pad  : 4;
+
+	riscv_decode()
+		: imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pad(0) {}
 };
 
 /* Disassembled Instruction */
@@ -28,6 +31,8 @@ struct riscv_disasm : riscv_decode
 {
 	riscv_ptr pc;
 	riscv_lu  insn;
+
+	riscv_disasm() : riscv_decode(), pc(0), insn(0) {}
 };
 
 #include "riscv-decode-args.h"
