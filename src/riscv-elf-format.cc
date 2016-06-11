@@ -66,8 +66,9 @@ const char* elf_p_type_name(int v)
 		case PT_DYNAMIC: return "DYNAMIC";
 		case PT_INTERP: return "INTERP";
 		case PT_NOTE: return "NOTE";
-		case PT_SHLIB: return "SHLIB";
 		case PT_PHDR: return "PHDR";
+		case PT_SHLIB: return "SHLIB";
+		case PT_TLS: return "TLS";
 		default: return "UNKNOWN";
 	}
 }
@@ -98,6 +99,12 @@ const char* elf_sh_type_name(int v)
 		case SHT_DYNSYM: return "DYNSYM";
 		case SHT_INIT_ARRAY: return "INIT_ARRAY";
 		case SHT_FINI_ARRAY: return "FINI_ARRAY";
+		case SHT_PREINIT_ARRAY: return "PREINIT_ARRAY";
+		case SHT_GROUP: return "GROUP";
+		case SHT_SYMTAB_SHNDX: return "SYMTAB_SHNDX";
+		case SHT_GNU_VERDEF: return "GNU_VERDEF";
+		case SHT_GNU_VERNEED: return "GNU_VERNEED";
+		case SHT_GNU_VERSYM: return "GNU_VERSYM";
 		default: return "UNKNOWN";
 	}
 }
@@ -108,6 +115,7 @@ const std::string elf_sh_shndx_name(int v)
 		case SHN_UNDEF: return "UNDEF";
 		case SHN_ABS: return "ABS";
 		case SHN_COMMON: return "COMMON";
+		case SHN_XINDEX: return "XINDEX";
 		default: return format_string("%d", v);
 	}
 }
@@ -118,6 +126,12 @@ const std::string elf_sh_flags_name(int v)
 	if (v & SHF_WRITE) s+= "+WRITE";
 	if (v & SHF_ALLOC) s+= "+ALLOC";
 	if (v & SHF_EXECINSTR) s+= "+EXEC";
+	if (v & SHF_MERGE) s+= "+MERGE";
+	if (v & SHF_STRINGS) s+= "+STRINGS";
+	if (v & SHF_INFO_LINK) s+= "+INFO_LINK";
+	if (v & SHF_LINK_ORDER) s+= "+LINK_ORDER";
+	if (v & SHF_GROUP) s+= "+GROUP";
+	if (v & SHF_TLS) s+= "+TLS";
 	return s;
 }
 
@@ -186,7 +200,7 @@ const std::string elf_phdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("%s[%2lu]%s %-20s %-12s %-12s %s0x%-16tx 0x%-16tx 0x%-16tx%s %4d %4d %4d",
+	return format_string("%s[%2lu]%s %-20s %-12s %-24s %s0x%-16tx 0x%-10tx 0x%-10tx%s %4d %4d %4d",
 		colorize("legend"),
 		i,
 		colorize("reset"),
@@ -235,7 +249,7 @@ void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 
 void elf_print_section_headers(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	printf("%sShdr %-20s %-12s %-12s %-18s %-18s %-18s %4s %4s %4s%s\n",
+	printf("%sShdr %-20s %-12s %-24s %-18s %-12s %-12s %4s %4s %4s%s\n",
 		colorize("title"), "Name", "Type", "Flags", "Addr", "Offset", "Size",
 		"Ents", "Link", "Info", colorize("reset"));
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {

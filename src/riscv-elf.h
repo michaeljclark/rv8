@@ -204,7 +204,8 @@ enum {
 	SHN_HIOS = 0xff3f,
 	SHN_ABS = 0xfff1,                /* Indicates that the corresponding reference is an absolute value */
 	SHN_COMMON = 0xfff2,             /* Indicates a symbol that has been declared as a common block */
-	SHN_HIRESERVE = 0xffff           /* Upper bound of the range of reserved indexes */
+	SHN_XINDEX = 0xffff,             /* Indicates section header has additional date in SHT_SYMTAB_SHNDX section */
+	SHN_HIRESERVE = 0xffff,          /* Upper bound of the range of reserved indexes */
 };
 
 // sh_type
@@ -223,7 +224,13 @@ enum {
 	SHT_DYNSYM = 11,                 /* Contains a dynamic loader symbol table */
 	SHT_INIT_ARRAY = 14,             /* Contains initialization functions */
 	SHT_FINI_ARRAY = 15,             /* Contains finalization functions */
+	SHT_PREINIT_ARRAY = 16,          /* */
+	SHT_GROUP = 17,                  /* Contains an array of Elf32_Word entries, the first entry is a flag entry */
+	SHT_SYMTAB_SHNDX = 18,           /* Contains extra symbol table info, sh_link to SHT_SYMTAB with SHN_XINDEX set */
 	SHT_LOOS = 0x60000000,           /* Environment-specific use */
+	SHT_GNU_VERDEF = 0x6ffffffd,
+	SHT_GNU_VERNEED = 0x6ffffffe,
+	SHT_GNU_VERSYM = 0x6fffffff,
 	SHT_HIOS = 0x6fffffff,
 	SHT_LOPROC = 0x70000000,         /* Processor-specific use */
 	SHT_HIPROC = 0x7fffffff,
@@ -236,8 +243,21 @@ enum {
 	SHF_WRITE = 0x1,                 /* Section contains writable data */
 	SHF_ALLOC = 0x2,                 /* Section is allocated in memory image of program */
 	SHF_EXECINSTR = 0x4,             /* Section contains executable instructions */
+	SHF_MERGE = 0x10,                /* Section contains data that may be merged to eliminate duplication */
+	SHF_STRINGS = 0x20,              /* Section consist of null-terminated character strings */
+	SHF_INFO_LINK = 0x40,            /* Section sh_info holds a section header table index */
+	SHF_LINK_ORDER = 0x80,           /* Section has link ordering requirement with sh_link pointing to next section */
+	SHF_GROUP = 0x200,               /* Section is a member of a group (applicable to ET_REL relocatable files)*/
+	SHF_TLS = 0x400,                 /* Section holds thread local storage*/
 	SHF_MASKOS = 0x0F000000,         /* Environment-specific use */
 	SHF_MASKPROC = 0xf0000000        /* Processor-specific use */
+};
+
+// flags entry in the first Elf32_Word of a SHT_GROUP section
+enum {
+  GRP_COMDAT = 0x1,
+  GRP_MASKOS = 0x0ff00000,
+  GRP_MASKPROC = 0xf0000000
 };
 
 // Elf32_Shdr
