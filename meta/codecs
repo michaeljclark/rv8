@@ -8,9 +8,9 @@
 
 none       none
 u          rd,imm                 rd imm20
-u+o        rd,offset              rd imm20
+u+o        rd,offset              rd oimm20
 uj         rd,offset              rd jimm20
-i+o        rd,rs1,offset          rd rs1 imm12
+i+o        rd,rs1,offset          rd rs1 oimm12
 i          rd,rs1,imm             rd rs1 imm12
 i·sh5      rd,rs1,imm             rd rs1 shamt5
 i·sh6      rd,rs1,imm             rd rs1 shamt6
@@ -34,10 +34,10 @@ r4·m       rm,frd,frs1,frs2,frs3  frd frs1 frs2 frs3 rm
 r·a        aqrl,rd,rs2,(rs1)      rd rs1 rs2 aq rl
 r·l        aqrl,rd,(rs1)          rd rs1 aq rl
 cb         rs1,rs2,offset         crs1q cimmb           # rd=zero rs2=zero
-cb·imm     rd,rs1,imm             crs1rdq cimmi         # rd=rs1 rs2=zero
+cb·imm     rd,rs1,imm             crs1rdq cnzimmi       # rd=rs1 rs2=zero
 cb·sh5     rd,rs1,imm             crs1rdq cimmsh5       # rd=rs1 rs2=zero
 cb·sh6     rd,rs1,imm             crs1rdq cimmsh6       # rd=rs1 rs2=zero
-ci         rd,rs1,imm             crs1rd cimmi
+ci         rd,rs1,imm             crs1rd cnzimmi
 ci·sh5     rd,rs1,imm             crs1rd cimmsh5
 ci·sh6     rd,rs1,imm             crs1rd cimmsh6
 ci·16sp    rd,rs1,imm             crs1rd cimm16sp

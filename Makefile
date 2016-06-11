@@ -212,7 +212,7 @@ clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make cle
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-latex: all ; $(PARSE_META_BIN) -l -r $(META_DIR) > riscv-instructions.tex
+latex: all ; $(PARSE_META_BIN) -l -¿ -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)

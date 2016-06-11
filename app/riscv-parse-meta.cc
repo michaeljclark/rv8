@@ -339,7 +339,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 				auto &str = std::get<3>(arg_parts[i]);
 				if (arg) {
 					str = arg->label;
-					if (str == "imm") {
+					if (arg->type.find("imm") != std::string::npos) {
 						auto spec = arg->bitspec;
 						if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
 							// indicate size for immediates with no custom bit decoding spec
@@ -411,7 +411,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 				ssize_t lsb = spec.segments.back().first.lsb;
 				ssize_t size = msb - lsb + 1;
 
-				if (str == "imm") {
+				if (str == "imm" || str == "offset") {
 					if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
 						// indicate size for immediates with no custom bit decoding spec
 						str += std::to_string(size);
