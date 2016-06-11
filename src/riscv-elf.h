@@ -152,6 +152,7 @@ enum {
 	PT_NOTE = 4,                     /* Note sections */ 
 	PT_SHLIB = 5,                    /* Reserved */
 	PT_PHDR = 6,                     /* Program header table */
+	PT_TLS = 7,                      /* Thread local storage header table */
 	PT_LOOS = 0x60000000,            /* Environment-specific use */
 	PT_HIOS = 0x6fffffff,
 	PT_LOPROC = 0x70000000,          /* Processor-specific use */
@@ -270,19 +271,19 @@ typedef struct {
 
 // ELF Note Header (PT_NOTE)
 
-// Elf64_Nhdr
-typedef struct {
-	Elf64_Word n_namesz;             /* Name size */
-	Elf64_Word n_descsz;             /* Content size */
-	Elf64_Word n_type;               /* Content type */
-} Elf64_Nhdr;
-
 // Elf32_Nhdr
 typedef struct {
 	Elf32_Word n_namesz;             /* Name size */
 	Elf32_Word n_descsz;             /* Content size */
 	Elf32_Word n_type;               /* Content type */
 } Elf32_Nhdr;
+
+// Elf64_Nhdr
+typedef struct {
+	Elf64_Word n_namesz;             /* Name size */
+	Elf64_Word n_descsz;             /* Content size */
+	Elf64_Word n_type;               /* Content type */
+} Elf64_Nhdr;
 
 
 // ELF Symbol Table
