@@ -36,6 +36,51 @@ typedef int64_t  Elf64_Sxword;
 typedef uint8_t  Elf64_Byte;
 
 
+// ELF Auxilliary table
+
+/*
+   STACK TOP
+   env data
+   arg data
+   padding, align 16
+   auxv table, AT_NULL terminated
+   envp array, null terminated
+   argv poinarray, null terminated
+   argc <- stack pointer
+ */
+
+// a_type
+enum {
+	AT_NULL = 0,                     /* End of table */
+	AT_PHDR = 3,                     /* Address of the ELF program headers (used by interpreter) */
+	AT_PHENT = 4,                    /* Size of the ELF program headers (ehdr.e_phentsize) */
+	AT_PHNUM = 5,                    /* Number of ELF program headers (ehdr.e_phnum) */
+	AT_PAGESZ = 6,                   /* Page size */
+	AT_BASE = 7,                     /* Load address of interpreter */
+	AT_FLAGS = 8,                    /* Flags (0x0) */
+	AT_ENTRY = 9,                    /* Program entry point */
+	AT_UID = 11,                     /* Real uid */
+	AT_EUID = 12,                    /* Effective uid */
+	AT_GID = 13,                     /* Real gid */
+	AT_EGID  = 14,                   /* Effective gid */
+	AT_CLKTCK = 17,                  /* Frequency of times() */
+	AT_SECURE = 23,                  /* Secure, non-zero for suid or guid executable */
+	AT_RANDOM = 25                   /* pointer to 16 random bytes */
+};
+
+// Elf32_auxv
+typedef struct {
+	Elf32_Word a_type;              /* Entry type */
+	Elf32_Word a_val;               /* Entry value */
+} Elf32_auxv;
+
+// Elf32_auxv
+typedef struct {
+	Elf64_Word a_type;              /* Entry type */
+	Elf64_Word a_val;               /* Entry value */
+} Elf64_auxv;
+
+
 // ELF Extension Header
 
 // e_type
