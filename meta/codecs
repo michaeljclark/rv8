@@ -1,7 +1,9 @@
 # format of a line in this file:
-# <codec> <format>
+# <codec> <format> [<arg> ... ]
 # 
 # <codec> denotes a distinct instruction type, subtype and format
+#
+# [<arg> ... ] lists operands declared in opcodes as a cross-check 
 #
 # Codecs with a · sign denote a subtype of the higher level type
 # Codecs with a + sign denote a format variant for the same type
