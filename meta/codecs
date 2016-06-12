@@ -1,10 +1,11 @@
 # format of a line in this file:
 # <codec> <format>
 # 
-# <codec> denotes a distinct instruction encoding, decoding
+# <codec> denotes a distinct instruction type, subtype and format
 #
-# Codecs with a + sign denote a format variant for the same codec
-# i.e. <codec(+format·variant)?> where codec is the distinct codec
+# Codecs with a · sign denote a subtype of the higher level type
+# Codecs with a + sign denote a format variant for the same type
+# i.e. <type(·subtype+format)?> where codec is the distinct codec
 
 none       none
 u          rd,imm                 rd imm20
