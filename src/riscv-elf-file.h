@@ -29,9 +29,9 @@ struct elf_file
 	std::vector<Elf64_Sym> symbols;
 	std::map<Elf64_Addr,size_t> addr_symbol_map;
 	std::map<const char*,size_t,cmp_str> name_symbol_map;
-	Elf64_Shdr *shstrtab;
-	Elf64_Shdr *symtab;
-	Elf64_Shdr *strtab;
+	size_t shstrtab;
+	size_t symtab;
+	size_t strtab;
 	std::vector<elf_section> sections;
 
 	elf_file();

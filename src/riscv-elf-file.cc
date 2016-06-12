@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cerrno>
+#include <cassert>
 #include <string>
 #include <vector>
 #include <map>
@@ -39,9 +40,7 @@ void elf_file::clear()
 	symbols.resize(0);
 	addr_symbol_map.clear();
 	name_symbol_map.clear();
-	shstrtab = nullptr;
-	symtab = nullptr;
-	strtab = nullptr;
+	shstrtab = symtab = strtab = 0;
 	sections.resize(0);
 }
 
@@ -194,14 +193,18 @@ void elf_file::load(std::string filename)
 	}
 
 	// Find strtab and symtab
-	shstrtab = symtab = strtab = nullptr;
 	for (size_t i = 0; i < shdrs.size(); i++) {
-		if (shstrtab == nullptr && shdrs[i].sh_type == SHT_STRTAB && ehdr.e_shstrndx == i) {
-			shstrtab = &shdrs[i];
-		} else if (symtab == nullptr && shdrs[i].sh_type == SHT_SYMTAB) {
-			symtab = &shdrs[i];
+		if (shstrtab == 0 && shdrs[i].sh_type == SHT_STRTAB && ehdr.e_shstrndx == i) {
+			shstrtab = i;
+		} else if (symtab == 0 && shdrs[i].sh_type == SHT_SYMTAB) {
+			symtab = i;
 			if (shdrs[i].sh_link > 0) {
-				strtab = &shdrs[shdrs[i].sh_link];
+				if (shdrs[i].sh_link > shdrs.size()) {
+					debug("symtab sh_link value %d out of bounds",
+						shdrs[i].sh_link, shdrs.size());
+				} else {
+					strtab = shdrs[i].sh_link;
+				}
 			}
 		}
 	}
@@ -351,19 +354,19 @@ void elf_file::save(std::string filename)
 
 void elf_file::byteswap_symbol_table(ELFENDIAN endian)
 {
-	if (!symtab) return;
+	if (symtab == 0) return;
 
-	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
+	size_t num_symbols = shdrs[symtab].sh_size / shdrs[symtab].sh_entsize;
 	switch (ei_class) {
 		case ELFCLASS32:
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
+				Elf32_Sym *sym32 = (Elf32_Sym*)offset(shdrs[symtab].sh_offset + i * sizeof(Elf32_Sym));
 				elf_bswap_sym32(sym32, ei_data, ELFENDIAN_TARGET);
 			}
 			break;
 		case ELFCLASS64:
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
+				Elf64_Sym *sym64 = (Elf64_Sym*)offset(shdrs[symtab].sh_offset + i * sizeof(Elf64_Sym));
 				elf_bswap_sym64(sym64, ei_data, ELFENDIAN_TARGET);
 			}
 			break;
@@ -376,47 +379,103 @@ void elf_file::copy_from_symbol_table_sections()
 	addr_symbol_map.clear();
 	name_symbol_map.clear();
 
-	if (!symtab) return;
+	if (symtab == 0) return;
 
-	size_t num_symbols = symtab->sh_size / symtab->sh_entsize;
+	size_t num_symbols = shdrs[symtab].sh_size / shdrs[symtab].sh_entsize;
 	switch (ei_class) {
 		case ELFCLASS32:
+			assert(shdrs[symtab].sh_entsize == sizeof(Elf32_Sym));
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf32_Sym *sym32 = (Elf32_Sym*)offset(symtab->sh_offset + i * sizeof(Elf32_Sym));
+				Elf32_Sym *sym32 = (Elf32_Sym*)offset(shdrs[symtab].sh_offset + i * sizeof(Elf32_Sym));
 				Elf64_Sym sym64;
 				elf_sym32_to_sym64(&sym64, sym32);
 				symbols.push_back(sym64);
 			}
 			break;
 		case ELFCLASS64:
+			assert(shdrs[symtab].sh_entsize == sizeof(Elf64_Sym));
 			for (size_t i = 0; i < num_symbols; i++) {
-				Elf64_Sym *sym64 = (Elf64_Sym*)offset(symtab->sh_offset + i * sizeof(Elf64_Sym));
+				Elf64_Sym *sym64 = (Elf64_Sym*)offset(shdrs[symtab].sh_offset + i * sizeof(Elf64_Sym));
 				symbols.push_back(*sym64);
 			}
 			break;
 	}
 
-	if (!strtab) return;
+	if (strtab == 0) return;
 
 	for (size_t i = 0; i < symbols.size(); i++) {
 		auto &sym = symbols[i];
-		if (sym.st_shndx != SHN_UNDEF && sym.st_info != STT_FILE && sym.st_value != 0) {
-			const char* name = (const char*)offset(strtab->sh_offset + sym.st_name);
-			if (!strlen(name)) continue;
-			name_symbol_map[name] = i;
-			addr_symbol_map[sym.st_value] = i;
-		}
+		if (sym.st_value == 0) continue;
+		const char* name = (const char*)offset(shdrs[strtab].sh_offset + sym.st_name);
+		if (!strlen(name)) continue;
+		name_symbol_map[name] = i;
+		addr_symbol_map[sym.st_value] = i;
 	}
 }
 
 void elf_file::copy_to_symbol_table_sections()
 {
-	// TODO
+	if (symtab == 0) return;
+
+	elf_section &symtab_section = sections[symtab];
+
+	switch (ei_class) {
+		case ELFCLASS32:
+			symtab_section.size = shdrs[symtab].sh_size = symbols.size() * sizeof(Elf32_Sym);
+			symtab_section.buf.resize(symtab_section.size);
+			for (size_t i = 0; i < symbols.size(); i++) {
+				elf_sym64_to_sym32((Elf32_Sym*)symtab_section.buf.data() + i * sizeof(Elf32_Sym), &symbols[i]);
+			}
+			break;
+		case ELFCLASS64:
+			symtab_section.size = shdrs[symtab].sh_size = symbols.size() * sizeof(Elf64_Sym);
+			symtab_section.buf.resize(symtab_section.size);
+			memcpy(symtab_section.buf.data(), &symbols[0], symtab_section.size);
+			break;
+	}
 }
 
 void elf_file::recalculate_section_offsets()
 {
-	// TODO
+	ehdr.e_phnum = phdrs.size();
+	ehdr.e_shnum = shdrs.size();
+
+	// ELF program header offset
+	uint64_t next_offset = 0;
+	switch (ei_class) {
+		case ELFCLASS32:
+			ehdr.e_phoff = sizeof(Elf32_Ehdr);
+			next_offset = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf32_Phdr);
+			break;
+		case ELFCLASS64:
+			ehdr.e_phoff = sizeof(Elf64_Ehdr);
+			next_offset = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf64_Phdr);
+			break;
+	}
+
+	// ELF section offsets
+	for (size_t i = 0; i < shdrs.size(); i++) {
+		if (shdrs[i].sh_addralign > 0) {
+			next_offset = (next_offset + (shdrs[i].sh_addralign - 1)) & -shdrs[i].sh_addralign;
+		}
+		sections[i].offset = next_offset;
+		shdrs[i].sh_offset = i == 0 ? 0 : next_offset;
+		if (shdrs[i].sh_type != SHT_NOBITS) {
+			sections[i].size = sections[i].buf.size();
+		}
+		shdrs[i].sh_size = sections[i].size;
+		next_offset += shdrs[i].sh_size;
+	}
+
+	// ELF section header offsets
+	switch (ei_class) {
+		case ELFCLASS32:
+			ehdr.e_shoff = next_offset;
+			break;
+		case ELFCLASS64:
+			ehdr.e_shoff = next_offset;
+			break;
+	}
 }
 
 uint8_t* elf_file::offset(size_t offset)
@@ -442,20 +501,20 @@ elf_section* elf_file::section(size_t offset)
 
 const char* elf_file::shdr_name(int i)
 {
-	return shstrtab ?
-		(const char*)offset(shstrtab->sh_offset + shdrs[i].sh_name) : "";
+	return shstrtab == 0 ? "" :
+		(const char*)offset(shdrs[shstrtab].sh_offset + shdrs[i].sh_name);
 }
 
 const char* elf_file::sym_name(int i)
 {
-	return strtab ?
-		(const char*)offset(strtab->sh_offset + symbols[i].st_name) : "";
+	return strtab == 0 ? "" :
+		(const char*)offset(shdrs[strtab].sh_offset + symbols[i].st_name);
 }
 
 const char* elf_file::sym_name(const Elf64_Sym *sym)
 {
-	return strtab ?
-		(const char*)offset(strtab->sh_offset + sym->st_name) : "";
+	return strtab == 0 ? "" :
+		(const char*)offset(shdrs[strtab].sh_offset + sym->st_name);
 }
 
 const Elf64_Sym* elf_file::sym_by_nearest_addr(Elf64_Addr addr)
