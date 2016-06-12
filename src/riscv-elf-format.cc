@@ -200,7 +200,7 @@ const std::string elf_phdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("%s[%2lu]%s %-20s %-12s %-24s %s0x%-16tx 0x%-10tx 0x%-10tx%s %4d %4d %4d",
+	return format_string("%s[%2lu]%s %-20s %-12s %-20s %s0x%-16tx 0x%-8tx 0x%-8tx 0x%-4tx%s %4d %4d %4d",
 		colorize("legend"),
 		i,
 		colorize("reset"),
@@ -211,6 +211,7 @@ const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 		shdr.sh_addr,
 		shdr.sh_offset,
 		shdr.sh_size,
+		shdr.sh_addralign,
 		colorize("reset"),
 		shdr.sh_entsize,
 		shdr.sh_link,
@@ -249,9 +250,9 @@ void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 
 void elf_print_section_headers(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	printf("%sShdr %-20s %-12s %-24s %-18s %-12s %-12s %4s %4s %4s%s\n",
+	printf("%sShdr %-20s %-12s %-20s %-18s %-10s %-10s %-6s %4s %4s %4s%s\n",
 		colorize("title"), "Name", "Type", "Flags", "Addr", "Offset", "Size",
-		"Ents", "Link", "Info", colorize("reset"));
+		"Align", "Ents", "Link", "Info", colorize("reset"));
 	for (size_t i = 0; i < elf.shdrs.size(); i++) {
 		printf("%s\n", elf_shdr_info(elf, i, colorize).c_str());
 	}
