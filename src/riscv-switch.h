@@ -1,18 +1,18 @@
 //
-//  riscv-decode-codec.h
+//  riscv-switch.h
 //
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_decode_codec_h
-#define riscv_decode_codec_h
+#ifndef riscv_switch_h
+#define riscv_switch_h
 
 /* Decode Instruction Opcode */
 
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
-inline riscv_lu riscv_decode_op(riscv_lu insn)
+inline uint64_t riscv_decode_op(uint64_t insn)
 {
-	riscv_lu op = riscv_op_unknown;
+	uint64_t op = riscv_op_unknown;
 	switch (((insn >> 0) & 0b11) /* insn[1:0] */) {
 		case 0:
 			// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd
@@ -578,7 +578,7 @@ inline riscv_lu riscv_decode_op(riscv_lu insn)
 /* Decode Instruction Type */
 
 template <typename T>
-inline void riscv_decode_type(T &dec, riscv_lu insn)
+inline void riscv_decode_type(T &dec, uint64_t insn)
 {
 	dec.codec = riscv_insn_codec[dec.op];
 	switch (dec.codec) {
@@ -627,10 +627,10 @@ inline void riscv_decode_type(T &dec, riscv_lu insn)
 /* Encode Instruction */
 
 template <typename T>
-inline riscv_lu riscv_encode_insn(T &dec)
+inline uint64_t riscv_encode_insn(T &dec)
 {
 	dec.codec = riscv_insn_codec[dec.op];
-	riscv_lu insn = riscv_insn_match[dec.op];
+	uint64_t insn = riscv_insn_match[dec.op];
 	switch (dec.codec) {
 		case riscv_codec_none:          return insn |= riscv_encode_none(dec);             break;
 		case riscv_codec_u:             return insn |= riscv_encode_u(dec);                break;

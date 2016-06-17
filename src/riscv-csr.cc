@@ -80,7 +80,7 @@ const riscv_csr_metadata riscv_csr_table[] = {
 };
 
 
-struct riscv_csr_map : std::map<riscv_hu,const riscv_csr_metadata*>
+struct riscv_csr_map : std::map<uint16_t,const riscv_csr_metadata*>
 {
 	riscv_csr_map() {
 		for (const auto *ent = riscv_csr_table; ent->csr_value; ent++)
@@ -88,7 +88,7 @@ struct riscv_csr_map : std::map<riscv_hu,const riscv_csr_metadata*>
 	}
 };
 
-const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value)
+const riscv_csr_metadata* riscv_lookup_csr_metadata(uint16_t csr_value)
 {
 	static riscv_csr_map csr_map;
 	return csr_map[csr_value];

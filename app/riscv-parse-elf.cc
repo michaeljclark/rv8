@@ -24,18 +24,19 @@
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
-#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
+using namespace riscv;
+
 struct riscv_parse_elf
 {
 	elf_file elf;
 	std::string filename;
-	std::map<riscv_ptr,std::string> branch_labels;
+	std::map<uintptr_t,std::string> branch_labels;
 
 	bool enable_color = false;
 	bool elf_header = false;
@@ -69,7 +70,7 @@ struct riscv_parse_elf
 		return "";
 	}
 
-	const char* symlookup(riscv_ptr addr, bool nearest)
+	const char* symlookup(uintptr_t addr, bool nearest)
 	{
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
 		if (sym) return elf.sym_name(sym);
@@ -89,13 +90,13 @@ struct riscv_parse_elf
 		return nullptr;
 	}
 
-	void scan_branch_labels(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset)
+	void scan_branch_labels(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		ssize_t branch_num = 1;
 		char branch_label[32];
 
 		riscv_disasm dec;
-		riscv_ptr pc = start, next_pc;
+		uintptr_t pc = start, next_pc;
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
@@ -106,7 +107,7 @@ struct riscv_parse_elf
 				case riscv_codec_uj:
 					addr = pc - pc_offset + dec.imm;
 					snprintf(branch_label, sizeof(branch_label), "LOC_%06lu", branch_num++);
-					branch_labels[(riscv_ptr)addr] = branch_label;
+					branch_labels[(uintptr_t)addr] = branch_label;
 					break;
 				default:
 					break;
@@ -121,17 +122,17 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
+				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
 				scan_branch_labels(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 			}
 		}
 	}
 
-	void print_disassembly(riscv_ptr start, riscv_ptr end, riscv_ptr pc_offset, riscv_ptr gp)
+	void print_disassembly(uintptr_t start, uintptr_t end, uintptr_t pc_offset, uintptr_t gp)
 	{
 		riscv_disasm dec;
 		std::deque<riscv_disasm> dec_hist;
-		riscv_ptr pc = start, next_pc;
+		uintptr_t pc = start, next_pc;
 		while (pc < end) {
 			dec.pc = pc;
 			dec.insn = riscv_get_insn(pc, &next_pc);
@@ -149,10 +150,10 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
+				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
-					riscv_ptr(gp_sym ? gp_sym->st_value : 0));
+					uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				printf("\n");
 			}
 		}

@@ -23,12 +23,13 @@
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
-#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
+
+using namespace riscv;
 
 struct riscv_histogram_elf
 {
@@ -44,12 +45,12 @@ struct riscv_histogram_elf
 	typedef std::map<size_t,size_t> map_t;
 	typedef std::pair<size_t,size_t> pair_t;
 
-	void histogram(map_t &hist, riscv_ptr start, riscv_ptr end)
+	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
 		riscv_decode dec;
-		riscv_ptr pc = start, next_pc;
+		uintptr_t pc = start, next_pc;
 		while (pc < end) {
-			riscv_lu insn = riscv_get_insn(pc, &next_pc);
+			uint64_t insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, insn);
 			auto hi = hist.find(dec.op);
 			if (hi == hist.end()) hist.insert(pair_t(dec.op, 1));
@@ -73,7 +74,7 @@ struct riscv_histogram_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				riscv_ptr offset = (riscv_ptr)elf.offset(shdr.sh_offset);
+				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
 				histogram(hist, offset, offset + shdr.sh_size);
 			}
 		}

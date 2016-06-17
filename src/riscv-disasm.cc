@@ -17,11 +17,12 @@
 #include "riscv-endian.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
-#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-csr.h"
 #include "riscv-format.h"
 #include "riscv-disasm.h"
+
+using namespace riscv;
 
 enum rva {
 	rva_none,
@@ -59,7 +60,7 @@ const rvx rvx_constraints[] = {
 
 const size_t rvx_instruction_buffer_len = 16;
 
-const char* riscv_null_symbol_lookup(riscv_ptr, bool nearest) { return nullptr; }
+const char* riscv_null_symbol_lookup(uintptr_t, bool nearest) { return nullptr; }
 const char* riscv_null_symbol_colorize(const char *type) { return ""; }
 
 const void print_add(size_t &offset, const char *str)
@@ -109,7 +110,7 @@ const void print_addr(size_t &offset, uint64_t addr,
 	print_add(offset, "# ");
 	print_fmt(offset, "0x%016tx", addr);
 	printf("%s", colorize("reset"));
-	const char* symbol_name = symlookup((riscv_ptr)addr, true);
+	const char* symbol_name = symlookup((uintptr_t)addr, true);
 	if (symbol_name) {
 		if (strncmp(symbol_name, "LOC_", 4) == 0) {
 			printf(" %s", colorize("location"));
@@ -124,13 +125,13 @@ const void print_addr(size_t &offset, uint64_t addr,
 }
 
 void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
-	riscv_ptr pc, riscv_ptr next_pc, riscv_ptr pc_offset, riscv_ptr gp,
+	uintptr_t pc, uintptr_t next_pc, uintptr_t pc_offset, uintptr_t gp,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
 	const char *fmt = riscv_insn_format[dec.op];
-	const char *symbol_name = symlookup((riscv_ptr)addr, false);
+	const char *symbol_name = symlookup((uintptr_t)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
 
 	// print symbol name if present

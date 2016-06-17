@@ -16,12 +16,12 @@
 #include "riscv-endian.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
-#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
+using namespace riscv;
 
 /*
 
@@ -844,7 +844,7 @@ insn_desc_t processor_t::decode_insn(uint64_t bits)
   return desc;
 }
 
-riscv_wu decode_code_1[] = {
+uint32_t decode_code_1[] = {
 	0x0026c197,
 	0xd7018193,
 	0x800000e7,
@@ -880,7 +880,7 @@ riscv_wu decode_code_1[] = {
 	0xffdff06f
 };
 
-riscv_hu decode_code_2[] = {
+uint16_t decode_code_2[] = {
 	0x6197, 0x001d,
 	0x8193, 0xd701,
 	0x00e7, 0x8000,
@@ -916,12 +916,12 @@ riscv_hu decode_code_2[] = {
 };
 
 template <const size_t count>
-void decode_meta(riscv_ptr start, riscv_ptr end, const char *code)
+void decode_meta(uintptr_t start, uintptr_t end, const char *code)
 {
 	size_t decoded = 0;
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		riscv_ptr pc = start;
+		uintptr_t pc = start;
 		while (pc < end) {
 			riscv_decode_op<false, true, true, true, true, true, true, true, true>(riscv_get_insn(pc, &pc));
 			decoded++;
@@ -933,14 +933,14 @@ void decode_meta(riscv_ptr start, riscv_ptr end, const char *code)
 }
 
 template <const size_t count>
-void decode_spike_nocache(riscv_ptr start, riscv_ptr end, const char* code)
+void decode_spike_nocache(uintptr_t start, uintptr_t end, const char* code)
 {
 	processor_t proc;
 	size_t decoded = 0;
 	proc.register_base_instructions();
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		riscv_ptr pc = start;
+		uintptr_t pc = start;
 		while (pc < end) {
 			proc.decode_insn_nocache(riscv_get_insn(pc, &pc));
 			decoded++;
@@ -952,14 +952,14 @@ void decode_spike_nocache(riscv_ptr start, riscv_ptr end, const char* code)
 }
 
 template <const size_t count>
-void decode_spike_cache(riscv_ptr start, riscv_ptr end, const char* code)
+void decode_spike_cache(uintptr_t start, uintptr_t end, const char* code)
 {
 	processor_t proc;
 	proc.register_base_instructions();
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	size_t decoded = 0;
 	for (size_t i = 0; i < count; i++) {
-		riscv_ptr pc = start;
+		uintptr_t pc = start;
 		while (pc < end) {
 			proc.decode_insn(riscv_get_insn(pc, &pc));
 			decoded++;
@@ -971,7 +971,7 @@ void decode_spike_cache(riscv_ptr start, riscv_ptr end, const char* code)
 }
 
 #define TEST_DECODER_MICRO(decoder,code,count,type) \
-	decoder<count>((riscv_ptr)code, (riscv_ptr)code + sizeof(code), type);
+	decoder<count>((uintptr_t)code, (uintptr_t)code + sizeof(code), type);
 
 #define TEST_DECODER_ELF(decoder,start,end,count,type) \
 	decoder<count>(start, end, type);
@@ -999,8 +999,8 @@ int main(int argc, const char *argv[])
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				printf("Section[%2lu] %s\n", i, elf.shdr_name(i));
-				riscv_ptr start = (riscv_ptr)elf.offset(shdr.sh_offset);
-				riscv_ptr end = start + shdr.sh_size;
+				uintptr_t start = (uintptr_t)elf.offset(shdr.sh_offset);
+				uintptr_t end = start + shdr.sh_size;
 				TEST_DECODER_ELF(decode_meta, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_nocache, start, end, count_elf, "RV64C");
 				TEST_DECODER_ELF(decode_spike_cache, start, end, count_elf, "RV64C");

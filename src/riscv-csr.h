@@ -24,7 +24,7 @@ enum riscv_csr_perm
 
 struct riscv_csr_metadata
 {
-	riscv_hu csr_value;
+	uint16_t csr_value;
 	riscv_csr_perm csr_perm;
 	const char* csr_name;
 	const char* csr_desc;
@@ -32,6 +32,6 @@ struct riscv_csr_metadata
 
 extern const riscv_csr_metadata riscv_csr_table[];
 
-const riscv_csr_metadata* riscv_lookup_csr_metadata(riscv_hu csr_value);
+const riscv_csr_metadata* riscv_lookup_csr_metadata(uint16_t csr_value);
 
 #endif

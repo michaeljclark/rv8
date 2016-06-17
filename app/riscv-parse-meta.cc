@@ -127,7 +127,7 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
 	void print_opcodes_c(bool no_comment = false, bool zero_not_oh = false);
 	void print_args_h();
-	void print_codec_h(bool no_comment = false, bool zero_not_oh = false);
+	void print_switch_h(bool no_comment = false, bool zero_not_oh = false);
 
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_codec_node &node, size_t indent);
@@ -788,8 +788,8 @@ void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
 	printf("\textern const char* riscv_f_registers[];\n");
 	printf("\textern const char* riscv_insn_name[];\n");
 	printf("\textern const riscv_codec riscv_insn_codec[];\n");
-	printf("\textern const riscv_wu riscv_insn_match[];\n");
-	printf("\textern const riscv_wu riscv_insn_mask[];\n");
+	printf("\textern const uint64_t riscv_insn_match[];\n");
+	printf("\textern const uint64_t riscv_insn_mask[];\n");
 	printf("\textern const char* riscv_insn_format[];\n");
 	printf("\textern const riscv_comp_data* riscv_insn_comp[];\n");
 	printf("\textern const int riscv_insn_decomp[];\n");
@@ -863,7 +863,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction match bits
-	printf("const riscv_wu riscv_insn_match[] = {\n");
+	printf("const uint64_t riscv_insn_match[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%08x,\n",
@@ -873,7 +873,7 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction mask bits
-	printf("const riscv_wu riscv_insn_mask[] = {\n");
+	printf("const uint64_t riscv_insn_mask[] = {\n");
 	print_array_unknown_int(0, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%08x,\n",
@@ -956,27 +956,29 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 
 void riscv_parse_meta::print_args_h()
 {
-	print_c_header("riscv-decode-args.h");
-	printf("#ifndef riscv_decode_args_h\n");
-	printf("#define riscv_decode_args_h\n");
+	print_c_header("riscv-args.h");
+	printf("#ifndef riscv_args_h\n");
+	printf("#define riscv_args_h\n");
 	printf("\n");
+	printf("namespace riscv\n{\n");
 
 	// print immediate decoders
 	for (auto arg: args) {
-		printf("typedef %c%-67s riscv_arg_%s;\n",
-			arg->type == "simm" ? 's' : 'u',
+		printf("\ttypedef %s%-60s arg_%s;\n",
+			arg->type == "simm" ? "simm_arg_t" : "uimm_arg_t",
 			arg->bitspec.to_template().c_str(),
 			arg->name.c_str());
 	}
+	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
 }
 
-void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-decode-codec.h");
-	printf("#ifndef riscv_decode_codec_h\n");
-	printf("#define riscv_decode_codec_h\n");
+	print_c_header("riscv-switch.h");
+	printf("#ifndef riscv_switch_h\n");
+	printf("#define riscv_switch_h\n");
 	printf("\n");
 
 	std::vector<std::string> mnems;
@@ -1003,9 +1005,9 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline riscv_lu riscv_decode_op(riscv_lu insn)\n");
+	printf("inline uint64_t riscv_decode_op(uint64_t insn)\n");
 	printf("{\n");
-	printf("\triscv_lu op = riscv_op_unknown;\n");
+	printf("\tuint64_t op = riscv_op_unknown;\n");
 	print_switch_decoder_node(root_node, 1);
 	printf("\treturn op;\n");
 	printf("}\n\n");
@@ -1013,7 +1015,7 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	// print type decoder
 	printf("/* Decode Instruction Type */\n\n");
 	printf("template <typename T>\n");
-	printf("inline void riscv_decode_type(T &dec, riscv_lu insn)\n");
+	printf("inline void riscv_decode_type(T &dec, uint64_t insn)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
@@ -1028,10 +1030,10 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	// print encoder
 	printf("/* Encode Instruction */\n\n");
 	printf("template <typename T>\n");
-	printf("inline riscv_lu riscv_encode_insn(T &dec)\n");
+	printf("inline uint64_t riscv_encode_insn(T &dec)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
-	printf("\triscv_lu insn = riscv_insn_match[dec.op];\n");
+	printf("\tuint64_t insn = riscv_insn_match[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
@@ -1040,7 +1042,8 @@ void riscv_parse_meta::print_codec_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("\t};\n");
 	printf("\treturn insn;\n");
-	printf("}\n\n");
+	printf("}\n");
+	printf("\n");
 	printf("#endif\n");
 }
 
@@ -1227,7 +1230,7 @@ int main(int argc, const char *argv[])
 	bool remove_question_marks = false;
 	bool include_pseudo = false;
 	bool print_args_h = false;
-	bool print_codec_h = false;
+	bool print_switch_h = false;
 	bool print_opcodes_h = false;
 	bool print_opcodes_c = false;
 	bool help_or_error = false;
@@ -1276,7 +1279,7 @@ int main(int argc, const char *argv[])
 			[&](std::string s) { return (print_args_h = true); } },
 		{ "-S", "--print-codec-h", cmdline_arg_type_none,
 			"Print C codec header",
-			[&](std::string s) { return (print_codec_h = true); } },
+			[&](std::string s) { return (print_switch_h = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1292,7 +1295,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if ((help_or_error |= !print_latex && !print_map &&
-		!print_codec_h && !print_args_h &&
+		!print_switch_h && !print_args_h &&
 		!print_opcodes_h && !print_opcodes_c))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
@@ -1324,9 +1327,9 @@ int main(int argc, const char *argv[])
 		insn_set.print_args_h();
 	}
 
-	if (print_codec_h) {
+	if (print_switch_h) {
 		insn_set.generate_codec(include_pseudo);
-		insn_set.print_codec_h(no_comment, zero_not_oh);
+		insn_set.print_switch_h(no_comment, zero_not_oh);
 	}
 
 	exit(0);

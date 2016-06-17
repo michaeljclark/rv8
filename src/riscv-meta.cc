@@ -524,7 +524,7 @@ const riscv_codec riscv_insn_codec[] = {
 	riscv_codec_css_sdsp,
 };
 
-const riscv_wu riscv_insn_match[] = {
+const uint64_t riscv_insn_match[] = {
 	0x00000000,
 	0x00000037,
 	0x00000017,
@@ -747,7 +747,7 @@ const riscv_wu riscv_insn_match[] = {
 	0x0000e002,
 };
 
-const riscv_wu riscv_insn_mask[] = {
+const uint64_t riscv_insn_mask[] = {
 	0x00000000,
 	0x0000007f,
 	0x0000007f,

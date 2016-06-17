@@ -575,8 +575,8 @@ extern "C" {
 	extern const char* riscv_f_registers[];
 	extern const char* riscv_insn_name[];
 	extern const riscv_codec riscv_insn_codec[];
-	extern const riscv_wu riscv_insn_match[];
-	extern const riscv_wu riscv_insn_mask[];
+	extern const uint64_t riscv_insn_match[];
+	extern const uint64_t riscv_insn_mask[];
 	extern const char* riscv_insn_format[];
 	extern const riscv_comp_data* riscv_insn_comp[];
 	extern const int riscv_insn_decomp[];

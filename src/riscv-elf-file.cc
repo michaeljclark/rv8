@@ -95,7 +95,7 @@ void elf_file::load(std::string filename)
 		fclose(file);
 		panic("error fread: %s", filename.c_str());
 	}
-	uint64_t phdr_end, shdr_end;
+	uint64_t phdr_end = 0, shdr_end = 0;
 	switch (ei_class) {
 		case ELFCLASS32:
 			elf_bswap_ehdr32((Elf32_Ehdr*)buf.data(), ei_data, ELFENDIAN_HOST);

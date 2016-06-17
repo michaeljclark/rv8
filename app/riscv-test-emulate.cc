@@ -19,42 +19,43 @@
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
-#include "riscv-imm.h"
 #include "riscv-decode.h"
 #include "riscv-csr.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 
+using namespace riscv;
+
 void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
-	riscv_ptr next_pc;
-	riscv_lu insn = riscv_get_insn(proc->pc, &next_pc);
+	uintptr_t next_pc;
+	uint64_t insn = riscv_get_insn(proc->pc, &next_pc);
 	riscv_decode_rv64(dec, insn);
 	switch (dec.op) {
 		case riscv_op_addi:
-			proc->i_reg[dec.rd].lu = proc->i_reg[dec.rs1].lu + dec.imm;
+			proc->i_reg[dec.rd].lu.val = proc->i_reg[dec.rs1].lu.val + dec.imm;
 			proc->pc = next_pc;
 			break;
 		case riscv_op_auipc:
-			proc->i_reg[dec.rd].lu = riscv_lu(proc->pc) + dec.imm;
+			proc->i_reg[dec.rd].lu.val = uint64_t(proc->pc) + dec.imm;
 			proc->pc = next_pc;
 			break;
 		case riscv_op_lui:
-			proc->i_reg[dec.rd].lu = dec.imm;
+			proc->i_reg[dec.rd].lu.val = dec.imm;
 			proc->pc = next_pc;
 			break;
 		case riscv_op_ecall:
-			switch (proc->i_reg[riscv_ireg_a7].lu) {
+			switch (proc->i_reg[riscv_ireg_a7].lu.val) {
 				case 64: /* sys_write */
-					proc->i_reg[riscv_ireg_a0].lu = write(proc->i_reg[riscv_ireg_a0].lu,
-						(void*)proc->i_reg[riscv_ireg_a1].lu, proc->i_reg[riscv_ireg_a2].lu);
+					proc->i_reg[riscv_ireg_a0].lu.val = write(proc->i_reg[riscv_ireg_a0].lu.val,
+						(void*)proc->i_reg[riscv_ireg_a1].lu.val, proc->i_reg[riscv_ireg_a2].lu.val);
 					break;
 				case 93: /* sys_exit */
-					exit(proc->i_reg[riscv_ireg_a0].lu);
+					exit(proc->i_reg[riscv_ireg_a0].lu.val);
 					break;
 				default:
-					panic("illegal syscall: %d", proc->i_reg[riscv_ireg_a7].lu);
+					panic("illegal syscall: %d", proc->i_reg[riscv_ireg_a7].lu.val);
 			}
 			proc->pc = next_pc;
 			break;
@@ -63,7 +64,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 	}
 }
 
-void rv64_run(riscv_ptr entry)
+void rv64_run(uintptr_t entry)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 		Elf64_Phdr &phdr = elf.phdrs[i];
 		if (phdr.p_flags & PT_LOAD) {
 			map_executable(argv[1], (void*)phdr.p_vaddr, phdr.p_memsz, phdr.p_offset);
-			rv64_run(riscv_ptr(elf.ehdr.e_entry));
+			rv64_run(uintptr_t(elf.ehdr.e_entry));
 			break;
 		}
 	}

@@ -152,7 +152,7 @@ std::string riscv_bitspec::to_template()
 		}
 	}
 	std::stringstream ss;
-	ss << "imm_t<" << (msb + 1) << ", ";
+	ss << "<" << (msb + 1) << ", ";
 	for (auto si = segments.begin(); si != segments.end(); si++) {
 		if (si != segments.begin()) ss << ", ";
 		ss << "S<" << si->first.to_string(",", false) << ", ";
