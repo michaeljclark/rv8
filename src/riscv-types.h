@@ -167,16 +167,16 @@ namespace riscv {
 	/*
 	 * Bit range template
 	 *
-	 * N    =   decoded MSB offset
-	 * M    =   decoded LSB offset
+	 * N	=   decoded MSB offset
+	 * M	=   decoded LSB offset
 	 */
 
-	template<uint64_t N, uint64_t M = N>
+	template<int N, int M = N>
 	struct B
 	{
-		enum : uint64_t { n = N };
-		enum : uint64_t { m = M };
-		enum : uint64_t { w = N - M + 1 };
+		enum { n = N };
+		enum { m = M };
+		enum { width = N - M + 1 };
 
 		static_assert(N >= M, "N ≥ M");
 	};
@@ -184,18 +184,18 @@ namespace riscv {
 	/*
 	 * Immediate bit range segment
 	 *
-	 * K    =   instruction MSB offset
-	 * L    =   instruction LSB offset
-	 * Args =   decoded bit os i.e. B<N:M>, ...
+	 * K	=   instruction MSB offset
+	 * L	=   instruction LSB offset
+	 * Args =   decoded bit offsets i.e. B<N:M>, ...
 	 */
 
-	template<uint64_t K, uint64_t L, typename... Args>
+	template<int K, int L, typename... Args>
 	struct S;
 
-	template<uint64_t K, uint64_t L>
+	template<int K, int L>
 	struct S<K,L>
 	{
-		enum : uint64_t { o = 0 };
+		enum { offset = 0 };
 
 		static_assert((L > 0), "L > 0");
 		static_assert((K < sizeof(1ULL) << 3), "K < sizeof(1ULL) << 3");
@@ -204,7 +204,7 @@ namespace riscv {
 		static inline constexpr uint64_t encode(uint64_t imm) { return 0; }
 	};
 
-	template<uint64_t K, uint64_t L, typename H, typename... T>
+	template<int K, int L, typename H, typename... T>
 	struct S<K,L,H,T...> : S<K,L,T...>
 	{
 		typedef S<K,L,T...> I;
@@ -212,38 +212,38 @@ namespace riscv {
 		static_assert((L > 0), "L > 0");
 		static_assert((K < sizeof(1ULL) << 3), "K < sizeof(1ULL) << 3");
 
-		enum : uint64_t { o = I::o + H::w };
-		enum : int64_t { s = int64_t(o + L) - int64_t(H::w - H::m) };
+		enum { offset = I::offset + H::width };
+		enum { shift = offset + L - H::width - H::m };
 
 		static inline constexpr uint64_t decode(uint64_t insn) {
-			const uint64_t m = ((1ULL << (H::n + 1)) - 1) ^ ((1ULL << H::m) - 1);
-			return ((s < 0 ? insn << -s : insn >> s) & m) | I::decode(insn);
+			const uint64_t mask = ((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
+			return ((shift < 0 ? insn << -shift : insn >> shift) & mask) | I::decode(insn);
 		}
 
 		static inline constexpr uint64_t encode(uint64_t imm) {
-			const uint64_t m = ((1ULL << (H::n + 1)) - 1) ^ ((1ULL << H::m) - 1);
-			return ((s < 0 ? (imm & m) >> -s : (imm & m) << s)) | I::encode(imm);
+			const uint64_t mask = ((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
+			return ((shift < 0 ? (imm & mask) >> -shift : (imm & mask) << shift)) | I::encode(imm);
 		}
 	};
 
 	/*
-	 * Immediate bit range argument template
+	 * Immediate bit range notation template
 	 *
-	 * W    =   number of bits for sign extension
+	 * W	=   number of bits for sign extension
 	 * Args =   bit range segments i.e. S<K,L, B<N:M>, ...>, ...
 	 */
 
-	template<typename R, uint64_t W, typename... Args>
+	template<typename R, int W, typename... Args>
 	struct imm_arg_impl_t;
 
-	template<typename R, uint64_t W>
+	template<typename R, int W>
 	struct imm_arg_impl_t<R,W>
 	{
 		static inline constexpr R decode(uint64_t insn) { return 0; }
 		static inline constexpr R encode(uint64_t imm) { return 0; }
 	};
 
-	template<typename R, uint64_t W, typename H, typename... T>
+	template<typename R, int W, typename H, typename... T>
 	struct imm_arg_impl_t<R,W,H,T...> : imm_arg_impl_t<R,W,T...>
 	{
 		typedef imm_arg_impl_t<R,W,T...> I;
@@ -253,16 +253,16 @@ namespace riscv {
 	};
 
 	template<int W, typename... Args>
-	struct simm_arg_t : imm_arg_impl_t<signed long long,W,Args...>
+	struct simm_arg_t : imm_arg_impl_t<int64_t,W,Args...>
 	{
 		typedef imm_arg_impl_t<int64_t,W,Args...> I;
 
 		static constexpr int64_t decode(uint64_t insn) { return sign_extend<int64_t,W>(I::decode(insn)); }
-		static constexpr uint64_t encode(int64_t imm) { return I::encode(imm); }
+		static constexpr int64_t encode(uint64_t imm) { return I::encode(imm); }
 	};
 
 	template<int W, typename... Args>
-	struct uimm_arg_t : imm_arg_impl_t<unsigned long long,W,Args...>
+	struct uimm_arg_t : imm_arg_impl_t<uint64_t,W,Args...>
 	{
 		typedef imm_arg_impl_t<uint64_t,W,Args...> I;
 
