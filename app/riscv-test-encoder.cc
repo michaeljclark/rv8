@@ -97,9 +97,9 @@ int main()
 	test_imm<ptr64>(1, 1);
 	test_imm<ptr64>(1, 0xffffffffffffffffLL);
 
-	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a5, riscv_ireg_zero, -16));
-	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 100));
-	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 4096)); /* illegal instruciton */
+	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a5, riscv_ireg_zero, -16));
+	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 100));
+	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 4096)); /* illegal instruciton */
 
 	assert(emit_bne(riscv_ireg_a5, riscv_ireg_zero, -16) == 0xfe0798e3);
 	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 100) == 0x06f71263);
