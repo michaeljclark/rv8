@@ -21,19 +21,32 @@ template <typename T> void test_imm(bool r, T imm) {
 	);
 }
 
-/* example using width-typed immediate argument template aliases */
+/* example instruction encoding using width-typed immediate argument template aliases */
+
 inline uint64_t emit_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
 {
-	assert(rs1.valid() && rs2.valid() && sbimm12.valid());
-	printf("bne %s,%s,%ld\n",
-		riscv_i_registers[rs1],
-		riscv_i_registers[rs2],
-		offset13::value_type(sbimm12));
 	riscv_decode dec;
+
+	if (!(rs1.valid() && rs2.valid() && sbimm12.valid())) return 0; /* illegal instruction */
+
+	dec.op = riscv_op_bne;
 	dec.rs1 = rs1;
 	dec.rs2 = rs2;
 	dec.imm = sbimm12;
-	return riscv_encode_sb(dec);
+
+	return riscv_encode_insn(dec);
+}
+
+inline uint64_t print_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
+{
+	printf("bne %s,%s,%ld",
+		riscv_i_registers[rs1],
+		riscv_i_registers[rs2],
+		offset13::value_type(sbimm12));
+
+	if (!(rs1.valid() && rs2.valid() && sbimm12.valid())) printf(" /* illegal instruction */");
+
+	return emit_bne(rs1, rs2, sbimm12);
 }
 
 int main()
@@ -84,7 +97,11 @@ int main()
 	test_imm<ptr64>(1, 1);
 	test_imm<ptr64>(1, 0xffffffffffffffffLL);
 
-	emit_bne(riscv_ireg_a0, riscv_ireg_a1, -8);
-	emit_bne(riscv_ireg_a2, riscv_ireg_a3, 8);
-	emit_bne(riscv_ireg_a4, riscv_ireg_a5, 4096);
+	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a5, riscv_ireg_zero, -16));
+	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 100));
+	printf(" # 0x%08llx\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 4096)); /* illegal instruciton */
+
+	assert(emit_bne(riscv_ireg_a5, riscv_ireg_zero, -16) == 0xfe0798e3);
+	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 100) == 0x06f71263);
+	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 4096) == 0); /* illegal instruciton */
 }
