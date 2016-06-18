@@ -1224,6 +1224,7 @@ const rvc_constraint rvcc_c_lwsp[] =                { rvc_imm_8, rvc_imm_x4, rvc
 const rvc_constraint rvcc_c_flwsp[] =               { rvc_imm_8, rvc_imm_x4, rvc_rs1_eq_sp, rvc_end };
 const rvc_constraint rvcc_c_jr[] =                  { rvc_rd_eq_x0, rvc_rs1_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_mv[] =                  { rvc_rs1_eq_x0, rvc_rd_ne_x0, rvc_rs2_ne_x0, rvc_end };
+const rvc_constraint rvcc_c_ebreak[] =              { rvc_end };
 const rvc_constraint rvcc_c_jalr[] =                { rvc_rd_eq_ra, rvc_rs1_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_add[] =                 { rvc_rd_eq_rs1, rvc_rd_ne_x0, rvc_rs2_ne_x0, rvc_end };
 const rvc_constraint rvcc_c_fsdsp[] =               { rvc_imm_9, rvc_imm_x8, rvc_rs1_eq_sp, rvc_end };
@@ -1263,6 +1264,7 @@ const riscv_comp_data rvcd_srai_rv64i[] =            { { 216, rvcc_c_srai_rv64c 
 const riscv_comp_data rvcd_addiw[] =                 { { 214, rvcc_c_addiw }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_addw[] =                  { { 196, rvcc_c_addw }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_subw[] =                  { { 195, rvcc_c_subw }, { riscv_op_unknown, nullptr } };
+const riscv_comp_data rvcd_ebreak[] =                { { 206, rvcc_c_ebreak }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_flw[] =                   { { 178, rvcc_c_flw }, { 203, rvcc_c_flwsp }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_fsw[] =                   { { 181, rvcc_c_fsw }, { 211, rvcc_c_fswsp }, { riscv_op_unknown, nullptr } };
 const riscv_comp_data rvcd_fld[] =                   { { 176, rvcc_c_fld }, { 201, rvcc_c_fldsp }, { riscv_op_unknown, nullptr } };
@@ -1360,7 +1362,7 @@ const riscv_comp_data* riscv_insn_comp[] = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
+	rvcd_ebreak,
 	nullptr,
 	nullptr,
 	nullptr,
@@ -1698,7 +1700,7 @@ const int riscv_insn_decomp[] = {
 	105,
 	4,
 	28,
-	0,
+	91,
 	4,
 	28,
 	136,

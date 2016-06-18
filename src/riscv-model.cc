@@ -740,6 +740,7 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 		panic("invalid compression file requires at least 2 parameters: %s",
 			join(part, " ").c_str());
 	}
+	size_t processed = 0;
 	for (auto comp_opcode : lookup_opcode_by_name(part[0])) {
 		for (auto opcode : lookup_opcode_by_name(part[1])) {
 
@@ -763,7 +764,13 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 			comp_opcode->compressed = comp;
 			opcode->compressions.push_back(comp);
 			compressions.push_back(comp);
+
+			processed++;
 		}
+	}
+	if (processed == 0) {
+		debug("WARNING: compressed opcode: %s missing matching opcode: %s",
+			part[0].c_str(), part[1].c_str());
 	}
 }
 
