@@ -5,6 +5,8 @@
 
 #include "riscv-types.h"
 #include "riscv-meta.h"
+#include "riscv-endian.h"
+#include "riscv-decode.h"
 
 using namespace riscv;
 
@@ -20,13 +22,18 @@ template <typename T> void test_imm(bool r, T imm) {
 }
 
 /* example using width-typed immediate argument template aliases */
-inline void emit_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
+inline uint64_t emit_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
 {
 	assert(rs1.valid() && rs2.valid() && sbimm12.valid());
 	printf("bne %s,%s,%ld\n",
 		riscv_i_registers[rs1],
 		riscv_i_registers[rs2],
 		offset13::value_type(sbimm12));
+	riscv_decode dec;
+	dec.rs1 = rs1;
+	dec.rs2 = rs2;
+	dec.imm = sbimm12;
+	return riscv_encode_sb(dec);
 }
 
 int main()
