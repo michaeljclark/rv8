@@ -86,6 +86,7 @@ struct riscv_bitspec
 	riscv_bitspec(const riscv_bitspec &o) : segments(o.segments) {}
 
 	bool matches_bit(ssize_t bit);
+	size_t decoded_msb();
 	std::string to_string();
 	std::string to_template();
 };

@@ -14,7 +14,7 @@
 # RV32I    "RV32I Base Integer Instruction Set"
 
 lui        rd imm20                           6..2=0x0D 1..0=3            u     rv32i rv64i
-auipc      rd imm20                           6..2=0x05 1..0=3            u+o   rv32i rv64i
+auipc      rd oimm20                          6..2=0x05 1..0=3            u+o   rv32i rv64i
 jal        rd jimm20                          6..2=0x1b 1..0=3            uj    rv32i rv64i
 jalr       rd rs1 imm12              14..12=0 6..2=0x19 1..0=3            i+o   rv32i rv64i
 beq        rs1 rs2 sbimm12           14..12=0 6..2=0x18 1..0=3            sb    rv32i rv64i
@@ -23,11 +23,11 @@ blt        rs1 rs2 sbimm12           14..12=4 6..2=0x18 1..0=3            sb    
 bge        rs1 rs2 sbimm12           14..12=5 6..2=0x18 1..0=3            sb    rv32i rv64i
 bltu       rs1 rs2 sbimm12           14..12=6 6..2=0x18 1..0=3            sb    rv32i rv64i
 bgeu       rs1 rs2 sbimm12           14..12=7 6..2=0x18 1..0=3            sb    rv32i rv64i
-lb         rd rs1 imm12              14..12=0 6..2=0x00 1..0=3            i+l   rv32i rv64i
-lh         rd rs1 imm12              14..12=1 6..2=0x00 1..0=3            i+l   rv32i rv64i
-lw         rd rs1 imm12              14..12=2 6..2=0x00 1..0=3            i+l   rv32i rv64i
-lbu        rd rs1 imm12              14..12=4 6..2=0x00 1..0=3            i+l   rv32i rv64i
-lhu        rd rs1 imm12              14..12=5 6..2=0x00 1..0=3            i+l   rv32i rv64i
+lb         rd rs1 oimm12             14..12=0 6..2=0x00 1..0=3            i+l   rv32i rv64i
+lh         rd rs1 oimm12             14..12=1 6..2=0x00 1..0=3            i+l   rv32i rv64i
+lw         rd rs1 oimm12             14..12=2 6..2=0x00 1..0=3            i+l   rv32i rv64i
+lbu        rd rs1 oimm12             14..12=4 6..2=0x00 1..0=3            i+l   rv32i rv64i
+lhu        rd rs1 oimm12             14..12=5 6..2=0x00 1..0=3            i+l   rv32i rv64i
 sb         rs1 rs2 simm12            14..12=0 6..2=0x08 1..0=3            s     rv32i rv64i
 sh         rs1 rs2 simm12            14..12=1 6..2=0x08 1..0=3            s     rv32i rv64i
 sw         rs1 rs2 simm12            14..12=2 6..2=0x08 1..0=3            s     rv32i rv64i
@@ -55,8 +55,8 @@ fence.i    31..28=ignore 27..20=ignore 19..15=ignore 14..12=1 11..7=ignore 6..2=
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
 
-lwu        rd rs1 imm12              14..12=6 6..2=0x00 1..0=3            i+l         rv64i
-ld         rd rs1 imm12              14..12=3 6..2=0x00 1..0=3            i+l         rv64i
+lwu        rd rs1 oimm12             14..12=6 6..2=0x00 1..0=3            i+l         rv64i
+ld         rd rs1 oimm12             14..12=3 6..2=0x00 1..0=3            i+l         rv64i
 sd         rs1 rs2 simm12            14..12=3 6..2=0x08 1..0=3            s           rv64i
 slli       rd rs1 shamt6   31..26=0  14..12=1 6..2=0x04 1..0=3            i·sh6       rv64i
 srli       rd rs1 shamt6   31..26=0  14..12=5 6..2=0x04 1..0=3            i·sh6       rv64i
@@ -138,7 +138,7 @@ csrrci     rd      zimm     csr12             14..12=7 6..2=0x1C 1..0=3  i+csri 
 
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
-flw        frd rs1           imm12       14..12=2          6..2=0x01 1..0=3 i+lf   rv32f rv64f
+flw        frd rs1           oimm12      14..12=2          6..2=0x01 1..0=3 i+lf   rv32f rv64f
 fsw        rs1 frs2          simm12      14..12=2          6..2=0x09 1..0=3 s+f    rv32f rv64f
 fmadd.s    frd frs1 frs2 frs3            rm       26..25=0 6..2=0x10 1..0=3 r4·m   rv32f rv64f
 fmsub.s    frd frs1 frs2 frs3            rm       26..25=0 6..2=0x11 1..0=3 r4·m   rv32f rv64f
@@ -174,7 +174,7 @@ fcvt.s.lu  frd rs1  24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3 r·m
 
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 
-fld        frd rs1           imm12       14..12=3          6..2=0x01 1..0=3 i+lf   rv32d rv64d
+fld        frd rs1           oimm12      14..12=3          6..2=0x01 1..0=3 i+lf   rv32d rv64d
 fsd        rs1 frs2          simm12      14..12=3          6..2=0x09 1..0=3 s+f    rv32d rv64d
 fmadd.d    frd frs1 frs2 frs3            rm       26..25=1 6..2=0x10 1..0=3 r4·m   rv32d rv64d
 fmsub.d    frd frs1 frs2 frs3            rm       26..25=1 6..2=0x11 1..0=3 r4·m   rv32d rv64d

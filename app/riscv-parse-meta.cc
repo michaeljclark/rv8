@@ -124,9 +124,10 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_latex(bool remove_question_marks);
 	void print_map(bool print_map_instructions);
 	void print_c_header(std::string filename);
-	void print_opcodes_h(bool no_comment = false, bool zero_not_oh = false);
-	void print_opcodes_c(bool no_comment = false, bool zero_not_oh = false);
 	void print_args_h();
+	void print_jit_h();
+	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
+	void print_meta_cc(bool no_comment = false, bool zero_not_oh = false);
 	void print_switch_h(bool no_comment = false, bool zero_not_oh = false);
 
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
@@ -339,7 +340,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 				auto &str = std::get<3>(arg_parts[i]);
 				if (arg) {
 					str = arg->label;
-					if (arg->type.find("imm") != std::string::npos) {
+					if (arg->type == "simm" || arg->type == "uimm" || arg->type == "offset") {
 						auto spec = arg->bitspec;
 						if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
 							// indicate size for immediates with no custom bit decoding spec
@@ -678,7 +679,7 @@ void riscv_parse_meta::print_c_header(std::string filename)
 	printf("//\n\n");
 }
 
-void riscv_parse_meta::print_opcodes_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 {
 	print_c_header("riscv-meta.h");
 	printf("#ifndef riscv_meta_h\n");
@@ -815,7 +816,63 @@ static void print_array_unknown_int(uint32_t num, bool no_comment)
 	printf("\t%s0x%08x,\n", no_comment ? "" : unknown_op_comment, num);
 }
 
-void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_args_h()
+{
+	print_c_header("riscv-args.h");
+	printf("#ifndef riscv_args_h\n");
+	printf("#define riscv_args_h\n");
+	printf("\n");
+	printf("namespace riscv\n{\n");
+
+	// print immediate decoders
+	for (auto arg: args) {
+		printf("\ttypedef %s%-60s arg_%s;\n",
+			(arg->type == "simm" || arg->type == "offset") ? "simm_arg_t" : "uimm_arg_t",
+			arg->bitspec.to_template().c_str(),
+			arg->name.c_str());
+	}
+	printf("}\n");
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_jit_h()
+{
+	print_c_header("riscv-jit.h");
+	printf("#ifndef riscv_jit_h\n");
+	printf("#define riscv_jit_h\n");
+	printf("\n");
+	printf("namespace riscv\n{\n");
+	for (auto &opcode : opcodes) {
+		// exclude compressed and psuedo instructions
+		if (opcode->compressed || opcode->key.find("@") == 0) continue;
+
+		// create emit interface
+		std::string emit_name = opcode_format("emit_", opcode, "_");
+		std::vector<std::string> arg_list;
+		for (auto &arg : opcode->args) {
+			auto type = arg->type;
+			auto &spec = arg->bitspec;
+			if (type == "offset" || type == "simm" || type == "uimm") {
+				type += std::to_string(spec.decoded_msb() + 1);
+			} else {
+				type += std::to_string(spec.segments.front().first.msb - spec.segments.front().first.lsb + 1);
+			}
+			auto name = arg->name;
+			auto type_name = type + " " + name;
+			arg_list.push_back(type_name);
+		}
+
+		// output emit interface
+		printf("\tuint64_t %s(%s);\n",
+			emit_name.c_str(), join(arg_list, ", ").c_str());
+	}
+	printf("}\n");
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 {
 	print_c_header("riscv-meta.cc");
 
@@ -952,26 +1009,6 @@ void riscv_parse_meta::print_opcodes_c(bool no_comment, bool zero_not_oh)
 					"riscv_op_unknown"));
 	}
 	printf("};\n\n");
-}
-
-void riscv_parse_meta::print_args_h()
-{
-	print_c_header("riscv-args.h");
-	printf("#ifndef riscv_args_h\n");
-	printf("#define riscv_args_h\n");
-	printf("\n");
-	printf("namespace riscv\n{\n");
-
-	// print immediate decoders
-	for (auto arg: args) {
-		printf("\ttypedef %s%-60s arg_%s;\n",
-			arg->type == "simm" ? "simm_arg_t" : "uimm_arg_t",
-			arg->bitspec.to_template().c_str(),
-			arg->name.c_str());
-	}
-	printf("}\n");
-	printf("\n");
-	printf("#endif\n");
 }
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
@@ -1231,8 +1268,9 @@ int main(int argc, const char *argv[])
 	bool include_pseudo = false;
 	bool print_args_h = false;
 	bool print_switch_h = false;
-	bool print_opcodes_h = false;
-	bool print_opcodes_c = false;
+	bool print_jit_h = false;
+	bool print_meta_h = false;
+	bool print_meta_cc = false;
 	bool help_or_error = false;
 	std::string isa_spec = "";
 
@@ -1250,7 +1288,7 @@ int main(int argc, const char *argv[])
 		{ "-l", "--print-latex", cmdline_arg_type_none,
 			"Print LaTeX",
 			[&](std::string s) { return (print_latex = true); } },
-		{ "-¿", "--substitute-question-marks", cmdline_arg_type_none,
+		{ "-?", "--substitute-question-marks", cmdline_arg_type_none,
 			"Substitute question marks for zeros in LaTeX output",
 			[&](std::string s) { return (remove_question_marks = true); } },
 		{ "-m", "--print-map", cmdline_arg_type_none,
@@ -1262,24 +1300,27 @@ int main(int argc, const char *argv[])
 		{ "-N", "--no-comment", cmdline_arg_type_none,
 			"Don't emit comments in generated source",
 			[&](std::string s) { return (no_comment = true); } },
-		{ "-0", "--zero-not-oh", cmdline_arg_type_none,
+		{ "-0", "--numeric-constants", cmdline_arg_type_none,
 			"Use numeric constants in generated source",
 			[&](std::string s) { return (zero_not_oh = true); } },
 		{ "-p", "--include-pseudo", cmdline_arg_type_none,
-			"Include pseudo opcode in switch decoder",
+			"Include pseudo opcodes in switch decoder",
 			[&](std::string s) { return (include_pseudo = true); } },
-		{ "-H", "--print-opcodes-h", cmdline_arg_type_none,
-			"Print C header",
-			[&](std::string s) { return (print_opcodes_h = true); } },
-		{ "-C", "--print-opcodes-c", cmdline_arg_type_none,
-			"Print C source",
-			[&](std::string s) { return (print_opcodes_c = true); } },
+		{ "-H", "--print-meta-h", cmdline_arg_type_none,
+			"Print metadata header",
+			[&](std::string s) { return (print_meta_h = true); } },
+		{ "-C", "--print-meta-cc", cmdline_arg_type_none,
+			"Print metadata source",
+			[&](std::string s) { return (print_meta_cc = true); } },
 		{ "-A", "--print-args-h", cmdline_arg_type_none,
-			"Print C args header",
+			"Print args header",
 			[&](std::string s) { return (print_args_h = true); } },
-		{ "-S", "--print-codec-h", cmdline_arg_type_none,
-			"Print C codec header",
+		{ "-S", "--print-switch-h", cmdline_arg_type_none,
+			"Print switch header",
 			[&](std::string s) { return (print_switch_h = true); } },
+		{ "-J", "--print-jit-h", cmdline_arg_type_none,
+			"Print jit header",
+			[&](std::string s) { return (print_jit_h = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1295,8 +1336,8 @@ int main(int argc, const char *argv[])
 	}
 
 	if ((help_or_error |= !print_latex && !print_map &&
-		!print_switch_h && !print_args_h &&
-		!print_opcodes_h && !print_opcodes_c))
+		!print_switch_h && !print_args_h && !print_jit_h &&
+		!print_meta_h && !print_meta_cc))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
@@ -1315,12 +1356,12 @@ int main(int argc, const char *argv[])
 		insn_set.print_map(print_map_instructions);
 	}
 
-	if (print_opcodes_h) {
-		insn_set.print_opcodes_h(no_comment, zero_not_oh);
+	if (print_meta_h) {
+		insn_set.print_meta_h(no_comment, zero_not_oh);
 	}
 
-	if (print_opcodes_c) {
-		insn_set.print_opcodes_c(no_comment, zero_not_oh);
+	if (print_meta_cc) {
+		insn_set.print_meta_cc(no_comment, zero_not_oh);
 	}
 
 	if (print_args_h) {
@@ -1330,6 +1371,10 @@ int main(int argc, const char *argv[])
 	if (print_switch_h) {
 		insn_set.generate_codec(include_pseudo);
 		insn_set.print_switch_h(no_comment, zero_not_oh);
+	}
+
+	if (print_jit_h) {
+		insn_set.print_jit_h();
 	}
 
 	exit(0);

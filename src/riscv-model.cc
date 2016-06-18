@@ -124,6 +124,17 @@ bool riscv_bitspec::matches_bit(ssize_t bit)
 	return false;
 }
 
+size_t riscv_bitspec::decoded_msb()
+{
+	ssize_t msb = 0;
+	for (auto si = segments.begin(); si != segments.end(); si++) {
+		for (auto di = si->second.begin(); di != si->second.end(); di++) {
+			if (di->msb > msb) msb = di->msb;
+		}
+	}
+	return msb;
+}
+
 std::string riscv_bitspec::to_string()
 {
 	std::stringstream ss;

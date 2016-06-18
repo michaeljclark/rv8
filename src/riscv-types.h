@@ -44,6 +44,7 @@ namespace riscv {
 	template <uint64_t W> struct simm_t;
 	template <uint64_t W> struct uimm_t;
 
+	using offset32 = offset_t<32>;
 	using offset21 = offset_t<21>;
 	using offset13 = offset_t<13>;
 	using offset12 = offset_t<12>;
@@ -55,10 +56,13 @@ namespace riscv {
 	using uimm20 = uimm_t<20>;
 	using simm12 = simm_t<12>;
 	using uimm12 = uimm_t<12>;
+	using uimm6 = uimm_t<6>;
+	using uimm5 = uimm_t<5>;
 	using ireg5 = uimm_t<5>;
 	using freg5 = uimm_t<5>;
-	using shamt5 = uimm_t<5>;
-	using shamt6 = uimm_t<6>;
+	using arg4 = uimm_t<4>;
+	using arg3 = uimm_t<3>;
+	using arg1 = uimm_t<1>;
 
 	/*
 	 * Width-typed immediate template definitions

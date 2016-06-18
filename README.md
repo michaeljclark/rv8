@@ -209,13 +209,17 @@ usage: riscv-parse-meta [<options>]
                   --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
                     --read-isa, -r <string>   Read instruction set metadata from directory
                  --print-latex, -l            Print LaTeX
+   --substitute-question-marks, -?            Substitute question marks for zeros in LaTeX output
                    --print-map, -m            Print map
       --print-map-instructions, -x            Print map with instructions
                   --no-comment, -N            Don't emit comments in generated source
-                 --zero-not-oh, -0            Use numeric constants in generated source
-             --print-opcodes-h, -H            Print C header
-             --print-opcodes-c, -C            Print C source
-              --print-switch-c, -S            Print C switch
+           --numeric-constants, -0            Use numeric constants in generated source
+              --include-pseudo, -p            Include pseudo opcodes in switch decoder
+                --print-meta-h, -H            Print metadata header
+               --print-meta-cc, -C            Print metadata source
+                --print-args-h, -A            Print args header
+              --print-switch-h, -S            Print switch header
+                 --print-jit-h, -J            Print jit header
                         --help, -h            Show help
 ```
 

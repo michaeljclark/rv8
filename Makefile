@@ -127,6 +127,7 @@ RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 # libriscv_meta
 RV_ARGS_HDR =   $(LIB_SRC_DIR)/riscv-args.h
 RV_CODEC_HDR =  $(LIB_SRC_DIR)/riscv-switch.h
+RV_JIT_HDR =    $(LIB_SRC_DIR)/riscv-jit.h
 RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
 RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
 RV_META_FMT =   $(LIB_SRC_DIR)/riscv-format.cc
@@ -221,7 +222,7 @@ clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make cle
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-latex: all ; $(PARSE_META_BIN) -l -¿ -r $(META_DIR) > riscv-instructions.tex
+latex: all ; $(PARSE_META_BIN) -l -? -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
@@ -234,9 +235,10 @@ c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
 c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
-$(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_META_HDR) $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_META_HDR) $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
+	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)
 	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
 	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
 
