@@ -184,11 +184,11 @@ TEST_EMULATE_OBJS = $(call app_src_objs, $(TEST_EMULATE_SRCS))
 TEST_EMULATE_ASM = $(call app_src_asm, $(TEST_EMULATE_SRCS))
 TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
 
-# test-types
-TEST_TYPES_SRCS = $(APP_SRC_DIR)/riscv-test-types.cc
-TEST_TYPES_OBJS = $(call app_src_objs, $(TEST_TYPES_SRCS))
-TEST_TYPES_ASM = $(call app_src_asm, $(TEST_TYPES_SRCS))
-TEST_TYPES_BIN = $(BIN_DIR)/riscv-test-types
+# test-encoder
+TEST_ENCODER_SRCS = $(APP_SRC_DIR)/riscv-test-encoder.cc
+TEST_ENCODER_OBJS = $(call app_src_objs, $(TEST_ENCODER_SRCS))
+TEST_ENCODER_ASM = $(call app_src_asm, $(TEST_ENCODER_SRCS))
+TEST_ENCODER_BIN = $(BIN_DIR)/riscv-test-encoder
 
 # source and binaries
 ALL_SRCS = $(RV_UTIL_SRCS) \
@@ -198,7 +198,7 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(PARSE_ELF_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS) \
-           $(TEST_TYPES_SRCS)
+           $(TEST_ENCODER_SRCS)
 
 BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
@@ -206,11 +206,11 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(PARSE_META_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN) \
-           $(TEST_TYPES_BIN)
+           $(TEST_ENCODER_BIN)
 
 ASSEMBLY = $(TEST_DECODER_ASM) \
            $(TEST_EMULATE_ASM) \
-           $(TEST_TYPES_ASM)
+           $(TEST_ENCODER_ASM)
 
 # build rules
 all: dirs $(PARSE_META_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
@@ -252,7 +252,7 @@ $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $
 $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_TYPES_BIN): $(TEST_TYPES_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 # build recipes
 ifdef V
