@@ -44,9 +44,8 @@ namespace riscv {
 	template <uint64_t W> struct simm_t;
 	template <uint64_t W> struct uimm_t;
 
-	using offset64 = offset_t<64>;
-	using offset32 = offset_t<32>;
-	using offset20 = offset_t<20>;
+	using offset21 = offset_t<21>;
+	using offset13 = offset_t<13>;
 	using offset12 = offset_t<12>;
 	using ptr64 = ptr_t<64>;
 	using ptr32 = ptr_t<32>;
@@ -56,6 +55,8 @@ namespace riscv {
 	using uimm20 = uimm_t<20>;
 	using simm12 = simm_t<12>;
 	using uimm12 = uimm_t<12>;
+	using ireg5 = uimm_t<5>;
+	using freg5 = uimm_t<5>;
 	using shamt5 = uimm_t<5>;
 	using shamt6 = uimm_t<6>;
 
@@ -78,7 +79,7 @@ namespace riscv {
 	template <uint64_t W> struct ptr_t
 	{
 		enum : uint64_t { width = W };
-		enum : uintptr_t { min = 0, max = (1ULL<< W)-1 };
+		enum : uintptr_t { min = 0, max = W == 64 ? ~0 : (1ULL<< W)-1 };
 		enum : bool { is_signed = false, is_integral = true, is_offset = false, is_pointer = true };
 		typedef uintptr_t value_type;
 		uintptr_t imm;
