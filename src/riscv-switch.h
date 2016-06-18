@@ -57,19 +57,13 @@ inline uint64_t riscv_decode_op(uint64_t insn)
 				case 4:
 					// c.srli c.srai c.andi c.sub c.xor c.or c.and c.subw c.addw c.srli c.srai
 					switch (((insn >> 10) & 0b11) /* insn[11:10] */) {
-						case 0:
-							// c.srli c.srli
-							switch (((insn >> 12) & 0b1) /* insn[12] */) {
-								case 0: if (rvc && rv32) op = riscv_op_c_srli_rv32c; break;
-								default: if (rvc && rv64) op = riscv_op_c_srli_rv64c; break;
-							}
+						case 0: 
+							if (rvc && rv32) op = riscv_op_c_srli_rv32c;
+							else if (rvc && rv64) op = riscv_op_c_srli_rv64c;
 							break;
-						case 1:
-							// c.srai c.srai
-							switch (((insn >> 12) & 0b1) /* insn[12] */) {
-								case 0: if (rvc && rv32) op = riscv_op_c_srai_rv32c; break;
-								default: if (rvc && rv64) op = riscv_op_c_srai_rv64c; break;
-							}
+						case 1: 
+							if (rvc && rv32) op = riscv_op_c_srai_rv32c;
+							else if (rvc && rv64) op = riscv_op_c_srai_rv64c;
 							break;
 						case 2: if (rvc) op = riscv_op_c_andi; break;
 						case 3:
@@ -93,12 +87,9 @@ inline uint64_t riscv_decode_op(uint64_t insn)
 		case 2:
 			// c.slli c.fldsp c.lwsp c.flwsp c.jr c.mv c.ebreak c.jalr c.add c.fsdsp c.swsp c.fswsp ...
 			switch (((insn >> 13) & 0b111) /* insn[15:13] */) {
-				case 0:
-					// c.slli c.slli
-					switch (((insn >> 12) & 0b1) /* insn[12] */) {
-						case 0: if (rvc && rv32) op = riscv_op_c_slli_rv32c; break;
-						default: if (rvc && rv64) op = riscv_op_c_slli_rv64c; break;
-					}
+				case 0: 
+					if (rvc && rv32) op = riscv_op_c_slli_rv32c;
+					else if (rvc && rv64) op = riscv_op_c_slli_rv64c;
 					break;
 				case 1: if (rvc) op = riscv_op_c_fldsp; break;
 				case 2: if (rvc) op = riscv_op_c_lwsp; break;
