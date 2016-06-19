@@ -268,6 +268,13 @@ std::string riscv_meta_model::opcode_mask(riscv_opcode_ptr opcode)
 	return ss.str();
 }
 
+std::string riscv_meta_model::format_type(riscv_arg_ptr arg)
+{
+	return arg->type + std::to_string((arg->type == "offset" || arg->type == "simm" || arg->type == "uimm") ?
+		arg->bitspec.decoded_msb() + 1 :
+		arg->bitspec.segments.front().first.msb - arg->bitspec.segments.front().first.lsb + 1);
+}
+
 std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
 {
 	std::string name = strip_suffix ? split(codec->name, "+", false, false)[0] : codec->name;

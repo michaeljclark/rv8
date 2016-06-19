@@ -126,6 +126,7 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_c_header(std::string filename);
 	void print_args_h();
 	void print_jit_h();
+	void print_jit_cc();
 	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
 	void print_meta_cc(bool no_comment = false, bool zero_not_oh = false);
 	void print_switch_h(bool no_comment = false, bool zero_not_oh = false);
@@ -679,6 +680,114 @@ void riscv_parse_meta::print_c_header(std::string filename)
 	printf("//\n\n");
 }
 
+void riscv_parse_meta::print_args_h()
+{
+	print_c_header("riscv-args.h");
+	printf("#ifndef riscv_args_h\n");
+	printf("#define riscv_args_h\n");
+	printf("\n");
+	printf("namespace riscv\n{\n");
+
+	// print immediate decoders
+	for (auto arg: args) {
+		printf("\ttypedef %s%-60s arg_%s;\n",
+			(arg->type == "simm" || arg->type == "offset") ? "simm_arg_t" : "uimm_arg_t",
+			arg->bitspec.to_template().c_str(),
+			arg->name.c_str());
+	}
+	printf("}\n");
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_jit_h()
+{
+	print_c_header("riscv-jit.h");
+	printf("#ifndef riscv_jit_h\n");
+	printf("#define riscv_jit_h\n");
+	printf("\n");
+	printf("namespace riscv\n{\n");
+	for (auto &opcode : opcodes) {
+		// exclude compressed and psuedo instructions
+		if (opcode->compressed || opcode->key.find("@") == 0) continue;
+
+		// create emit interface
+		std::string emit_name = opcode_format("emit_", opcode, "_");
+		std::vector<std::string> arg_list;
+		for (auto &arg : opcode->codec->args) {
+			auto type_name = format_type(arg) + " " + arg->name;
+			arg_list.push_back(type_name);
+		}
+
+		// output emit interface
+		printf("\tuint64_t %s(%s);\n",
+			emit_name.c_str(), join(arg_list, ", ").c_str());
+	}
+	printf("}\n");
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_jit_cc()
+{
+	print_c_header("riscv-jit.cc");
+
+	printf("#include <cstdint>\n");
+	printf("#include <cstdlib>\n");
+	printf("#include <cassert>\n");
+	printf("\n");
+	printf("#include \"riscv-types.h\"\n");
+	printf("#include \"riscv-endian.h\"\n");
+	printf("#include \"riscv-jit.h\"\n");
+	printf("#include \"riscv-meta.h\"\n");
+	printf("#include \"riscv-decode.h\"\n");
+	printf("\n");
+
+	for (auto &opcode : opcodes) {
+		// exclude compressed and psuedo instructions
+		if (opcode->compressed || opcode->key.find("@") == 0) continue;
+
+		// create emit interface
+		std::string emit_name = opcode_format("emit_", opcode, "_");
+		std::vector<std::string> arg_list;
+		for (auto &arg : opcode->codec->args) {
+			auto type_name = format_type(arg) + " " + arg->name;
+			arg_list.push_back(type_name);
+		}
+
+		// output emit interface
+		printf("uint64_t riscv::%s(%s)\n{\n",
+			emit_name.c_str(), join(arg_list, ", ").c_str());
+		printf("\triscv_decode dec;\n");
+		if (opcode->codec->args.size() > 0) {
+			std::vector<std::string> check_list;
+			for (auto &arg : opcode->codec->args) {
+				auto check_name = arg->name + ".valid()";
+				check_list.push_back(check_name);
+			}
+			printf("\tif (!(%s)) return 0; /* illegal instruction */\n",
+				join(check_list, " && ").c_str());
+		}
+		printf("\tdec.op = %s;\n", opcode_format("riscv_op_", opcode, "_").c_str());
+		for (auto &arg : opcode->codec->args) {
+			if (arg->type == "offset" || arg->type == "simm" || arg->type == "uimm") {
+				printf("\tdec.imm = %s;\n", arg->name.c_str());
+			} else if (arg->type == "ireg") {
+				printf("\tdec.%s = %s;\n", arg->name.c_str(), arg->name.c_str());
+			} else if (arg->type == "freg") {
+				printf("\tdec.%s = %s;\n", arg->name.substr(1).c_str(), arg->name.c_str());
+			} else if (arg->type == "arg") {
+				printf("\tdec.%s = %s;\n", arg->name.c_str(), arg->name.c_str());
+			} else {
+				printf("/* dec.? = %s unhandled */\n", arg->name.c_str());
+			}
+		}
+		printf("\treturn riscv_encode_insn(dec);\n");
+		printf("}\n\n");
+	}
+	printf("\n");
+}
+
 void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 {
 	print_c_header("riscv-meta.h");
@@ -814,62 +923,6 @@ static void print_array_unknown_enum(const char *str, bool no_comment)
 static void print_array_unknown_int(uint32_t num, bool no_comment)
 {
 	printf("\t%s0x%08x,\n", no_comment ? "" : unknown_op_comment, num);
-}
-
-void riscv_parse_meta::print_args_h()
-{
-	print_c_header("riscv-args.h");
-	printf("#ifndef riscv_args_h\n");
-	printf("#define riscv_args_h\n");
-	printf("\n");
-	printf("namespace riscv\n{\n");
-
-	// print immediate decoders
-	for (auto arg: args) {
-		printf("\ttypedef %s%-60s arg_%s;\n",
-			(arg->type == "simm" || arg->type == "offset") ? "simm_arg_t" : "uimm_arg_t",
-			arg->bitspec.to_template().c_str(),
-			arg->name.c_str());
-	}
-	printf("}\n");
-	printf("\n");
-	printf("#endif\n");
-}
-
-void riscv_parse_meta::print_jit_h()
-{
-	print_c_header("riscv-jit.h");
-	printf("#ifndef riscv_jit_h\n");
-	printf("#define riscv_jit_h\n");
-	printf("\n");
-	printf("namespace riscv\n{\n");
-	for (auto &opcode : opcodes) {
-		// exclude compressed and psuedo instructions
-		if (opcode->compressed || opcode->key.find("@") == 0) continue;
-
-		// create emit interface
-		std::string emit_name = opcode_format("emit_", opcode, "_");
-		std::vector<std::string> arg_list;
-		for (auto &arg : opcode->codec->args) {
-			auto type = arg->type;
-			auto &spec = arg->bitspec;
-			if (type == "offset" || type == "simm" || type == "uimm") {
-				type += std::to_string(spec.decoded_msb() + 1);
-			} else {
-				type += std::to_string(spec.segments.front().first.msb - spec.segments.front().first.lsb + 1);
-			}
-			auto name = arg->name;
-			auto type_name = type + " " + name;
-			arg_list.push_back(type_name);
-		}
-
-		// output emit interface
-		printf("\tuint64_t %s(%s);\n",
-			emit_name.c_str(), join(arg_list, ", ").c_str());
-	}
-	printf("}\n");
-	printf("\n");
-	printf("#endif\n");
 }
 
 void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
@@ -1269,6 +1322,7 @@ int main(int argc, const char *argv[])
 	bool print_args_h = false;
 	bool print_switch_h = false;
 	bool print_jit_h = false;
+	bool print_jit_cc = false;
 	bool print_meta_h = false;
 	bool print_meta_cc = false;
 	bool help_or_error = false;
@@ -1321,6 +1375,9 @@ int main(int argc, const char *argv[])
 		{ "-J", "--print-jit-h", cmdline_arg_type_none,
 			"Print jit header",
 			[&](std::string s) { return (print_jit_h = true); } },
+		{ "-K", "--print-jit-cc", cmdline_arg_type_none,
+			"Print jit source",
+			[&](std::string s) { return (print_jit_cc = true); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1336,7 +1393,8 @@ int main(int argc, const char *argv[])
 	}
 
 	if ((help_or_error |= !print_latex && !print_map &&
-		!print_switch_h && !print_args_h && !print_jit_h &&
+		!print_switch_h && !print_args_h &&
+		!print_jit_h && !print_jit_cc &&
 		!print_meta_h && !print_meta_cc))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
@@ -1375,6 +1433,10 @@ int main(int argc, const char *argv[])
 
 	if (print_jit_h) {
 		insn_set.print_jit_h();
+	}
+
+	if (print_jit_cc) {
+		insn_set.print_jit_cc();
 	}
 
 	exit(0);

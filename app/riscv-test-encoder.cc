@@ -7,6 +7,7 @@
 #include "riscv-meta.h"
 #include "riscv-endian.h"
 #include "riscv-decode.h"
+#include "riscv-jit.h"
 
 using namespace riscv;
 
@@ -19,22 +20,6 @@ template <typename T> void test_imm(bool r, T imm) {
 		r == imm.valid() ? "PASS" : "FAIL",
 		T::width, imm.valid(), typename T::value_type(imm)
 	);
-}
-
-/* example instruction encoding using width-typed immediate argument template aliases */
-
-inline uint64_t emit_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
-{
-	riscv_decode dec;
-
-	if (!(rs1.valid() && rs2.valid() && sbimm12.valid())) return 0; /* illegal instruction */
-
-	dec.op = riscv_op_bne;
-	dec.rs1 = rs1;
-	dec.rs2 = rs2;
-	dec.imm = sbimm12;
-
-	return riscv_encode_insn(dec);
 }
 
 inline uint64_t print_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)

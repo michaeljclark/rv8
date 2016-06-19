@@ -301,6 +301,7 @@ struct riscv_meta_model
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
+	static std::string format_type(riscv_arg_ptr arg);
 	static std::string format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix = true);
 	static std::string format_format(std::string prefix, riscv_format_ptr format, char special);
 	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key = true);
