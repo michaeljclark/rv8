@@ -20,6 +20,11 @@ namespace riscv {
 
 	/*
 	 * Short-hand type aliases
+	 *
+	 * The sx and ux types need to by conditionallly aliased to support RV32.
+	 * The purpose is to use a placeholder type globally for the natural
+	 * register width of the target. The placeholder type names match the
+	 * C pseudo-code cast notation in meta/instructions
 	 */
 
 	typedef intptr_t           sx;
