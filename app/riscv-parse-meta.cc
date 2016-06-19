@@ -850,7 +850,7 @@ void riscv_parse_meta::print_jit_h()
 		// create emit interface
 		std::string emit_name = opcode_format("emit_", opcode, "_");
 		std::vector<std::string> arg_list;
-		for (auto &arg : opcode->args) {
+		for (auto &arg : opcode->codec->args) {
 			auto type = arg->type;
 			auto &spec = arg->bitspec;
 			if (type == "offset" || type == "simm" || type == "uimm") {

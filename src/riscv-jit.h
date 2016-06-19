@@ -46,7 +46,7 @@ namespace riscv
 	uint64_t emit_sra(ireg5 rd, ireg5 rs1, ireg5 rs2);
 	uint64_t emit_or(ireg5 rd, ireg5 rs1, ireg5 rs2);
 	uint64_t emit_and(ireg5 rd, ireg5 rs1, ireg5 rs2);
-	uint64_t emit_fence(arg4 pred, arg4 succ);
+	uint64_t emit_fence();
 	uint64_t emit_fence_i();
 	uint64_t emit_lwu(ireg5 rd, ireg5 rs1, offset12 oimm12);
 	uint64_t emit_ld(ireg5 rd, ireg5 rs1, offset12 oimm12);
@@ -105,7 +105,7 @@ namespace riscv
 	uint64_t emit_hret();
 	uint64_t emit_mret();
 	uint64_t emit_dret();
-	uint64_t emit_sfence_vm(ireg5 rs1);
+	uint64_t emit_sfence_vm();
 	uint64_t emit_wfi();
 	uint64_t emit_csrrw(ireg5 rd, ireg5 rs1, uimm12 csr12);
 	uint64_t emit_csrrs(ireg5 rd, ireg5 rs1, uimm12 csr12);
