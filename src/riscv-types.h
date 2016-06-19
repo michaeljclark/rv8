@@ -22,8 +22,8 @@ namespace riscv {
 	 * Short-hand type aliases
 	 */
 
-	typedef signed long long   sx;
-	typedef unsigned long long ux;
+	typedef intptr_t           sx;
+	typedef uintptr_t          ux;
 	typedef int8_t             s8;
 	typedef uint8_t            u8;
 	typedef int16_t            s16;
