@@ -6,6 +6,8 @@ CC = riscv64-unknown-elf-gcc
 AS = riscv64-unknown-elf-as
 LD = riscv64-unknown-elf-ld
 
+CFLAGS = -Wall -fpie -ffunction-sections -fdata-sections
+
 PROGRAMS = \
 	hello-world-libc \
 	hello-world-abs \
@@ -19,8 +21,8 @@ all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS) *.o
 
-hello-world-libc.o: hello-world-libc.c ; $(CC) $^ -o $@
-hello-world-libc: hello-world-libc.o ; $(LD) $^ -o $@
+hello-world-libc.o: hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
+hello-world-libc: hello-world-libc.o ; $(CC) $(CFLAGS) $^ -o $@
 hello-world-abs.o: hello-world-abs.S ; $(AS) $^ -o $@
 hello-world-abs: hello-world-abs.o ; $(LD) $^ -o $@
 hello-world-pcrel.o: hello-world-pcrel.S ; $(AS) $^ -o $@
