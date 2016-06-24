@@ -228,6 +228,7 @@ pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make)
+test-clean: ; (cd test && make clean)
 emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
