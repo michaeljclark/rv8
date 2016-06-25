@@ -24,42 +24,6 @@
 
 using namespace riscv;
 
-enum rva {
-	rva_none,
-	rva_abs,
-	rva_pcrel
-};
-
-struct rvx {
-	riscv_op op1;
-	riscv_op op2;
-	rva addr;
-};
-
-const rvx rvx_constraints[] = {
-	{ riscv_op_lui,     riscv_op_addi,     rva_abs   },
-	{ riscv_op_auipc,   riscv_op_addi,     rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_jalr,     rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_ld,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lb,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lh,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lw,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lbu,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lhu,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_lwu,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_flw,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_fld,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_sd,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_sb,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_sh,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_sw,       rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_fsw,      rva_pcrel },
-	{ riscv_op_auipc,   riscv_op_fsd,      rva_pcrel },
-	{ riscv_op_unknown, riscv_op_unknown,  rva_none  },
-};
-
-const size_t rvx_instruction_buffer_len = 16;
-
 const char* riscv_null_symbol_lookup(uintptr_t, bool nearest) { return nullptr; }
 const char* riscv_null_symbol_colorize(const char *type) { return ""; }
 
@@ -124,7 +88,6 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
-	bool decoded_address = false;
 	const char *fmt = riscv_insn_format[dec.op];
 	const char *symbol_name = symlookup((uintptr_t)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
@@ -173,10 +136,6 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 			case 'i': print_fmt(offset, "%lld", dec.imm); break;
  			case 'o':
 	 			print_fmt(offset, "%lld", dec.imm);
-	 			if (dec.op != riscv_op_auipc) {
-	 				decoded_address = true;
-					dec.addr = pc - pc_offset + dec.imm;
-				}
 				break;
 			case 'c':
 				csr = riscv_lookup_csr_metadata(dec.imm);
@@ -212,32 +171,19 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 		fmt++;
 	}
 
-	// decode address using instruction pair constraints
-	const rvx* rvxi = rvx_constraints;
-	while(rvxi->addr != rva_none) {
-		if (rvxi->op2 == dec.op) {
-			for (auto li = dec_hist.rbegin(); li != dec_hist.rend(); li++) {
-				if (rvxi->op1 != li->op && dec.rs1 == li->rd) break; // break: another primitive encountered
-				if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
-				switch (rvxi->addr) {
-					case rva_abs:
-						decoded_address = true;
-						dec.addr = li->imm + dec.imm;
-						goto out;
-					case rva_pcrel:
-						decoded_address = true;
-						dec.addr = li->pc - pc_offset + li->imm + dec.imm;
-						goto out;
-					case rva_none:
-					default:
-						continue;
-				}
-				break;
-			}
-		}
-		rvxi++;
-	}
-out:
+	bool decoded_address = false;
+
+	// decode pc relative address
+	if (!decoded_address) decoded_address = decode_pcrel(dec, pc, pc_offset);
+
+	// decode instruction pair address
+	if (!decoded_address) decoded_address = deocde_pair(dec, dec_hist, pc_offset);
+
+	// decode address for loads and stores from the global pointer
+	if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
+
+	// print address if present
+	if (decoded_address) print_addr(offset, dec.addr, symlookup, colorize);
 
 	// clear the instruction history on jump boundaries
 	switch(dec.op) {
@@ -247,38 +193,6 @@ out:
 			break;
 		default:
 			break;
-	}
-
-	// decode address for loads and stores from the global pointer
-	if (!decoded_address && gp && dec.rs1 == riscv_ireg_gp)
-	{
-		switch (dec.op) {
-			case riscv_op_addi:
-			case riscv_op_lb:
-			case riscv_op_lh:
-			case riscv_op_lw:
-			case riscv_op_ld:
-			case riscv_op_lbu:
-			case riscv_op_lhu:
-			case riscv_op_lwu:
-			case riscv_op_flw:
-			case riscv_op_fld:
-			case riscv_op_sb:
-			case riscv_op_sh:
-			case riscv_op_sw:
-			case riscv_op_sd:
-			case riscv_op_fsw:
-			case riscv_op_fsd:
-				decoded_address = true;
-				dec.addr = int64_t(gp + dec.imm);
-			default:
-				break;
-		}
-	}
-
-	// print address if present
-	if (decoded_address) {
-		print_addr(offset, dec.addr, symlookup, colorize);
 	}
 
 	// save instruction in deque
