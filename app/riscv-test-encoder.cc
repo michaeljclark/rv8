@@ -22,18 +22,6 @@ template <typename T> void test_imm(bool r, T imm) {
 	);
 }
 
-inline uint64_t print_bne(ireg5 rs1, ireg5 rs2, offset13 sbimm12)
-{
-	printf("bne %s,%s,%ld",
-		riscv_i_registers[rs1],
-		riscv_i_registers[rs2],
-		offset13::value_type(sbimm12));
-
-	if (!(rs1.valid() && rs2.valid() && sbimm12.valid())) printf(" /* illegal instruction */");
-
-	return emit_bne(rs1, rs2, sbimm12);
-}
-
 int main()
 {
 	test_imm<simm20>(0, -524289);
@@ -82,11 +70,22 @@ int main()
 	test_imm<ptr64>(1, 1);
 	test_imm<ptr64>(1, 0xffffffffffffffffLL);
 
-	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a5, riscv_ireg_zero, -16));
-	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 100));
-	printf(" # 0x%08" PRIx64 "\n", print_bne(riscv_ireg_a4, riscv_ireg_a5, 4096)); /* illegal instruciton */
+	assert(emit_lui(riscv_ireg_a2, 0xfffffffffffff000) == 0xfffff637);
+	assert(emit_lui(riscv_ireg_s4, 0x20000) == 0x00020a37);
+	assert(emit_lui(riscv_ireg_a2, 0xfff0fffffffff000) == 0); /* illegal instruciton */
+
+	assert(emit_auipc(riscv_ireg_a0, 0xffffffffffef1000) == 0xffef1517);
+	assert(emit_auipc(riscv_ireg_t1, 0x117000) == 0x00117317);
+	assert(emit_auipc(riscv_ireg_a0, 0xfff0fffffffff000) == 0); /* illegal instruciton */
+
+	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_s3, 0) == 0x000980e7);
+	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, 368) == 0x170300e7);
+	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, -1720) == 0x948300e7);
+	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, 4096) == 0); /* illegal instruciton */
 
 	assert(emit_bne(riscv_ireg_a5, riscv_ireg_zero, -16) == 0xfe0798e3);
 	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 100) == 0x06f71263);
 	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 4096) == 0); /* illegal instruciton */
+
+	assert(emit_lbu(riscv_ireg_a4, riscv_ireg_a5, 20) == 0x0147c703);
 }
