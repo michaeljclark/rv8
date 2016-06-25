@@ -36,7 +36,7 @@ struct riscv_compress_elf
 {
 	elf_file elf;
 	std::string filename;
-	std::map<uintptr_t,std::string> branch_labels;
+	std::map<uintptr_t,uint32_t> continuations;
 
 	bool do_compress = false;
 	bool do_decompress = false;
@@ -51,10 +51,10 @@ struct riscv_compress_elf
 	{
 		static char symbol_tmpname[256];
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
-		auto bli = branch_labels.find(addr);
-		if (sym && bli != branch_labels.end()) {
+		auto bli = continuations.find(addr);
+		if (sym && bli != continuations.end()) {
 				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"%s:<%s>", bli->second.c_str(), elf.sym_name(sym));
+					"LOC_%06" PRIu32 ":<%s>", bli->second, elf.sym_name(sym));
 			return symbol_tmpname;
 		}
 		if (sym) {
@@ -62,7 +62,11 @@ struct riscv_compress_elf
 					"<%s>", elf.sym_name(sym));
 			return symbol_tmpname;
 		}
-		if (bli != branch_labels.end()) return bli->second.c_str();
+		if (bli != continuations.end()) {
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"LOC_%06" PRIu32, bli->second);
+			return symbol_tmpname;
+		}
 		if (nearest) {
 			sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
 			if (sym) {
@@ -76,12 +80,10 @@ struct riscv_compress_elf
 		return nullptr;
 	}
 
-	void scan_branch_labels(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
-		ssize_t branch_num = 1;
-		char branch_label[32];
-
 		riscv_disasm dec;
+		ssize_t continuation_num = 1;
 		uintptr_t pc = start, next_pc;
 		uint64_t addr = 0;
 		while (pc < end) {
@@ -89,12 +91,21 @@ struct riscv_compress_elf
 			dec.insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, dec.insn);
 			riscv_decode_decompress(dec);
+			switch (dec.op) {
+				case riscv_op_jal:
+				case riscv_op_jalr:
+					if (next_pc < end) {
+						addr = next_pc - pc_offset;
+						continuations[(uintptr_t)addr] = continuation_num++;
+					}
+					break;
+				default:
+					break;
+			}
 			switch (dec.codec) {
 				case riscv_codec_sb:
-				case riscv_codec_uj:
 					addr = pc - pc_offset + dec.imm;
-					snprintf(branch_label, sizeof(branch_label), "LOC_%06lu", branch_num++);
-					branch_labels[(uintptr_t)addr] = branch_label;
+					continuations[(uintptr_t)addr] = continuation_num++;
 					break;
 				default:
 					break;
@@ -103,14 +114,14 @@ struct riscv_compress_elf
 		}
 	}
 
-	void scan_branch_labels()
+	void scan_continuations()
 	{
-		branch_labels.clear();
+		continuations.clear();
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
-				scan_branch_labels(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
+				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 			}
 		}
 	}
@@ -196,7 +207,7 @@ struct riscv_compress_elf
 	{
 		elf.load(filename);
 		if (do_compress && elf.ehdr.e_machine == EM_RISCV) {
-			scan_branch_labels();
+			scan_continuations();
 			compress();
 		}
 		printf("\n");

@@ -141,22 +141,6 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	}
 	print_pad(offset, 12);
 
-	// clear the instruction history on continuation boundaries
-	switch(dec.op) {
-		case riscv_op_jal:
-			// jal
-			dec_hist.clear();
-			break;
-		case riscv_op_jalr:
-			// jalr z0,ra,0 - ret
-			if (dec.imm == 0 && dec.rd == riscv_ireg_x0 && dec.rs1 == riscv_ireg_ra) {
-				dec_hist.clear();
-			}
-			break;
-		default:
-			break;
-	}
-
 	// print address
 	printf("%s", colorize("address"));
 	print_fmt(offset, "%8tx:", addr & 0xffffffff);
@@ -254,6 +238,16 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 		rvxi++;
 	}
 out:
+
+	// clear the instruction history on jump boundaries
+	switch(dec.op) {
+		case riscv_op_jal:
+		case riscv_op_jalr:
+			dec_hist.clear();
+			break;
+		default:
+			break;
+	}
 
 	// decode address for loads and stores from the global pointer
 	if (!decoded_address && gp && dec.rs1 == riscv_ireg_gp)
