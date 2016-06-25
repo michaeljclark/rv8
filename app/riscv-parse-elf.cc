@@ -58,12 +58,10 @@ struct riscv_parse_elf
 			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_MAGENTA _COLOR_END;
 		} else if (strcmp(type, "opcode") == 0) {
 			return _COLOR_BEGIN _COLOR_BOLD _COLOR_SEP _COLOR_FG_CYAN _COLOR_END;
-		} else if (strcmp(type, "location") == 0) {
-			return _COLOR_BEGIN _COLOR_FG_GREEN _COLOR_END;
 		} else if (strcmp(type, "address") == 0) {
 			return _COLOR_BEGIN _COLOR_FG_YELLOW _COLOR_END;
-		} else if (strcmp(type, "symbol") == 0) {
-			return _COLOR_BEGIN _COLOR_UNDERSCORE _COLOR_END;
+		} else if (strcmp(type, "label") == 0) {
+			return _COLOR_BEGIN _COLOR_FG_GREEN _COLOR_END;
 		} else if (strcmp(type, "reset") == 0) {
 			return _COLOR_RESET;
 		}
@@ -72,17 +70,26 @@ struct riscv_parse_elf
 
 	const char* symlookup(uintptr_t addr, bool nearest)
 	{
+		static char symbol_tmpname[256];
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
-		if (sym) return elf.sym_name(sym);
 		auto bli = branch_labels.find(addr);
+		if (sym && bli != branch_labels.end()) {
+				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"%s:<%s>", bli->second.c_str(), elf.sym_name(sym));
+			return symbol_tmpname;
+		}
+		if (sym) {
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"<%s>", elf.sym_name(sym));
+			return symbol_tmpname;
+		}
 		if (bli != branch_labels.end()) return bli->second.c_str();
 		if (nearest) {
 			sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
 			if (sym) {
-				static char symbol_tmpname[256];
 				int64_t offset = int64_t(addr) - sym->st_value;
 				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"%s%s0x%" PRIx64, elf.sym_name(sym),
+					"<%s%s0x%" PRIx64 ">", elf.sym_name(sym),
 					offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
 				return symbol_tmpname;
 			}

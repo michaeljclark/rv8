@@ -112,15 +112,9 @@ const void print_addr(size_t &offset, uint64_t addr,
 	printf("%s", colorize("reset"));
 	const char* symbol_name = symlookup((uintptr_t)addr, true);
 	if (symbol_name) {
-		if (strncmp(symbol_name, "LOC_", 4) == 0) {
-			printf(" %s", colorize("location"));
-			print_fmt(offset, "%s", symbol_name);
-			printf("%s", colorize("reset"));
-		} else {
-			printf(" %s", colorize("symbol"));
-			print_fmt(offset, "<%s>", symbol_name);
-			printf("%s", colorize("reset"));
-		}
+		printf(" %s", colorize("label"));
+		print_fmt(offset, "%s", symbol_name);
+		printf("%s", colorize("reset"));
 	}
 }
 
@@ -130,29 +124,38 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
+	bool decoded_address = false;
 	const char *fmt = riscv_insn_format[dec.op];
 	const char *symbol_name = symlookup((uintptr_t)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
 
 	// print symbol name if present
 	if (symbol_name) {
-		if (strncmp(symbol_name, "LOC_", 4) == 0) {
-			printf("%s", colorize("location"));
-			print_fmt(offset, "%s:", symbol_name);
-			printf("%s", colorize("reset"));
-		} else {
-			// clear the instruction history on symbol boundaries
-			dec_hist.clear();
-			printf("\n%s", colorize("address"));
-			print_fmt(offset, "0x%016tx: ", addr);
-			printf("%s", colorize("reset"));
-			printf("%s", colorize("symbol"));
-			print_fmt(offset, "<%s>:", symbol_name);
-			printf("%s\n", colorize("reset"));
-			offset = 0;
-		}
+		printf("\n%s", colorize("address"));
+		print_fmt(offset, "0x%016tx: ", addr);
+		printf("%s", colorize("reset"));
+		printf("%s", colorize("label"));
+		print_fmt(offset, "%s", symbol_name);
+		printf("%s\n", colorize("reset"));
+		offset = 0;
 	}
 	print_pad(offset, 12);
+
+	// clear the instruction history on continuation boundaries
+	switch(dec.op) {
+		case riscv_op_jal:
+			// jal
+			dec_hist.clear();
+			break;
+		case riscv_op_jalr:
+			// jalr z0,ra,0 - ret
+			if (dec.imm == 0 && dec.rd == riscv_ireg_x0 && dec.rs1 == riscv_ireg_ra) {
+				dec_hist.clear();
+			}
+			break;
+		default:
+			break;
+	}
 
 	// print address
 	printf("%s", colorize("address"));
@@ -185,9 +188,11 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
 			case 'i': print_fmt(offset, "%lld", dec.imm); break;
  			case 'o':
-				addr = pc - pc_offset + dec.imm;
-				print_fmt(offset, "%lld", dec.imm);
-				print_addr(offset, addr, symlookup, colorize);
+	 			print_fmt(offset, "%lld", dec.imm);
+	 			if (dec.op != riscv_op_auipc) {
+	 				decoded_address = true;
+					dec.addr = pc - pc_offset + dec.imm;
+				}
 				break;
 			case 'c':
 				csr = riscv_lookup_csr_metadata(dec.imm);
@@ -224,7 +229,6 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	}
 
 	// decode address using instruction pair constraints
-	addr = 0;
 	const rvx* rvxi = rvx_constraints;
 	while(rvxi->addr != rva_none) {
 		if (rvxi->op2 == dec.op) {
@@ -233,10 +237,12 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 				if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
 				switch (rvxi->addr) {
 					case rva_abs:
-						addr = li->imm + dec.imm;
+						decoded_address = true;
+						dec.addr = li->imm + dec.imm;
 						goto out;
 					case rva_pcrel:
-						addr = li->pc - pc_offset + li->imm + dec.imm;
+						decoded_address = true;
+						dec.addr = li->pc - pc_offset + li->imm + dec.imm;
 						goto out;
 					case rva_none:
 					default:
@@ -250,7 +256,7 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 out:
 
 	// decode address for loads and stores from the global pointer
-	if (addr == 0 && gp && dec.rs1 == riscv_ireg_gp)
+	if (!decoded_address && gp && dec.rs1 == riscv_ireg_gp)
 	{
 		switch (dec.op) {
 			case riscv_op_addi:
@@ -269,15 +275,16 @@ out:
 			case riscv_op_sd:
 			case riscv_op_fsw:
 			case riscv_op_fsd:
-				addr = int64_t(gp + dec.imm);
+				decoded_address = true;
+				dec.addr = int64_t(gp + dec.imm);
 			default:
 				break;
 		}
 	}
 
 	// print address if present
-	if (addr != 0) {
-		print_addr(offset, addr, symlookup, colorize);
+	if (decoded_address) {
+		print_addr(offset, dec.addr, symlookup, colorize);
 	}
 
 	// save instruction in deque
