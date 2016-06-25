@@ -36,8 +36,10 @@ const void print_add(size_t &offset, const char *str)
 const void print_pad(size_t &offset, size_t pad_to)
 {
 	static const char *space32 = "                                        ";
-	printf("%s", space32 + strlen(space32) - std::max((pad_to - offset), 0UL));
-	offset += std::max((pad_to - offset), 0UL);
+	if (pad_to < offset) pad_to = offset;
+	size_t x = std::min(strlen(space32), std::max((pad_to - offset), 0UL));
+	printf("%s", space32 + strlen(space32) - x);
+	offset += x;
 }
 
 const void print_fmt(size_t &offset, const char* fmt, ...)
