@@ -35,7 +35,13 @@ struct riscv_disasm : riscv_decode
 	riscv_disasm() : riscv_decode(), pc(0), insn(0) {}
 };
 
+
+/* Instruction Operands */
+
 #include "riscv-args.h"
+
+
+/* Instruction Decoders */
 
 /* Decode none */
 template <typename T>
@@ -419,6 +425,9 @@ inline void riscv_decode_uj(T &dec, uint64_t insn)
 	dec.imm = riscv::arg_jimm20::decode(insn);
 }
 
+
+/* Instruction Encoders */
+
 /* Encode none */
 template <typename T>
 inline uint64_t riscv_encode_none(T &dec) { return 0; }
@@ -646,7 +655,6 @@ inline uint64_t riscv_encode_cb_sh6(T &dec)
 		riscv::arg_cimmsh6::encode(dec.imm);
 }
 
-
 /* Encode CJ - imm */
 template <typename T>
 inline uint64_t riscv_encode_cj(T &dec)
@@ -767,9 +775,13 @@ inline uint64_t riscv_encode_uj(T &dec)
 		riscv::arg_jimm20::encode(dec.imm);
 }
 
+
+/* Instruction Opcodes and Types */
+
 #include "riscv-switch.h"
 
-/* Instruction length */
+
+/* Instruction Length */
 
 inline size_t riscv_get_insn_length(uint64_t insn)
 {
@@ -843,7 +855,7 @@ inline void riscv_decode_rv64(T &dec, uint64_t insn)
 	riscv_decode_insn<T,false,true>(dec, insn);
 }
 
-/* Check constraint */
+/* Compression Constraints */
 
 template <typename T>
 inline bool riscv_compress_check(T &dec, const rvc_constraint *c)
