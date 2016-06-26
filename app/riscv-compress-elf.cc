@@ -32,11 +32,21 @@
 
 using namespace riscv;
 
+struct riscv_asm : riscv_disasm
+{
+	uint32_t  label_in;
+	uint32_t  label_br;
+	uint32_t  label_co;
+
+	riscv_asm() : riscv_disasm(), label_in(0), label_br(0), label_co(0) {}
+};
+
 struct riscv_compress_elf
 {
 	elf_file elf;
 	std::string filename;
 	std::map<uintptr_t,uint32_t> continuations;
+	ssize_t continuation_num = 1;
 
 	bool do_compress = false;
 	bool do_decompress = false;
@@ -80,71 +90,94 @@ struct riscv_compress_elf
 		return nullptr;
 	}
 
-	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void disassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
-		riscv_disasm dec;
-		ssize_t continuation_num = 1;
 		uintptr_t pc = start, next_pc;
-		uint64_t addr = 0;
 		while (pc < end) {
+			bin.resize(bin.size() + 1);
+			auto &dec = bin.back();
 			dec.pc = pc;
 			dec.insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, dec.insn);
 			riscv_decode_decompress(dec);
+			pc = next_pc;
+		}
+	}
+
+	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t pc_offset)
+	{
+		// label instructions that are the destination of a jump or a continuation
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
-					if (next_pc < end) {
-						addr = next_pc - pc_offset;
-						if (continuations.find(addr) == continuations.end()) {
-							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+				{
+					if (bi != bin.end()) {
+						uint64_t addr = (bi + 1)->pc - pc_offset;
+						auto ci = continuations.find(addr);
+						if (ci == continuations.end()) {
+							ci = continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++)).first;
 						}
+						dec.label_co = ci->second;
 					}
 					break;
+				}
 				default:
 					break;
 			}
 			switch (dec.codec) {
 				case riscv_codec_sb:
-					addr = pc - pc_offset + dec.imm;
-					if (continuations.find(addr) == continuations.end()) {
-						continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+				{
+					uint64_t addr = dec.pc - pc_offset + dec.imm;
+					auto ci = continuations.find(addr);
+					if (ci == continuations.end()) {
+						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++)).first;
 					}
+					dec.label_br = ci->second;
 					break;
+				}
 				default:
 					break;
 			}
-			pc = next_pc;
 		}
 	}
 
-	void compress(uintptr_t start, uintptr_t end, uintptr_t pc_offset, uintptr_t gp)
+	void label_continuations(std::deque<riscv_asm> &bin, uintptr_t pc_offset)
 	{
-		riscv_disasm dec;
-		std::deque<riscv_disasm> dec_hist;
-		uintptr_t pc = start, next_pc;
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			auto ci = continuations.find(dec.pc - pc_offset);
+			if (ci == continuations.end()) continue;
+			dec.label_in = ci->second;
+		}
+	}
+
+	std::pair<size_t,size_t> compress(std::deque<riscv_asm> &bin)
+	{
 		size_t bytes = 0, saving = 0;
-		while (pc < end) {
-			dec.pc = pc;
-			dec.insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_rv64(dec, dec.insn);
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
 			if (riscv_get_insn_length(dec.insn) == 4 && riscv_compress_insn(dec)) {
 				dec.insn = riscv_encode_insn(dec);
-				riscv_disasm_insn(dec, dec_hist, pc, next_pc-2, pc_offset, gp,
-					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
-					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 2;
 				saving += 2;
 			} else {
-				riscv_disasm_insn(dec, dec_hist, pc, next_pc, pc_offset, gp,
-					std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
-					std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 				bytes += 4;
 			}
-			pc = next_pc;
 		}
-		printf("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save\n",
-			bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
+		return std::pair<size_t,size_t>(bytes, saving);
+	}
+
+	void print_disassembly(std::deque<riscv_asm> &bin, uintptr_t pc_offset, uintptr_t gp)
+	{
+		std::deque<riscv_disasm> dec_hist;
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			riscv_disasm_insn(dec, dec_hist, dec.pc, dec.pc + riscv_get_insn_length(dec.insn), pc_offset, gp,
+				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
+				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
+		}
 	}
 
 	void compress()
@@ -155,9 +188,15 @@ struct riscv_compress_elf
 			if (shdr.sh_flags & SHF_EXECINSTR) {
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
-				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-				compress(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
-					uintptr_t(gp_sym ? gp_sym->st_value : 0));
+				std::deque<riscv_asm> bin;
+				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
+				scan_continuations(bin, offset - shdr.sh_addr);
+				label_continuations(bin, offset - shdr.sh_addr);
+				auto res = compress(bin);
+				print_disassembly(bin, offset- shdr.sh_addr, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+				ssize_t bytes = res.first, saving = res.second;
+				printf("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save\n",
+					bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
 			}
 		}
 	}

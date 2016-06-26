@@ -37,6 +37,7 @@ struct riscv_parse_elf
 	elf_file elf;
 	std::string filename;
 	std::map<uintptr_t,uint32_t> continuations;
+	ssize_t continuation_num = 1;
 
 	bool enable_color = false;
 	bool elf_header = false;
@@ -104,7 +105,6 @@ struct riscv_parse_elf
 	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		riscv_disasm dec;
-		ssize_t continuation_num = 1;
 		uintptr_t pc = start, next_pc;
 		uint64_t addr = 0;
 		while (pc < end) {
