@@ -193,7 +193,20 @@ struct riscv_compress_elf
 				scan_continuations(bin, offset - shdr.sh_addr);
 				label_continuations(bin, offset - shdr.sh_addr);
 				auto res = compress(bin);
+
+				// TODO - scan for addresses (including addresses spanning pairs of insns)
+				//        using logic in riscv-diasm.h (decode_pcrel, decode_pair, decode_gprel)
+				//        and mark addresses for relocation and add labels to jump and link 
+				//      - reassign pc based on new insn lengths (and inserted or removed insns)
+				//      - relocate jumps, branches using labels
+				//      - relocate load store offsets outside the executable section due
+				//        shrinkage of the executable section. May need to scan the data
+				//        segment for function pointers.
+
 				print_disassembly(bin, offset- shdr.sh_addr, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+
+				// TODO - repack and save ELF
+
 				ssize_t bytes = res.first, saving = res.second;
 				printf("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save\n",
 					bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
