@@ -111,12 +111,15 @@ struct riscv_parse_elf
 			dec.pc = pc;
 			dec.insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, dec.insn);
+			riscv_decode_decompress(dec);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
 					if (next_pc < end) {
 						addr = next_pc - pc_offset;
-						continuations[(uintptr_t)addr] = continuation_num++;
+						if (continuations.find(addr) == continuations.end()) {
+							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+						}
 					}
 					break;
 				default:
@@ -125,24 +128,14 @@ struct riscv_parse_elf
 			switch (dec.codec) {
 				case riscv_codec_sb:
 					addr = pc - pc_offset + dec.imm;
-					continuations[(uintptr_t)addr] = continuation_num++;
+					if (continuations.find(addr) == continuations.end()) {
+						continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+					}
 					break;
 				default:
 					break;
 			}
 			pc = next_pc;
-		}
-	}
-
-	void scan_continuations()
-	{
-		continuations.clear();
-		for (size_t i = 0; i < elf.shdrs.size(); i++) {
-			Elf64_Shdr &shdr = elf.shdrs[i];
-			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
-				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-			}
 		}
 	}
 
@@ -168,8 +161,9 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
+				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
 					uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				printf("\n");
@@ -255,7 +249,6 @@ struct riscv_parse_elf
 		}
 		if (disassebly && elf.ehdr.e_machine == EM_RISCV) {
 			print_heading("Disassembly");
-			scan_continuations();
 			print_disassembly();
 		}
 	}

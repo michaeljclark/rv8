@@ -96,7 +96,9 @@ struct riscv_compress_elf
 				case riscv_op_jalr:
 					if (next_pc < end) {
 						addr = next_pc - pc_offset;
-						continuations[(uintptr_t)addr] = continuation_num++;
+						if (continuations.find(addr) == continuations.end()) {
+							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+						}
 					}
 					break;
 				default:
@@ -105,24 +107,14 @@ struct riscv_compress_elf
 			switch (dec.codec) {
 				case riscv_codec_sb:
 					addr = pc - pc_offset + dec.imm;
-					continuations[(uintptr_t)addr] = continuation_num++;
+					if (continuations.find(addr) == continuations.end()) {
+						continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+					}
 					break;
 				default:
 					break;
 			}
 			pc = next_pc;
-		}
-	}
-
-	void scan_continuations()
-	{
-		continuations.clear();
-		for (size_t i = 0; i < elf.shdrs.size(); i++) {
-			Elf64_Shdr &shdr = elf.shdrs[i];
-			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
-				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-			}
 		}
 	}
 
@@ -161,8 +153,9 @@ struct riscv_compress_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
+				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 				compress(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
 					uintptr_t(gp_sym ? gp_sym->st_value : 0));
 			}
@@ -207,7 +200,6 @@ struct riscv_compress_elf
 	{
 		elf.load(filename);
 		if (do_compress && elf.ehdr.e_machine == EM_RISCV) {
-			scan_continuations();
 			compress();
 		}
 		printf("\n");
