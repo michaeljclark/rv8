@@ -99,7 +99,7 @@ struct riscv_compress_elf
 
 	// decode address using instruction pair constraints
 	template <typename T>
-	bool deocde_pair(T &dec, std::deque<T> &dec_hist, uintptr_t pc_offset)
+	bool deocde_pair(T &dec, std::deque<T> &dec_hist)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -112,7 +112,7 @@ struct riscv_compress_elf
 						{
 							dec.is_abs = true;
 							dec.addr = li->imm + dec.imm;
-							uint64_t cont_addr = li->pc - pc_offset;
+							uint64_t cont_addr = li->pc;
 							auto ci = continuations.find(cont_addr);
 							if (ci == continuations.end()) {
 								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
@@ -123,8 +123,8 @@ struct riscv_compress_elf
 						case rva_pcrel:
 						{
 							dec.is_pcrel = true;
-							dec.addr = li->pc - pc_offset + li->imm + dec.imm;
-							uint64_t cont_addr = li->pc - pc_offset;
+							dec.addr = li->pc + li->imm + dec.imm;
+							uint64_t cont_addr = li->pc;
 							auto ci = continuations.find(cont_addr);
 							if (ci == continuations.end()) {
 								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
@@ -188,7 +188,7 @@ struct riscv_compress_elf
 		while (pc < end) {
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
-			dec.pc = pc;
+			dec.pc = pc - pc_offset;
 			dec.insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, dec.insn);
 			riscv_decode_decompress(dec);
@@ -196,7 +196,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t pc_offset, uintptr_t gp)
+	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		std::deque<riscv_asm> dec_hist;
 
@@ -207,7 +207,7 @@ struct riscv_compress_elf
 				case riscv_op_jal:
 				{
 					dec.is_pcrel = true;
-					dec.addr = dec.pc - pc_offset + dec.imm;
+					dec.addr = dec.pc + dec.imm;
 					auto ci = continuations.find(dec.addr);
 					if (ci == continuations.end()) {
 						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
@@ -216,8 +216,8 @@ struct riscv_compress_elf
 				}
 				case riscv_op_jalr:
 				{
-					if (bi != bin.end()) {
-						uint64_t cont_addr = (bi + 1)->pc - pc_offset;
+					if (bi + 1 != bin.end()) {
+						uint64_t cont_addr = (bi + 1)->pc;
 						auto ci = continuations.find(cont_addr);
 						if (ci == continuations.end()) {
 							ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
@@ -233,7 +233,7 @@ struct riscv_compress_elf
 				case riscv_codec_sb:
 				{
 					dec.is_pcrel = true;
-					dec.addr = dec.pc - pc_offset + dec.imm;
+					dec.addr = dec.pc + dec.imm;
 					auto ci = continuations.find(dec.addr);
 					if (ci == continuations.end()) {
 						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
@@ -248,7 +248,7 @@ struct riscv_compress_elf
 			bool decoded_address = false;
 
 			// decode instruction pair address
-			if (!decoded_address) decoded_address = deocde_pair(dec, dec_hist, pc_offset);
+			if (!decoded_address) decoded_address = deocde_pair(dec, dec_hist);
 
 			// decode address for loads and stores from the global pointer
 			if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
@@ -272,11 +272,11 @@ struct riscv_compress_elf
 		}
 	}
 
-	void label_continuations(std::deque<riscv_asm> &bin, uintptr_t pc_offset)
+	void label_continuations(std::deque<riscv_asm> &bin)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			auto ci = continuations.find(dec.pc - pc_offset);
+			auto ci = continuations.find(dec.pc);
 			if (ci == continuations.end()) continue;
 			dec.label_in = ci->second;
 		}
@@ -298,13 +298,13 @@ struct riscv_compress_elf
 		return std::pair<size_t,size_t>(bytes, saving);
 	}
 
-	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t pc_offset, uintptr_t gp)
+	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			printf("0x%016tx %-9s %-9s %-9s %-9s %-20s %-20s %s%s%s\n",
-				dec.pc - pc_offset,
+				dec.pc,
 				dec.label_in ? format_string("loc_%u", dec.label_in).c_str() : "",
 				dec.label_co ? format_string("cont_%u", dec.label_co).c_str() : "",
 				dec.label_pr ? format_string("pair_%u", dec.label_pr).c_str() : "",
@@ -318,12 +318,12 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_disassembly(std::deque<riscv_asm> &bin, uintptr_t pc_offset, uintptr_t gp)
+	void print_disassembly(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			riscv_disasm_insn(dec, dec_hist, dec.pc, dec.pc + riscv_get_insn_length(dec.insn), pc_offset, gp,
+			riscv_disasm_insn(dec, dec_hist, dec.pc, dec.pc + riscv_get_insn_length(dec.insn), 0, gp,
 				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 		}
@@ -338,8 +338,8 @@ struct riscv_compress_elf
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				std::deque<riscv_asm> bin;
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-				scan_continuations(bin, offset - shdr.sh_addr, uintptr_t(gp_sym ? gp_sym->st_value : 0));
-				label_continuations(bin, offset - shdr.sh_addr);
+				scan_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+				label_continuations(bin);
 				auto res = compress(bin);
 
 				// TODO - reassign pc based on new insn lengths (and inserted or removed insns)
@@ -350,12 +350,12 @@ struct riscv_compress_elf
 
 				if (do_print_continuations) {
 					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
-					print_continuations(bin, offset- shdr.sh_addr, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+					print_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
 				if (do_print_disassembly) {
 					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
-					print_disassembly(bin, offset- shdr.sh_addr, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
 				// TODO - repack and save ELF
