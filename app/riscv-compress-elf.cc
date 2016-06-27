@@ -97,9 +97,9 @@ struct riscv_compress_elf
 		return nullptr;
 	}
 
-	// decode address using instruction pair constraints
+	// decode address using instruction pair constraints and label continuations for jump and link register
 	template <typename T>
-	bool deocde_pair(T &dec, std::deque<T> &dec_hist)
+	bool deocde_pair(T &dec, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend, std::deque<T> &dec_hist)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -136,6 +136,14 @@ struct riscv_compress_elf
 									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
 								}
 								dec.label_br = ci->second;
+								if (bi + 1 != bend) {
+									uint64_t cont_addr = (bi + 1)->pc;
+									auto ci = continuations.find(cont_addr);
+									if (ci == continuations.end()) {
+										ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
+									}
+									dec.label_co = ci->second;
+								}
 							}
 							return true;
 						}
@@ -147,6 +155,54 @@ struct riscv_compress_elf
 				}
 			}
 			rvxi++;
+		}
+		return false;
+	}
+
+	// decode address for branches and label jumps and continuations for jump and link
+	template <typename T>
+	bool deocde_jumps(T &dec, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend)
+	{
+		switch (dec.op) {
+			case riscv_op_jal:
+			{
+				dec.is_pcrel = true;
+				dec.addr = dec.pc + dec.imm;
+				auto ci = continuations.find(dec.addr);
+				if (ci == continuations.end()) {
+					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+				}
+				dec.label_br = ci->second;
+			}
+			case riscv_op_jalr:
+			{
+				if (bi + 1 != bend) {
+					uint64_t cont_addr = (bi + 1)->pc;
+					auto ci = continuations.find(cont_addr);
+					if (ci == continuations.end()) {
+						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
+					}
+					dec.label_co = ci->second;
+				}
+				return true;
+			}
+			default:
+				break;
+		}
+		switch (dec.codec) {
+			case riscv_codec_sb:
+			{
+				dec.is_pcrel = true;
+				dec.addr = dec.pc + dec.imm;
+				auto ci = continuations.find(dec.addr);
+				if (ci == continuations.end()) {
+					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+				}
+				dec.label_br = ci->second;
+				return true;
+			}
+			default:
+				break;
 		}
 		return false;
 	}
@@ -200,55 +256,16 @@ struct riscv_compress_elf
 	{
 		std::deque<riscv_asm> dec_hist;
 
-		// label instructions that are the destination of a jump or a continuation
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			switch (dec.op) {
-				case riscv_op_jal:
-				{
-					dec.is_pcrel = true;
-					dec.addr = dec.pc + dec.imm;
-					auto ci = continuations.find(dec.addr);
-					if (ci == continuations.end()) {
-						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-					}
-					dec.label_br = ci->second;
-				}
-				case riscv_op_jalr:
-				{
-					if (bi + 1 != bin.end()) {
-						uint64_t cont_addr = (bi + 1)->pc;
-						auto ci = continuations.find(cont_addr);
-						if (ci == continuations.end()) {
-							ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
-						}
-						dec.label_co = ci->second;
-					}
-					break;
-				}
-				default:
-					break;
-			}
-			switch (dec.codec) {
-				case riscv_codec_sb:
-				{
-					dec.is_pcrel = true;
-					dec.addr = dec.pc + dec.imm;
-					auto ci = continuations.find(dec.addr);
-					if (ci == continuations.end()) {
-						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-					}
-					dec.label_br = ci->second;
-					break;
-				}
-				default:
-					break;
-			}
 
 			bool decoded_address = false;
 
-			// decode instruction pair address
-			if (!decoded_address) decoded_address = deocde_pair(dec, dec_hist);
+			// decode address using instruction pair constraints and label continuations for jump and link register
+			if (!decoded_address) decoded_address = deocde_pair(dec, bi, bin.end(), dec_hist);
+
+			// decode address for branches and label jumps and continuations for jump and link
+			if (!decoded_address) decoded_address = deocde_jumps(dec, bi, bin.end());
 
 			// decode address for loads and stores from the global pointer
 			if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
