@@ -173,19 +173,15 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 		fmt++;
 	}
 
+	// decode address
 	bool decoded_address = false;
-
-	// decode pc relative address
 	if (!decoded_address) decoded_address = decode_pcrel(dec, pc, pc_offset);
-
-	// decode instruction pair address
 	if (!decoded_address) decoded_address = deocde_pair(dec, dec_hist, pc_offset);
-
-	// decode address for loads and stores from the global pointer
 	if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
 
 	// print address if present
 	if (decoded_address) print_addr(offset, dec.addr, symlookup, colorize);
+	printf("\n");
 
 	// clear the instruction history on jump boundaries
 	switch(dec.op) {
@@ -202,6 +198,4 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	if (dec_hist.size() > rvx_instruction_buffer_len) {
 		dec_hist.pop_front();
 	}
-
-	printf("\n");
 }

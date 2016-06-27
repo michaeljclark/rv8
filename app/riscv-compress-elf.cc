@@ -97,6 +97,23 @@ struct riscv_compress_elf
 		return nullptr;
 	}
 
+	template <typename T>
+	void print_continuation_disassembly(T &dec)
+	{
+		debug("0x%016tx %-9s %-9s %-9s %-9s %-20s %-20s %s%s%s",
+			dec.pc,
+			dec.label_in ? format_string("loc_%u", dec.label_in).c_str() : "",
+			dec.label_co ? format_string("cont_%u", dec.label_co).c_str() : "",
+			dec.label_pr ? format_string("pair_%u", dec.label_pr).c_str() : "",
+			dec.label_br ? format_string("bra_%u", dec.label_br).c_str() : "",
+			riscv_insn_name[dec.op],
+			(dec.is_abs || dec.is_pcrel || dec.is_gprel) ? format_string("0x%016tx", dec.addr).c_str() : "",
+			dec.is_abs ? "abs" : "",
+			dec.is_pcrel ? "pc" : "",
+			dec.is_gprel ? "gp" : ""
+		);
+	}
+
 	// decode address using instruction pair constraints and label continuations for jump and link register
 	template <typename T>
 	bool deocde_pair(T &dec, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend, std::deque<T> &dec_hist)
@@ -259,18 +276,13 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 
+			// decode address and label continuations
 			bool decoded_address = false;
-
-			// decode address using instruction pair constraints and label continuations for jump and link register
 			if (!decoded_address) decoded_address = deocde_pair(dec, bi, bin.end(), dec_hist);
-
-			// decode address for branches and label jumps and continuations for jump and link
 			if (!decoded_address) decoded_address = deocde_jumps(dec, bi, bin.end());
-
-			// decode address for loads and stores from the global pointer
 			if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
 
-			// clear the instruction history on jump boundaries
+			// clear instruction history on jump boundaries
 			switch(dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
@@ -285,7 +297,6 @@ struct riscv_compress_elf
 			if (dec_hist.size() > rvx_instruction_buffer_len) {
 				dec_hist.pop_front();
 			}
-
 		}
 	}
 
@@ -304,6 +315,15 @@ struct riscv_compress_elf
 		size_t bytes = 0, saving = 0;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
+			if (bi != bin.begin()) {
+				// update address in continuation label map
+				auto ci = continuations.find(dec.pc);
+				dec.pc = (bi-1)->pc + riscv_get_insn_length((bi-1)->insn);
+				if (ci != continuations.end()) {
+					continuations.erase(ci);
+					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
+				}
+			}
 			if (riscv_get_insn_length(dec.insn) == 4 && riscv_compress_insn(dec)) {
 				dec.insn = riscv_encode_insn(dec);
 				bytes += 2;
@@ -315,23 +335,35 @@ struct riscv_compress_elf
 		return std::pair<size_t,size_t>(bytes, saving);
 	}
 
+	void relocate(std::deque<riscv_asm> &bin)
+	{
+		std::map<uint32_t,intptr_t> label_addr;
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			if (dec.label_in == 0) continue;
+			label_addr[dec.label_in] = dec.pc;
+		}
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			if (!dec.is_pcrel) continue;
+			if (dec.addr == 0) continue;
+			if (dec.label_pr > 0) {
+				debug("warning: can't yet relocate pair instructions yet: %d", dec.label_pr);
+				print_continuation_disassembly(dec);
+			} else if (dec.label_br) {
+				dec.imm = label_addr[dec.label_br] - intptr_t(dec.pc);
+				dec.addr = dec.pc + dec.imm;
+				dec.insn = riscv_encode_insn(dec);
+			}
+		}
+	}
+
 	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			printf("0x%016tx %-9s %-9s %-9s %-9s %-20s %-20s %s%s%s\n",
-				dec.pc,
-				dec.label_in ? format_string("loc_%u", dec.label_in).c_str() : "",
-				dec.label_co ? format_string("cont_%u", dec.label_co).c_str() : "",
-				dec.label_pr ? format_string("pair_%u", dec.label_pr).c_str() : "",
-				dec.label_br ? format_string("bra_%u", dec.label_br).c_str() : "",
-				riscv_insn_name[dec.op],
-				(dec.is_abs || dec.is_pcrel || dec.is_gprel) ? format_string("0x%016tx", dec.addr).c_str() : "",
-				dec.is_abs ? "abs" : "",
-				dec.is_pcrel ? "pc" : "",
-				dec.is_gprel ? "gp" : ""
-			);
+			print_continuation_disassembly(dec);
 		}
 	}
 
@@ -351,19 +383,22 @@ struct riscv_compress_elf
 		const Elf64_Sym *gp_sym = elf.sym_by_name("_gp");
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
-			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
+			if (shdr.sh_flags & SHF_EXECINSTR)
+			{
 				std::deque<riscv_asm> bin;
+				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 				scan_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				label_continuations(bin);
 				auto res = compress(bin);
+				relocate(bin);
 
-				// TODO - reassign pc based on new insn lengths (and inserted or removed insns)
-				//      - relocate jumps, branches using labels
-				//      - relocate load store offsets outside the executable section due
-				//        shrinkage of the executable section. May need to scan the data
-				//        segment for function pointers.
+				// TODO - relocate doesn't yet handle relocation of insn pairs or
+				//        load and store offsets outside the executable section due
+				//        shrinkage of the executable section.
+				//      - relocate doesn't yet update debug symbols which will cause
+				//        incorrect dissambly labels
+				//      - May need to scan the data segment for function pointers.
 
 				if (do_print_continuations) {
 					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
@@ -376,9 +411,11 @@ struct riscv_compress_elf
 				}
 
 				// TODO - repack and save ELF
+				//      - initial prototype will pad text section with nop (addi x0,x0,0)
+				//        to allow testing of compression and relocation
 
 				ssize_t bytes = res.first, saving = res.second;
-				printf("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save\n",
+				debug("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save",
 					bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
 			}
 		}
