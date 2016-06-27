@@ -348,7 +348,7 @@ struct riscv_compress_elf
 			if (!dec.is_pcrel) continue;
 			if (dec.addr == 0) continue;
 			if (dec.label_pr > 0) {
-				debug("warning: can't yet relocate pair instructions yet: %d", dec.label_pr);
+				debug("warning: todo: unable to relocate pair instruction: %d", dec.label_pr);
 				print_continuation_disassembly(dec);
 			} else if (dec.label_br) {
 				dec.imm = label_addr[dec.label_br] - intptr_t(dec.pc);
