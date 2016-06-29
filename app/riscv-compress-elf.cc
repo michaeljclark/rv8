@@ -21,6 +21,7 @@
 #include "riscv-endian.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
+#include "riscv-jit.h"
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
@@ -50,6 +51,7 @@ struct riscv_compress_elf
 {
 	elf_file elf;
 	std::string filename;
+	std::string output_filename;
 	std::map<uintptr_t,uint32_t> continuations;
 	ssize_t continuation_num = 1;
 
@@ -348,13 +350,52 @@ struct riscv_compress_elf
 			if (!dec.is_pcrel) continue;
 			if (dec.addr == 0) continue;
 			if (dec.label_pr > 0) {
-				debug("warning: todo: unable to relocate pair instruction: %d", dec.label_pr);
+				debug("warning: todo: unable to relocate insn pair: %d", dec.label_pr);
 				print_continuation_disassembly(dec);
 			} else if (dec.label_br) {
 				dec.imm = label_addr[dec.label_br] - intptr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
 				dec.insn = riscv_encode_insn(dec);
 			}
+		}
+	}
+
+	void pad_with_nops(std::deque<riscv_asm> &bin, size_t size)
+	{
+		while (size > 0) {
+			riscv_asm dec;
+			dec.insn = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
+			riscv_decode_rv64(dec, dec.insn);
+			dec.pc = bin.back().pc + riscv_get_insn_length(bin.back().insn);
+			if (size == 2) {
+				riscv_compress_insn(dec);
+				dec.insn = riscv_encode_insn(dec);
+			}
+			size -= riscv_get_insn_length(dec.insn);
+			bin.push_back(dec);
+		}
+	}
+
+	void reassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	{
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			uintptr_t pc = dec.pc + pc_offset;
+			if (pc < start || pc > end) {
+				panic("pc outside of section range");
+			}
+			size_t insn_len = riscv_get_insn_length(dec.insn);
+			switch (insn_len) {
+				case 2:
+					*((uint16_t*)pc) = htole16(dec.insn);
+					break;
+				case 4:
+					*((uint32_t*)pc) = htole32(dec.insn);
+					break;
+				default:
+					panic("can only handle 2 or 4 byte insns");
+			}
+			pc += insn_len;
 		}
 	}
 
@@ -393,12 +434,17 @@ struct riscv_compress_elf
 				auto res = compress(bin);
 				relocate(bin);
 
+				// TODO - initial prototype pads text section with nop (addi x0,x0,0)
+				pad_with_nops(bin, res.second); /* res.second = saving */
+
 				// TODO - relocate doesn't yet handle relocation of insn pairs or
 				//        load and store offsets outside the executable section due
 				//        shrinkage of the executable section.
 				//      - relocate doesn't yet update debug symbols which will cause
-				//        incorrect dissambly labels
-				//      - May need to scan the data segment for function pointers.
+				//        incorrect dissambly
+				//      - relocate may need to scan data segment for function pointers.
+
+				reassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 
 				if (do_print_continuations) {
 					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
@@ -409,10 +455,6 @@ struct riscv_compress_elf
 					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
-
-				// TODO - repack and save ELF
-				//      - initial prototype will pad text section with nop (addi x0,x0,0)
-				//        to allow testing of compression and relocation
 
 				ssize_t bytes = res.first, saving = res.second;
 				debug("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save",
@@ -437,6 +479,9 @@ struct riscv_compress_elf
 			{ "-d", "--decompress", cmdline_arg_type_none,
 				"Decompress",
 				[&](std::string s) { return (do_decompress = true); } },
+			{ "-o", "--output", cmdline_arg_type_string,
+				"Output filename",
+				[&](std::string s) { output_filename = s; return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -466,6 +511,9 @@ struct riscv_compress_elf
 		elf.load(filename);
 		if (do_compress && elf.ehdr.e_machine == EM_RISCV) {
 			compress();
+			if (output_filename.size() > 0) {
+				elf.save(output_filename);
+			}
 		}
 		printf("\n");
 	}
