@@ -455,7 +455,9 @@ void elf_file::recalculate_section_offsets()
 
 	// ELF section offsets
 	for (size_t i = 0; i < shdrs.size(); i++) {
-		if (shdrs[i].sh_addralign > 0) {
+		if (i == 1) {
+			next_offset = (next_offset + (0x1000 - 1)) & -0x1000;
+		} else if (shdrs[i].sh_addralign > 0) {
 			next_offset = (next_offset + (shdrs[i].sh_addralign - 1)) & -shdrs[i].sh_addralign;
 		}
 		sections[i].offset = next_offset;
