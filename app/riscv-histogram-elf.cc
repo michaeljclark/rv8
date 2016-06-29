@@ -41,9 +41,19 @@ struct riscv_histogram_elf
 	bool help_or_error = false;
 	bool hash_bars = false;
 	bool reverse_sort = false;
+	bool insn_histogram = false;
+	bool regs_histogram = false;
+	bool regs_position = false;
 
-	typedef std::map<size_t,size_t> map_t;
-	typedef std::pair<size_t,size_t> pair_t;
+	typedef std::map<std::string,size_t> map_t;
+	typedef std::pair<std::string,size_t> pair_t;
+
+	void histogram_add(map_t &hist, std::string s)
+	{
+		auto hi = hist.find(s);
+		if (hi == hist.end()) hist.insert(pair_t(s, 1));
+		else hi->second++;
+	}
 
 	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
@@ -52,9 +62,26 @@ struct riscv_histogram_elf
 		while (pc < end) {
 			uint64_t insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_rv64(dec, insn);
-			auto hi = hist.find(dec.op);
-			if (hi == hist.end()) hist.insert(pair_t(dec.op, 1));
-			else hi->second++;
+			if (insn_histogram) {
+				histogram_add(hist, riscv_insn_name[dec.op]);
+			}
+			if (regs_histogram) {
+				const char *fmt = riscv_insn_format[dec.op];
+				while (*fmt) {
+					switch (*fmt) {
+						case '0': histogram_add(hist, std::string("") + riscv_i_registers[dec.rd] + (regs_position ? "-rd" : "")); break;
+						case '1': histogram_add(hist, std::string("") + riscv_i_registers[dec.rs1] + (regs_position ? "-rs1" : "")); break;
+						case '2': histogram_add(hist, std::string("") + riscv_i_registers[dec.rs2] + (regs_position ? "-rs2" : "")); break;
+						case '3': histogram_add(hist, std::string("") + riscv_f_registers[dec.rd] + (regs_position ? "-frd" : "")); break;
+						case '4': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs1] + (regs_position ? "-frs1" : "")); break;
+						case '5': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs2] + (regs_position ? "-frs2" : "")); break;
+						case '6': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs3] + (regs_position ? "-frs3" : "")); break;
+						default:
+							break;
+					}
+					fmt++;
+				}
+			}
 			pc = next_pc;
 		}
 	}
@@ -92,7 +119,7 @@ struct riscv_histogram_elf
 		size_t i = 0;
 		for (auto ent : hist_s) {
 			printf("%5lu. %-10s[%-6lu]%s%s%s\n",
-				++i, riscv_insn_name[ent.first], ent.second,
+				++i, ent.first.c_str(), ent.second,
 				hash_bars ? " " : "",
 				hash_bars ? use_char.c_str() : "",
 				hash_bars ? repeat_str(use_char, ent.second * (max_chars - 1) / max).c_str() : "");
@@ -112,6 +139,15 @@ struct riscv_histogram_elf
 			{ "-b", "--bars", cmdline_arg_type_none,
 				"Print bars next to counts",
 				[&](std::string s) { return (hash_bars = true); } },
+			{ "-I", "--instructions", cmdline_arg_type_none,
+				"Instruction Usage Histogram",
+				[&](std::string s) { return (insn_histogram = true); } },
+			{ "-R", "--registers", cmdline_arg_type_none,
+				"Register Usage Histogram",
+				[&](std::string s) { return (regs_histogram = true); } },
+			{ "-P", "--registers-operands", cmdline_arg_type_none,
+				"Register Usage Histogram (with operand positions)",
+				[&](std::string s) { return (regs_histogram = regs_position = true); } },
 			{ "-m", "--max-chars", cmdline_arg_type_string,
 				"Maximum number of characters for bars",
 				[&](std::string s) { return (max_chars = strtoull(s.c_str(), nullptr, 10)); } },
@@ -124,7 +160,7 @@ struct riscv_histogram_elf
 		auto result = cmdline_option::process_options(options, argc, argv);
 		if (!result.second) {
 			help_or_error = true;
-		} else if (result.first.size() != 1) {
+		} else if (result.first.size() != 1 || !(insn_histogram || regs_histogram)) {
 			printf("%s: wrong number of arguments\n", argv[0]);
 			help_or_error = true;
 		}
