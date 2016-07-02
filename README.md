@@ -38,9 +38,13 @@ The future goals of the RISC-V Meta project are:
 
 ![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-2.png)
 
-*Example Histogram from riscv-histogram-elf*
+*Example Instructions Histogram from riscv-histogram-elf*
 
-![RISC-V disassembly screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-3.png)
+![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-3.png)
+
+*Example Registers Histogram from riscv-histogram-elf*
+
+![RISC-V disassembly screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-4.png)
 
 *Example Disassembly output from riscv-parse-elf*
 
@@ -256,6 +260,9 @@ usage: riscv-histogram-elf [<options>] <elf_file>
                         --help, -h            Show help
                         --char, -c <string>   Character to use in bars
                         --bars, -b            Print bars next to counts
+                --instructions, -I            Instruction Usage Histogram
+                   --registers, -R            Register Usage Histogram
+          --registers-operands, -P            Register Usage Histogram (with operand positions)
                    --max-chars, -m <string>   Maximum number of characters for bars
                 --reverse-sort, -r            Sort in Reverse
 ```
