@@ -61,7 +61,7 @@ struct riscv_histogram_elf
 		uintptr_t pc = start, next_pc;
 		while (pc < end) {
 			uint64_t insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_rv64(dec, insn);
+			riscv_decode_insn_rv64(dec, insn);
 			if (insn_histogram) {
 				histogram_add(hist, riscv_insn_name[dec.op]);
 			}

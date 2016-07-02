@@ -31,7 +31,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
 	uintptr_t next_pc;
 	uint64_t insn = riscv_get_insn(proc->pc, &next_pc);
-	riscv_decode_rv64(dec, insn);
+	riscv_decode_insn_rv64(dec, insn);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu.val = proc->i_reg[dec.rs1].lu.val + dec.imm;

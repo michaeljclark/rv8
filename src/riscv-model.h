@@ -157,7 +157,7 @@ struct riscv_extension
 {
 	std::string name;
 	std::string prefix;
-	ssize_t isa_width;
+	size_t isa_width;
 	char alpha_code;
 	ssize_t insn_width;
 	std::string description;
@@ -314,6 +314,7 @@ struct riscv_meta_model
 	static std::vector<std::string> parse_line(std::string line);
 	static std::vector<std::vector<std::string>> read_file(std::string filename);
 
+	std::vector<std::pair<size_t,std::string>> isa_width_prefixes();
 	riscv_extension_list decode_isa_extensions(std::string isa_spec);
 	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
 	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);

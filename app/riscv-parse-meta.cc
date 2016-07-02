@@ -901,8 +901,12 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	printf("\textern const uint64_t riscv_insn_match[];\n");
 	printf("\textern const uint64_t riscv_insn_mask[];\n");
 	printf("\textern const char* riscv_insn_format[];\n");
-	printf("\textern const riscv_comp_data* riscv_insn_comp[];\n");
-	printf("\textern const int riscv_insn_decomp[];\n");
+	for (auto isa_width : isa_width_prefixes()) {
+		printf("\textern const riscv_comp_data* riscv_insn_comp_%s[];\n",
+			isa_width.second.c_str());
+		printf("\textern const int riscv_insn_decomp_%s[];\n",
+			isa_width.second.c_str());
+	}
 	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
@@ -1015,53 +1019,78 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("\n");
 
 	// Compression data
-	for (auto &opcode : opcodes) {
-		if (opcode->compressions.size() == 0) continue;
-		std::string op_constraint_data = "rvcd_" + opcode_format("", opcode, "_") + "[] =";
-		printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
-		for (auto comp : opcode->compressions) {
-			if (opcode->extensions.size() == 1 && comp->comp_opcode->extensions.size() == 1 &&
-				opcode->extensions[0]->isa_width != comp->comp_opcode->extensions[0]->isa_width) continue;
-			printf("{ %s, %s }, ",
-				(zero_not_oh ?
-					format_string("%lu", comp->comp_opcode->num).c_str() :
-					opcode_format("riscv_op_", comp->comp_opcode, "_").c_str()),
-				opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
+	std::set<std::string> rvcd_set;
+	for (auto isa_width : isa_width_prefixes()) {
+		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
+		for (auto &opcode : opcodes) {
+			riscv_compressed_list include_compressions;
+			for (auto comp : opcode->compressions) {
+				bool include_isa = false;
+				for (auto &ext_a : comp->comp_opcode->extensions) {
+					if (ext_a->isa_width != isa_width.first) continue;
+					for (auto &ext_b : opcode->extensions) {
+						if (ext_b->isa_width != isa_width.first) continue;
+						include_isa = true;
+					}
+				}
+				if (include_isa) include_compressions.push_back(comp);
+			}
+			if (include_compressions.size() == 0) continue;
+			std::string rvcd_name = opcode_format(isa_prefix, opcode, "_");
+			rvcd_set.insert(rvcd_name);
+			std::string op_constraint_data = rvcd_name + "[] =";
+			printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
+			for (auto &comp : include_compressions) {
+				printf("{ %s, %s }, ",
+					(zero_not_oh ?
+						format_string("%lu", comp->comp_opcode->num).c_str() :
+						opcode_format("riscv_op_", comp->comp_opcode, "_").c_str()),
+					opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
+			}
+			printf("{ riscv_op_unknown, nullptr } };\n");
 		}
-		printf("{ riscv_op_unknown, nullptr } };\n");
+		printf("\n");
 	}
-	printf("\n");
 
-	// RVC compression table
-	printf("const riscv_comp_data* riscv_insn_comp[] = {\n");
-	print_array_unknown_enum("nullptr", no_comment);
-	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, ".");
-		std::string opcode_data = opcode_format("rvcd_", opcode, "_");
-		std::string opcode_constraint = "nullptr";
-		printf("\t%s%s,\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			opcode->compressions.size() > 0 ? opcode_data.c_str() : "nullptr");
+	// RVC compression table (per isa width)
+	for (auto isa_width : isa_width_prefixes()) {
+		printf("const riscv_comp_data* riscv_insn_comp_%s[] = {\n", isa_width.second.c_str());
+		print_array_unknown_enum("nullptr", no_comment);
+		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
+		for (auto &opcode : opcodes) {
+			std::string opcode_key = opcode_format("", opcode, ".");
+			std::string rvcd_name = opcode_format(isa_prefix, opcode, "_");
+			bool include_isa = rvcd_set.find(rvcd_name) != rvcd_set.end();
+			printf("\t%s%s,\n",
+				opcode_comment(opcode, no_comment).c_str(),
+				include_isa && opcode->compressions.size() > 0 ? rvcd_name.c_str() : "nullptr");
+		}
+		printf("};\n\n");
 	}
-	printf("};\n\n");
 
 	// RVC decompression table
-	printf("const int riscv_insn_decomp[] = {\n");
-	if (zero_not_oh) print_array_unknown_enum("0", no_comment);
-	else print_array_unknown_enum("riscv_op_unknown", no_comment);
-	for (auto &opcode : opcodes) {
-		std::string opcode_key = opcode_format("", opcode, ".");
-		printf("\t%s%s,\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			opcode->compressed ?
-				(zero_not_oh ?
-					format_string("%lu", opcode->compressed->decomp_opcode->num).c_str() :
-					opcode_format("riscv_op_", opcode->compressed->decomp_opcode, "_").c_str()) :
-				(zero_not_oh ?
-					"0" :
-					"riscv_op_unknown"));
+	for (auto isa_width : isa_width_prefixes()) {
+		printf("const int riscv_insn_decomp_%s[] = {\n", isa_width.second.c_str());
+		if (zero_not_oh) print_array_unknown_enum("0", no_comment);
+		else print_array_unknown_enum("riscv_op_unknown", no_comment);
+		for (auto &opcode : opcodes) {
+			bool include_isa = false;
+			for (auto &ext : opcode->extensions) {
+				if (ext->isa_width == isa_width.first) include_isa = true;
+			}
+			std::string opcode_key = opcode_format("", opcode, ".");
+			printf("\t%s%s,\n",
+				opcode_comment(opcode, no_comment).c_str(),
+				include_isa && opcode->compressed ?
+					(zero_not_oh ?
+						format_string("%lu", opcode->compressed->decomp_opcode->num).c_str() :
+						opcode_format("riscv_op_", opcode->compressed->decomp_opcode, "_").c_str()) :
+					(zero_not_oh ?
+						"0" :
+						"riscv_op_unknown"));
+		}
+		printf("};\n\n");
 	}
-	printf("};\n\n");
 }
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
@@ -1095,7 +1124,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline uint64_t riscv_decode_op(uint64_t insn)\n");
+	printf("inline uint64_t riscv_decode_insn_op(uint64_t insn)\n");
 	printf("{\n");
 	printf("\tuint64_t op = riscv_op_unknown;\n");
 	print_switch_decoder_node(root_node, 1);
@@ -1105,7 +1134,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	// print type decoder
 	printf("/* Decode Instruction Type */\n\n");
 	printf("template <typename T>\n");
-	printf("inline void riscv_decode_type(T &dec, uint64_t insn)\n");
+	printf("inline void riscv_decode_insn_type(T &dec, uint64_t insn)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");

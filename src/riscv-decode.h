@@ -5,7 +5,56 @@
 #ifndef riscv_decode_h
 #define riscv_decode_h
 
-/* Decoded Instruction */
+/*
+ *
+ * Get instruction length
+ * ======================
+ * Returns the instruction length, either 2, 4, 6 or 8 bytes.
+ *
+ *   inline size_t riscv_insn_length(uint64_t insn)
+ *
+ * Decoding instructions
+ * =====================
+ * The decode functions decode the instruction passed as an argument in to
+ * struct riscv_decode using: op, codec, imm, rd, rs1, rs2, etc. 
+ * The encode function only depends on the fields in riscv_decode.
+ *
+ *   template <typename T> inline void riscv_decode_insn_rv32(T &dec, uint64_t insn)
+ *   template <typename T> inline void riscv_decode_insn_rv64(T &dec, uint64_t insn)
+ *
+ * Encoding instructions
+ * =====================
+ * The encode function encodes the operands in struct riscv_decode using:
+ * op, imm, rd, rs1, rs2, etc. The encode function only depends on 
+ * riscv_decode fields and it is up to the caller to save the instruction.
+ * Returns the encoded instruction.
+ *
+ *   template <typename T> inline uint64_t riscv_encode_insn(T &dec)
+ *
+ * Decompressing instructions
+ * ==========================
+ * The decompress functions work on an already decoded instruction and
+ * they just set the op and codec field if the instruction is compressed.
+ *
+ *   template <typename T> inline void riscv_decompress_insn_rv32(T &dec)
+ *   template <typename T> inline void riscv_decompress_insn_rv64(T &dec)
+ *
+ * Compressing instructions
+ * ========================
+ * The compress functions work on an already decoded instruction and
+ * they just set the op and codec field if the instruction is compressed.
+ * Returns false if the instruction cannot be compressed.
+ *
+ *   template <typename T> inline bool riscv_compress_insn_rv32(T &dec)
+ *   template <typename T> inline bool riscv_compress_insn_rv64(T &dec)
+ *
+ */
+
+/*
+ * Decoded Instruction
+ *
+ * Structure that contains instruction decode information.
+ */
 
 struct riscv_decode
 {
@@ -25,7 +74,12 @@ struct riscv_decode
 		: imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pad(0) {}
 };
 
-/* Disassembled Instruction */
+/*
+ * Disassembled Instruction
+ *
+ * Structure used by the disassembler that extends a decoded instruction
+ * with program counter, the instruction data and a decoded address.
+ */
 
 struct riscv_disasm : riscv_decode
 {
@@ -784,7 +838,7 @@ inline uint64_t riscv_encode_uj(T &dec)
 
 /* Instruction Length */
 
-inline size_t riscv_get_insn_length(uint64_t insn)
+inline size_t riscv_insn_length(uint64_t insn)
 {
 	// instruction length coding
 
@@ -825,9 +879,19 @@ inline uint64_t riscv_get_insn(uintptr_t pc, uintptr_t *next_pc = nullptr)
 /* Decompress Instruction */
 
 template <typename T>
-inline void riscv_decode_decompress(T &dec)
+inline void riscv_decompress_insn_rv32(T &dec)
 {
-    int decomp_op = riscv_insn_decomp[dec.op];
+    int decomp_op = riscv_insn_decomp_rv32[dec.op];
+    if (decomp_op != riscv_op_unknown) {
+        dec.op = decomp_op;
+        dec.codec = riscv_insn_codec[decomp_op];
+    }
+}
+
+template <typename T>
+inline void riscv_decompress_insn_rv64(T &dec)
+{
+    int decomp_op = riscv_insn_decomp_rv64[dec.op];
     if (decomp_op != riscv_op_unknown) {
         dec.op = decomp_op;
         dec.codec = riscv_insn_codec[decomp_op];
@@ -839,21 +903,22 @@ inline void riscv_decode_decompress(T &dec)
 template <typename T, bool rv32, bool rv64, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
 inline void riscv_decode_insn(T &dec, uint64_t insn)
 {
-	dec.op = riscv_decode_op<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(insn);
-	riscv_decode_type<T>(dec, insn);
-	riscv_decode_decompress<T>(dec);
+	dec.op = riscv_decode_insn_op<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(insn);
+	riscv_decode_insn_type<T>(dec, insn);
 }
 
 template <typename T>
-inline void riscv_decode_rv32(T &dec, uint64_t insn)
+inline void riscv_decode_insn_rv32(T &dec, uint64_t insn)
 {
 	riscv_decode_insn<T,true,false>(dec, insn);
+	riscv_decompress_insn_rv32<T>(dec);
 }
 
 template <typename T>
-inline void riscv_decode_rv64(T &dec, uint64_t insn)
+inline void riscv_decode_insn_rv64(T &dec, uint64_t insn)
 {
 	riscv_decode_insn<T,false,true>(dec, insn);
+	riscv_decompress_insn_rv64<T>(dec);
 }
 
 /* Compression Constraints */
@@ -901,9 +966,9 @@ inline bool riscv_compress_check(T &dec, const rvc_constraint *c)
 /* Compress Instruction */
 
 template <typename T>
-inline bool riscv_compress_insn(T &dec)
+inline bool riscv_compress_insn_rv32(T &dec)
 {
-	const riscv_comp_data *comp_data = riscv_insn_comp[dec.op];
+	const riscv_comp_data *comp_data = riscv_insn_comp_rv32[dec.op];
 	if (!comp_data) return false;
 	while (comp_data->constraints) {
 		if (riscv_compress_check(dec, comp_data->constraints)) {
@@ -916,4 +981,19 @@ inline bool riscv_compress_insn(T &dec)
 	return false;
 }
 
+template <typename T>
+inline bool riscv_compress_insn_rv64(T &dec)
+{
+	const riscv_comp_data *comp_data = riscv_insn_comp_rv64[dec.op];
+	if (!comp_data) return false;
+	while (comp_data->constraints) {
+		if (riscv_compress_check(dec, comp_data->constraints)) {
+			dec.op = comp_data->op;
+			dec.codec = riscv_insn_codec[dec.op];
+			return true;
+		}
+		comp_data++;
+	}
+	return false;
+}
 #endif

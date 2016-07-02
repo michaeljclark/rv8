@@ -58,6 +58,7 @@ enum riscv_intr
 enum rvc_constraint
 {
 	rvc_end,
+	rvc_simm_6,
 	rvc_imm_6,
 	rvc_imm_7,
 	rvc_imm_8,
@@ -578,8 +579,10 @@ extern "C" {
 	extern const uint64_t riscv_insn_match[];
 	extern const uint64_t riscv_insn_mask[];
 	extern const char* riscv_insn_format[];
-	extern const riscv_comp_data* riscv_insn_comp[];
-	extern const int riscv_insn_decomp[];
+	extern const riscv_comp_data* riscv_insn_comp_rv32[];
+	extern const int riscv_insn_decomp_rv32[];
+	extern const riscv_comp_data* riscv_insn_comp_rv64[];
+	extern const int riscv_insn_decomp_rv64[];
 }
 
 #endif

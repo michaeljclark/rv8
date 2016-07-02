@@ -421,6 +421,18 @@ std::vector<std::vector<std::string>> riscv_meta_model::read_file(std::string fi
 	return data;
 }
 
+std::vector<std::pair<size_t,std::string>> riscv_meta_model::isa_width_prefixes()
+{
+	std::vector<std::pair<size_t,std::string>> widths;
+	for (auto &extension : extensions) {
+		auto width = std::pair<size_t,std::string>(extension->isa_width,
+			extension->prefix + std::to_string(extension->isa_width));
+		if (std::find(widths.begin(), widths.end(), width) == widths.end()) {
+			widths.push_back(width);
+		}
+	}
+	return widths;
+}
 
 riscv_extension_list riscv_meta_model::decode_isa_extensions(std::string isa_spec)
 {

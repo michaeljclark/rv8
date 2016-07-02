@@ -113,7 +113,7 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	print_pad(offset, 24);
 
 	// print instruction bytes
-	switch (riscv_get_insn_length(dec.insn)) {
+	switch (riscv_insn_length(dec.insn)) {
 		case 2: print_fmt(offset, "%04llx", dec.insn); break;
 		case 4: print_fmt(offset, "%08llx", dec.insn); break;
 		case 6: print_fmt(offset, "%012llx", dec.insn); break;

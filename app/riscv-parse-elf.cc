@@ -110,8 +110,8 @@ struct riscv_parse_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_rv64(dec, dec.insn);
-			riscv_decode_decompress(dec);
+			riscv_decode_insn_rv64(dec, dec.insn);
+			riscv_decompress_insn_rv64(dec);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
@@ -147,7 +147,7 @@ struct riscv_parse_elf
 		while (pc < end) {
 			dec.pc = pc;
 			dec.insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_rv64(dec, dec.insn);
+			riscv_decode_insn_rv64(dec, dec.insn);
 			riscv_disasm_insn(dec, dec_hist, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));

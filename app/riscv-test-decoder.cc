@@ -923,7 +923,7 @@ void decode_meta(uintptr_t start, uintptr_t end, const char *code)
 	for (size_t i = 0; i < count; i++) {
 		uintptr_t pc = start;
 		while (pc < end) {
-			riscv_decode_op<false, true, true, true, true, true, true, true, true>(riscv_get_insn(pc, &pc));
+			riscv_decode_insn_op<false, true, true, true, true, true, true, true, true>(riscv_get_insn(pc, &pc));
 			decoded++;
 		}
 	}
