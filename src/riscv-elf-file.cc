@@ -501,15 +501,15 @@ elf_section* elf_file::section(size_t offset)
 	return nullptr;
 }
 
-const char* elf_file::shdr_name(int i)
+const char* elf_file::shdr_name(size_t i)
 {
-	return shstrtab == 0 ? "" :
+	return shstrtab == 0 || i >= shdrs.size() ? "" :
 		(const char*)offset(shdrs[shstrtab].sh_offset + shdrs[i].sh_name);
 }
 
-const char* elf_file::sym_name(int i)
+const char* elf_file::sym_name(size_t i)
 {
-	return strtab == 0 ? "" :
+	return strtab == 0 || i >= symbols.size() ? "" :
 		(const char*)offset(shdrs[strtab].sh_offset + symbols[i].st_name);
 }
 
@@ -540,6 +540,14 @@ const Elf64_Sym* elf_file::sym_by_name(const char *name)
 	size_t i = name_symbol_map[name];
 	if (i == 0 || i >= symbols.size()) return nullptr;
 	return &symbols[i];
+}
+
+const size_t elf_file::section_offset_by_type(Elf64_Word sh_type)
+{
+	for (size_t i = 0; i < shdrs.size(); i++) {
+		if (shdrs[i].sh_type == sh_type) return i;
+	}
+	return 0;
 }
 
 void elf_file::update_sym_addr(Elf64_Addr old_addr, Elf64_Addr new_addr)

@@ -49,12 +49,13 @@ struct elf_file
 	uint8_t* offset(size_t offset);
 	elf_section* section(size_t offset);
 
-	const char* shdr_name(int i);
-	const char* sym_name(int i);
+	const char* shdr_name(size_t i);
+	const char* sym_name(size_t i);
 	const char* sym_name(const Elf64_Sym *sym);
 	const Elf64_Sym* sym_by_nearest_addr(Elf64_Addr addr);
 	const Elf64_Sym* sym_by_addr(Elf64_Addr addr);
 	const Elf64_Sym* sym_by_name(const char *name);
+	const size_t section_offset_by_type(Elf64_Word sh_type);
 
 	void update_sym_addr(Elf64_Addr old_addr, Elf64_Addr new_addr);
 };

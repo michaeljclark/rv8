@@ -54,10 +54,12 @@ struct riscv_compress_elf
 	std::string filename;
 	std::string output_filename;
 	std::map<uintptr_t,uint32_t> continuations;
+	std::map<uintptr_t,uintptr_t> relocations;
 	ssize_t continuation_num = 1;
 
 	bool do_print_disassembly = false;
 	bool do_print_continuations = false;
+	bool do_print_relocations = false;
 	bool do_compress = false;
 	bool do_decompress = false;
 	bool help_or_error = false;
@@ -401,6 +403,7 @@ struct riscv_compress_elf
 			if (bi != bin.begin()) {
 				uintptr_t new_pc = (bi-1)->pc + riscv_get_insn_length((bi-1)->insn);
 				elf.update_sym_addr(dec.pc, new_pc);
+				relocations[dec.pc] = new_pc;
 				auto ci = continuations.find(dec.pc);
 				dec.pc = new_pc;
 				if (ci != continuations.end()) {
@@ -514,8 +517,26 @@ struct riscv_compress_elf
 		}
 	}
 
+	void relocate_section_array(int sh_type)
+	{
+		size_t shdr_idx = elf.section_offset_by_type(sh_type);
+		if (shdr_idx == 0) return;
+		Elf64_Shdr &shdr = elf.shdrs[shdr_idx];
+		for (size_t i = 0; i < shdr.sh_size; i += sizeof(Elf64_Addr)) {
+			Elf64_Addr *addr = (Elf64_Addr*)elf.offset(shdr.sh_offset + i);
+			if (addr == nullptr) continue;
+			auto ri = relocations.find(*addr);
+			if (ri == relocations.end()) continue;
+			if (do_print_relocations) {
+				debug("relocate section %s: 0x%016tx -> 0x%016tx", elf.shdr_name(shdr_idx), *addr, ri->second);
+			}
+			*addr = ri->second;
+		}
+	}
+
 	void compress()
 	{
+		ssize_t bytes = 0, saving = 0;
 		const Elf64_Sym *gp_sym = elf.sym_by_name("_gp");
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
@@ -530,15 +551,10 @@ struct riscv_compress_elf
 				relocate(bin, offset, offset + shdr.sh_size);
 
 				// TODO - initial prototype pads text section with nop (addi x0,x0,0)
+				//      - relocate doesn't relocate absolute references.
+				//      - relocate may need to scan data segment for code pointers.
+
 				pad_with_nops(bin, res.second); /* res.second = saving */
-
-				// TODO - relocate doesn't yet handle relocation of insn pairs or
-				//        load and store offsets outside the executable section due
-				//        shrinkage of the executable section.
-				//      - relocate doesn't yet update debug symbols which will cause
-				//        incorrect dissambly
-				//      - relocate may need to scan data segment for function pointers.
-
 				reassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 
 				if (do_print_continuations) {
@@ -551,11 +567,16 @@ struct riscv_compress_elf
 					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
-				ssize_t bytes = res.first, saving = res.second;
-				debug("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)   // TODO - Relocate and save",
-					bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
+				bytes += res.first;
+				saving += res.second;
 			}
 		}
+
+		relocate_section_array(SHT_INIT_ARRAY);
+		relocate_section_array(SHT_FINI_ARRAY);
+
+		debug("\nStats: before: %lu after: %lu saving: %lu (%5.2f %%)",
+			bytes + saving, bytes, saving, (1.0f - (float)(bytes) / (float)(bytes + saving)) * 100.0f);
 	}
 
 	void parse_commandline(int argc, const char *argv[])
@@ -568,6 +589,9 @@ struct riscv_compress_elf
 			{ "-y", "-print-continuations", cmdline_arg_type_none,
 				"Print Continuations",
 				[&](std::string s) { return (do_print_continuations = true); } },
+			{ "-r", "-print-relocations", cmdline_arg_type_none,
+				"Print Relocations",
+				[&](std::string s) { return (do_print_relocations = true); } },
 			{ "-c", "--compress", cmdline_arg_type_none,
 				"Compress",
 				[&](std::string s) { return (do_compress = true); } },
