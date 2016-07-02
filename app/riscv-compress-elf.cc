@@ -437,9 +437,9 @@ struct riscv_compress_elf
 				auto rbi = bi;
 				if (dec.label_branch) dec.addr = label_addr[dec.label_branch]; // points to code
 				while (rbi->label_target != dec.label_pair) rbi--; // find first insn
-				dec.imm = sign_extend<int64_t,12>(ptrdiff_t(dec.addr - rbi->pc));
-				rbi->imm = sign_extend<int64_t,32>(ptrdiff_t(dec.addr - rbi->pc) & 0xfffff000);
-				if (ptrdiff_t(dec.imm + rbi->imm + rbi->pc) < ptrdiff_t(dec.addr)) rbi->imm += 0x1000;
+				dec.imm = sign_extend<int64_t,12>(intptr_t(dec.addr - rbi->pc));
+				rbi->imm = sign_extend<int64_t,32>(intptr_t(dec.addr - rbi->pc) & 0xfffff000);
+				if (intptr_t(dec.imm + rbi->imm + rbi->pc) < intptr_t(dec.addr)) rbi->imm += 0x1000;
 				if (dec.imm + rbi->imm + rbi->pc != dec.addr) {
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
