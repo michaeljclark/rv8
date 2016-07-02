@@ -55,6 +55,8 @@ struct elf_file
 	const Elf64_Sym* sym_by_nearest_addr(Elf64_Addr addr);
 	const Elf64_Sym* sym_by_addr(Elf64_Addr addr);
 	const Elf64_Sym* sym_by_name(const char *name);
+
+	void update_sym_addr(Elf64_Addr old_addr, Elf64_Addr new_addr);
 };
 
 #endif

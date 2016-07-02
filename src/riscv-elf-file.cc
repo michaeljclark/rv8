@@ -541,3 +541,13 @@ const Elf64_Sym* elf_file::sym_by_name(const char *name)
 	if (i == 0 || i >= symbols.size()) return nullptr;
 	return &symbols[i];
 }
+
+void elf_file::update_sym_addr(Elf64_Addr old_addr, Elf64_Addr new_addr)
+{
+	if (old_addr == new_addr) return;
+	auto ai = addr_symbol_map.find(old_addr);
+	if (ai == addr_symbol_map.end()) return;
+	addr_symbol_map.erase(ai);
+	symbols[ai->second].st_value = new_addr;
+	addr_symbol_map[new_addr] = ai->second;
+}

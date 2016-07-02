@@ -23,6 +23,7 @@
 #include "riscv-meta.h"
 #include "riscv-jit.h"
 #include "riscv-util.h"
+#include "riscv-csr.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 #include "riscv-decode.h"
@@ -35,15 +36,15 @@ using namespace riscv;
 
 struct riscv_asm : riscv_disasm
 {
-	uint32_t  label_in;      /* target label for this insn */
-	uint32_t  label_br;      /* branch, jump or jump and link  */
-	uint32_t  label_pr;      /* link to first instruction in pair */
-	uint32_t  label_co;      /* continuation after jump */
+	uint32_t  label_target;  /* label target for this instruction */
+	uint32_t  label_pair;    /* target of first instruction in pair */
+	uint32_t  label_branch;  /* target of jump, jump and link or branch  */
+	uint32_t  label_cont;    /* target of continuation after a jump or jump and link */
 	uint32_t  is_abs   : 1;  /* absolute address present */
 	uint32_t  is_pcrel : 1;  /* pc relative address present */
 	uint32_t  is_gprel : 1;  /* gp relative address present */
 
-	riscv_asm() : riscv_disasm(), label_in(0), label_br(0), label_pr(0), label_co(0),
+	riscv_asm() : riscv_disasm(), label_target(0), label_pair(0), label_branch(0), label_cont(0),
 		is_abs(0), is_pcrel(0), is_gprel(0) {}
 };
 
@@ -99,16 +100,84 @@ struct riscv_compress_elf
 		return nullptr;
 	}
 
+	void print_continuation_disassembly_header()
+	{
+		debug("\n%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s",
+			"program counter",
+			"target",
+			"pair",
+			"cont",
+			"branch",
+			"instruction",
+			"operands",
+			"address",
+			"flags"
+		);
+		debug("%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s\n",
+			"==================",
+			"======",
+			"======",
+			"======",
+			"======",
+			"===========",
+			"=================",
+			"==================",
+			"====="
+		);
+	}
+
 	template <typename T>
 	void print_continuation_disassembly(T &dec)
 	{
-		debug("0x%016tx %-9s %-9s %-9s %-9s %-20s %-20s %s%s%s",
+		std::string args;
+		const char *fmt = riscv_insn_format[dec.op];
+		while (*fmt) {
+			switch (*fmt) {
+				case 'O': args += riscv_insn_name[dec.op]; break;
+				case '(': args += "("; break;
+				case ',': args += ","; break;
+				case ')': args += ")"; break;
+				case '0': args += riscv_i_registers[dec.rd]; break;
+				case '1': args += riscv_i_registers[dec.rs1]; break;
+				case '2': args += riscv_i_registers[dec.rs2]; break;
+				case '3': args += riscv_f_registers[dec.rd]; break;
+				case '4': args += riscv_f_registers[dec.rs1]; break;
+				case '5': args += riscv_f_registers[dec.rs2]; break;
+				case '6': args += riscv_f_registers[dec.rs3]; break;
+				case '7': args += format_string("%d", dec.rs1); break;
+				case 'i': args += format_string("%lld", dec.imm); break;
+				case 'o': args += format_string("%lld", dec.imm); break;
+				case 'c': {
+					auto csr = riscv_lookup_csr_metadata(dec.imm);
+					if (csr) args += format_string("%s", csr->csr_name);
+					else args += format_string("%llu", dec.imm);
+					break;
+				}
+				case 'r':
+					switch(dec.rm) {
+						case riscv_rm_rne: args += "rne"; break;
+						case riscv_rm_rtz: args += "rtz"; break;
+						case riscv_rm_rdn: args += "rdn"; break;
+						case riscv_rm_rup: args += "rup"; break;
+						case riscv_rm_rmm: args += "rmm"; break;
+						default:           args += "unk"; break;
+					}
+					break;
+				case '\t': while (args.length() < 12) args += " "; break;
+				case 'A': if (dec.aq) args += ".aq"; break;
+				case 'R': if (dec.rl) args += ".rl"; break;
+				default:
+					break;
+			}
+			fmt++;
+		}
+		debug("0x%016tx %-7s%-7s%-7s%-7s%-30s%-18s %s%s%s",
 			dec.pc,
-			dec.label_in ? format_string("loc_%u", dec.label_in).c_str() : "",
-			dec.label_co ? format_string("cont_%u", dec.label_co).c_str() : "",
-			dec.label_pr ? format_string("pair_%u", dec.label_pr).c_str() : "",
-			dec.label_br ? format_string("bra_%u", dec.label_br).c_str() : "",
-			riscv_insn_name[dec.op],
+			dec.label_target ? format_string("%u", dec.label_target).c_str() : "",
+			dec.label_pair ? format_string("%u", dec.label_pair).c_str() : "",
+			dec.label_cont ? format_string("%u", dec.label_cont).c_str() : "",
+			dec.label_branch ? format_string("%u", dec.label_branch).c_str() : "",
+			args.c_str(),
 			(dec.is_abs || dec.is_pcrel || dec.is_gprel) ? format_string("0x%016tx", dec.addr).c_str() : "",
 			dec.is_abs ? "abs" : "",
 			dec.is_pcrel ? "pc" : "",
@@ -118,7 +187,7 @@ struct riscv_compress_elf
 
 	// decode address using instruction pair constraints and label continuations for jump and link register
 	template <typename T>
-	bool deocde_pair(T &dec, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend, std::deque<T> &dec_hist)
+	bool deocde_pair(T &dec, uintptr_t start, uintptr_t end, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend, std::deque<T> &dec_hist)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -136,7 +205,13 @@ struct riscv_compress_elf
 							if (ci == continuations.end()) {
 								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
 							}
-							dec.label_pr = ci->second;
+							dec.label_pair = ci->second;
+							if (dec.addr >= start && dec.addr < end) {
+								ci = continuations.find(dec.addr);
+								if (ci == continuations.end()) {
+									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+								}
+							}
 							return true;
 						}
 						case rva_pcrel:
@@ -148,21 +223,23 @@ struct riscv_compress_elf
 							if (ci == continuations.end()) {
 								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
 							}
-							dec.label_pr = ci->second;
+							dec.label_pair = ci->second;
 							if (dec.op == riscv_op_jalr) {
-								auto ci = continuations.find(dec.addr);
-								if (ci == continuations.end()) {
-									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-								}
-								dec.label_br = ci->second;
 								if (bi + 1 != bend) {
 									uint64_t cont_addr = (bi + 1)->pc;
 									auto ci = continuations.find(cont_addr);
 									if (ci == continuations.end()) {
 										ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
 									}
-									dec.label_co = ci->second;
+									dec.label_cont = ci->second;
 								}
+							}
+							if (dec.addr >= start && dec.addr < end) {
+								ci = continuations.find(dec.addr);
+								if (ci == continuations.end()) {
+									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+								}
+								dec.label_branch = ci->second;
 							}
 							return true;
 						}
@@ -180,18 +257,20 @@ struct riscv_compress_elf
 
 	// decode address for branches and label jumps and continuations for jump and link
 	template <typename T>
-	bool deocde_jumps(T &dec, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend)
+	bool deocde_jumps(T &dec, uintptr_t start, uintptr_t end, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend)
 	{
 		switch (dec.op) {
 			case riscv_op_jal:
 			{
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
-				auto ci = continuations.find(dec.addr);
-				if (ci == continuations.end()) {
-					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+				if (dec.addr >= start && dec.addr < end) {
+					auto ci = continuations.find(dec.addr);
+					if (ci == continuations.end()) {
+						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+					}
+					dec.label_branch = ci->second;
 				}
-				dec.label_br = ci->second;
 			}
 			case riscv_op_jalr:
 			{
@@ -201,7 +280,7 @@ struct riscv_compress_elf
 					if (ci == continuations.end()) {
 						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
 					}
-					dec.label_co = ci->second;
+					dec.label_cont = ci->second;
 				}
 				return true;
 			}
@@ -213,11 +292,13 @@ struct riscv_compress_elf
 			{
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
-				auto ci = continuations.find(dec.addr);
-				if (ci == continuations.end()) {
-					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+				if (dec.addr >= start && dec.addr < end) {
+					auto ci = continuations.find(dec.addr);
+					if (ci == continuations.end()) {
+						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
+					}
+					dec.label_branch = ci->second;
 				}
-				dec.label_br = ci->second;
 				return true;
 			}
 			default:
@@ -271,7 +352,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
+	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t gp)
 	{
 		std::deque<riscv_asm> dec_hist;
 
@@ -280,8 +361,8 @@ struct riscv_compress_elf
 
 			// decode address and label continuations
 			bool decoded_address = false;
-			if (!decoded_address) decoded_address = deocde_pair(dec, bi, bin.end(), dec_hist);
-			if (!decoded_address) decoded_address = deocde_jumps(dec, bi, bin.end());
+			if (!decoded_address) decoded_address = deocde_pair(dec, start, end, bi, bin.end(), dec_hist);
+			if (!decoded_address) decoded_address = deocde_jumps(dec, start, end, bi, bin.end());
 			if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
 
 			// clear instruction history on jump boundaries
@@ -302,13 +383,13 @@ struct riscv_compress_elf
 		}
 	}
 
-	void label_continuations(std::deque<riscv_asm> &bin)
+	void label_contntinuations(std::deque<riscv_asm> &bin)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			auto ci = continuations.find(dec.pc);
 			if (ci == continuations.end()) continue;
-			dec.label_in = ci->second;
+			dec.label_target = ci->second;
 		}
 	}
 
@@ -318,9 +399,10 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (bi != bin.begin()) {
-				// update address in continuation label map
+				uintptr_t new_pc = (bi-1)->pc + riscv_get_insn_length((bi-1)->insn);
+				elf.update_sym_addr(dec.pc, new_pc);
 				auto ci = continuations.find(dec.pc);
-				dec.pc = (bi-1)->pc + riscv_get_insn_length((bi-1)->insn);
+				dec.pc = new_pc;
 				if (ci != continuations.end()) {
 					continuations.erase(ci);
 					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
@@ -337,23 +419,33 @@ struct riscv_compress_elf
 		return std::pair<size_t,size_t>(bytes, saving);
 	}
 
-	void relocate(std::deque<riscv_asm> &bin)
+	void relocate(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end)
 	{
 		std::map<uint32_t,intptr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			if (dec.label_in == 0) continue;
-			label_addr[dec.label_in] = dec.pc;
+			if (dec.label_target == 0) continue;
+			label_addr[dec.label_target] = dec.pc;
 		}
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			if (!dec.is_pcrel) continue;
-			if (dec.addr == 0) continue;
-			if (dec.label_pr > 0) {
-				debug("warning: todo: unable to relocate insn pair: %d", dec.label_pr);
-				print_continuation_disassembly(dec);
-			} else if (dec.label_br) {
-				dec.imm = label_addr[dec.label_br] - intptr_t(dec.pc);
+			if (!dec.is_pcrel) continue; // NOTE: we don't currently relocate absolute references
+			if (dec.label_pair > 0) {
+				auto rbi = bi;
+				if (dec.label_branch) dec.addr = label_addr[dec.label_branch]; // points to code
+				while (rbi->label_target != dec.label_pair) rbi--; // find first insn
+				dec.imm = sign_extend<int64_t,12>(ptrdiff_t(dec.addr - rbi->pc));
+				rbi->imm = sign_extend<int64_t,32>(ptrdiff_t(dec.addr - rbi->pc) & 0xfffff000);
+				if (ptrdiff_t(dec.imm + rbi->imm + rbi->pc) < ptrdiff_t(dec.addr)) rbi->imm += 0x1000;
+				if (dec.imm + rbi->imm + rbi->pc != dec.addr) {
+					panic("unable to relocate instruction pair: %d", dec.label_pair);
+					print_continuation_disassembly(dec);
+				} else {
+					dec.insn = riscv_encode_insn(dec);
+					rbi->insn = riscv_encode_insn(*rbi);
+				}
+			} else if (dec.label_branch) {
+				dec.imm = label_addr[dec.label_branch] - intptr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
 				dec.insn = riscv_encode_insn(dec);
 			}
@@ -401,10 +493,13 @@ struct riscv_compress_elf
 
 	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
+		size_t line = 0;
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
+			if (line % 20 == 0) print_continuation_disassembly_header();
 			print_continuation_disassembly(dec);
+			line++;
 		}
 	}
 
@@ -429,10 +524,10 @@ struct riscv_compress_elf
 				std::deque<riscv_asm> bin;
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-				scan_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
-				label_continuations(bin);
+				scan_continuations(bin, shdr.sh_addr, shdr.sh_addr + shdr.sh_size, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+				label_contntinuations(bin);
 				auto res = compress(bin);
-				relocate(bin);
+				relocate(bin, offset, offset + shdr.sh_size);
 
 				// TODO - initial prototype pads text section with nop (addi x0,x0,0)
 				pad_with_nops(bin, res.second); /* res.second = saving */
