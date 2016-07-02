@@ -2,15 +2,17 @@
 # RISC-V Hello World
 #
 
-RISCV_TOOLCHAIN_ROOT = /opt/riscv/toolchain
-RISCV_TOOLCHAIN_PREFIX = riscv64-unknown-elf
+# Requires RISCV environment variable to be set
+# RISCV = /opt/riscv/toolchain
 
-CC = ${RISCV_TOOLCHAIN_ROOT}/bin/${RISCV_TOOLCHAIN_PREFIX}-gcc
-AS = ${RISCV_TOOLCHAIN_ROOT}/bin/${RISCV_TOOLCHAIN_PREFIX}-as
-LD = ${RISCV_TOOLCHAIN_ROOT}/bin/${RISCV_TOOLCHAIN_PREFIX}-ld
-STRIP = ${RISCV_TOOLCHAIN_ROOT}/bin/${RISCV_TOOLCHAIN_PREFIX}-strip
-SPIKE = ${RISCV_TOOLCHAIN_ROOT}/bin/riscv64-unknown-elf-ld
-PK = ${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}/bin/pk
+TARGET = riscv64-unknown-elf
+
+CC = ${RISCV}/bin/${TARGET}-gcc
+AS = ${RISCV}/bin/${TARGET}-as
+LD = ${RISCV}/bin/${TARGET}-ld
+STRIP = ${RISCV}/bin/${TARGET}-strip
+SPIKE = ${RISCV}/bin/spike
+PK = ${RISCV}/${TARGET}/bin/pk
 
 CFLAGS = -Os -Wall -fpie -ffunction-sections -fdata-sections
 
