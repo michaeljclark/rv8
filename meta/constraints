@@ -1,6 +1,7 @@
 # format of a line in this file:
 # <constraint name> <constraint expression> <hint>
 
+simm_6        "imm >= -32 && imm < 32"
 imm_6         "imm <= (imm & 0b111111)"
 imm_7         "imm <= (imm & 0b1111111)"
 imm_8         "imm <= (imm & 0b11111111)"

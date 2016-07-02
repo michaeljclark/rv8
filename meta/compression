@@ -14,7 +14,7 @@ c.fsd        fsd    imm_8  imm_x8        rs1_b3 rs2_b3
 c.sw         sw     imm_7  imm_x4        rs1_b3 rs2_b3
 c.fsw        fsw    imm_7  imm_x4        rs1_b3 rs2_b3
 c.nop        addi                        rd_eq_x0 rs1_eq_x0 rs2_eq_x0
-c.addi       addi   imm_6                rd_ne_x0 rd_eq_rs1
+c.addi       addi   simm_6               rd_ne_x0 rd_eq_rs1
 c.jal        jal    imm_12 imm_x2        rd_eq_ra
 c.li         addi   imm_6                rd_ne_x0 rs1_eq_x0
 c.lui        lui    imm_18 imm_nz        rd_ne_x0_x2

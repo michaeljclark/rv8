@@ -865,6 +865,7 @@ inline bool riscv_compress_check(T &dec, const rvc_constraint *c)
 	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
+			case rvc_simm_6:        if (!(imm >= -32ULL && imm < 32ULL)) return false; break;
 			case rvc_imm_6:         if (!(imm <= (imm & 0b111111))) return false; break;
 			case rvc_imm_7:         if (!(imm <= (imm & 0b1111111))) return false; break;
 			case rvc_imm_8:         if (!(imm <= (imm & 0b11111111))) return false; break;
