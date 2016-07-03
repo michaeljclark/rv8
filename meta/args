@@ -12,7 +12,7 @@
 #
 # when [scatter] is ommitted, bits are right justified from bit 0
 #
-# type is one of ireg, freg, creg, arg, simm, uimm
+# type is one of arg, creg, ireg, freg, offset, simm, uimm
 #
 # color is one of none, black, red, green, yellow, blue, magenta, cyan, white
 
