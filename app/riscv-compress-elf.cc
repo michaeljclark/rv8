@@ -76,8 +76,8 @@ struct riscv_compress_elf
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
 		auto bli = continuations.find(addr);
 		if (sym && bli != continuations.end()) {
-				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"LOC_%06" PRIu32 ":<%s>", bli->second, elf.sym_name(sym));
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+				"LOC_%06" PRIu32 ":<%s>", bli->second, elf.sym_name(sym));
 			return symbol_tmpname;
 		}
 		if (sym) {

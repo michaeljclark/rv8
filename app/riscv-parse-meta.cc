@@ -876,6 +876,29 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
+	// Instruction argument name enum
+	printf("enum riscv_arg_name\n{\n");
+	printf("\triscv_arg_name_none,\n");
+	for (auto &arg : args) {
+		printf("\triscv_arg_name_%s,\n", arg->name.c_str());
+	}
+	printf("};\n\n");
+
+	// instruction argument type enum
+	std::vector<std::string> arg_types;
+	for (auto &arg : args) {
+		auto type_name = format_type(arg);
+		if (std::find(arg_types.begin(), arg_types.end(), type_name) == arg_types.end()) {
+			arg_types.push_back(type_name);
+		}
+	}
+	printf("enum riscv_arg_type\n{\n");
+	printf("\triscv_arg_type_none,\n");
+	for (auto &arg_type : arg_types) {
+		printf("\triscv_arg_type_%s,\n", arg_type.c_str());
+	}
+	printf("};\n\n");
+
 	// Instruction opcode enum
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_unknown = 0,\n");
@@ -890,6 +913,14 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	printf("struct riscv_comp_data\n{\n");
 	printf("\tconst int op;\n");
 	printf("\tconst rvc_constraint* constraints;\n");
+	printf("};\n\n");
+
+	// Instruction arg structure
+	printf("struct riscv_arg_data\n{\n");
+	printf("\tconst riscv_arg_name arg_name;\n");
+	printf("\tconst riscv_arg_type arg_type;\n");
+	printf("\tconst riscv_type type;\n");
+	printf("\tconst unsigned int width;\n");
 	printf("};\n\n");
 
 	// C interfaces
@@ -907,6 +938,9 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 		printf("\textern const int riscv_insn_decomp_%s[];\n",
 			isa_width.second.c_str());
 	}
+	printf("\textern const char* riscv_arg_name_sym[];\n");
+	printf("\textern const char* riscv_arg_type_sym[];\n");
+	printf("\textern const riscv_arg_data* riscv_insn_arg_data[];\n");
 	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
@@ -1091,6 +1125,50 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 		}
 		printf("};\n\n");
 	}
+
+	// Instruction argument name enum
+	printf("const char* riscv_arg_name_sym[] = {\n");
+	printf("\t\"none\",\n");
+	for (auto &arg : args) {
+		printf("\t\"%s\",\n", arg->name.c_str());
+	}
+	printf("};\n\n");
+
+	// instruction argument type enum
+	std::vector<std::string> arg_types;
+	for (auto &arg : args) {
+		auto type_name = format_type(arg);
+		if (std::find(arg_types.begin(), arg_types.end(), type_name) == arg_types.end()) {
+			arg_types.push_back(type_name);
+		}
+	}
+	printf("const char* riscv_arg_type_sym[] = {\n");
+	printf("\t\"none\",\n");
+	for (auto &arg_type : arg_types) {
+		printf("\t\"%s\",\n", arg_type.c_str());
+	}
+	printf("};\n\n");
+
+	// Codec argument data
+	for (auto &codec : codecs) {
+		printf("const riscv_arg_data riscv_codec_%s_args[] = {\n", format_codec("", codec, "_", false).c_str());
+		for (auto &arg : codec->args) {
+			size_t width = arg->bitspec.decoded_msb() > 0 ?
+				arg->bitspec.decoded_msb() + 1 :
+				arg->bitspec.segments.front().first.msb - arg->bitspec.segments.back().first.lsb + 1;
+			printf("\t{ riscv_arg_name_%s, riscv_arg_type_%s, riscv_type_%s, %lu },\n",
+				arg->name.c_str(), format_type(arg).c_str(), arg->type.c_str(), width);
+		}
+		printf("\t{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }\n};\n\n");
+	}
+
+	// Instruction codecs argument data
+	printf("const riscv_arg_data* riscv_insn_arg_data[] = {\n");
+	printf("\triscv_codec_none_args,\n");
+	for (auto &opcode : opcodes) {
+		printf("\triscv_codec_%s_args,\n", format_codec("", opcode->codec, "_", false).c_str());
+	}
+	printf("};\n\n");
 }
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)

@@ -2180,3 +2180,706 @@ const int riscv_insn_decomp_rv64[] = {
 	42,
 };
 
+const char* riscv_arg_name_sym[] = {
+	"none",
+	"rd",
+	"rs1",
+	"rs2",
+	"rs3",
+	"frd",
+	"frs1",
+	"frs2",
+	"frs3",
+	"aq",
+	"rl",
+	"pred",
+	"succ",
+	"rm",
+	"imm20",
+	"oimm20",
+	"jimm20",
+	"imm12",
+	"oimm12",
+	"csr12",
+	"simm12",
+	"sbimm12",
+	"zimm",
+	"shamt5",
+	"shamt6",
+	"crd0",
+	"crdq",
+	"crs1q",
+	"crs1rdq",
+	"crs2q",
+	"crd",
+	"crs1",
+	"crs1rd",
+	"crs2",
+	"cfrdq",
+	"cfrs2q",
+	"cfrs2",
+	"cfrd",
+	"cimmsh5",
+	"cimmsh6",
+	"cimmi",
+	"cnzimmi",
+	"cimmui",
+	"cimmlwsp",
+	"cimmldsp",
+	"cimm16sp",
+	"cimmj",
+	"cimmb",
+	"cimmswsp",
+	"cimmsdsp",
+	"cimmsqsp",
+	"cimm4spn",
+	"cimmw",
+	"cimmd",
+	"cimmq",
+};
+
+const char* riscv_arg_type_sym[] = {
+	"none",
+	"ireg5",
+	"freg5",
+	"arg1",
+	"arg4",
+	"arg3",
+	"simm32",
+	"offset32",
+	"offset21",
+	"simm12",
+	"offset12",
+	"uimm12",
+	"offset13",
+	"uimm5",
+	"uimm6",
+	"creg1",
+	"creg3",
+	"simm6",
+	"simm18",
+	"simm8",
+	"simm9",
+	"simm10",
+	"simm7",
+};
+
+const riscv_arg_data riscv_codec_none_args[] = {
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_u_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_imm20, riscv_arg_type_simm32, riscv_type_simm, 32 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_u_o_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_oimm20, riscv_arg_type_offset32, riscv_type_offset, 32 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_uj_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_jimm20, riscv_arg_type_offset21, riscv_type_offset, 21 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_o_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_imm12, riscv_arg_type_simm12, riscv_type_simm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_imm12, riscv_arg_type_simm12, riscv_type_simm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_sh5_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_shamt5, riscv_arg_type_uimm5, riscv_type_uimm, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_sh6_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_shamt6, riscv_arg_type_uimm6, riscv_type_uimm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_csr_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_csr12, riscv_arg_type_uimm12, riscv_type_uimm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_csri_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_zimm, riscv_arg_type_uimm5, riscv_type_uimm, 5 },
+	{ riscv_arg_name_csr12, riscv_arg_type_uimm12, riscv_type_uimm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_l_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_oimm12, riscv_arg_type_offset12, riscv_type_offset, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_i_lf_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_oimm12, riscv_arg_type_offset12, riscv_type_offset, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_s_args[] = {
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_simm12, riscv_arg_type_offset12, riscv_type_offset, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_sb_args[] = {
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_sbimm12, riscv_arg_type_offset13, riscv_type_offset, 13 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_s_f_args[] = {
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_frs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_simm12, riscv_arg_type_offset12, riscv_type_offset, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_fr_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_rf_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_rff_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_3f_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_m_ff_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rm, riscv_arg_type_arg3, riscv_type_arg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_m_fr_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rm, riscv_arg_type_arg3, riscv_type_arg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_m_rf_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rm, riscv_arg_type_arg3, riscv_type_arg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_m_3f_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rm, riscv_arg_type_arg3, riscv_type_arg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r4_m_args[] = {
+	{ riscv_arg_name_frd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs1, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_frs3, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_rm, riscv_arg_type_arg3, riscv_type_arg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_a_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_aq, riscv_arg_type_arg1, riscv_type_arg, 1 },
+	{ riscv_arg_name_rl, riscv_arg_type_arg1, riscv_type_arg, 1 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_l_args[] = {
+	{ riscv_arg_name_rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_aq, riscv_arg_type_arg1, riscv_type_arg, 1 },
+	{ riscv_arg_name_rl, riscv_arg_type_arg1, riscv_type_arg, 1 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cb_args[] = {
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmb, riscv_arg_type_simm9, riscv_type_simm, 9 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cb_imm_args[] = {
+	{ riscv_arg_name_crs1rdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cnzimmi, riscv_arg_type_simm6, riscv_type_simm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cb_sh5_args[] = {
+	{ riscv_arg_name_crs1rdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmsh5, riscv_arg_type_uimm5, riscv_type_uimm, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cb_sh6_args[] = {
+	{ riscv_arg_name_crs1rdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmsh6, riscv_arg_type_uimm6, riscv_type_uimm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cnzimmi, riscv_arg_type_simm6, riscv_type_simm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_sh5_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmsh5, riscv_arg_type_uimm5, riscv_type_uimm, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_sh6_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmsh6, riscv_arg_type_uimm6, riscv_type_uimm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_16sp_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimm16sp, riscv_arg_type_simm10, riscv_type_simm, 10 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_lwsp_args[] = {
+	{ riscv_arg_name_crd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmlwsp, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_ldsp_args[] = {
+	{ riscv_arg_name_crd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmldsp, riscv_arg_type_simm9, riscv_type_simm, 9 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_lwsp_f_args[] = {
+	{ riscv_arg_name_cfrd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_cimmlwsp, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_ldsp_f_args[] = {
+	{ riscv_arg_name_cfrd, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_cimmldsp, riscv_arg_type_simm9, riscv_type_simm, 9 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_li_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmi, riscv_arg_type_simm6, riscv_type_simm, 6 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_lui_args[] = {
+	{ riscv_arg_name_crd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmui, riscv_arg_type_simm18, riscv_type_simm, 18 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ci_none_args[] = {
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_ciw_4spn_args[] = {
+	{ riscv_arg_name_crdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimm4spn, riscv_arg_type_simm10, riscv_type_simm, 10 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cj_args[] = {
+	{ riscv_arg_name_cimmj, riscv_arg_type_simm12, riscv_type_simm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cl_lw_args[] = {
+	{ riscv_arg_name_crdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmw, riscv_arg_type_simm7, riscv_type_simm, 7 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cl_ld_args[] = {
+	{ riscv_arg_name_crdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmd, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cl_lw_f_args[] = {
+	{ riscv_arg_name_cfrdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmw, riscv_arg_type_simm7, riscv_type_simm, 7 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cl_ld_f_args[] = {
+	{ riscv_arg_name_cfrdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmd, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cr_args[] = {
+	{ riscv_arg_name_crs1rd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_crs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cr_mv_args[] = {
+	{ riscv_arg_name_crd, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_crs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cr_jalr_args[] = {
+	{ riscv_arg_name_crd0, riscv_arg_type_creg1, riscv_type_creg, 1 },
+	{ riscv_arg_name_crs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cr_jr_args[] = {
+	{ riscv_arg_name_crd0, riscv_arg_type_creg1, riscv_type_creg, 1 },
+	{ riscv_arg_name_crs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cs_args[] = {
+	{ riscv_arg_name_crs1rdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs2q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cs_sw_f_args[] = {
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cfrs2q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmw, riscv_arg_type_simm7, riscv_type_simm, 7 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cs_sd_f_args[] = {
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cfrs2q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmd, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cs_sw_args[] = {
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs2q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmw, riscv_arg_type_simm7, riscv_type_simm, 7 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_cs_sd_args[] = {
+	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_crs2q, riscv_arg_type_creg3, riscv_type_creg, 3 },
+	{ riscv_arg_name_cimmd, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_css_swsp_args[] = {
+	{ riscv_arg_name_crs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmswsp, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_css_sdsp_args[] = {
+	{ riscv_arg_name_crs2, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_cimmsdsp, riscv_arg_type_simm9, riscv_type_simm, 9 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_css_swsp_f_args[] = {
+	{ riscv_arg_name_cfrs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_cimmswsp, riscv_arg_type_simm8, riscv_type_simm, 8 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_css_sdsp_f_args[] = {
+	{ riscv_arg_name_cfrs2, riscv_arg_type_freg5, riscv_type_freg, 5 },
+	{ riscv_arg_name_cimmsdsp, riscv_arg_type_simm9, riscv_type_simm, 9 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data* riscv_insn_arg_data[] = {
+	riscv_codec_none_args,
+	riscv_codec_u_args,
+	riscv_codec_u_o_args,
+	riscv_codec_uj_args,
+	riscv_codec_i_o_args,
+	riscv_codec_sb_args,
+	riscv_codec_sb_args,
+	riscv_codec_sb_args,
+	riscv_codec_sb_args,
+	riscv_codec_sb_args,
+	riscv_codec_sb_args,
+	riscv_codec_i_l_args,
+	riscv_codec_i_l_args,
+	riscv_codec_i_l_args,
+	riscv_codec_i_l_args,
+	riscv_codec_i_l_args,
+	riscv_codec_s_args,
+	riscv_codec_s_args,
+	riscv_codec_s_args,
+	riscv_codec_i_args,
+	riscv_codec_i_args,
+	riscv_codec_i_args,
+	riscv_codec_i_args,
+	riscv_codec_i_args,
+	riscv_codec_i_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_i_l_args,
+	riscv_codec_i_l_args,
+	riscv_codec_s_args,
+	riscv_codec_i_sh6_args,
+	riscv_codec_i_sh6_args,
+	riscv_codec_i_sh6_args,
+	riscv_codec_i_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_i_sh5_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_args,
+	riscv_codec_r_l_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_l_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_r_a_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_none_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csri_args,
+	riscv_codec_i_csri_args,
+	riscv_codec_i_csri_args,
+	riscv_codec_i_lf_args,
+	riscv_codec_s_f_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_m_ff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_rf_args,
+	riscv_codec_r_rf_args,
+	riscv_codec_r_fr_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_i_lf_args,
+	riscv_codec_s_f_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r4_m_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_m_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_3f_args,
+	riscv_codec_r_m_ff_args,
+	riscv_codec_r_m_ff_args,
+	riscv_codec_r_m_ff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_rff_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_rf_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_m_rf_args,
+	riscv_codec_r_rf_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_m_fr_args,
+	riscv_codec_r_fr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csr_args,
+	riscv_codec_i_csri_args,
+	riscv_codec_i_csri_args,
+	riscv_codec_ciw_4spn_args,
+	riscv_codec_cl_ld_f_args,
+	riscv_codec_cl_lw_args,
+	riscv_codec_cl_lw_f_args,
+	riscv_codec_cs_sd_f_args,
+	riscv_codec_cs_sw_args,
+	riscv_codec_cs_sw_f_args,
+	riscv_codec_ci_none_args,
+	riscv_codec_ci_args,
+	riscv_codec_cj_args,
+	riscv_codec_ci_li_args,
+	riscv_codec_ci_16sp_args,
+	riscv_codec_ci_lui_args,
+	riscv_codec_cb_sh5_args,
+	riscv_codec_cb_sh5_args,
+	riscv_codec_cb_imm_args,
+	riscv_codec_cs_args,
+	riscv_codec_cs_args,
+	riscv_codec_cs_args,
+	riscv_codec_cs_args,
+	riscv_codec_cs_args,
+	riscv_codec_cs_args,
+	riscv_codec_cj_args,
+	riscv_codec_cb_args,
+	riscv_codec_cb_args,
+	riscv_codec_ci_sh5_args,
+	riscv_codec_ci_ldsp_f_args,
+	riscv_codec_ci_lwsp_args,
+	riscv_codec_ci_lwsp_f_args,
+	riscv_codec_cr_jr_args,
+	riscv_codec_cr_mv_args,
+	riscv_codec_ci_none_args,
+	riscv_codec_cr_jalr_args,
+	riscv_codec_cr_args,
+	riscv_codec_css_sdsp_f_args,
+	riscv_codec_css_swsp_args,
+	riscv_codec_css_swsp_f_args,
+	riscv_codec_cl_ld_args,
+	riscv_codec_cs_sd_args,
+	riscv_codec_ci_args,
+	riscv_codec_cb_sh6_args,
+	riscv_codec_cb_sh6_args,
+	riscv_codec_ci_sh6_args,
+	riscv_codec_ci_ldsp_args,
+	riscv_codec_css_sdsp_args,
+};
+

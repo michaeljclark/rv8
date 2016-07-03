@@ -278,7 +278,9 @@ std::string riscv_meta_model::format_type(riscv_arg_ptr arg)
 std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
 {
 	std::string name = strip_suffix ? split(codec->name, "+", false, false)[0] : codec->name;
-	return prefix + replace(name, "·", dot);
+	name = replace(name, "·", dot);
+	name = replace(name, "+", dot);
+	return prefix + name;
 }
 
 std::string riscv_meta_model::format_format(std::string prefix, riscv_format_ptr format, char special)

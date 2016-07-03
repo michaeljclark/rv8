@@ -1,6 +1,16 @@
 # format of a line in this file:
 # <enum group> <enum name> <enum value> "<enum description>"
 
+# Types
+type    none                 0       "None"
+type    arg                  1       "Argument"
+type    creg                 2       "Compressed Register"
+type    ireg                 3       "Integer Register"
+type    freg                 4       "Floating Point Register"
+type    offset               5       "Signed Offset"
+type    simm                 6       "Sign Extended Immediate"
+type    uimm                 7       "Zero Extended Immediate"
+
 # Round Mode
 rm      rne                  0b000   "Round to Nearest, ties to Even"
 rm      rtz                  0b001   "Round towards Zero"

@@ -55,6 +55,41 @@ struct riscv_histogram_elf
 		else hi->second++;
 	}
 
+	size_t reg_value(riscv_decode &dec, riscv_arg_name arg_name)
+	{
+		switch (arg_name) {
+			case riscv_arg_name_rd: return dec.rd;
+			case riscv_arg_name_rs1: return dec.rs1;
+			case riscv_arg_name_rs2: return dec.rs2;
+			case riscv_arg_name_frd: return dec.rd;
+			case riscv_arg_name_frs1: return dec.rs1;
+			case riscv_arg_name_frs2: return dec.rs2;
+			case riscv_arg_name_frs3: return dec.rs3;
+			default: return 0;
+		}
+	}
+
+	void histogram_add_regs(map_t &hist, riscv_decode &dec)
+	{
+		std::string key;
+		const riscv_arg_data *arg_data = riscv_insn_arg_data[dec.op];
+		while (arg_data->type != riscv_type_none) {
+			switch (arg_data->type) {
+				case riscv_type_ireg:
+				case riscv_type_freg:
+					key = std::string(arg_data->type == riscv_type_ireg ?
+						riscv_i_registers[reg_value(dec, arg_data->arg_name)] :
+						riscv_f_registers[reg_value(dec, arg_data->arg_name)]) +
+						(regs_position ? "-" : "") +
+						(regs_position ? riscv_arg_name_sym[arg_data->arg_name] : "");
+					histogram_add(hist, key);
+					break;
+				default: break;
+			}
+			arg_data++;
+		}
+	}
+
 	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
 		riscv_decode dec;
@@ -66,21 +101,7 @@ struct riscv_histogram_elf
 				histogram_add(hist, riscv_insn_name[dec.op]);
 			}
 			if (regs_histogram) {
-				const char *fmt = riscv_insn_format[dec.op];
-				while (*fmt) {
-					switch (*fmt) {
-						case '0': histogram_add(hist, std::string("") + riscv_i_registers[dec.rd] + (regs_position ? "-rd" : "")); break;
-						case '1': histogram_add(hist, std::string("") + riscv_i_registers[dec.rs1] + (regs_position ? "-rs1" : "")); break;
-						case '2': histogram_add(hist, std::string("") + riscv_i_registers[dec.rs2] + (regs_position ? "-rs2" : "")); break;
-						case '3': histogram_add(hist, std::string("") + riscv_f_registers[dec.rd] + (regs_position ? "-frd" : "")); break;
-						case '4': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs1] + (regs_position ? "-frs1" : "")); break;
-						case '5': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs2] + (regs_position ? "-frs2" : "")); break;
-						case '6': histogram_add(hist, std::string("") + riscv_f_registers[dec.rs3] + (regs_position ? "-frs3" : "")); break;
-						default:
-							break;
-					}
-					fmt++;
-				}
+				histogram_add_regs(hist, dec);
 			}
 			pc = next_pc;
 		}
