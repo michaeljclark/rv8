@@ -106,26 +106,14 @@ struct riscv_compress_elf
 	void print_continuation_disassembly_header()
 	{
 		debug("\n%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s",
-			"program counter",
-			"target",
-			"pair",
-			"cont",
-			"branch",
-			"instruction",
-			"operands",
-			"address",
-			"flags"
+			"program counter", "target", "pair", "cont",
+			"branch", "instruction", "operands",
+			"address", "flags"
 		);
 		debug("%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s\n",
-			"==================",
-			"======",
-			"======",
-			"======",
-			"======",
-			"===========",
-			"=================",
-			"==================",
-			"====="
+			"==================", "======", "======", "======",
+			"======", "===========", "=================",
+			"==================", "====="
 		);
 	}
 
@@ -188,7 +176,7 @@ struct riscv_compress_elf
 		);
 	}
 
-
+	// helper for creating continiation address entries
 	std::map<uintptr_t,uint32_t>::iterator get_continuation(uintptr_t addr)
 	{
 		auto ci = continuations.find(addr);
@@ -209,8 +197,13 @@ struct riscv_compress_elf
 		while(rvxi->addr != rva_none) {
 			if (rvxi->op2 == dec.op) {
 				for (auto li = dec_hist.rbegin(); li != dec_hist.rend(); li++) {
-					if (rvxi->op1 != li->op && dec.rs1 == li->rd) break; // break: another primitive encountered
-					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
+
+					// break if another primitive encountered on the register
+					if (rvxi->op1 != li->op && dec.rs1 == li->rd) break;
+
+					// continue if until reaching the paired instruction
+					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue;
+
 					switch (rvxi->addr) {
 						case rva_abs:
 						{
@@ -424,11 +417,11 @@ struct riscv_compress_elf
 		}
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			if (!dec.is_pcrel) continue; // NOTE: we don't currently relocate absolute references
+			if (!dec.is_pcrel) continue; // skip relocating absolute references
 			if (dec.label_pair > 0) {
 				auto rbi = bi;
-				if (dec.label_branch) dec.addr = label_addr[dec.label_branch]; // points to code
-				while (rbi->label_target != dec.label_pair) rbi--; // find first insn
+				if (dec.label_branch) dec.addr = label_addr[dec.label_branch];
+				while (rbi->label_target != dec.label_pair) rbi--;
 				dec.imm = sign_extend<int64_t,12>(intptr_t(dec.addr - rbi->pc));
 				rbi->imm = sign_extend<int64_t,32>(intptr_t(dec.addr - rbi->pc) & 0xfffff000);
 				if (intptr_t(dec.imm + rbi->imm + rbi->pc) < intptr_t(dec.addr)) rbi->imm += 0x1000;
