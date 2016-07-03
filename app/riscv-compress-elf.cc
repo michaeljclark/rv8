@@ -36,15 +36,16 @@ using namespace riscv;
 
 struct riscv_asm : riscv_disasm
 {
-	uint32_t  label_target;  /* label target for this instruction */
-	uint32_t  label_pair;    /* target of first instruction in pair */
-	uint32_t  label_branch;  /* target of jump, jump and link or branch  */
-	uint32_t  label_cont;    /* target of continuation after a jump or jump and link */
-	uint32_t  is_abs   : 1;  /* absolute address present */
-	uint32_t  is_pcrel : 1;  /* pc relative address present */
-	uint32_t  is_gprel : 1;  /* gp relative address present */
+	uint32_t  label_target;      /* label target for this instruction */
+	uint32_t  label_pair;        /* target of first instruction in pair */
+	uint32_t  label_branch;      /* target of jump, jump and link or branch  */
+	uint32_t  label_cont;        /* target of continuation following jumps */
+	uint32_t  is_abs       : 1;  /* absolute address present */
+	uint32_t  is_pcrel     : 1;  /* pc relative address present */
+	uint32_t  is_gprel     : 1;  /* gp relative address present */
 
-	riscv_asm() : riscv_disasm(), label_target(0), label_pair(0), label_branch(0), label_cont(0),
+	riscv_asm() : riscv_disasm(),
+		label_target(0), label_pair(0), label_branch(0), label_cont(0),
 		is_abs(0), is_pcrel(0), is_gprel(0) {}
 };
 
@@ -187,9 +188,22 @@ struct riscv_compress_elf
 		);
 	}
 
+
+	std::map<uintptr_t,uint32_t>::iterator get_continuation(uintptr_t addr)
+	{
+		auto ci = continuations.find(addr);
+		if (ci == continuations.end()) {
+			ci = continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++)).first;
+		}
+		return ci;
+	}
+
 	// decode address using instruction pair constraints and label continuations for jump and link register
 	template <typename T>
-	bool deocde_pair(T &dec, uintptr_t start, uintptr_t end, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend, std::deque<T> &dec_hist)
+	bool decode_pairs(T &dec, uintptr_t start, uintptr_t end,
+		typename std::deque<T>::iterator bi,
+		typename std::deque<T>::iterator bend,
+		std::deque<T> &dec_hist)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -203,16 +217,10 @@ struct riscv_compress_elf
 							dec.is_abs = true;
 							dec.addr = li->imm + dec.imm;
 							uint64_t cont_addr = li->pc;
-							auto ci = continuations.find(cont_addr);
-							if (ci == continuations.end()) {
-								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
-							}
+							auto ci = get_continuation(cont_addr);
 							dec.label_pair = ci->second;
 							if (dec.addr >= start && dec.addr < end) {
-								ci = continuations.find(dec.addr);
-								if (ci == continuations.end()) {
-									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-								}
+								ci = get_continuation(dec.addr);
 							}
 							return true;
 						}
@@ -221,26 +229,17 @@ struct riscv_compress_elf
 							dec.is_pcrel = true;
 							dec.addr = li->pc + li->imm + dec.imm;
 							uint64_t cont_addr = li->pc;
-							auto ci = continuations.find(cont_addr);
-							if (ci == continuations.end()) {
-								ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
-							}
+							auto ci = get_continuation(cont_addr);
 							dec.label_pair = ci->second;
 							if (dec.op == riscv_op_jalr) {
 								if (bi + 1 != bend) {
 									uint64_t cont_addr = (bi + 1)->pc;
-									auto ci = continuations.find(cont_addr);
-									if (ci == continuations.end()) {
-										ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
-									}
+									auto ci = get_continuation(cont_addr);
 									dec.label_cont = ci->second;
 								}
 							}
 							if (dec.addr >= start && dec.addr < end) {
-								ci = continuations.find(dec.addr);
-								if (ci == continuations.end()) {
-									ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-								}
+								ci = get_continuation(dec.addr);
 								dec.label_branch = ci->second;
 							}
 							return true;
@@ -259,7 +258,9 @@ struct riscv_compress_elf
 
 	// decode address for branches and label jumps and continuations for jump and link
 	template <typename T>
-	bool deocde_jumps(T &dec, uintptr_t start, uintptr_t end, typename std::deque<T>::iterator bi, typename std::deque<T>::iterator bend)
+	bool deocde_jumps(T &dec, uintptr_t start, uintptr_t end,
+		typename std::deque<T>::iterator bi,
+		typename std::deque<T>::iterator bend)
 	{
 		switch (dec.op) {
 			case riscv_op_jal:
@@ -267,10 +268,7 @@ struct riscv_compress_elf
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
 				if (dec.addr >= start && dec.addr < end) {
-					auto ci = continuations.find(dec.addr);
-					if (ci == continuations.end()) {
-						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-					}
+					auto ci = get_continuation(dec.addr);
 					dec.label_branch = ci->second;
 				}
 			}
@@ -278,10 +276,7 @@ struct riscv_compress_elf
 			{
 				if (bi + 1 != bend) {
 					uint64_t cont_addr = (bi + 1)->pc;
-					auto ci = continuations.find(cont_addr);
-					if (ci == continuations.end()) {
-						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(cont_addr, continuation_num++)).first;
-					}
+					auto ci = get_continuation(cont_addr);
 					dec.label_cont = ci->second;
 				}
 				return true;
@@ -295,10 +290,7 @@ struct riscv_compress_elf
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
 				if (dec.addr >= start && dec.addr < end) {
-					auto ci = continuations.find(dec.addr);
-					if (ci == continuations.end()) {
-						ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.addr, continuation_num++)).first;
-					}
+					auto ci = get_continuation(dec.addr);
 					dec.label_branch = ci->second;
 				}
 				return true;
@@ -363,7 +355,7 @@ struct riscv_compress_elf
 
 			// decode address and label continuations
 			bool decoded_address = false;
-			if (!decoded_address) decoded_address = deocde_pair(dec, start, end, bi, bin.end(), dec_hist);
+			if (!decoded_address) decoded_address = decode_pairs(dec, start, end, bi, bin.end(), dec_hist);
 			if (!decoded_address) decoded_address = deocde_jumps(dec, start, end, bi, bin.end());
 			if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
 
@@ -481,14 +473,9 @@ struct riscv_compress_elf
 			}
 			size_t insn_len = riscv_insn_length(dec.insn);
 			switch (insn_len) {
-				case 2:
-					*((uint16_t*)pc) = htole16(dec.insn);
-					break;
-				case 4:
-					*((uint32_t*)pc) = htole32(dec.insn);
-					break;
-				default:
-					panic("can only handle 2 or 4 byte insns");
+				case 2: *((uint16_t*)pc) = htole16(dec.insn); break;
+				case 4: *((uint32_t*)pc) = htole32(dec.insn); break;
+				default: panic("can only handle 2 or 4 byte insns");
 			}
 			pc += insn_len;
 		}

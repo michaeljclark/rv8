@@ -62,7 +62,7 @@ namespace riscv {
 
 	// decode address using instruction pair constraints
 	template <typename T>
-	bool deocde_pair(T &dec, std::deque<T> &dec_hist, uintptr_t pc_offset)
+	bool decode_pairs(T &dec, std::deque<T> &dec_hist, uintptr_t pc_offset)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
