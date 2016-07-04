@@ -852,8 +852,8 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Integer register enum
-	printf("enum riscv_ireg_name\n{\n");
+	// Integer register number enum
+	printf("enum riscv_ireg_num\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\triscv_ireg_%s,%s\n", reg->name.c_str(),
@@ -862,8 +862,8 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Integer register ABI enum 
-	printf("enum riscv_ireg_abi\n{\n");
+	// Integer register ABI name enum
+	printf("enum riscv_ireg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "ireg") continue;
 		printf("\triscv_ireg_%s,%s\n", reg->alias.c_str(),
@@ -872,8 +872,8 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Floating Point register enum
-	printf("enum riscv_freg_name\n{\n");
+	// Floating Point register number enum
+	printf("enum riscv_freg_num\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\triscv_freg_%s,%s\n", reg->name.c_str(),
@@ -882,8 +882,8 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Floating Point register ABI enum
-	printf("enum riscv_freg_abi\n{\n");
+	// Floating Point register ABI name enum
+	printf("enum riscv_freg_name\n{\n");
 	for (auto &reg : registers) {
 		if (reg->type != "freg") continue;
 		printf("\triscv_freg_%s,%s\n", reg->alias.c_str(),

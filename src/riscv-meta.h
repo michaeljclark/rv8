@@ -169,7 +169,7 @@ enum riscv_csr
 	riscv_csr_mfromhost = 0x781,
 };
 
-enum riscv_ireg_name
+enum riscv_ireg_num
 {
 	riscv_ireg_x0,
 	riscv_ireg_x1,
@@ -205,7 +205,7 @@ enum riscv_ireg_name
 	riscv_ireg_x31,
 };
 
-enum riscv_ireg_abi
+enum riscv_ireg_name
 {
 	riscv_ireg_zero,
 	riscv_ireg_ra,
@@ -241,7 +241,7 @@ enum riscv_ireg_abi
 	riscv_ireg_t6,
 };
 
-enum riscv_freg_name
+enum riscv_freg_num
 {
 	riscv_freg_f0,
 	riscv_freg_f1,
@@ -277,7 +277,7 @@ enum riscv_freg_name
 	riscv_freg_f31,
 };
 
-enum riscv_freg_abi
+enum riscv_freg_name
 {
 	riscv_freg_ft0,
 	riscv_freg_ft1,
