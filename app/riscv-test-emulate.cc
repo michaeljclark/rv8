@@ -15,7 +15,6 @@
 
 #include "riscv-types.h"
 #include "riscv-endian.h"
-#include "riscv-processor.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
@@ -26,6 +25,13 @@
 #include "riscv-elf-format.h"
 
 using namespace riscv;
+
+struct riscv_proc_state
+{
+	uintptr_t pc;
+	riscv::ireg i_reg[32];
+	riscv::freg f_reg[32];
+};
 
 void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
@@ -68,7 +74,6 @@ void rv64_run(uintptr_t entry)
 {
 	riscv_decode dec;
 	riscv_proc_state proc = { 0 };
-	proc.p_type = riscv_proc_type_rv64i;
 	proc.pc = entry;
 	while (true) {
 		rv64_exec(dec, &proc);
