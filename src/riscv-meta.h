@@ -7,6 +7,10 @@
 #ifndef riscv_meta_h
 #define riscv_meta_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum riscv_type
 {
 	riscv_type_none = 0,
@@ -677,21 +681,18 @@ struct riscv_arg_data
 	const unsigned int width;
 };
 
-extern "C" {
-	extern const char* riscv_i_registers[];
-	extern const char* riscv_f_registers[];
-	extern const char* riscv_insn_name[];
-	extern const riscv_codec riscv_insn_codec[];
-	extern const uint64_t riscv_insn_match[];
-	extern const uint64_t riscv_insn_mask[];
-	extern const char* riscv_insn_format[];
-	extern const riscv_comp_data* riscv_insn_comp_rv32[];
-	extern const int riscv_insn_decomp_rv32[];
-	extern const riscv_comp_data* riscv_insn_comp_rv64[];
-	extern const int riscv_insn_decomp_rv64[];
-	extern const char* riscv_arg_name_sym[];
-	extern const char* riscv_arg_type_sym[];
-	extern const riscv_arg_data* riscv_insn_arg_data[];
+extern const riscv_codec riscv_insn_codec[];
+extern const char* riscv_insn_format[];
+extern const riscv_arg_data* riscv_insn_arg_data[];
+extern const uint64_t riscv_insn_match[];
+extern const uint64_t riscv_insn_mask[];
+extern const riscv_comp_data* riscv_insn_comp_rv32[];
+extern const riscv_comp_data* riscv_insn_comp_rv64[];
+extern const int riscv_insn_decomp_rv32[];
+extern const int riscv_insn_decomp_rv64[];
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif

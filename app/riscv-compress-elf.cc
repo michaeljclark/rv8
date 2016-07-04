@@ -31,6 +31,7 @@
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
+#include "riscv-strings.h"
 
 using namespace riscv;
 
@@ -124,17 +125,17 @@ struct riscv_compress_elf
 		const char *fmt = riscv_insn_format[dec.op];
 		while (*fmt) {
 			switch (*fmt) {
-				case 'O': args += riscv_insn_name[dec.op]; break;
+				case 'O': args += riscv_insn_name_sym[dec.op]; break;
 				case '(': args += "("; break;
 				case ',': args += ","; break;
 				case ')': args += ")"; break;
-				case '0': args += riscv_i_registers[dec.rd]; break;
-				case '1': args += riscv_i_registers[dec.rs1]; break;
-				case '2': args += riscv_i_registers[dec.rs2]; break;
-				case '3': args += riscv_f_registers[dec.rd]; break;
-				case '4': args += riscv_f_registers[dec.rs1]; break;
-				case '5': args += riscv_f_registers[dec.rs2]; break;
-				case '6': args += riscv_f_registers[dec.rs3]; break;
+				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
+				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
+				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
+				case '3': args += riscv_freg_name_sym[dec.rd]; break;
+				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
+				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
+				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
 				case '7': args += format_string("%d", dec.rs1); break;
 				case 'i': args += format_string("%lld", dec.imm); break;
 				case 'o': args += format_string("%lld", dec.imm); break;

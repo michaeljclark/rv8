@@ -28,6 +28,7 @@
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
+#include "riscv-strings.h"
 
 using namespace riscv;
 
@@ -78,8 +79,8 @@ struct riscv_histogram_elf
 				case riscv_type_ireg:
 				case riscv_type_freg:
 					key = std::string(arg_data->type == riscv_type_ireg ?
-						riscv_i_registers[reg_value(dec, arg_data->arg_name)] :
-						riscv_f_registers[reg_value(dec, arg_data->arg_name)]) +
+						riscv_ireg_name_sym[reg_value(dec, arg_data->arg_name)] :
+						riscv_freg_name_sym[reg_value(dec, arg_data->arg_name)]) +
 						(regs_position ? "-" : "") +
 						(regs_position ? riscv_arg_name_sym[arg_data->arg_name] : "");
 					histogram_add(hist, key);
@@ -98,7 +99,7 @@ struct riscv_histogram_elf
 			uint64_t insn = riscv_get_insn(pc, &next_pc);
 			riscv_decode_insn_rv64(dec, insn);
 			if (insn_histogram) {
-				histogram_add(hist, riscv_insn_name[dec.op]);
+				histogram_add(hist, riscv_insn_name_sym[dec.op]);
 			}
 			if (regs_histogram) {
 				histogram_add_regs(hist, dec);

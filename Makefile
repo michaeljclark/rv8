@@ -131,8 +131,10 @@ RV_JIT_HDR =    $(LIB_SRC_DIR)/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/riscv-jit.cc
 RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
 RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
+RV_STR_HDR =    $(LIB_SRC_DIR)/riscv-strings.h
+RV_STR_SRC =    $(LIB_SRC_DIR)/riscv-strings.cc
 RV_META_FMT =   $(LIB_SRC_DIR)/riscv-format.cc
-RV_META_OBJS =  $(call lib_src_objs, $(RV_META_SRC) $(RV_JIT_SRC) $(RV_META_FMT))
+RV_META_OBJS =  $(call lib_src_objs, $(RV_JIT_SRC) $(RV_META_SRC) $(RV_STR_SRC) $(RV_META_FMT))
 RV_META_LIB =   $(LIB_DIR)/libriscv_meta.a
 
 # libriscv_model
@@ -215,7 +217,7 @@ ASSEMBLY = $(TEST_DECODER_ASM) \
            $(TEST_ENCODER_ASM)
 
 # build rules
-all: dirs $(PARSE_META_BIN) $(RV_META_SRC) $(BINARIES) $(ASSEMBLY)
+all: dirs $(PARSE_META_BIN) meta $(BINARIES) $(ASSEMBLY)
 .PHONY: dirs test
 dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make clean)
@@ -237,6 +239,7 @@ c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
 c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
+meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) $(RV_META_HDR) $(RV_META_SRC)
 $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) $(RV_META_HDR) $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
@@ -244,6 +247,8 @@ $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) $(RV_META_HDR) $(RV_M
 	$(PARSE_META_BIN) -K -r $(META_DIR) > $(RV_JIT_SRC)
 	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
 	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
+	$(PARSE_META_BIN) -N -0 -SH -r $(META_DIR) > $(RV_STR_HDR)
+	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
 
 # build targets
 $(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
@@ -251,13 +256,13 @@ $(RV_ELF_LIB): $(RV_ELF_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_MODEL_LIB): $(RV_MODEL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_META_LIB) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 # build recipes
 ifdef V

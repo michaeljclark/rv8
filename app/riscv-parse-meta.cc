@@ -129,6 +129,8 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_jit_cc();
 	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
 	void print_meta_cc(bool no_comment = false, bool zero_not_oh = false);
+	void print_strings_h(bool no_comment = false, bool zero_not_oh = false);
+	void print_strings_cc(bool no_comment = false, bool zero_not_oh = false);
 	void print_switch_h(bool no_comment = false, bool zero_not_oh = false);
 
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
@@ -671,6 +673,23 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 	}
 }
 
+static const char* unknown_op_comment = "/*              unknown */ ";
+
+static void print_array_unknown_str(const char *str, bool no_comment)
+{
+	printf("\t%s\"%s\",\n", no_comment ? "" : unknown_op_comment, str);
+}
+
+static void print_array_unknown_enum(const char *str, bool no_comment)
+{
+	printf("\t%s%s,\n", no_comment ? "" : unknown_op_comment, str);
+}
+
+static void print_array_unknown_uint64(uint64_t num, bool no_comment)
+{
+	printf("\t%s0x%016" PRIx64 ",\n", no_comment ? "" : unknown_op_comment, num);
+}
+
 void riscv_parse_meta::print_c_header(std::string filename)
 {
 	printf("//\n");
@@ -793,6 +812,11 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	print_c_header("riscv-meta.h");
 	printf("#ifndef riscv_meta_h\n");
 	printf("#define riscv_meta_h\n");
+	printf("\n");
+
+	printf("#ifdef __cplusplus\n");
+	printf("extern \"C\" {\n");
+	printf("#endif\n");
 	printf("\n");
 
 	// Enums
@@ -923,44 +947,26 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	printf("\tconst unsigned int width;\n");
 	printf("};\n\n");
 
-	// C interfaces
-	printf("extern \"C\" {\n");
-	printf("\textern const char* riscv_i_registers[];\n");
-	printf("\textern const char* riscv_f_registers[];\n");
-	printf("\textern const char* riscv_insn_name[];\n");
-	printf("\textern const riscv_codec riscv_insn_codec[];\n");
-	printf("\textern const uint64_t riscv_insn_match[];\n");
-	printf("\textern const uint64_t riscv_insn_mask[];\n");
-	printf("\textern const char* riscv_insn_format[];\n");
+	// Opcode metadata tables
+	printf("extern const riscv_codec riscv_insn_codec[];\n");
+	printf("extern const char* riscv_insn_format[];\n");
+	printf("extern const riscv_arg_data* riscv_insn_arg_data[];\n");
+	printf("extern const uint64_t riscv_insn_match[];\n");
+	printf("extern const uint64_t riscv_insn_mask[];\n");
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("\textern const riscv_comp_data* riscv_insn_comp_%s[];\n",
-			isa_width.second.c_str());
-		printf("\textern const int riscv_insn_decomp_%s[];\n",
+		printf("extern const riscv_comp_data* riscv_insn_comp_%s[];\n",
 			isa_width.second.c_str());
 	}
-	printf("\textern const char* riscv_arg_name_sym[];\n");
-	printf("\textern const char* riscv_arg_type_sym[];\n");
-	printf("\textern const riscv_arg_data* riscv_insn_arg_data[];\n");
+	for (auto isa_width : isa_width_prefixes()) {
+		printf("extern const int riscv_insn_decomp_%s[];\n",
+			isa_width.second.c_str());
+	}
+	printf("\n");
+	printf("#ifdef __cplusplus\n");
 	printf("}\n");
+	printf("#endif\n");
 	printf("\n");
 	printf("#endif\n");
-}
-
-static const char* unknown_op_comment = "/*              unknown */ ";
-
-static void print_array_unknown_str(const char *str, bool no_comment)
-{
-	printf("\t%s\"%s\",\n", no_comment ? "" : unknown_op_comment, str);
-}
-
-static void print_array_unknown_enum(const char *str, bool no_comment)
-{
-	printf("\t%s%s,\n", no_comment ? "" : unknown_op_comment, str);
-}
-
-static void print_array_unknown_int(uint32_t num, bool no_comment)
-{
-	printf("\t%s0x%08x,\n", no_comment ? "" : unknown_op_comment, num);
 }
 
 void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
@@ -972,83 +978,15 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("#include \"riscv-meta.h\"\n");
 	printf("\n");	
 
-	// Integer register names
-	printf("const char* riscv_i_registers[] = {\n");
-	for (auto &reg : registers) {
-		if (reg->type != "ireg") continue;
-		printf("\t\"%s\",\n", reg->alias.c_str());
-	}
-	printf("};\n\n");
-
-	// Floating Point register names
-	printf("const char* riscv_f_registers[] = {\n");
-	for (auto &reg : registers) {
-		if (reg->type != "freg") continue;
-		printf("\t\"%s\",\n", reg->alias.c_str());
-	}
-	printf("};\n\n");
-
-	// Instruction names
-	printf("const char* riscv_insn_name[] = {\n");
-	print_array_unknown_str("unknown", no_comment);
-	for (auto &opcode : opcodes) {
-		std::string opcode_name = opcode_format("", opcode, ".", false);
-		printf("\t%s\"%s\",\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			opcode_name.c_str());
-	}
-	printf("};\n\n");
-
-	// Instruction codecs
-	printf("const riscv_codec riscv_insn_codec[] = {\n");
-	print_array_unknown_enum("riscv_codec_unknown", no_comment);
-	for (auto &opcode : opcodes) {
-		std::string codec_name = format_codec("", opcode->codec, "_");
-		printf("\t%sriscv_codec_%s,\n",\
-			opcode_comment(opcode, no_comment).c_str(),
-			codec_name.c_str());
-	}
-	printf("};\n\n");
-
-	// Instruction match bits
-	printf("const uint64_t riscv_insn_match[] = {\n");
-	print_array_unknown_int(0, no_comment);
-	for (auto &opcode : opcodes) {
-		printf("\t%s0x%08x,\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			(uint32_t)opcode->match);
-	}
-	printf("};\n\n");
-
-	// Instruction mask bits
-	printf("const uint64_t riscv_insn_mask[] = {\n");
-	print_array_unknown_int(0, no_comment);
-	for (auto &opcode : opcodes) {
-		printf("\t%s0x%08x,\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			(uint32_t)opcode->mask);
-	}
-	printf("};\n\n");
-
-	// Instruction formats
-	printf("const char* riscv_insn_format[] = {\n");
-	print_array_unknown_enum("riscv_fmt_none", no_comment);
-	for (auto &opcode : opcodes) {
-		printf("\t%s%s,\n",
-			opcode_comment(opcode, no_comment).c_str(),
-			format_format("riscv_fmt_", opcode->format, '_').c_str());
-	}
-	printf("};\n\n");
-
 	// Compression constraints
 	for (auto &opcode : opcodes) {
 		if (!opcode->compressed) continue;
 		std::string cop_name = "rvcc_" + opcode_format("", opcode, "_") + "[] =";
-		printf("const rvc_constraint %-30s { ", cop_name.c_str());
+		printf("const rvc_constraint %s {\n", cop_name.c_str());
 		for (auto &constraint : opcode->compressed->constraint_list) {
-			printf("rvc_%s, ", constraint->name.c_str());
+			printf("\trvc_%s,\n", constraint->name.c_str());
 		}
-		printf("rvc_end };\n");
+		printf("\trvc_end\n};\n\n");
 	}
 	printf("\n");
 
@@ -1072,19 +1010,78 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 			if (include_compressions.size() == 0) continue;
 			std::string rvcd_name = opcode_format(isa_prefix, opcode, "_");
 			rvcd_set.insert(rvcd_name);
-			std::string op_constraint_data = rvcd_name + "[] =";
-			printf("const riscv_comp_data %-30s { ", op_constraint_data.c_str());
+			printf("const riscv_comp_data %s[] = {\n", rvcd_name.c_str());
 			for (auto &comp : include_compressions) {
-				printf("{ %s, %s }, ",
+				printf("\t{ %s, %s },\n",
 					(zero_not_oh ?
 						format_string("%lu", comp->comp_opcode->num).c_str() :
 						opcode_format("riscv_op_", comp->comp_opcode, "_").c_str()),
 					opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
 			}
-			printf("{ riscv_op_unknown, nullptr } };\n");
+			printf("\t{ 0, nullptr }\n};\n\n");
 		}
 		printf("\n");
 	}
+
+	// Codec argument data
+	for (auto &codec : codecs) {
+		printf("const riscv_arg_data riscv_codec_%s_args[] = {\n", format_codec("", codec, "_", false).c_str());
+		for (auto &arg : codec->args) {
+			size_t width = arg->bitspec.decoded_msb() > 0 ?
+				arg->bitspec.decoded_msb() + 1 :
+				arg->bitspec.segments.front().first.msb - arg->bitspec.segments.back().first.lsb + 1;
+			printf("\t{ riscv_arg_name_%s, riscv_arg_type_%s, riscv_type_%s, %lu },\n",
+				arg->name.c_str(), format_type(arg).c_str(), arg->type.c_str(), width);
+		}
+		printf("\t{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }\n};\n\n");
+	}
+
+	// Instruction codecs
+	printf("const riscv_codec riscv_insn_codec[] = {\n");
+	print_array_unknown_enum("riscv_codec_unknown", no_comment);
+	for (auto &opcode : opcodes) {
+		std::string codec_name = format_codec("", opcode->codec, "_");
+		printf("\t%sriscv_codec_%s,\n",\
+			opcode_comment(opcode, no_comment).c_str(),
+			codec_name.c_str());
+	}
+	printf("};\n\n");
+
+	// Instruction formats
+	printf("const char* riscv_insn_format[] = {\n");
+	print_array_unknown_enum("riscv_fmt_none", no_comment);
+	for (auto &opcode : opcodes) {
+		printf("\t%s%s,\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			format_format("riscv_fmt_", opcode->format, '_').c_str());
+	}
+	printf("};\n\n");
+
+	// Instruction codecs argument data table
+	printf("const riscv_arg_data* riscv_insn_arg_data[] = {\n");
+	printf("\triscv_codec_none_args,\n");
+	for (auto &opcode : opcodes) {
+		printf("\triscv_codec_%s_args,\n", format_codec("", opcode->codec, "_", false).c_str());
+	}
+	printf("};\n\n");
+
+	// Instruction match bits
+	printf("const uint64_t riscv_insn_match[] = {\n");
+	print_array_unknown_uint64(0ULL, no_comment);
+	for (auto &opcode : opcodes) {
+		printf("\t%s0x%016" PRIx64 ",\n",
+			opcode_comment(opcode, no_comment).c_str(), opcode->match);
+	}
+	printf("};\n\n");
+
+	// Instruction mask bits
+	printf("const uint64_t riscv_insn_mask[] = {\n");
+	print_array_unknown_uint64(0ULL, no_comment);
+	for (auto &opcode : opcodes) {
+		printf("\t%s0x%016" PRIx64 ",\n",
+			opcode_comment(opcode, no_comment).c_str(), opcode->mask);
+	}
+	printf("};\n\n");
 
 	// RVC compression table (per isa width)
 	for (auto isa_width : isa_width_prefixes()) {
@@ -1125,6 +1122,64 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 		}
 		printf("};\n\n");
 	}
+}
+
+void riscv_parse_meta::print_strings_h(bool no_comment, bool zero_not_oh)
+{
+	print_c_header("riscv-strings.h");
+	printf("#ifndef riscv_strings_h\n");
+	printf("#define riscv_strings_h\n");
+	printf("\n");
+	printf("#ifdef __cplusplus\n");
+	printf("extern \"C\" {\n");
+	printf("#endif\n");
+	printf("\n");
+	printf("extern const char* riscv_ireg_name_sym[];\n");
+	printf("extern const char* riscv_freg_name_sym[];\n");
+	printf("extern const char* riscv_insn_name_sym[];\n");
+	printf("extern const char* riscv_arg_name_sym[];\n");
+	printf("extern const char* riscv_arg_type_sym[];\n");
+	printf("\n");
+	printf("#ifdef __cplusplus\n");
+	printf("}\n");
+	printf("#endif\n");
+	printf("\n");
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
+{
+	print_c_header("riscv-strings.cc");
+
+	printf("#include \"riscv-strings.h\"\n");
+	printf("\n");
+
+	// Integer register names
+	printf("const char* riscv_ireg_name_sym[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "ireg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+
+	// Floating Point register names
+	printf("const char* riscv_freg_name_sym[] = {\n");
+	for (auto &reg : registers) {
+		if (reg->type != "freg") continue;
+		printf("\t\"%s\",\n", reg->alias.c_str());
+	}
+	printf("};\n\n");
+
+	// Instruction names
+	printf("const char* riscv_insn_name_sym[] = {\n");
+	print_array_unknown_str("unknown", no_comment);
+	for (auto &opcode : opcodes) {
+		std::string opcode_name = opcode_format("", opcode, ".", false);
+		printf("\t%s\"%s\",\n",
+			opcode_comment(opcode, no_comment).c_str(),
+			opcode_name.c_str());
+	}
+	printf("};\n\n");
 
 	// Instruction argument name enum
 	printf("const char* riscv_arg_name_sym[] = {\n");
@@ -1149,26 +1204,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Codec argument data
-	for (auto &codec : codecs) {
-		printf("const riscv_arg_data riscv_codec_%s_args[] = {\n", format_codec("", codec, "_", false).c_str());
-		for (auto &arg : codec->args) {
-			size_t width = arg->bitspec.decoded_msb() > 0 ?
-				arg->bitspec.decoded_msb() + 1 :
-				arg->bitspec.segments.front().first.msb - arg->bitspec.segments.back().first.lsb + 1;
-			printf("\t{ riscv_arg_name_%s, riscv_arg_type_%s, riscv_type_%s, %lu },\n",
-				arg->name.c_str(), format_type(arg).c_str(), arg->type.c_str(), width);
-		}
-		printf("\t{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }\n};\n\n");
-	}
-
-	// Instruction codecs argument data
-	printf("const riscv_arg_data* riscv_insn_arg_data[] = {\n");
-	printf("\triscv_codec_none_args,\n");
-	for (auto &opcode : opcodes) {
-		printf("\triscv_codec_%s_args,\n", format_codec("", opcode->codec, "_", false).c_str());
-	}
-	printf("};\n\n");
+	printf("\n");	
 }
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
@@ -1432,6 +1468,8 @@ int main(int argc, const char *argv[])
 	bool print_jit_cc = false;
 	bool print_meta_h = false;
 	bool print_meta_cc = false;
+	bool print_strings_h = false;
+	bool print_strings_cc = false;
 	bool help_or_error = false;
 	std::string isa_spec = "";
 
@@ -1473,6 +1511,12 @@ int main(int argc, const char *argv[])
 		{ "-C", "--print-meta-cc", cmdline_arg_type_none,
 			"Print metadata source",
 			[&](std::string s) { return (print_meta_cc = true); } },
+		{ "-SH", "--print-strings-h", cmdline_arg_type_none,
+			"Print strings header",
+			[&](std::string s) { return (print_strings_h = true); } },
+		{ "-SC", "--print-strings-cc", cmdline_arg_type_none,
+			"Print strings source",
+			[&](std::string s) { return (print_strings_cc = true); } },
 		{ "-A", "--print-args-h", cmdline_arg_type_none,
 			"Print args header",
 			[&](std::string s) { return (print_args_h = true); } },
@@ -1502,7 +1546,8 @@ int main(int argc, const char *argv[])
 	if ((help_or_error |= !print_latex && !print_map &&
 		!print_switch_h && !print_args_h &&
 		!print_jit_h && !print_jit_cc &&
-		!print_meta_h && !print_meta_cc))
+		!print_meta_h && !print_meta_cc &&
+		!print_strings_h && !print_strings_cc))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
@@ -1527,6 +1572,14 @@ int main(int argc, const char *argv[])
 
 	if (print_meta_cc) {
 		insn_set.print_meta_cc(no_comment, zero_not_oh);
+	}
+
+	if (print_strings_h) {
+		insn_set.print_strings_h(no_comment, zero_not_oh);
+	}
+
+	if (print_strings_cc) {
+		insn_set.print_strings_cc(no_comment, zero_not_oh);
 	}
 
 	if (print_args_h) {

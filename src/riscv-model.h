@@ -221,9 +221,9 @@ struct riscv_opcode
 	riscv_compressed_list compressions;
 
 	size_t num;
-	size_t mask;
-	size_t match;
-	size_t done;
+	uint64_t mask;
+	uint64_t match;
+	uint64_t done;
 
 	riscv_opcode(std::string key, std::string name)
 		: key(key), name(name), num(0), mask(0), match(0), done(0) {}

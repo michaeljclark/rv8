@@ -23,6 +23,7 @@
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
+#include "riscv-strings.h"
 
 using namespace riscv;
 
@@ -66,7 +67,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 			proc->pc = next_pc;
 			break;
 		default:
-			panic("illegal instruciton: %s", riscv_insn_name[dec.op]);
+			panic("illegal instruciton: %s", riscv_insn_name_sym[dec.op]);
 	}
 }
 

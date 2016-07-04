@@ -21,6 +21,7 @@
 #include "riscv-csr.h"
 #include "riscv-format.h"
 #include "riscv-disasm.h"
+#include "riscv-strings.h"
 
 using namespace riscv;
 
@@ -127,13 +128,13 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 			case '(': print_add(offset, "("); break;
 			case ',': print_add(offset, ","); break;
 			case ')': print_add(offset, ")"); break;
-			case '0': print_add(offset, riscv_i_registers[dec.rd]); break;
-			case '1': print_add(offset, riscv_i_registers[dec.rs1]); break;
-			case '2': print_add(offset, riscv_i_registers[dec.rs2]); break;
-			case '3': print_add(offset, riscv_f_registers[dec.rd]); break;
-			case '4': print_add(offset, riscv_f_registers[dec.rs1]); break;
-			case '5': print_add(offset, riscv_f_registers[dec.rs2]); break;
-			case '6': print_add(offset, riscv_f_registers[dec.rs3]); break;
+			case '0': print_add(offset, riscv_ireg_name_sym[dec.rd]); break;
+			case '1': print_add(offset, riscv_ireg_name_sym[dec.rs1]); break;
+			case '2': print_add(offset, riscv_ireg_name_sym[dec.rs2]); break;
+			case '3': print_add(offset, riscv_freg_name_sym[dec.rd]); break;
+			case '4': print_add(offset, riscv_freg_name_sym[dec.rs1]); break;
+			case '5': print_add(offset, riscv_freg_name_sym[dec.rs2]); break;
+			case '6': print_add(offset, riscv_freg_name_sym[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
 			case 'i': print_fmt(offset, "%lld", dec.imm); break;
  			case 'o':
@@ -156,7 +157,7 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 				break;
 			case 'O':
 				printf("%s", colorize("opcode"));
-				print_add(offset, riscv_insn_name[dec.op]);
+				print_add(offset, riscv_insn_name_sym[dec.op]);
  				break;
 			case '\t':
 				print_pad(offset, 60, "");
