@@ -85,7 +85,6 @@ struct riscv_disasm : riscv_decode
 {
 	uintptr_t pc;
 	uint64_t  insn;
-	uintptr_t addr;
 
 	riscv_disasm() : riscv_decode(), pc(0), insn(0) {}
 };

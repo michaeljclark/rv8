@@ -175,13 +175,14 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	}
 
 	// decode address
+	addr = 0;
 	bool decoded_address = false;
-	if (!decoded_address) decoded_address = decode_pcrel(dec, pc, pc_offset);
-	if (!decoded_address) decoded_address = decode_pairs(dec, dec_hist, pc_offset);
-	if (!decoded_address) decoded_address = deocde_gprel(dec, gp);
+	if (!decoded_address) decoded_address = decode_pcrel(dec, addr, pc, pc_offset);
+	if (!decoded_address) decoded_address = decode_pairs(dec, addr, dec_hist, pc_offset);
+	if (!decoded_address) decoded_address = deocde_gprel(dec, addr, gp);
 
 	// print address if present
-	if (decoded_address) print_addr(offset, dec.addr, symlookup, colorize);
+	if (decoded_address) print_addr(offset, addr, symlookup, colorize);
 	printf("\n");
 
 	// clear the instruction history on jump boundaries

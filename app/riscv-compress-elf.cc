@@ -37,6 +37,7 @@ using namespace riscv;
 
 struct riscv_asm : riscv_disasm
 {
+	uint64_t  addr;              /* decoded address if present */
 	uint32_t  label_target;      /* label target for this instruction */
 	uint32_t  label_pair;        /* target of first instruction in pair */
 	uint32_t  label_branch;      /* target of jump, jump and link or branch  */
@@ -539,12 +540,12 @@ struct riscv_compress_elf
 				reassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 
 				if (do_print_continuations) {
-					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+					printf("\n%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 					print_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
 				if (do_print_disassembly) {
-					printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+					printf("\n%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
@@ -621,8 +622,16 @@ struct riscv_compress_elf
 
 int main(int argc, const char *argv[])
 {
+	printf("\n");
+	printf("riscv-elf-compress-0.0.0-alpha-0\n");
+	printf("\n");
+	printf("sizeof(riscv_decode) = %lu\n", sizeof(riscv_decode));
+	printf("sizeof(riscv_disasm) = %lu\n", sizeof(riscv_disasm));
+	printf("sizeof(riscv_asm)    = %lu\n", sizeof(riscv_asm));
+
 	riscv_compress_elf elf_compress;
 	elf_compress.parse_commandline(argc, argv);
 	elf_compress.run();
+
 	return 0;
 }

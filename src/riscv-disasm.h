@@ -47,12 +47,12 @@ namespace riscv {
 
 	// decode pc relative address
 	template <typename T>
-	bool decode_pcrel(T &dec, uintptr_t pc, uintptr_t pc_offset)
+	bool decode_pcrel(T &dec, uint64_t &addr, uintptr_t pc, uintptr_t pc_offset)
 	{
 		switch (dec.codec) {
 			case riscv_codec_uj:
 			case riscv_codec_sb:
-				dec.addr = pc - pc_offset + dec.imm;
+				addr = pc - pc_offset + dec.imm;
 				return true;
 			default:
 				return false;
@@ -62,7 +62,7 @@ namespace riscv {
 
 	// decode address using instruction pair constraints
 	template <typename T>
-	bool decode_pairs(T &dec, std::deque<T> &dec_hist, uintptr_t pc_offset)
+	bool decode_pairs(T &dec, uint64_t &addr, std::deque<T> &dec_hist, uintptr_t pc_offset)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -72,10 +72,10 @@ namespace riscv {
 					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
 					switch (rvxi->addr) {
 						case rva_abs:
-							dec.addr = li->imm + dec.imm;
+							addr = li->imm + dec.imm;
 							return true;
 						case rva_pcrel:
-							dec.addr = li->pc - pc_offset + li->imm + dec.imm;
+							addr = li->pc - pc_offset + li->imm + dec.imm;
 							return true;
 						case rva_none:
 						default:
@@ -91,7 +91,7 @@ namespace riscv {
 
 	// decode address for loads and stores from the global pointer
 	template <typename T>
-	bool deocde_gprel(T &dec, uintptr_t gp)
+	bool deocde_gprel(T &dec, uint64_t &addr, uintptr_t gp)
 	{
 		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
 		switch (dec.op) {
@@ -111,7 +111,7 @@ namespace riscv {
 			case riscv_op_sd:
 			case riscv_op_fsw:
 			case riscv_op_fsd:
-				dec.addr = int64_t(gp + dec.imm);
+				addr = int64_t(gp + dec.imm);
 				return true;
 			default:
 				break;
