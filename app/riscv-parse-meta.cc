@@ -1018,7 +1018,10 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 						opcode_format("riscv_op_", comp->comp_opcode, "_").c_str()),
 					opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
 			}
-			printf("\t{ 0, nullptr }\n};\n\n");
+			printf("\t{ %s, nullptr }\n};\n\n",
+				(zero_not_oh ?
+						"0" :
+						"riscv_op_unknown"));
 		}
 		printf("\n");
 	}
@@ -1061,7 +1064,8 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("const riscv_arg_data* riscv_insn_arg_data[] = {\n");
 	printf("\triscv_codec_none_args,\n");
 	for (auto &opcode : opcodes) {
-		printf("\triscv_codec_%s_args,\n", format_codec("", opcode->codec, "_", false).c_str());
+		printf("\t%sriscv_codec_%s_args,\n",
+			opcode_comment(opcode, no_comment).c_str(), format_codec("", opcode->codec, "_", false).c_str());
 	}
 	printf("};\n\n");
 
