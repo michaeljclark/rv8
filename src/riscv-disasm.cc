@@ -85,13 +85,13 @@ const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
+void riscv_disasm_inst(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	uintptr_t pc, uintptr_t next_pc, uintptr_t pc_offset, uintptr_t gp,
 	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;
-	const char *fmt = riscv_insn_format[dec.op];
+	const char *fmt = riscv_inst_format[dec.op];
 	const char *symbol_name = symlookup((uintptr_t)addr, false);
 	const riscv_csr_metadata *csr = nullptr;
 
@@ -114,11 +114,11 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	print_pad(offset, 24);
 
 	// print instruction bytes
-	switch (riscv_insn_length(dec.insn)) {
-		case 2: print_fmt(offset, "%04llx", dec.insn); break;
-		case 4: print_fmt(offset, "%08llx", dec.insn); break;
-		case 6: print_fmt(offset, "%012llx", dec.insn); break;
-		case 8: print_fmt(offset, "%016llx", dec.insn); break;
+	switch (riscv_inst_length(dec.inst)) {
+		case 2: print_fmt(offset, "%04llx", dec.inst); break;
+		case 4: print_fmt(offset, "%08llx", dec.inst); break;
+		case 6: print_fmt(offset, "%012llx", dec.inst); break;
+		case 8: print_fmt(offset, "%016llx", dec.inst); break;
 	}
 	print_pad(offset, 45);
 
@@ -157,7 +157,7 @@ void riscv_disasm_insn(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 				break;
 			case 'O':
 				printf("%s", colorize("opcode"));
-				print_add(offset, riscv_insn_name_sym[dec.op]);
+				print_add(offset, riscv_inst_name_sym[dec.op]);
  				break;
 			case '\t':
 				print_pad(offset, 60, "");

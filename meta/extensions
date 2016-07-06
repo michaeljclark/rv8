@@ -1,5 +1,5 @@
 # format of a line in this file:
-# <prefix> <isa width> <alpha code> <insn width> "<extension description>"
+# <prefix> <isa width> <alpha code> <inst width> "<extension description>"
 
 rv 32 i 32 "RV32I Base Integer Instruction Set"
 rv 64 i 32 "RV64I Base Integer Instruction Set (in addition to RV32I)"

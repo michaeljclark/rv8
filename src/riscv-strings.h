@@ -13,7 +13,7 @@ extern "C" {
 
 extern const char* riscv_ireg_name_sym[];
 extern const char* riscv_freg_name_sym[];
-extern const char* riscv_insn_name_sym[];
+extern const char* riscv_inst_name_sym[];
 extern const char* riscv_arg_name_sym[];
 extern const char* riscv_arg_type_sym[];
 

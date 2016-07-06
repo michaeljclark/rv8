@@ -1004,7 +1004,7 @@ const riscv_arg_data riscv_codec_css_sdsp_f_args[] = {
 	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
 };
 
-const riscv_codec riscv_insn_codec[] = {
+const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_unknown,
 	riscv_codec_u,
 	riscv_codec_u,
@@ -1227,7 +1227,7 @@ const riscv_codec riscv_insn_codec[] = {
 	riscv_codec_css_sdsp,
 };
 
-const char* riscv_insn_format[] = {
+const char* riscv_inst_format[] = {
 	riscv_fmt_none,
 	riscv_fmt_rd_imm,
 	riscv_fmt_rd_offset,
@@ -1450,7 +1450,7 @@ const char* riscv_insn_format[] = {
 	riscv_fmt_rs2_offset_rs1,
 };
 
-const riscv_arg_data* riscv_insn_arg_data[] = {
+const riscv_arg_data* riscv_inst_arg_data[] = {
 	riscv_codec_none_args,
 	riscv_codec_u_args,
 	riscv_codec_u_o_args,
@@ -1673,7 +1673,7 @@ const riscv_arg_data* riscv_insn_arg_data[] = {
 	riscv_codec_css_sdsp_args,
 };
 
-const uint64_t riscv_insn_match[] = {
+const uint64_t riscv_inst_match[] = {
 	0x0000000000000000,
 	0x0000000000000037,
 	0x0000000000000017,
@@ -1896,7 +1896,7 @@ const uint64_t riscv_insn_match[] = {
 	0x000000000000e002,
 };
 
-const uint64_t riscv_insn_mask[] = {
+const uint64_t riscv_inst_mask[] = {
 	0x0000000000000000,
 	0x000000000000007f,
 	0x000000000000007f,
@@ -2119,7 +2119,7 @@ const uint64_t riscv_insn_mask[] = {
 	0x000000000000e003,
 };
 
-const riscv_comp_data* riscv_insn_comp_rv32[] = {
+const riscv_comp_data* riscv_inst_comp_rv32[] = {
 	nullptr,
 	rvcd_rv32_lui,
 	nullptr,
@@ -2342,7 +2342,7 @@ const riscv_comp_data* riscv_insn_comp_rv32[] = {
 	nullptr,
 };
 
-const riscv_comp_data* riscv_insn_comp_rv64[] = {
+const riscv_comp_data* riscv_inst_comp_rv64[] = {
 	nullptr,
 	rvcd_rv64_lui,
 	nullptr,
@@ -2565,7 +2565,7 @@ const riscv_comp_data* riscv_insn_comp_rv64[] = {
 	nullptr,
 };
 
-const int riscv_insn_decomp_rv32[] = {
+const int riscv_inst_decomp_rv32[] = {
 	0,
 	0,
 	0,
@@ -2788,7 +2788,7 @@ const int riscv_insn_decomp_rv32[] = {
 	0,
 };
 
-const int riscv_insn_decomp_rv64[] = {
+const int riscv_inst_decomp_rv64[] = {
 	0,
 	0,
 	0,

@@ -159,16 +159,16 @@ struct riscv_extension
 	std::string prefix;
 	size_t isa_width;
 	char alpha_code;
-	ssize_t insn_width;
+	ssize_t inst_width;
 	std::string description;
 	riscv_opcode_list opcodes;
 
 	riscv_extension(std::string prefix, std::string isa_width,
-		  std::string alpha_code, std::string insn_width, std::string description)
+		  std::string alpha_code, std::string inst_width, std::string description)
 		: name(prefix + isa_width + alpha_code), prefix(prefix),
 		  isa_width(strtoull(isa_width.c_str(), NULL, 10)),
 		  alpha_code(alpha_code.length() > 0 ? alpha_code[0] : '?'),
-		  insn_width(strtoull(insn_width.c_str(), NULL, 10)),
+		  inst_width(strtoull(inst_width.c_str(), NULL, 10)),
 		  description(description) {}
 };
 

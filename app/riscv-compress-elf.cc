@@ -123,10 +123,10 @@ struct riscv_compress_elf
 	void print_continuation_disassembly(T &dec)
 	{
 		std::string args;
-		const char *fmt = riscv_insn_format[dec.op];
+		const char *fmt = riscv_inst_format[dec.op];
 		while (*fmt) {
 			switch (*fmt) {
-				case 'O': args += riscv_insn_name_sym[dec.op]; break;
+				case 'O': args += riscv_inst_name_sym[dec.op]; break;
 				case '(': args += "("; break;
 				case ',': args += ","; break;
 				case ')': args += ")"; break;
@@ -334,9 +334,9 @@ struct riscv_compress_elf
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
 			dec.pc = pc - pc_offset;
-			dec.insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_insn_rv64(dec, dec.insn);
-			riscv_decompress_insn_rv64(dec);
+			dec.inst = riscv_get_inst(pc, &next_pc);
+			riscv_decode_inst_rv64(dec, dec.inst);
+			riscv_decompress_inst_rv64(dec);
 			pc = next_pc;
 		}
 	}
@@ -388,7 +388,7 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (bi != bin.begin()) {
-				uintptr_t new_pc = (bi-1)->pc + riscv_insn_length((bi-1)->insn);
+				uintptr_t new_pc = (bi-1)->pc + riscv_inst_length((bi-1)->inst);
 				elf.update_sym_addr(dec.pc, new_pc);
 				relocations[dec.pc] = new_pc;
 				auto ci = continuations.find(dec.pc);
@@ -398,8 +398,8 @@ struct riscv_compress_elf
 					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
 				}
 			}
-			if (riscv_insn_length(dec.insn) == 4 && riscv_compress_insn_rv64(dec)) {
-				dec.insn = riscv_encode_insn(dec);
+			if (riscv_inst_length(dec.inst) == 4 && riscv_compress_inst_rv64(dec)) {
+				dec.inst = riscv_encode_inst(dec);
 				bytes += 2;
 				saving += 2;
 			} else {
@@ -431,13 +431,13 @@ struct riscv_compress_elf
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
 				} else {
-					dec.insn = riscv_encode_insn(dec);
-					rbi->insn = riscv_encode_insn(*rbi);
+					dec.inst = riscv_encode_inst(dec);
+					rbi->inst = riscv_encode_inst(*rbi);
 				}
 			} else if (dec.label_branch) {
 				dec.imm = label_addr[dec.label_branch] - intptr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
-				dec.insn = riscv_encode_insn(dec);
+				dec.inst = riscv_encode_inst(dec);
 			}
 		}
 	}
@@ -446,14 +446,14 @@ struct riscv_compress_elf
 	{
 		while (size > 0) {
 			riscv_asm dec;
-			dec.insn = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
-			riscv_decode_insn_rv64(dec, dec.insn);
-			dec.pc = bin.back().pc + riscv_insn_length(bin.back().insn);
+			dec.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
+			riscv_decode_inst_rv64(dec, dec.inst);
+			dec.pc = bin.back().pc + riscv_inst_length(bin.back().inst);
 			if (size == 2) {
-				riscv_compress_insn_rv64(dec);
-				dec.insn = riscv_encode_insn(dec);
+				riscv_compress_inst_rv64(dec);
+				dec.inst = riscv_encode_inst(dec);
 			}
-			size -= riscv_insn_length(dec.insn);
+			size -= riscv_inst_length(dec.inst);
 			bin.push_back(dec);
 		}
 	}
@@ -466,13 +466,13 @@ struct riscv_compress_elf
 			if (pc < start || pc > end) {
 				panic("pc outside of section range");
 			}
-			size_t insn_len = riscv_insn_length(dec.insn);
-			switch (insn_len) {
-				case 2: *((uint16_t*)pc) = htole16(dec.insn); break;
-				case 4: *((uint32_t*)pc) = htole32(dec.insn); break;
-				default: panic("can only handle 2 or 4 byte insns");
+			size_t inst_len = riscv_inst_length(dec.inst);
+			switch (inst_len) {
+				case 2: *((uint16_t*)pc) = htole16(dec.inst); break;
+				case 4: *((uint32_t*)pc) = htole32(dec.inst); break;
+				default: panic("can only handle 2 or 4 byte insts");
 			}
-			pc += insn_len;
+			pc += inst_len;
 		}
 	}
 
@@ -493,7 +493,7 @@ struct riscv_compress_elf
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			riscv_disasm_insn(dec, dec_hist, dec.pc, dec.pc + riscv_insn_length(dec.insn), 0, gp,
+			riscv_disasm_inst(dec, dec_hist, dec.pc, dec.pc + riscv_inst_length(dec.inst), 0, gp,
 				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 		}

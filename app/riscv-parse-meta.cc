@@ -290,7 +290,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 		case riscv_latex_type_opcode:
 		{
 			auto &opcode = row.opcode;
-			ssize_t bit_width = opcode->extensions[0]->insn_width;
+			ssize_t bit_width = opcode->extensions[0]->inst_width;
 
 			// calculate the column spans for this row
 			riscv_arg_ptr arg, larg;
@@ -486,7 +486,7 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 	// paginate opcodes ordered by extension
 	// adding type and extension headings, page breaks and continuations
 	size_t line = 0;
-	ssize_t insn_width = 0;
+	ssize_t inst_width = 0;
 	std::vector<riscv_latex_page> pages;
 	for (auto &ext : extensions) {
 		// check if this extension is in the selected subset
@@ -506,7 +506,7 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 		if (pages.size() == 0) pages.push_back(riscv_latex_page());
 
 		// break to a new page if the instruction width changes
-		if (insn_width != 0 && insn_width != ext->insn_width) {
+		if (inst_width != 0 && inst_width != ext->inst_width) {
 			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
 			pages.push_back(riscv_latex_page());
 			line = 0;
@@ -547,7 +547,7 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
 		line++;
 
-		insn_width = ext->insn_width;
+		inst_width = ext->inst_width;
 	}
 
 	// iterate through the table rows and add types to 
@@ -623,7 +623,7 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 		if (!opcode->match_extension(ext_subset)) continue;
 		i++;
 		printf("// ");
-		ssize_t bit_width = opcode->extensions[0]->insn_width;
+		ssize_t bit_width = opcode->extensions[0]->inst_width;
 		for (ssize_t i = 0; i < kMaxInstructionWidth-bit_width; i++) printf(" ");
 		for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 			char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '.');
@@ -801,7 +801,7 @@ void riscv_parse_meta::print_jit_cc()
 				printf("/* dec.? = %s unhandled */\n", arg->name.c_str());
 			}
 		}
-		printf("\treturn riscv_encode_insn(dec);\n");
+		printf("\treturn riscv_encode_inst(dec);\n");
 		printf("}\n\n");
 	}
 	printf("\n");
@@ -948,17 +948,17 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Opcode metadata tables
-	printf("extern const riscv_codec riscv_insn_codec[];\n");
-	printf("extern const char* riscv_insn_format[];\n");
-	printf("extern const riscv_arg_data* riscv_insn_arg_data[];\n");
-	printf("extern const uint64_t riscv_insn_match[];\n");
-	printf("extern const uint64_t riscv_insn_mask[];\n");
+	printf("extern const riscv_codec riscv_inst_codec[];\n");
+	printf("extern const char* riscv_inst_format[];\n");
+	printf("extern const riscv_arg_data* riscv_inst_arg_data[];\n");
+	printf("extern const uint64_t riscv_inst_match[];\n");
+	printf("extern const uint64_t riscv_inst_mask[];\n");
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("extern const riscv_comp_data* riscv_insn_comp_%s[];\n",
+		printf("extern const riscv_comp_data* riscv_inst_comp_%s[];\n",
 			isa_width.second.c_str());
 	}
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("extern const int riscv_insn_decomp_%s[];\n",
+		printf("extern const int riscv_inst_decomp_%s[];\n",
 			isa_width.second.c_str());
 	}
 	printf("\n");
@@ -1040,7 +1040,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	}
 
 	// Instruction codecs
-	printf("const riscv_codec riscv_insn_codec[] = {\n");
+	printf("const riscv_codec riscv_inst_codec[] = {\n");
 	print_array_unknown_enum("riscv_codec_unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string codec_name = format_codec("", opcode->codec, "_");
@@ -1051,7 +1051,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction formats
-	printf("const char* riscv_insn_format[] = {\n");
+	printf("const char* riscv_inst_format[] = {\n");
 	print_array_unknown_enum("riscv_fmt_none", no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s%s,\n",
@@ -1061,7 +1061,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction codecs argument data table
-	printf("const riscv_arg_data* riscv_insn_arg_data[] = {\n");
+	printf("const riscv_arg_data* riscv_inst_arg_data[] = {\n");
 	printf("\triscv_codec_none_args,\n");
 	for (auto &opcode : opcodes) {
 		printf("\t%sriscv_codec_%s_args,\n",
@@ -1070,7 +1070,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction match bits
-	printf("const uint64_t riscv_insn_match[] = {\n");
+	printf("const uint64_t riscv_inst_match[] = {\n");
 	print_array_unknown_uint64(0ULL, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%016" PRIx64 ",\n",
@@ -1079,7 +1079,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction mask bits
-	printf("const uint64_t riscv_insn_mask[] = {\n");
+	printf("const uint64_t riscv_inst_mask[] = {\n");
 	print_array_unknown_uint64(0ULL, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%016" PRIx64 ",\n",
@@ -1089,7 +1089,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 
 	// RVC compression table (per isa width)
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("const riscv_comp_data* riscv_insn_comp_%s[] = {\n", isa_width.second.c_str());
+		printf("const riscv_comp_data* riscv_inst_comp_%s[] = {\n", isa_width.second.c_str());
 		print_array_unknown_enum("nullptr", no_comment);
 		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
 		for (auto &opcode : opcodes) {
@@ -1105,7 +1105,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 
 	// RVC decompression table
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("const int riscv_insn_decomp_%s[] = {\n", isa_width.second.c_str());
+		printf("const int riscv_inst_decomp_%s[] = {\n", isa_width.second.c_str());
 		if (zero_not_oh) print_array_unknown_enum("0", no_comment);
 		else print_array_unknown_enum("riscv_op_unknown", no_comment);
 		for (auto &opcode : opcodes) {
@@ -1140,7 +1140,7 @@ void riscv_parse_meta::print_strings_h(bool no_comment, bool zero_not_oh)
 	printf("\n");
 	printf("extern const char* riscv_ireg_name_sym[];\n");
 	printf("extern const char* riscv_freg_name_sym[];\n");
-	printf("extern const char* riscv_insn_name_sym[];\n");
+	printf("extern const char* riscv_inst_name_sym[];\n");
 	printf("extern const char* riscv_arg_name_sym[];\n");
 	printf("extern const char* riscv_arg_type_sym[];\n");
 	printf("\n");
@@ -1175,7 +1175,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 
 	// Instruction names
-	printf("const char* riscv_insn_name_sym[] = {\n");
+	printf("const char* riscv_inst_name_sym[] = {\n");
 	print_array_unknown_str("unknown", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_name = opcode_format("", opcode, ".", false);
@@ -1242,7 +1242,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline uint64_t riscv_decode_insn_op(uint64_t insn)\n");
+	printf("inline uint64_t riscv_decode_inst_op(uint64_t inst)\n");
 	printf("{\n");
 	printf("\tuint64_t op = riscv_op_unknown;\n");
 	print_switch_decoder_node(root_node, 1);
@@ -1252,14 +1252,14 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	// print type decoder
 	printf("/* Decode Instruction Type */\n\n");
 	printf("template <typename T>\n");
-	printf("inline void riscv_decode_insn_type(T &dec, uint64_t insn)\n");
+	printf("inline void riscv_decode_inst_type(T &dec, uint64_t inst)\n");
 	printf("{\n");
-	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
+	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
 			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
-			format_string("riscv_decode_%s(dec, insn);", codec.c_str()).c_str());
+			format_string("riscv_decode_%s(dec, inst);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
 	printf("}\n\n");
@@ -1267,18 +1267,18 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	// print encoder
 	printf("/* Encode Instruction */\n\n");
 	printf("template <typename T>\n");
-	printf("inline uint64_t riscv_encode_insn(T &dec)\n");
+	printf("inline uint64_t riscv_encode_inst(T &dec)\n");
 	printf("{\n");
-	printf("\tdec.codec = riscv_insn_codec[dec.op];\n");
-	printf("\tuint64_t insn = riscv_insn_match[dec.op];\n");
+	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
+	printf("\tuint64_t inst = riscv_inst_match[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
 			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
-			format_string("return insn |= riscv_encode_%s(dec);", codec.c_str()).c_str());
+			format_string("return inst |= riscv_encode_%s(dec);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
-	printf("\treturn insn;\n");
+	printf("\treturn inst;\n");
 	printf("}\n");
 	printf("\n");
 	printf("#endif\n");
@@ -1363,7 +1363,7 @@ void riscv_parse_meta::generate_codec_node(riscv_codec_node &node, riscv_opcode_
 void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t indent)
 {
 	for (size_t i = 0; i < indent; i++) printf("\t");
-	printf("switch (%s) {\n", format_bitmask(node.bits, "insn", true).c_str());
+	printf("switch (%s) {\n", format_bitmask(node.bits, "inst", true).c_str());
 	for (auto &val : node.vals) {
 		auto opcode_list = node.val_opcodes[val];
 		if (node.val_decodes[val].bits.size() == 0 && opcode_list.size() >= 1) {
@@ -1457,7 +1457,7 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 
 int main(int argc, const char *argv[])
 {
-	riscv_parse_meta insn_set;
+	riscv_parse_meta inst_set;
 
 	bool print_latex = false;
 	bool print_map = false;
@@ -1487,7 +1487,7 @@ int main(int argc, const char *argv[])
 			[&](std::string s) { isa_spec = s; return true; } },
 		{ "-r", "--read-isa", cmdline_arg_type_string,
 			"Read instruction set metadata from directory",
-			[&](std::string s) { return insn_set.read_metadata(s); } },
+			[&](std::string s) { return inst_set.read_metadata(s); } },
 		{ "-l", "--print-latex", cmdline_arg_type_none,
 			"Print LaTeX",
 			[&](std::string s) { return (print_latex = true); } },
@@ -1558,49 +1558,49 @@ int main(int argc, const char *argv[])
 		return false;
 	}
 
-	insn_set.ext_subset = insn_set.decode_isa_extensions(isa_spec);
+	inst_set.ext_subset = inst_set.decode_isa_extensions(isa_spec);
 
-	insn_set.generate_map();
+	inst_set.generate_map();
 
 	if (print_latex) {
-		insn_set.print_latex(remove_question_marks);
+		inst_set.print_latex(remove_question_marks);
 	}
 
 	if (print_map) {
-		insn_set.print_map(print_map_instructions);
+		inst_set.print_map(print_map_instructions);
 	}
 
 	if (print_meta_h) {
-		insn_set.print_meta_h(no_comment, zero_not_oh);
+		inst_set.print_meta_h(no_comment, zero_not_oh);
 	}
 
 	if (print_meta_cc) {
-		insn_set.print_meta_cc(no_comment, zero_not_oh);
+		inst_set.print_meta_cc(no_comment, zero_not_oh);
 	}
 
 	if (print_strings_h) {
-		insn_set.print_strings_h(no_comment, zero_not_oh);
+		inst_set.print_strings_h(no_comment, zero_not_oh);
 	}
 
 	if (print_strings_cc) {
-		insn_set.print_strings_cc(no_comment, zero_not_oh);
+		inst_set.print_strings_cc(no_comment, zero_not_oh);
 	}
 
 	if (print_args_h) {
-		insn_set.print_args_h();
+		inst_set.print_args_h();
 	}
 
 	if (print_switch_h) {
-		insn_set.generate_codec(include_pseudo);
-		insn_set.print_switch_h(no_comment, zero_not_oh);
+		inst_set.generate_codec(include_pseudo);
+		inst_set.print_switch_h(no_comment, zero_not_oh);
 	}
 
 	if (print_jit_h) {
-		insn_set.print_jit_h();
+		inst_set.print_jit_h();
 	}
 
 	if (print_jit_cc) {
-		insn_set.print_jit_cc();
+		inst_set.print_jit_cc();
 	}
 
 	exit(0);

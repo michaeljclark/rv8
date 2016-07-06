@@ -56,7 +56,7 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #define unlikely(x) __builtin_expect(x, 0)
 
-struct insn_desc_t
+struct inst_desc_t
 {
   uint64_t match;
   uint64_t mask;
@@ -68,21 +68,21 @@ struct processor_t
 {
 	static const size_t OPCODE_CACHE_SIZE = 8191;
 
-	insn_desc_t opcode_cache[OPCODE_CACHE_SIZE];
+	inst_desc_t opcode_cache[OPCODE_CACHE_SIZE];
 
-	std::vector<insn_desc_t> instructions;
+	std::vector<inst_desc_t> instructions;
 
 	void build_opcode_map();
 	void register_base_instructions();
-	void register_insn(uint64_t match, uint64_t mask, const char* name);
-	insn_desc_t decode_insn_nocache(uint64_t bits);
-	insn_desc_t decode_insn(uint64_t bits);
+	void register_inst(uint64_t match, uint64_t mask, const char* name);
+	inst_desc_t decode_inst_nocache(uint64_t bits);
+	inst_desc_t decode_inst(uint64_t bits);
 };
 
 void processor_t::build_opcode_map()
 {
 	struct cmp {
-		bool operator()(const insn_desc_t& lhs, const insn_desc_t& rhs) {
+		bool operator()(const inst_desc_t& lhs, const inst_desc_t& rhs) {
 			if (lhs.match == rhs.match)
 				return lhs.mask > rhs.mask;
 			return lhs.match > rhs.match;
@@ -98,7 +98,7 @@ void processor_t::build_opcode_map()
 void processor_t::register_base_instructions()
 {
 	#define DECLARE_INSN(name, match, mask) \
-		register_insn(match, mask, #name);
+		register_inst(match, mask, #name);
 
 	#define MATCH_BEQ 0x63
 	#define MASK_BEQ  0x707f
@@ -786,22 +786,22 @@ void processor_t::register_base_instructions()
 	DECLARE_INSN(custom3_rd_rs1, MATCH_CUSTOM3_RD_RS1, MASK_CUSTOM3_RD_RS1)
 	DECLARE_INSN(custom3_rd_rs1_rs2, MATCH_CUSTOM3_RD_RS1_RS2, MASK_CUSTOM3_RD_RS1_RS2)
 
-	register_insn(0, 0, "unknown");
+	register_inst(0, 0, "unknown");
 	build_opcode_map();
 }
 
-void processor_t::register_insn(uint64_t match, uint64_t mask, const char* name)
+void processor_t::register_inst(uint64_t match, uint64_t mask, const char* name)
 {
-  instructions.push_back(insn_desc_t{match, mask, name, instructions.size()});
+  instructions.push_back(inst_desc_t{match, mask, name, instructions.size()});
 }
 
-insn_desc_t processor_t::decode_insn_nocache(uint64_t bits)
+inst_desc_t processor_t::decode_inst_nocache(uint64_t bits)
 {
-	insn_desc_t* p = &instructions[0];
+	inst_desc_t* p = &instructions[0];
 
 	while ((bits & p->mask) != p->match)
 		p++;
-	insn_desc_t desc = *p;
+	inst_desc_t desc = *p;
 
 	if (p->mask != 0 && p > &instructions[0]) {
 		if (p->match != (p-1)->match && p->match != (p+1)->match) {
@@ -815,15 +815,15 @@ insn_desc_t processor_t::decode_insn_nocache(uint64_t bits)
 	return desc;
 }
 
-insn_desc_t processor_t::decode_insn(uint64_t bits)
+inst_desc_t processor_t::decode_inst(uint64_t bits)
 {
   // look up opcode in hash table
   size_t idx = bits % OPCODE_CACHE_SIZE;
-  insn_desc_t desc = opcode_cache[idx];
+  inst_desc_t desc = opcode_cache[idx];
 
   if (unlikely(bits != desc.match)) {
     // fall back to linear search
-    insn_desc_t* p = &instructions[0];
+    inst_desc_t* p = &instructions[0];
     while ((bits & p->mask) != p->match)
       p++;
     desc = *p;
@@ -923,13 +923,13 @@ void decode_meta(uintptr_t start, uintptr_t end, const char *code)
 	for (size_t i = 0; i < count; i++) {
 		uintptr_t pc = start;
 		while (pc < end) {
-			riscv_decode_insn_op<false, true, true, true, true, true, true, true, true>(riscv_get_insn(pc, &pc));
+			riscv_decode_inst_op<false, true, true, true, true, true, true, true, true>(riscv_get_inst(pc, &pc));
 			decoded++;
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, insn_ns, code);
+	double inst_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
+	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, inst_ns, code);
 }
 
 template <const size_t count>
@@ -942,13 +942,13 @@ void decode_spike_nocache(uintptr_t start, uintptr_t end, const char* code)
 	for (size_t i = 0; i < count; i++) {
 		uintptr_t pc = start;
 		while (pc < end) {
-			proc.decode_insn_nocache(riscv_get_insn(pc, &pc));
+			proc.decode_inst_nocache(riscv_get_inst(pc, &pc));
 			decoded++;
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, insn_ns, code);
+	double inst_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
+	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, inst_ns, code);
 }
 
 template <const size_t count>
@@ -961,13 +961,13 @@ void decode_spike_cache(uintptr_t start, uintptr_t end, const char* code)
 	for (size_t i = 0; i < count; i++) {
 		uintptr_t pc = start;
 		while (pc < end) {
-			proc.decode_insn(riscv_get_insn(pc, &pc));
+			proc.decode_inst(riscv_get_inst(pc, &pc));
 			decoded++;
 		}
 	}
 	std::chrono::time_point<std::chrono::system_clock> s2 = std::chrono::system_clock::now();
-	double insn_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
-	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, insn_ns, code);
+	double inst_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(s2-s1).count() / (double)decoded;
+	printf("%-20s %15lu %15.2lf %15s\n", __func__, decoded, inst_ns, code);
 }
 
 #define TEST_DECODER_MICRO(decoder,code,count,type) \
@@ -981,7 +981,7 @@ int main(int argc, const char *argv[])
 	static const ssize_t count = 1000000;
 	static const ssize_t count_elf = 10;
 
-	printf("%-20s %15s %15s %15s\n", "#decoder", "insn_count", "nanoseconds", "code");
+	printf("%-20s %15s %15s %15s\n", "#decoder", "inst_count", "nanoseconds", "code");
 
 	if (argc < 2) {
 		TEST_DECODER_MICRO(decode_meta, decode_code_1, count, "RV64");

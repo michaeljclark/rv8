@@ -76,7 +76,7 @@ const char* riscv_freg_name_sym[] = {
 	"ft11",
 };
 
-const char* riscv_insn_name_sym[] = {
+const char* riscv_inst_name_sym[] = {
 	"unknown",
 	"lui",
 	"auipc",

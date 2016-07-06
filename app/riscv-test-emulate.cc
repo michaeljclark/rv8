@@ -37,8 +37,8 @@ struct riscv_proc_state
 void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 {
 	uintptr_t next_pc;
-	uint64_t insn = riscv_get_insn(proc->pc, &next_pc);
-	riscv_decode_insn_rv64(dec, insn);
+	uint64_t inst = riscv_get_inst(proc->pc, &next_pc);
+	riscv_decode_inst_rv64(dec, inst);
 	switch (dec.op) {
 		case riscv_op_addi:
 			proc->i_reg[dec.rd].lu.val = proc->i_reg[dec.rs1].lu.val + dec.imm;
@@ -67,7 +67,7 @@ void rv64_exec(riscv_decode &dec, riscv_proc_state *proc)
 			proc->pc = next_pc;
 			break;
 		default:
-			panic("illegal instruciton: %s", riscv_insn_name_sym[dec.op]);
+			panic("illegal instruciton: %s", riscv_inst_name_sym[dec.op]);
 	}
 }
 

@@ -681,15 +681,15 @@ struct riscv_arg_data
 	const unsigned int width;
 };
 
-extern const riscv_codec riscv_insn_codec[];
-extern const char* riscv_insn_format[];
-extern const riscv_arg_data* riscv_insn_arg_data[];
-extern const uint64_t riscv_insn_match[];
-extern const uint64_t riscv_insn_mask[];
-extern const riscv_comp_data* riscv_insn_comp_rv32[];
-extern const riscv_comp_data* riscv_insn_comp_rv64[];
-extern const int riscv_insn_decomp_rv32[];
-extern const int riscv_insn_decomp_rv64[];
+extern const riscv_codec riscv_inst_codec[];
+extern const char* riscv_inst_format[];
+extern const riscv_arg_data* riscv_inst_arg_data[];
+extern const uint64_t riscv_inst_match[];
+extern const uint64_t riscv_inst_mask[];
+extern const riscv_comp_data* riscv_inst_comp_rv32[];
+extern const riscv_comp_data* riscv_inst_comp_rv64[];
+extern const int riscv_inst_decomp_rv32[];
+extern const int riscv_inst_decomp_rv64[];
 
 #ifdef __cplusplus
 }

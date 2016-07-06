@@ -42,7 +42,7 @@ struct riscv_histogram_elf
 	bool help_or_error = false;
 	bool hash_bars = false;
 	bool reverse_sort = false;
-	bool insn_histogram = false;
+	bool inst_histogram = false;
 	bool regs_histogram = false;
 	bool regs_position = false;
 
@@ -73,7 +73,7 @@ struct riscv_histogram_elf
 	void histogram_add_regs(map_t &hist, riscv_decode &dec)
 	{
 		std::string key;
-		const riscv_arg_data *arg_data = riscv_insn_arg_data[dec.op];
+		const riscv_arg_data *arg_data = riscv_inst_arg_data[dec.op];
 		while (arg_data->type != riscv_type_none) {
 			switch (arg_data->type) {
 				case riscv_type_ireg:
@@ -96,10 +96,10 @@ struct riscv_histogram_elf
 		riscv_decode dec;
 		uintptr_t pc = start, next_pc;
 		while (pc < end) {
-			uint64_t insn = riscv_get_insn(pc, &next_pc);
-			riscv_decode_insn_rv64(dec, insn);
-			if (insn_histogram) {
-				histogram_add(hist, riscv_insn_name_sym[dec.op]);
+			uint64_t inst = riscv_get_inst(pc, &next_pc);
+			riscv_decode_inst_rv64(dec, inst);
+			if (inst_histogram) {
+				histogram_add(hist, riscv_inst_name_sym[dec.op]);
 			}
 			if (regs_histogram) {
 				histogram_add_regs(hist, dec);
@@ -163,7 +163,7 @@ struct riscv_histogram_elf
 				[&](std::string s) { return (hash_bars = true); } },
 			{ "-I", "--instructions", cmdline_arg_type_none,
 				"Instruction Usage Histogram",
-				[&](std::string s) { return (insn_histogram = true); } },
+				[&](std::string s) { return (inst_histogram = true); } },
 			{ "-R", "--registers", cmdline_arg_type_none,
 				"Register Usage Histogram",
 				[&](std::string s) { return (regs_histogram = true); } },
@@ -182,7 +182,7 @@ struct riscv_histogram_elf
 		auto result = cmdline_option::process_options(options, argc, argv);
 		if (!result.second) {
 			help_or_error = true;
-		} else if (result.first.size() != 1 || !(insn_histogram || regs_histogram)) {
+		} else if (result.first.size() != 1 || !(inst_histogram || regs_histogram)) {
 			printf("%s: wrong number of arguments\n", argv[0]);
 			help_or_error = true;
 		}

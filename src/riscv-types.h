@@ -209,7 +209,7 @@ namespace riscv {
 		static_assert((L > 0), "L > 0");
 		static_assert((K < sizeof(1ULL) << 3), "K < sizeof(1ULL) << 3");
 
-		static inline constexpr uint64_t decode(uint64_t insn) { return 0; }
+		static inline constexpr uint64_t decode(uint64_t inst) { return 0; }
 		static inline constexpr uint64_t encode(uint64_t imm) { return 0; }
 	};
 
@@ -224,9 +224,9 @@ namespace riscv {
 		enum { offset = I::offset + H::width };
 		enum { shift = offset + L - H::width - H::m };
 
-		static inline constexpr uint64_t decode(uint64_t insn) {
+		static inline constexpr uint64_t decode(uint64_t inst) {
 			const uint64_t mask = ((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
-			return ((shift < 0 ? insn << -shift : insn >> shift) & mask) | I::decode(insn);
+			return ((shift < 0 ? inst << -shift : inst >> shift) & mask) | I::decode(inst);
 		}
 
 		static inline constexpr uint64_t encode(uint64_t imm) {
@@ -248,7 +248,7 @@ namespace riscv {
 	template<typename R, int W>
 	struct imm_arg_impl_t<R,W>
 	{
-		static inline constexpr R decode(uint64_t insn) { return 0; }
+		static inline constexpr R decode(uint64_t inst) { return 0; }
 		static inline constexpr R encode(uint64_t imm) { return 0; }
 	};
 
@@ -257,7 +257,7 @@ namespace riscv {
 	{
 		typedef imm_arg_impl_t<R,W,T...> I;
 
-		static inline constexpr R decode(uint64_t insn) { return I::decode(insn) | H::decode(insn); }
+		static inline constexpr R decode(uint64_t inst) { return I::decode(inst) | H::decode(inst); }
 		static inline constexpr R encode(uint64_t imm) { return I::encode(imm) | H::encode(imm); }
 	};
 
@@ -266,7 +266,7 @@ namespace riscv {
 	{
 		typedef imm_arg_impl_t<int64_t,W,Args...> I;
 
-		static constexpr int64_t decode(uint64_t insn) { return sign_extend<int64_t,W>(I::decode(insn)); }
+		static constexpr int64_t decode(uint64_t inst) { return sign_extend<int64_t,W>(I::decode(inst)); }
 		static constexpr int64_t encode(uint64_t imm) { return I::encode(imm); }
 	};
 
@@ -275,7 +275,7 @@ namespace riscv {
 	{
 		typedef imm_arg_impl_t<uint64_t,W,Args...> I;
 
-		static constexpr uint64_t decode(uint64_t insn) { return I::decode(insn); }
+		static constexpr uint64_t decode(uint64_t inst) { return I::decode(inst); }
 		static constexpr uint64_t encode(uint64_t imm) { return I::encode(imm); }
 	};
 
