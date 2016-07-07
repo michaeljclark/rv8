@@ -48,7 +48,7 @@ fence.i    "Fence Instruction"                              "fence_i()"
 
 ld         "Load Double"                                    "rd = sx(*(s64*)(rs1 + imm))"
 sd         "Store Double"                                   "*(u64*)(rs1 + imm) = rs2"
-addiw      "Add Immediate Word"                             "rd = s32(rs1) + imm"
+addiw      "Add Immediate Word"                             "rd = s32(rs1) + s32(imm)"
 slliw      "Shift Left Logical Immediate Word"              "rd = u32(rs1) << imm"
 srliw      "Shift Right Logical Immediate Word"             "rd = u32(rs1) >> imm"
 sraiw      "Shift Right Arithmetic Immediate Word"          "rd = s32(rs1) >> imm"
