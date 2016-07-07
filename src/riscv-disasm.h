@@ -121,6 +121,14 @@ namespace riscv {
 
 }
 
+struct riscv_disasm : riscv_decode
+{
+	uintptr_t pc;
+	uint64_t  inst;
+
+	riscv_disasm() : riscv_decode(), pc(0), inst(0) {}
+};
+
 typedef std::function<const char*(uintptr_t, bool nearest)> riscv_symbol_name_fn;
 typedef std::function<const char*(const char *type)> riscv_symbol_colorize_fn;
 

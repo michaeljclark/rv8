@@ -125,8 +125,8 @@ RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 
 # libriscv_meta
-RV_ARGS_HDR =   $(LIB_SRC_DIR)/riscv-args.h
-RV_CODEC_HDR =  $(LIB_SRC_DIR)/riscv-switch.h
+RV_ARGS_HDR =   $(LIB_SRC_DIR)/riscv-codec-args.h
+RV_CODEC_HDR =  $(LIB_SRC_DIR)/riscv-codec-switch.h
 RV_JIT_HDR =    $(LIB_SRC_DIR)/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/riscv-jit.cc
 RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
