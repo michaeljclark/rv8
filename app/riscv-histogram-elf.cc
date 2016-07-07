@@ -23,7 +23,7 @@
 #include "riscv-util.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
-#include "riscv-decode.h"
+#include "riscv-codec.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"

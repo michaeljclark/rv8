@@ -18,7 +18,7 @@
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
-#include "riscv-decode.h"
+#include "riscv-codec.h"
 #include "riscv-csr.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"

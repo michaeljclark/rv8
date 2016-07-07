@@ -12,7 +12,7 @@
 #include "riscv-endian.h"
 #include "riscv-jit.h"
 #include "riscv-meta.h"
-#include "riscv-decode.h"
+#include "riscv-codec.h"
 
 uint64_t riscv::emit_lui(ireg5 rd, simm32 imm20)
 {

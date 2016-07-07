@@ -759,7 +759,7 @@ void riscv_parse_meta::print_jit_cc()
 	printf("#include \"riscv-endian.h\"\n");
 	printf("#include \"riscv-jit.h\"\n");
 	printf("#include \"riscv-meta.h\"\n");
-	printf("#include \"riscv-decode.h\"\n");
+	printf("#include \"riscv-codec.h\"\n");
 	printf("\n");
 
 	for (auto &opcode : opcodes) {
@@ -1259,7 +1259,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
 			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
-			format_string("riscv_decode_%s(dec, inst);", codec.c_str()).c_str());
+			format_string("riscv::decode_%s(dec, inst);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
 	printf("}\n\n");
@@ -1275,7 +1275,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	for (auto &codec : get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
 			format_string("riscv_codec_%s:", codec.c_str()).c_str(),
-			format_string("return inst |= riscv_encode_%s(dec);", codec.c_str()).c_str());
+			format_string("return inst |= riscv::encode_%s(dec);", codec.c_str()).c_str());
 	}
 	printf("\t};\n");
 	printf("\treturn inst;\n");
