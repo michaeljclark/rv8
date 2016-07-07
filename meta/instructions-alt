@@ -79,10 +79,10 @@ amoadd.w   "Atomic Add Word"                                "s32[rs1] → rd ∥
 amoxor.w   "Atomic Xor Word"                                "s32[rs1] → rd ∥ s32(rs2) ⊻ s32[rs1] → u32[rs1]"
 amoor.w    "Atomic Or Word"                                 "s32[rs1] → rd ∥ s32(rs2) ∨ s32[rs1] → u32[rs1]"
 amoand.w   "Atomic And Word"                                "s32[rs1] → rd ∥ s32(rs2) ∧ s32[rs1] → u32[rs1]"
-amomin.w   "Atomic Minimum Word"                            "s32[rs1] → rd ∥ min(s32(rs2), s32[rs1]) → u32[rs1]"
-amomax.w   "Atomic Maximum Word"                            "s32[rs1] → rd ∥ max(s32(rs2), s32[rs1]) → u32[rs1]"
-amominu.w  "Atomic Minimum Unsigned Word"                   "s32[rs1] → rd ∥ min(u32(rs2), u32[rs1]) → u32[rs1]"
-amomaxu.w  "Atomic Maximum Unsigned Word"                   "s32[rs1] → rd ∥ max(u32(rs2), u32[rs1]) → u32[rs1]"
+amomin.w   "Atomic Minimum Word"                            "s32[rs1] → rd ∥ s32_min(s32(rs2), s32[rs1]) → u32[rs1]"
+amomax.w   "Atomic Maximum Word"                            "s32[rs1] → rd ∥ s32_max(s32(rs2), s32[rs1]) → u32[rs1]"
+amominu.w  "Atomic Minimum Unsigned Word"                   "s32[rs1] → rd ∥ u32_min(u32(rs2), u32[rs1]) → u32[rs1]"
+amomaxu.w  "Atomic Maximum Unsigned Word"                   "s32[rs1] → rd ∥ u32_max(u32(rs2), u32[rs1]) → u32[rs1]"
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
@@ -93,10 +93,10 @@ amoadd.d   "Atomic Add Double Word"                         "s64[rs1] → rd ∥
 amoxor.d   "Atomic Xor Double Word"                         "s64[rs1] → rd ∥ s64(rs2) ⊻ s64[rs1] → u64[rs1]"
 amoor.d    "Atomic Or Double Word"                          "s64[rs1] → rd ∥ s64(rs2) ∨ s64[rs1] → u64[rs1]"
 amoand.d   "Atomic And Double Word"                         "s64[rs1] → rd ∥ s64(rs2) ∧ s64[rs1] → u64[rs1]"
-amomin.d   "Atomic Minimum Double Word"                     "s64[rs1] → rd ∥ min(s64(rs2), s64[rs1]) → u64[rs1]"
-amomax.d   "Atomic Maximum Double Word"                     "s64[rs1] → rd ∥ max(s64(rs2), s64[rs1]) → u64[rs1]"
-amominu.d  "Atomic Minimum Unsigned Double Word"            "s64[rs1] → rd ∥ min(u64(rs2), u64[rs1]) → u64[rs1]"
-amomaxu.d  "Atomic Maximum Unsigned Double Word"            "s64[rs1] → rd ∥ max(u64(rs2), u64[rs1]) → u64[rs1]"
+amomin.d   "Atomic Minimum Double Word"                     "s64[rs1] → rd ∥ s64_min(s64(rs2), s64[rs1]) → u64[rs1]"
+amomax.d   "Atomic Maximum Double Word"                     "s64[rs1] → rd ∥ s64_max(s64(rs2), s64[rs1]) → u64[rs1]"
+amominu.d  "Atomic Minimum Unsigned Double Word"            "s64[rs1] → rd ∥ u64_min(u64(rs2), u64[rs1]) → u64[rs1]"
+amomaxu.d  "Atomic Maximum Unsigned Double Word"            "s64[rs1] → rd ∥ u64_max(u64(rs2), u64[rs1]) → u64[rs1]"
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
