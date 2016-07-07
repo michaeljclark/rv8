@@ -31,6 +31,16 @@ fcsr    OF                   4       "Overflow"
 fcsr    UF                   8       "Underflow"
 fcsr    NX                   16      "Inexact"
 
+# CSR permissions
+csr_perm urw                 0       "User Read-only"
+csr_perm uro                 1       "User Read/write"
+csr_perm srw                 2       "Supervisor Read-only"
+csr_perm sro                 3       "Supervisor Read/write"
+csr_perm hrw                 4       "Hypervisor Read-only"
+csr_perm hro                 5       "Hypervisor Read/write"
+csr_perm mrw                 6       "Machine Read-only"
+csr_perm mro                 7       "Machine Read/write"
+
 # Machine Cause Register faults (mcause), interrupt bit clear
 cause   misaligned_fetch     0       "Instruction address misaligned"
 cause   fault_fetch          1       "Instruction access fault"

@@ -49,6 +49,18 @@ enum riscv_fcsr
 	riscv_fcsr_NX = 16,
 };
 
+enum riscv_csr_perm
+{
+	riscv_csr_perm_urw = 0,
+	riscv_csr_perm_uro = 1,
+	riscv_csr_perm_srw = 2,
+	riscv_csr_perm_sro = 3,
+	riscv_csr_perm_hrw = 4,
+	riscv_csr_perm_hro = 5,
+	riscv_csr_perm_mrw = 6,
+	riscv_csr_perm_mro = 7,
+};
+
 enum riscv_cause
 {
 	riscv_cause_misaligned_fetch = 0,
