@@ -133,12 +133,35 @@ namespace riscv {
 	template <uint64_t W> constexpr simm_t<W> simm(const ux imm) { return simm_t<W>(imm); }
 	template <uint64_t W> constexpr uimm_t<W> uimm(const ux imm) { return uimm_t<W>(imm); }
 
-	/* Integer register */
+	/* RV32 integer register */
 
-	union ireg
+	union ireg_rv32
+	{
+		struct { int32_t  val; }                     x;
+		struct { uint32_t val; }                     xu;
+		struct { int32_t  val; }                     w;
+		struct { uint32_t val; }                     wu;
+	#if _BYTE_ORDER == _LITTLE_ENDIAN
+		struct { int16_t  val;    int16_t  pad[1]; } h;
+		struct { uint16_t val;    uint16_t pad[1]; } hu;
+		struct { int8_t   val;    int8_t   pad[3]; } b;
+		struct { uint8_t  val;    uint8_t  pad[3]; } bu;
+	#else
+		struct { int16_t  pad[1]; int16_t  val; }    h;
+		struct { uint16_t pad[1]; uint16_t val; }    hu;
+		struct { int8_t   pad[3]; int8_t   val; }    b;
+		struct { uint8_t  pad[3]; uint8_t  val; }    bu;
+	#endif
+	};
+
+	/* RV64 integer register */
+
+	union ireg_rv64
 	{
 		struct { int64_t  val; }                     l;
 		struct { uint64_t val; }                     lu;
+		struct { int64_t  val; }                     x;
+		struct { uint64_t val; }                     xu;
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 		struct { int32_t  val;    int32_t  pad; }    w;
 		struct { uint32_t val;    uint32_t pad; }    wu;
@@ -156,13 +179,53 @@ namespace riscv {
 	#endif
 	};
 
-	/* FP register */
+	/* FP32 register */
 
-	union freg
+	union freg_fp32
 	{
-		double d;
-		float s;
+		struct { uint32_t val; }                     wu;
+		struct { uint32_t val; }                     xu;
+		struct { float    val; }                     s;
 	};
+
+	/* FP64 register */
+
+	union freg_fp64
+	{
+		struct { uint64_t val; }                     lu;
+		struct { uint64_t val; }                     xu;
+	#if _BYTE_ORDER == _LITTLE_ENDIAN
+		struct { double   val; }                     d;
+		struct { float val;       uint32_t pad; }    s;
+		struct { uint32_t val;    uint32_t pad; }    wu;
+	#else
+		struct { double   val; }                     d;
+		struct { uint32_t pad;    float    val; }    s;
+		struct { uint32_t pad;    uint32_t val; }    wu;
+	#endif
+	};
+
+	/* Processor state */
+
+	template <typename X, typename UX, typename IREG, typename FREG>
+	struct riscv_proc_t
+	{
+		typedef X x;
+		typedef UX ux;
+
+		enum  { xlen = sizeof(X) << 3 };
+
+		UX pc;
+
+		IREG ireg[32];
+		FREG freg[32];
+		UX csr[4096];
+
+		riscv_proc_t() : pc(0), ireg(), freg(), csr{0} {}
+	};
+
+	using riscv_proc_rv32 = riscv_proc_t<int32_t,uint32_t,ireg_rv32,freg_fp32>;
+	using riscv_proc_rv64 = riscv_proc_t<int64_t,uint64_t,ireg_rv64,freg_fp64>;
 
 	/* Sign extension template */
 
