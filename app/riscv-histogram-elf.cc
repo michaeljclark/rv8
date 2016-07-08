@@ -1,3 +1,7 @@
+//
+//  riscv-histogram-elf.cc
+//
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
