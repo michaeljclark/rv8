@@ -6,6 +6,7 @@
 #define riscv_types_h
 
 #include <cstdint>
+#include <cstring>
 
 namespace riscv {
 
@@ -21,14 +22,11 @@ namespace riscv {
 	/*
 	 * Short-hand type aliases
 	 *
-	 * The sx and ux types need to by conditionallly aliased to support RV32.
 	 * The purpose is to use a placeholder type globally for the natural
 	 * register width of the target. The placeholder type names match the
 	 * C pseudo-code cast notation in meta/instructions
 	 */
 
-	typedef intptr_t           sx;
-	typedef uintptr_t          ux;
 	typedef int8_t             s8;
 	typedef uint8_t            u8;
 	typedef int16_t            s16;
@@ -39,6 +37,18 @@ namespace riscv {
 	typedef uint64_t           u64;
 	typedef double             f64;
 	typedef float              f32;
+
+	/*
+	 * The sx and ux types need to be aliased to support RV64 and RV32.
+	 */
+
+	// RV64I
+	// typedef int64_t           sx;
+	// typedef uint64_t          ux;
+
+	// RV32I
+	// typedef int32_t           sx;
+	// typedef uint32_t          ux;
 
 	/*
 	 * Width-typed immediate template aliases
@@ -100,25 +110,25 @@ namespace riscv {
 	template <uint64_t W> struct simm_t
 	{
 		enum : uint64_t { width = W };
-		enum : sx { min = -(1LL<<(W-1)), max = (1LL<<(W-1))-1 };
+		enum : int64_t { min = -(1LL<<(W-1)), max = (1LL<<(W-1))-1 };
 		enum : bool { is_signed = true, is_integral = true, is_offset = false, is_pointer = false };
-		typedef sx value_type;
-		sx imm;
-		simm_t(sx imm) : imm(imm) {}
+		typedef int64_t value_type;
+		int64_t imm;
+		simm_t(int64_t imm) : imm(imm) {}
 		bool valid() { return imm <= max && imm >= min; }
-		operator sx() const { return imm; }
+		operator int64_t() const { return imm; }
 	};
 
 	template <uint64_t W> struct uimm_t
 	{
 		enum : uint64_t { width = W };
-		enum : ux { min = 0, max = (1ULL<< W)-1 };
+		enum : uint64_t { min = 0, max = (1ULL<< W)-1 };
 		enum : bool { is_signed = false, is_integral = true, is_offset = false, is_pointer = false };
-		typedef ux value_type;
-		ux imm;
-		uimm_t(ux imm) : imm(imm) {}
+		typedef uint64_t value_type;
+		uint64_t imm;
+		uimm_t(uint64_t imm) : imm(imm) {}
 		bool valid() { return imm <= max; }
-		operator ux() const { return imm; }
+		operator uint64_t() const { return imm; }
 	};
 
 	/*
@@ -126,100 +136,143 @@ namespace riscv {
 	 *
 	 * (template constructors cannot take template parameters)
 	 *
-	 * simm<N>(ux imm)
-	 * uimm<N>(ux imm)
+	 * simm<N>(uint64_t imm)
+	 * uimm<N>(uint64_t imm)
 	 */
 
-	template <uint64_t W> constexpr simm_t<W> simm(const ux imm) { return simm_t<W>(imm); }
-	template <uint64_t W> constexpr uimm_t<W> uimm(const ux imm) { return uimm_t<W>(imm); }
+	template <uint64_t W> constexpr simm_t<W> simm(const uint64_t imm) { return simm_t<W>(imm); }
+	template <uint64_t W> constexpr uimm_t<W> uimm(const uint64_t imm) { return uimm_t<W>(imm); }
 
 	/* RV32 integer register */
 
-	union ireg_rv32
+	struct ireg_rv32
 	{
-		struct { int32_t  val; }                     x;
-		struct { uint32_t val; }                     xu;
-		struct { int32_t  val; }                     w;
-		struct { uint32_t val; }                     wu;
-	#if _BYTE_ORDER == _LITTLE_ENDIAN
-		struct { int16_t  val;    int16_t  pad[1]; } h;
-		struct { uint16_t val;    uint16_t pad[1]; } hu;
-		struct { int8_t   val;    int8_t   pad[3]; } b;
-		struct { uint8_t  val;    uint8_t  pad[3]; } bu;
-	#else
-		struct { int16_t  pad[1]; int16_t  val; }    h;
-		struct { uint16_t pad[1]; uint16_t val; }    hu;
-		struct { int8_t   pad[3]; int8_t   val; }    b;
-		struct { uint8_t  pad[3]; uint8_t  val; }    bu;
-	#endif
+		typedef int32_t sx;
+		typedef uint32_t ux;
+
+		enum  { xlen = sizeof(ux) << 3 };
+
+		union {
+			struct { int32_t  val; }                     x;
+			struct { uint32_t val; }                     xu;
+			struct { int32_t  val; }                     w;
+			struct { uint32_t val; }                     wu;
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			struct { int16_t  val;    int16_t  pad[1]; } h;
+			struct { uint16_t val;    uint16_t pad[1]; } hu;
+			struct { int8_t   val;    int8_t   pad[3]; } b;
+			struct { uint8_t  val;    uint8_t  pad[3]; } bu;
+		#else
+			struct { int16_t  pad[1]; int16_t  val; }    h;
+			struct { uint16_t pad[1]; uint16_t val; }    hu;
+			struct { int8_t   pad[3]; int8_t   val; }    b;
+			struct { uint8_t  pad[3]; uint8_t  val; }    bu;
+		#endif
+		} r;
+
+		inline ireg_rv32() { memset(&r, 0, sizeof(r)); }
+		inline ireg_rv32& operator=(int32_t val) { r.x.val = val; return *this; }
+		inline operator int32_t() const { return r.x.val; }
 	};
 
 	/* RV64 integer register */
 
-	union ireg_rv64
+	struct ireg_rv64
 	{
-		struct { int64_t  val; }                     l;
-		struct { uint64_t val; }                     lu;
-		struct { int64_t  val; }                     x;
-		struct { uint64_t val; }                     xu;
-	#if _BYTE_ORDER == _LITTLE_ENDIAN
-		struct { int32_t  val;    int32_t  pad; }    w;
-		struct { uint32_t val;    uint32_t pad; }    wu;
-		struct { int16_t  val;    int16_t  pad[3]; } h;
-		struct { uint16_t val;    uint16_t pad[3]; } hu;
-		struct { int8_t   val;    int8_t   pad[7]; } b;
-		struct { uint8_t  val;    uint8_t  pad[7]; } bu;
-	#else
-		struct { int32_t  pad;    int32_t  val; }    w;
-		struct { uint32_t pad;    uint32_t val; }    wu;
-		struct { int16_t  pad[3]; int16_t  val; }    h;
-		struct { uint16_t pad[3]; uint16_t val; }    hu;
-		struct { int8_t   pad[7]; int8_t   val; }    b;
-		struct { uint8_t  pad[7]; uint8_t  val; }    bu;
-	#endif
+		typedef int64_t sx;
+		typedef uint64_t ux;
+
+		enum  { xlen = sizeof(ux) << 3 };
+
+		union {
+			struct { int64_t  val; }                     l;
+			struct { uint64_t val; }                     lu;
+			struct { int64_t  val; }                     x;
+			struct { uint64_t val; }                     xu;
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			struct { int32_t  val;    int32_t  pad; }    w;
+			struct { uint32_t val;    uint32_t pad; }    wu;
+			struct { int16_t  val;    int16_t  pad[3]; } h;
+			struct { uint16_t val;    uint16_t pad[3]; } hu;
+			struct { int8_t   val;    int8_t   pad[7]; } b;
+			struct { uint8_t  val;    uint8_t  pad[7]; } bu;
+		#else
+			struct { int32_t  pad;    int32_t  val; }    w;
+			struct { uint32_t pad;    uint32_t val; }    wu;
+			struct { int16_t  pad[3]; int16_t  val; }    h;
+			struct { uint16_t pad[3]; uint16_t val; }    hu;
+			struct { int8_t   pad[7]; int8_t   val; }    b;
+			struct { uint8_t  pad[7]; uint8_t  val; }    bu;
+		#endif
+		} r;
+
+		inline ireg_rv64() { memset(&r, 0, sizeof(r)); }
+		inline ireg_rv64& operator=(int64_t val) { r.x.val = val; return *this; }
+		inline operator int64_t() const { return r.x.val; }
 	};
 
 	/* FP32 register */
 
-	union freg_fp32
+	struct freg_fp32
 	{
-		struct { uint32_t val; }                     wu;
-		struct { uint32_t val; }                     xu;
-		struct { float    val; }                     s;
+		typedef uint32_t ux;
+
+		enum  { xlen = sizeof(ux) << 3 };
+
+		union {
+			struct { uint32_t val; }                     wu;
+			struct { uint32_t val; }                     xu;
+			struct { float    val; }                     s;
+		} r;
+
+		inline freg_fp32() { memset(&r, 0, sizeof(r)); }
+		inline freg_fp32& operator=(uint32_t val) { r.xu.val = val; return *this; }
+		inline operator uint32_t() const { return r.xu.val; }
 	};
 
 	/* FP64 register */
 
-	union freg_fp64
+	struct freg_fp64
 	{
-		struct { uint64_t val; }                     lu;
-		struct { uint64_t val; }                     xu;
-	#if _BYTE_ORDER == _LITTLE_ENDIAN
-		struct { double   val; }                     d;
-		struct { float val;       uint32_t pad; }    s;
-		struct { uint32_t val;    uint32_t pad; }    wu;
-	#else
-		struct { double   val; }                     d;
-		struct { uint32_t pad;    float    val; }    s;
-		struct { uint32_t pad;    uint32_t val; }    wu;
-	#endif
+		typedef uint64_t ux;
+
+		enum  { xlen = sizeof(ux) << 3 };
+
+		union {
+			struct { uint64_t val; }                     lu;
+			struct { uint64_t val; }                     xu;
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			struct { double   val; }                     d;
+			struct { float    val;    uint32_t pad; }    s;
+			struct { uint32_t val;    uint32_t pad; }    wu;
+		#else
+			struct { double   val; }                     d;
+			struct { uint32_t pad;    float    val; }    s;
+			struct { uint32_t pad;    uint32_t val; }    wu;
+		#endif
+		} r;
+
+		inline freg_fp64() { memset(&r, 0, sizeof(r)); }
+		inline freg_fp64& operator=(uint64_t val) { r.xu.val = val; return *this; }
+		inline operator uint64_t() const { return r.xu.val; }
 	};
 
 	/* Processor state */
 
-	template <typename X, typename UX, typename IREG, typename FREG>
+	template <typename SX, typename UX, typename IREG, typename FREG>
 	struct riscv_proc_t
 	{
-		typedef X x;
+		typedef SX sx;
 		typedef UX ux;
 
-		enum  { xlen = sizeof(X) << 3 };
+		enum  { xlen = sizeof(ux) << 3 };
+		enum  { ireg_count = 32, freg_count = 32, csr_count = 4096 };
 
 		UX pc;
 
-		IREG ireg[32];
-		FREG freg[32];
-		UX csr[4096];
+		IREG ireg[ireg_count];
+		FREG freg[freg_count];
+		UX   csr[csr_count];
 
 		riscv_proc_t() : pc(0), ireg(), freg(), csr{0} {}
 	};

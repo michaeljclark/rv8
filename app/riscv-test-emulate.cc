@@ -27,37 +27,37 @@
 
 using namespace riscv;
 
-void rv64_exec(riscv_decode &dec, riscv_proc_rv64 *proc)
+void rv64_exec(riscv_decode &dec, riscv_proc_rv64 &proc)
 {
 	uintptr_t next_pc;
-	uint64_t inst = riscv_get_inst(proc->pc, &next_pc);
+	uint64_t inst = riscv_get_inst(proc.pc, &next_pc);
 	riscv_decode_inst_rv64(dec, inst);
 	switch (dec.op) {
 		case riscv_op_addi:
-			proc->ireg[dec.rd].lu.val = proc->ireg[dec.rs1].lu.val + dec.imm;
-			proc->pc = next_pc;
+			proc.ireg[dec.rd] = proc.ireg[dec.rs1] + dec.imm;
+			proc.pc = next_pc;
 			break;
 		case riscv_op_auipc:
-			proc->ireg[dec.rd].lu.val = uint64_t(proc->pc) + dec.imm;
-			proc->pc = next_pc;
+			proc.ireg[dec.rd] = uintptr_t(proc.pc) + dec.imm;
+			proc.pc = next_pc;
 			break;
 		case riscv_op_lui:
-			proc->ireg[dec.rd].lu.val = dec.imm;
-			proc->pc = next_pc;
+			proc.ireg[dec.rd] = dec.imm;
+			proc.pc = next_pc;
 			break;
 		case riscv_op_ecall:
-			switch (proc->ireg[riscv_ireg_a7].lu.val) {
+			switch (proc.ireg[riscv_ireg_a7]) {
 				case 64: /* sys_write */
-					proc->ireg[riscv_ireg_a0].lu.val = write(proc->ireg[riscv_ireg_a0].lu.val,
-						(void*)proc->ireg[riscv_ireg_a1].lu.val, proc->ireg[riscv_ireg_a2].lu.val);
+					proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
+						(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
 					break;
 				case 93: /* sys_exit */
-					exit(proc->ireg[riscv_ireg_a0].lu.val);
+					exit(proc.ireg[riscv_ireg_a0]);
 					break;
 				default:
-					panic("illegal syscall: %d", proc->ireg[riscv_ireg_a7].lu.val);
+					panic("illegal syscall: %d", proc.ireg[riscv_ireg_a7]);
 			}
-			proc->pc = next_pc;
+			proc.pc = next_pc;
 			break;
 		default:
 			panic("illegal instruciton: %s", riscv_inst_name_sym[dec.op]);
@@ -70,7 +70,7 @@ void rv64_run(uintptr_t entry)
 	riscv_proc_rv64 proc;
 	proc.pc = entry;
 	while (true) {
-		rv64_exec(dec, &proc);
+		rv64_exec(dec, proc);
 	}
 }
 
