@@ -1,11 +1,11 @@
 //
-//  riscv-codec-switch.h
+//  riscv-switch.h
 //
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_codec_switch_h
-#define riscv_codec_switch_h
+#ifndef riscv_switch_h
+#define riscv_switch_h
 
 /* Decode Instruction Opcode */
 

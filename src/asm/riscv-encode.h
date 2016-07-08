@@ -1,9 +1,9 @@
 //
-//  riscv-codec-encode.h
+//  riscv-encode.h
 //
 
-#ifndef riscv_codec_encode_h
-#define riscv_codec_encode_h
+#ifndef riscv_encode_h
+#define riscv_encode_h
 
 /* Instruction encoders */
 

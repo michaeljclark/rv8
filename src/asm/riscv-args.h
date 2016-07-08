@@ -1,11 +1,11 @@
 //
-//  riscv-codec-args.h
+//  riscv-args.h
 //
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_codec_args_h
-#define riscv_codec_args_h
+#ifndef riscv_args_h
+#define riscv_args_h
 
 typedef uimm_arg_t<5, S<11,7, B<4,0>>>                                         arg_rd;
 typedef uimm_arg_t<5, S<19,15, B<4,0>>>                                        arg_rs1;

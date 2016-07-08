@@ -701,9 +701,9 @@ void riscv_parse_meta::print_c_header(std::string filename)
 
 void riscv_parse_meta::print_args_h()
 {
-	print_c_header("riscv-codec-args.h");
-	printf("#ifndef riscv_codec_args_h\n");
-	printf("#define riscv_codec_args_h\n");
+	print_c_header("riscv-args.h");
+	printf("#ifndef riscv_args_h\n");
+	printf("#define riscv_args_h\n");
 	printf("\n");
 
 	// print immediate decoders
@@ -1227,9 +1227,9 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-codec-switch.h");
-	printf("#ifndef riscv_codec_switch_h\n");
-	printf("#define riscv_codec_switch_h\n");
+	print_c_header("riscv-switch.h");
+	printf("#ifndef riscv_switch_h\n");
+	printf("#define riscv_switch_h\n");
 	printf("\n");
 
 	std::vector<std::string> mnems;
