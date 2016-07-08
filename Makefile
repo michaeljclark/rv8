@@ -29,7 +29,7 @@ RELROF_FLAGS =  -Wl,-z,relro,-z,now
 NOEXEC_FLAGS =  -Wl,-z,noexecstack
 
 # default optimizer, debug and warning flags
-INCLUDES :=     -I$(shell pwd)/src
+INCLUDES :=     -I$(shell pwd)/src -I$(shell pwd)/src/asm -I$(shell pwd)/src/elf -I$(shell pwd)/src/meta -I$(shell pwd)/src/model -I$(shell pwd)/src/util
 OPT_FLAGS =     -O3
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wpedantic -Wsign-compare
@@ -91,7 +91,6 @@ LIB_SRC_DIR =   src
 BUILD_DIR =     build
 META_DIR =      meta
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
-ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
 OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
@@ -99,7 +98,6 @@ DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 # helper functions
 lib_src_objs =	$(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 app_src_objs =	$(subst $(APP_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
-app_src_asm =	$(subst $(APP_SRC_DIR),$(ASM_DIR),$(subst .cc,.s,$(1)))
 all_src_deps =	$(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
 
 # riscv meta data
@@ -118,40 +116,41 @@ RV_META_DATA =  $(META_DIR$)/args \
                 $(META_DIR$)/types
 
 # libriscv_util
-RV_UTIL_SRCS =	$(LIB_SRC_DIR)/riscv-cmdline.cc \
-                $(LIB_SRC_DIR)/riscv-color.cc \
-                $(LIB_SRC_DIR)/riscv-util.cc
+RV_UTIL_SRCS =	$(LIB_SRC_DIR)/util/riscv-cmdline.cc \
+                $(LIB_SRC_DIR)/util/riscv-color.cc \
+                $(LIB_SRC_DIR)/util/riscv-util.cc
 RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
 
-# libriscv_meta
-RV_ARGS_HDR =   $(LIB_SRC_DIR)/riscv-codec-args.h
-RV_CODEC_HDR =  $(LIB_SRC_DIR)/riscv-codec-switch.h
-RV_JIT_HDR =    $(LIB_SRC_DIR)/riscv-jit.h
-RV_JIT_SRC =    $(LIB_SRC_DIR)/riscv-jit.cc
-RV_META_HDR =   $(LIB_SRC_DIR)/riscv-meta.h
-RV_META_SRC =   $(LIB_SRC_DIR)/riscv-meta.cc
-RV_STR_HDR =    $(LIB_SRC_DIR)/riscv-strings.h
-RV_STR_SRC =    $(LIB_SRC_DIR)/riscv-strings.cc
-RV_META_FMT =   $(LIB_SRC_DIR)/riscv-format.cc
-RV_META_OBJS =  $(call lib_src_objs, $(RV_JIT_SRC) $(RV_META_SRC) $(RV_STR_SRC) $(RV_META_FMT))
-RV_META_LIB =   $(LIB_DIR)/libriscv_meta.a
-
 # libriscv_model
-RV_MODEL_HDR =  $(LIB_SRC_DIR)/riscv-model.h
-RV_MODEL_SRC =  $(LIB_SRC_DIR)/riscv-model.cc
+RV_MODEL_HDR =  $(LIB_SRC_DIR)/model/riscv-model.h
+RV_MODEL_SRC =  $(LIB_SRC_DIR)/model/riscv-model.cc
 RV_MODEL_OBJS = $(call lib_src_objs, $(RV_MODEL_SRC))
 RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 
 # libriscv_elf
-RV_ELF_SRCS =   $(LIB_SRC_DIR)/riscv-elf.cc \
-                $(LIB_SRC_DIR)/riscv-elf-file.cc \
-                $(LIB_SRC_DIR)/riscv-elf-format.cc
+RV_ELF_SRCS =   $(LIB_SRC_DIR)/elf/riscv-elf.cc \
+                $(LIB_SRC_DIR)/elf/riscv-elf-file.cc \
+                $(LIB_SRC_DIR)/elf/riscv-elf-format.cc
 RV_ELF_OBJS =   $(call lib_src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
+# generated files
+RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-codec-args.h
+RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-codec-switch.h
+RV_JIT_HDR =    $(LIB_SRC_DIR)/asm/riscv-jit.h
+RV_JIT_SRC =    $(LIB_SRC_DIR)/asm/riscv-jit.cc
+RV_META_HDR =   $(LIB_SRC_DIR)/asm/riscv-meta.h
+RV_META_SRC =   $(LIB_SRC_DIR)/asm/riscv-meta.cc
+RV_STR_HDR =    $(LIB_SRC_DIR)/asm/riscv-strings.h
+RV_STR_SRC =    $(LIB_SRC_DIR)/asm/riscv-strings.cc
+
 # libriscv_asm
-RV_ASM_SRCS =   $(LIB_SRC_DIR)/riscv-disasm.cc
+RV_ASM_SRCS =   $(LIB_SRC_DIR)/asm/riscv-disasm.cc \
+                $(LIB_SRC_DIR)/asm/riscv-format.cc \
+                $(LIB_SRC_DIR)/asm/riscv-meta.cc \
+                $(LIB_SRC_DIR)/asm/riscv-jit.cc \
+                $(LIB_SRC_DIR)/asm/riscv-strings.cc
 RV_ASM_OBJS =   $(call lib_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
@@ -211,16 +210,10 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(TEST_EMULATE_BIN) \
            $(TEST_ENCODER_BIN)
 
-ASSEMBLY = $(TEST_DECODER_ASM) \
-           $(TEST_EMULATE_ASM) \
-           $(TEST_ENCODER_ASM)
-
 # build rules
-all: dirs $(PARSE_META_BIN) meta $(BINARIES) $(ASSEMBLY)
-.PHONY: dirs test
-dirs: ; @mkdir -p $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR) $(ASM_DIR) $(DEP_DIR)
+all: $(PARSE_META_BIN) meta $(BINARIES)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make clean)
-
+.PHONY: test
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
@@ -238,30 +231,82 @@ c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
 c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
 c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
-meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) $(RV_META_HDR) $(RV_META_SRC)
-$(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) $(RV_META_HDR) $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+# generated targets
+
+meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
+	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC)
+
+$(RV_ARGS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
+
+$(RV_CODEC_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
+
+$(RV_JIT_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)
+
+$(RV_JIT_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -K -r $(META_DIR) > $(RV_JIT_SRC)
+
+$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
+
+$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
+
+$(RV_STR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SH -r $(META_DIR) > $(RV_STR_HDR)
+
+$(RV_STR_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
 
-# build targets
-$(RV_ASM_LIB): $(RV_ASM_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(RV_ELF_LIB): $(RV_ELF_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(RV_META_LIB): $(RV_META_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(RV_MODEL_LIB): $(RV_MODEL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(RV_UTIL_LIB): $(RV_UTIL_OBJS) ; $(call cmd, AR $@, $(AR) cr $@ $^)
-$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_META_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) ; $(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+# lib targets
+
+$(RV_ASM_LIB): $(RV_ASM_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
+$(RV_ELF_LIB): $(RV_ELF_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
+$(RV_MODEL_LIB): $(RV_MODEL_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
+$(RV_UTIL_LIB): $(RV_UTIL_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
+# binary targets
+
+$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 # build recipes
 ifdef V
@@ -270,14 +315,14 @@ else
 cmd = @echo "$1"; $2
 endif
 
-$(ASM_DIR)/%.s : $(APP_SRC_DIR)/%.cc ; $(call cmd, ASM $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(ASM_FLAGS) -c $< -o $@)
-$(ASM_DIR)/%.s : $(LIB_SRC_DIR)/%.cc ; $(call cmd, ASM $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(ASM_FLAGS) -c $< -o $@)
-$(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
-$(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; $(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
-$(DEP_DIR)/%.cc.P : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(DEP_DIR) ;
-	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
-$(DEP_DIR)/%.cc.P : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(DEP_DIR) ;
-	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(ASM_DIR)/\1.s $(DEP_DIR)/\1.P#"  > $@)
+$(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
+$(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
+$(DEP_DIR)/%.cc.P : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(DEP_DIR)/\1.P#"  > $@)
+$(DEP_DIR)/%.cc.P : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(DEP_DIR)/\1.P#"  > $@)
 
 # make dependencies
 include $(call all_src_deps,$(ALL_SRCS))

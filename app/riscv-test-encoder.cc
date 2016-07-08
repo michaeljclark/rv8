@@ -4,8 +4,8 @@
 #include <cassert>
 
 #include "riscv-types.h"
-#include "riscv-meta.h"
 #include "riscv-endian.h"
+#include "riscv-meta.h"
 #include "riscv-codec.h"
 #include "riscv-jit.h"
 
