@@ -23,7 +23,6 @@
 #include "riscv-meta.h"
 #include "riscv-jit.h"
 #include "riscv-util.h"
-#include "riscv-csr.h"
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 #include "riscv-codec.h"
@@ -141,9 +140,9 @@ struct riscv_compress_elf
 				case 'i': args += format_string("%lld", dec.imm); break;
 				case 'o': args += format_string("%lld", dec.imm); break;
 				case 'c': {
-					auto csr = riscv_lookup_csr_metadata(dec.imm);
-					if (csr) args += format_string("%s", csr->csr_name);
-					else args += format_string("%llu", dec.imm);
+					const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
+					if (csr_name) args += format_string("%s", csr_name);
+					else args += format_string("0x%03x", dec.imm & 0xfff);
 					break;
 				}
 				case 'r':

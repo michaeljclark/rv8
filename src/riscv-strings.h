@@ -16,6 +16,7 @@ extern const char* riscv_freg_name_sym[];
 extern const char* riscv_inst_name_sym[];
 extern const char* riscv_arg_name_sym[];
 extern const char* riscv_arg_type_sym[];
+extern const char* riscv_csr_name_sym[];
 
 #ifdef __cplusplus
 }

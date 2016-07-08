@@ -18,7 +18,6 @@
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-codec.h"
-#include "riscv-csr.h"
 #include "riscv-format.h"
 #include "riscv-disasm.h"
 #include "riscv-strings.h"
@@ -93,7 +92,7 @@ void riscv_disasm_inst(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	uint64_t addr = pc - pc_offset;
 	const char *fmt = riscv_inst_format[dec.op];
 	const char *symbol_name = symlookup((uintptr_t)addr, false);
-	const riscv_csr_metadata *csr = nullptr;
+	const char* csr_name = nullptr;
 
 	// print symbol name if present
 	if (symbol_name) {
@@ -141,9 +140,9 @@ void riscv_disasm_inst(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	 			print_fmt(offset, "%lld", dec.imm);
 				break;
 			case 'c':
-				csr = riscv_lookup_csr_metadata(dec.imm);
-				if (csr) print_fmt(offset, "%s", csr->csr_name);
-				else print_fmt(offset, "%llu", dec.imm);
+				csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
+				if (csr_name) print_fmt(offset, "%s", csr_name);
+				else print_fmt(offset, "0x%03x", dec.imm & 0xfff);
 				break;
 			case 'r':
 				switch(dec.rm) {

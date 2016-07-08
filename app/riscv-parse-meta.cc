@@ -1141,6 +1141,7 @@ void riscv_parse_meta::print_strings_h(bool no_comment, bool zero_not_oh)
 	printf("extern const char* riscv_inst_name_sym[];\n");
 	printf("extern const char* riscv_arg_name_sym[];\n");
 	printf("extern const char* riscv_arg_type_sym[];\n");
+	printf("extern const char* riscv_csr_name_sym[];\n");
 	printf("\n");
 	printf("#ifdef __cplusplus\n");
 	printf("}\n");
@@ -1183,7 +1184,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Instruction argument name enum
+	// Instruction argument names
 	printf("const char* riscv_arg_name_sym[] = {\n");
 	printf("\t\"none\",\n");
 	for (auto &arg : args) {
@@ -1191,7 +1192,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// instruction argument type enum
+	// Instruction argument type names
 	std::vector<std::string> arg_types;
 	for (auto &arg : args) {
 		auto type_name = format_type(arg);
@@ -1206,7 +1207,22 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	printf("\n");	
+	// CSR names
+	std::map<int,riscv_csr_ptr> csr_map;
+	for (auto &csr : csrs) {
+		int csr_num = riscv_parse_value(csr->number.c_str());
+		csr_map[csr_num] = csr;
+	}
+	printf("const char* riscv_csr_name_sym[] = {\n");
+	for (int i = 0; i < 4096; i++) {
+		auto ci = csr_map.find(i);
+		printf("\t%s%s%s,\n",
+			(ci != csr_map.end()) ? "\"" : "",
+			(ci != csr_map.end()) ? ci->second->name.c_str() : "nullptr",
+			(ci != csr_map.end()) ? "\"" : ""
+		);
+	}
+	printf("};\n\n");
 }
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
