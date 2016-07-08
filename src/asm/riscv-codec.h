@@ -76,12 +76,12 @@ struct riscv_decode
 
 namespace riscv
 {
-	#include "riscv-codec-args.h"
-	#include "riscv-codec-decode.h"
-	#include "riscv-codec-encode.h"
+	#include "riscv-args.h"
+	#include "riscv-decode.h"
+	#include "riscv-encode.h"
 }
 
-#include "riscv-codec-switch.h"
+#include "riscv-switch.h"
 
 
 /* Instruction Length */

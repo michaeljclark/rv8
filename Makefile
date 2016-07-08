@@ -136,8 +136,8 @@ RV_ELF_OBJS =   $(call lib_src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
 # generated files
-RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-codec-args.h
-RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-codec-switch.h
+RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-args.h
+RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-switch.h
 RV_JIT_HDR =    $(LIB_SRC_DIR)/asm/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/asm/riscv-jit.cc
 RV_META_HDR =   $(LIB_SRC_DIR)/asm/riscv-meta.h
