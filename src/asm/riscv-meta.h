@@ -67,8 +67,18 @@ enum riscv_cause
 
 enum riscv_intr
 {
-	riscv_intr_software = 0,
-	riscv_intr_timer = 1,
+	riscv_intr_u_software = 0,
+	riscv_intr_s_software = 1,
+	riscv_intr_h_software = 2,
+	riscv_intr_m_software = 3,
+	riscv_intr_u_timer = 4,
+	riscv_intr_s_timer = 5,
+	riscv_intr_h_timer = 6,
+	riscv_intr_m_timer = 7,
+	riscv_intr_u_external = 8,
+	riscv_intr_s_external = 9,
+	riscv_intr_h_external = 10,
+	riscv_intr_m_external = 11,
 };
 
 enum rvc_constraint
