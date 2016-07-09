@@ -106,12 +106,12 @@
 0x385  mrw  mdbound    "Data bound register"
 
 # Machine Timers and Counters
-0xF00  sro  mcycle     "Machine cycle counter"
-0XF01  sro  mtime      "Machine wall-clock time"
-0xF02  sro  minstret   "Machine instructions-retired counter"
-0xF80  sro  mcycleh    "Upper 32 bits of mcycle, RV32I only"
-0xF81  sro  mtimeh     "Upper 32 bits of mtime, RV32I only"
-0xF82  sro  minstreth  "Upper 32 bits of minstret, RV32I only"
+0xF00  mro  mcycle     "Machine cycle counter"
+0XF01  mro  mtime      "Machine wall-clock time"
+0xF02  mro  minstret   "Machine instructions-retired counter"
+0xF80  mro  mcycleh    "Upper 32 bits of mcycle, RV32I only"
+0xF81  mro  mtimeh     "Upper 32 bits of mtime, RV32I only"
+0xF82  mro  minstreth  "Upper 32 bits of minstret, RV32I only"
 
 # Machine Counter Setup
 0x310  mrw  mucounteren "Machine interrupt-enable register"
