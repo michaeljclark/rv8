@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <cerrno>
 #include <cassert>
+#include <cinttypes>
 #include <vector>
 #include <map>
 #include <string>
@@ -92,11 +93,23 @@ void* map_executable(const char* filename, void *vaddr, size_t len, size_t offse
 	return addr;
 }
 
+void process_info(char **argv)
+{
+	static const char *textptr = nullptr;
+	void *heapptr = malloc(8);
+	printf("text  = ~0x%016" PRIxPTR "\n", (uintptr_t)&textptr);
+	printf("heap  = ~0x%016" PRIxPTR "\n", (uintptr_t)heapptr);
+	printf("stack = ~0x%016" PRIxPTR "\n", (uintptr_t)argv);
+	free(heapptr);
+}
+
 int main(int argc, char *argv[])
 {
 	elf_file elf;
 
 	if (argc != 2) panic("usage: %s <elf_file>", argv[0]);
+
+	process_info(argv);
 
 	// load ELF headers
 	// NOTE: This POC code presently loads the whole ELF into RAM.

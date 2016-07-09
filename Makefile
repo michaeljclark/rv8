@@ -3,7 +3,16 @@ OS :=           $(shell uname -s | sed 's/ /_/' | tr A-Z a-z)
 CPU :=          $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
 ARCH :=         $(OS)_$(CPU)
 
-# check which compiler to use (default clang). e.g. make prefer_gcc=1
+# check which c compiler to use (default clang). e.g. make prefer_gcc=1
+ifeq ($(CC),)
+ifeq ($(prefer_gcc),1)
+CXX :=          $(shell which gcc || which clang || which cc)
+else
+CXX :=          $(shell which clang || which gcc || which ccc)
+endif
+endif
+
+# check which c++ compiler to use (default clang). e.g. make prefer_gcc=1
 ifeq ($(CXX),)
 ifeq ($(prefer_gcc),1)
 CXX :=          $(shell which g++ || which clang++ || which c++)
@@ -29,15 +38,18 @@ RELROF_FLAGS =  -Wl,-z,relro,-z,now
 NOEXEC_FLAGS =  -Wl,-z,noexecstack
 
 # default optimizer, debug and warning flags
-INCLUDES :=     -I$(shell pwd)/src -I$(shell pwd)/src/asm -I$(shell pwd)/src/elf -I$(shell pwd)/src/meta -I$(shell pwd)/src/model -I$(shell pwd)/src/util
+TOP_DIR =       $(shell pwd)
+INCLUDES :=     -I$(TOP_DIR)/src -I$(TOP_DIR)/src/asm -I$(TOP_DIR)/src/elf -I$(TOP_DIR)/src/meta -I$(TOP_DIR)/src/model -I$(TOP_DIR)/src/util  -I$(TOP_DIR)/src/tlsf
 OPT_FLAGS =     -O3
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wpedantic -Wsign-compare
 CPPFLAGS =
-CXXFLAGS =      -std=c++14 $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
+CFLAGS =        $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
+CXXFLAGS =      -std=c++14 $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-ZEROPAGE_FLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie
+DARWIN_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -67,9 +79,13 @@ ifeq ($(call check_opt,$(CXX),cc,$(NOEXEC_FLAGS)), 0)
 LDFLAGS +=      $(NOEXEC_FLAGS)
 endif
 endif
-# check if we can link with a small zero page
-ifeq ($(call check_opt,$(CXX),cc,$(ZEROPAGE_FLAGS)), 0)
-LDFLAGS +=      $(ZEROPAGE_FLAGS)
+# check if we can link with a small zero page and text at high address
+ifeq ($(call check_opt,$(CXX),cc,$(DARWIN_LDFLAGS)), 0)
+LDFLAGS +=      $(DARWIN_LDFLAGS)
+endif
+# check if we can link with text at high address
+ifeq ($(call check_opt,$(CXX),cc,$(LINUX_LDFLAGS)), 0)
+LDFLAGS +=      $(LINUX_LDFLAGS)
 endif
 
 # check whether to enable sanitizer
@@ -96,9 +112,10 @@ OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 
 # helper functions
-lib_src_objs =	$(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
-app_src_objs =	$(subst $(APP_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
-all_src_deps =	$(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
+c_src_objs =    $(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .c,.o,$(1)))
+lib_src_objs =  $(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
+app_src_objs =  $(subst $(APP_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
+all_src_deps =  $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
 
 # riscv meta data
 RV_META_DATA =  $(META_DIR$)/args \
@@ -115,12 +132,18 @@ RV_META_DATA =  $(META_DIR$)/args \
                 $(META_DIR$)/registers \
                 $(META_DIR$)/types
 
+# libtlsf
+TLSF_SRCS =     $(LIB_SRC_DIR)/tlsf/tlsf.c \
+                $(LIB_SRC_DIR)/tlsf/tlsf-init.c
+TLSF_OBJS =     $(call c_src_objs, $(TLSF_SRCS))
+TLSF_LIB =      $(LIB_DIR)/libtlsf.a
+
 # libriscv_util
-RV_UTIL_SRCS =	$(LIB_SRC_DIR)/util/riscv-cmdline.cc \
+RV_UTIL_SRCS =  $(LIB_SRC_DIR)/util/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/util/riscv-color.cc \
                 $(LIB_SRC_DIR)/util/riscv-util.cc
-RV_UTIL_OBJS =	$(call lib_src_objs, $(RV_UTIL_SRCS))
-RV_UTIL_LIB =	$(LIB_DIR)/libriscv_util.a
+RV_UTIL_OBJS =  $(call lib_src_objs, $(RV_UTIL_SRCS))
+RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
 
 # libriscv_model
 RV_MODEL_HDR =  $(LIB_SRC_DIR)/model/riscv-model.h
@@ -278,6 +301,10 @@ $(RV_UTIL_LIB): $(RV_UTIL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
+$(TLSF_LIB): $(TLSF_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 # binary targets
 
 $(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
@@ -300,11 +327,11 @@ $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -317,6 +344,8 @@ endif
 
 $(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
+$(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, CXX $@, $(CC) $(CFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(DEP_DIR)/%.cc.P : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
