@@ -5,7 +5,7 @@
 #ifndef riscv_config_h
 #define riscv_config_h
 
-/* Generic configuration model */
+// Generic configuration model
 
 struct riscv_config;
 struct riscv_config_record;
@@ -19,7 +19,21 @@ typedef std::map<std::string,riscv_config_record> riscv_config_function_map;
 typedef std::function<void(riscv_config_line&)>riscv_block_function;
 typedef std::map<std::string,riscv_block_record> riscv_block_function_map;
 
-/* RISC-V configuration model */
+struct riscv_config_record
+{
+	int minargs;
+	int maxargs;
+	riscv_config_function fn;
+};
+
+struct riscv_block_record
+{
+	int minargs;
+	int maxargs;
+	riscv_block_function fn;
+};
+
+// RISC-V configuration model
 
 struct riscv_address_range;
 struct riscv_platform;
@@ -76,20 +90,6 @@ typedef std::shared_ptr<riscv_core_node> riscv_core_node_ptr;
 typedef std::vector<riscv_core_node_ptr> riscv_core_node_list;
 typedef std::shared_ptr<riscv_core_hart> riscv_core_hart_ptr;
 typedef std::vector<riscv_core_hart_ptr> riscv_core_hart_list;
-
-struct riscv_config_record
-{
-	int minargs;
-	int maxargs;
-	riscv_config_function fn;
-};
-
-struct riscv_block_record
-{
-	int minargs;
-	int maxargs;
-	riscv_block_function fn;
-};
 
 struct riscv_address_range
 {
@@ -210,20 +210,16 @@ struct riscv_core_hart
 
 struct riscv_config : riscv_config_parser
 {
+	// Generic configuration model
 	riscv_config_function_map  config_fn_map;
 	riscv_block_function_map   block_start_fn_map;
 	riscv_block_function_map   block_end_fn_map;
-
-	static bool parse_value(std::string valstr, uint64_t &val);
-	static bool parse_address_range(std::string valstr, riscv_address_range_ptr range);
-	static std::string address_range_to_string(riscv_address_range_list &addr_list);
-
-	riscv_config();
 
 	riscv_block_stack          block;
 	riscv_config_line          prefix;
 	riscv_config_line          line;
 
+	// RISC-V configuration model
 	riscv_platform_ptr         platform;
 	riscv_plic_list            plic_list;
 	riscv_pcie_list            pcie_list;
@@ -233,7 +229,14 @@ struct riscv_config : riscv_config_parser
 	riscv_uart_list            uart_list;
 	riscv_core_list            core_list;
 
+	static bool parse_value(std::string valstr, uint64_t &val);
+	static bool parse_address_range(std::string valstr, riscv_address_range_ptr range);
+	static std::string address_range_to_string(riscv_address_range_list &addr_list);
+
+	riscv_config();
+	std::string to_string();
 	void read(std::string filename);
+
 	void symbol(const char *value, size_t length);
 	void end_statement();
 	void start_block();
@@ -282,7 +285,7 @@ struct riscv_config : riscv_config_parser
 		return lookup_config_fn(block_end_fn_map, key, block, true);
 	}
 
-	// configuration functions
+	// configuration parser lambdas
 	void config_platform();
 	void config_plic();
 	void config_pcie();
@@ -292,7 +295,7 @@ struct riscv_config : riscv_config_parser
 	void config_uart();
 	void config_core();
 
-	// output functions
+	// configuration output functions
 	void output_platform(std::stringstream &ss);
 	void output_plic(std::stringstream &ss);
 	void output_pcie(std::stringstream &ss);
@@ -301,8 +304,6 @@ struct riscv_config : riscv_config_parser
 	void output_ram(std::stringstream &ss);
 	void output_uart(std::stringstream &ss);
 	void output_core(std::stringstream &ss);
-
-	std::string to_string();
 };
 
 #endif

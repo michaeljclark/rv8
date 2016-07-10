@@ -78,6 +78,20 @@ riscv_config::riscv_config()
 	config_core();
 }
 
+std::string riscv_config::to_string()
+{
+	std::stringstream ss;
+	output_platform(ss);
+	output_plic(ss);
+	output_pcie(ss);
+	output_leds(ss);
+	output_rtc(ss);
+	output_ram(ss);
+	output_uart(ss);
+	output_core(ss);
+	return ss.str();
+}
+
 void riscv_config::read(std::string filename)
 {
 	FILE *fp;
@@ -152,9 +166,8 @@ void riscv_config::end_statement()
 {
 	if (line.size() > 0)
 	{
-		riscv_config_record rec;
-
 		// look up and invoke riscv_config function
+		riscv_config_record rec;
 		bool found = lookup_config_fn(line[0], rec);
 		if (found) {
 			if (rec.minargs == rec.maxargs && (int)line.size() != rec.minargs) {
@@ -633,18 +646,4 @@ void riscv_config::output_core(std::stringstream &ss)
 		}
 		ss	<< "};\n";
 	}
-}
-
-std::string riscv_config::to_string()
-{
-	std::stringstream ss;
-	output_platform(ss);
-	output_plic(ss);
-	output_pcie(ss);
-	output_leds(ss);
-	output_rtc(ss);
-	output_ram(ss);
-	output_uart(ss);
-	output_core(ss);
-	return ss.str();
 }
