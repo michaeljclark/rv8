@@ -182,12 +182,15 @@ void riscv_config::config_platform()
 		if (platform) panic("config must contain \"platform\" block");
 		platform = std::make_shared<riscv_platform>();
 	}};
+
 	block_end_fn_map["platform"] = {0, 0, [&] (riscv_config_line &line) {
 		if (!platform) panic("config must contain \"platform\" block");
 	}};
+
 	config_fn_map["platform.vendor"] = {2, 2, [&] (riscv_config_line &line) {
 		platform->vendor = line[1];
 	}};
+
 	config_fn_map["platform.arch"] = {2, 2, [&] (riscv_config_line &line) {
 		platform->arch = line[1];
 	}};
@@ -198,18 +201,22 @@ void riscv_config::config_plic()
 	block_start_fn_map["plic"] = {1, 1, [&] (riscv_config_line &line) {
 		plic_list.push_back(std::make_shared<riscv_plic>());
 	}};
+
 	config_fn_map["plic.interface"] = {2, 2, [&] (riscv_config_line &line) {
 		plic_list.back()->interface = line[1];
 	}};
+
 	config_fn_map["plic.ndevs"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], plic_list.back()->ndevs)) {
 			panic("riscv_config: invalid ndevs value: plic \"%s\": %s",
 				plic_list.back()->interface.c_str(), line[1].c_str());
 		}
 	}};
+
 	block_start_fn_map["plic.priority"] = {1, 1, [&] (riscv_config_line &line) {
 		plic_list.back()->priority = std::make_shared<riscv_plic_priority>();
 	}};
+
 	config_fn_map["plic.priority.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -218,9 +225,11 @@ void riscv_config::config_plic()
 		}
 		plic_list.back()->priority->addr_list.push_back(range);
 	}};
+
 	block_start_fn_map["plic.pending"] = {1, 1, [&] (riscv_config_line &line) {
 		plic_list.back()->pending = std::make_shared<riscv_plic_pending>();
 	}};
+
 	config_fn_map["plic.pending.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -229,30 +238,27 @@ void riscv_config::config_plic()
 		}
 		plic_list.back()->pending->addr_list.push_back(range);
 	}};
+
 	block_start_fn_map["plic.#"] = {1, 1, [&] (riscv_config_line &line) {
 		auto plic_node = std::make_shared<riscv_plic_node>();
-		if (!parse_value(line[0], plic_node->node_id)) {
-			panic("riscv_config: invalid node id: plic \"%s\": %s",
-				plic_list.back()->interface.c_str(), line[0].c_str());
-		}
+		parse_value(line[0], plic_node->node_id);
 		plic_list.back()->node_list.push_back(plic_node);
 	}};
+
 	block_start_fn_map["plic.#.#"] = {1, 1, [&] (riscv_config_line &line) {
 		auto plic_hart = std::make_shared<riscv_plic_hart>();
-		if (!parse_value(line[0], plic_hart->hart_id)) {
-			panic("riscv_config: invalid hard id: plic \"%s\" node id %u: %s",
-				plic_list.back()->interface.c_str(),
-				plic_list.back()->node_list.back()->node_id,
-				line[0].c_str());
-		}
+		parse_value(line[0], plic_hart->hart_id);
 		plic_list.back()->node_list.back()->hart_list.push_back(plic_hart);
 	}};
+
 	block_start_fn_map["plic.#.#.m"] = {1, 1, [&] (riscv_config_line &line) {
 		auto plic_mode = std::make_shared<riscv_plic_mode>();
 		plic_mode->mode_name = "m";
 		plic_list.back()->node_list.back()->hart_list.back()->mode_list.push_back(plic_mode);
 	}};
+
 	block_start_fn_map["plic.#.#.m.ie"] = {1, 1, [&] (riscv_config_line &line) {}};
+
 	config_fn_map["plic.#.#.m.ie.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -264,7 +270,9 @@ void riscv_config::config_plic()
 		}
 		plic_list.back()->node_list.back()->hart_list.back()->mode_list.back()->ie_addr_list.push_back(range);
 	}};
+
 	block_start_fn_map["plic.#.#.m.ctl"] = {1, 1, [&] (riscv_config_line &line) {}};
+
 	config_fn_map["plic.#.#.m.ctl.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -276,12 +284,15 @@ void riscv_config::config_plic()
 		}
 		plic_list.back()->node_list.back()->hart_list.back()->mode_list.back()->ctl_addr_list.push_back(range);
 	}};
+
 	block_start_fn_map["plic.#.#.s"] = {1, 1, [&] (riscv_config_line &line) {
 		auto plic_mode = std::make_shared<riscv_plic_mode>();
 		plic_mode->mode_name = "s";
 		plic_list.back()->node_list.back()->hart_list.back()->mode_list.push_back(plic_mode);
 	}};
+
 	block_start_fn_map["plic.#.#.s.ie"] = {1, 1, [&] (riscv_config_line &line) {}};
+
 	config_fn_map["plic.#.#.s.ie.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -293,7 +304,9 @@ void riscv_config::config_plic()
 		}
 		plic_list.back()->node_list.back()->hart_list.back()->mode_list.back()->ie_addr_list.push_back(range);
 	}};
+
 	block_start_fn_map["plic.#.#.s.ctl"] = {1, 1, [&] (riscv_config_line &line) {}};
+
 	config_fn_map["plic.#.#.s.ctl.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -312,13 +325,16 @@ void riscv_config::config_pcie()
 	block_start_fn_map["pcie"] = {1, 1, [&] (riscv_config_line &line) {
 		pcie_list.push_back(std::make_shared<riscv_pcie>());
 	}};
+
 	config_fn_map["pcie.interface"] = {2, 2, [&] (riscv_config_line &line) {
 		pcie_list.back()->interface = line[1];
 	}};
+
 	block_start_fn_map["pcie.bus"] = {1, 1, [&] (riscv_config_line &line) {
 		auto bus = std::make_shared<riscv_pcie_bus>();
 		pcie_list.back()->bus_list.push_back(bus);
 	}};
+
 	config_fn_map["pcie.bus.@"] = {2, -1, [&] (riscv_config_line &line) {
 		for (size_t i = 1; i < line.size(); i++) {
 			auto range = std::make_shared<riscv_address_range>();
@@ -330,6 +346,7 @@ void riscv_config::config_pcie()
 			pcie_list.back()->bus_list.back()->addr_list.push_back(range);
 		}
 	}};
+
 	config_fn_map["pcie.bus.bus"] = {2, 2, [&] (riscv_config_line &line) {
 		auto comps = split(line[1], ":");
 		if (comps.size() != 2 ||
@@ -340,10 +357,12 @@ void riscv_config::config_pcie()
 				line[1].c_str());
 		}
 	}};
+
 	block_start_fn_map["pcie.bridge"] = {1, 1, [&] (riscv_config_line &line) {
 		auto bridge = std::make_shared<riscv_pcie_bridge>();
 		pcie_list.back()->bridge_list.push_back(bridge);
 	}};
+
 	config_fn_map["pcie.bridge.@"] = {2, -1, [&] (riscv_config_line &line) {
 		for (size_t i = 1; i < line.size(); i++) {
 			auto range = std::make_shared<riscv_address_range>();
@@ -355,6 +374,7 @@ void riscv_config::config_pcie()
 			pcie_list.back()->bridge_list.back()->addr_list.push_back(range);
 		}
 	}};
+
 	config_fn_map["pcie.bridge.bus"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], pcie_list.back()->bridge_list.back()->bus_id)) {
 			panic("riscv_config: invalid bridge bus number: pcie \"%s\": %s",
@@ -362,6 +382,7 @@ void riscv_config::config_pcie()
 				line[1].c_str());
 		}
 	}};
+
 	config_fn_map["pcie.bridge.irq"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], pcie_list.back()->bridge_list.back()->irq_id)) {
 			panic("riscv_config: invalid bridge irq number: pcie \"%s\": %s",
@@ -376,15 +397,18 @@ void riscv_config::config_leds()
 	block_start_fn_map["leds"] = {1, 1, [&] (riscv_config_line &line) {
 		leds_list.push_back(std::make_shared<riscv_leds>());
 	}};
+
 	config_fn_map["leds.interface"] = {2, 2, [&] (riscv_config_line &line) {
 		leds_list.back()->interface = line[1];
 	}};
+
 	config_fn_map["leds.ngpio"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], leds_list.back()->ngpio)) {
 			panic("riscv_config: invalid ngpio value: leds \"%s\": %s",
 				leds_list.back()->interface.c_str(), line[1].c_str());
 		}
 	}};
+
 	config_fn_map["leds.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -400,6 +424,7 @@ void riscv_config::config_rtc()
 	block_start_fn_map["rtc"] = {1, 1, [&] (riscv_config_line &line) {
 		rtc_list.push_back(std::make_shared<riscv_rtc>());
 	}};
+
 	config_fn_map["rtc.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -415,14 +440,13 @@ void riscv_config::config_ram()
 	block_start_fn_map["ram"] = {1, 1, [&] (riscv_config_line &line) {
 		ram_list.push_back(std::make_shared<riscv_ram>());
 	}};
+
 	block_start_fn_map["ram.#"] = {1, 1, [&] (riscv_config_line &line) {
 		auto ram_node = std::make_shared<riscv_ram_node>();
-		if (!parse_value(line[0], ram_node->node_id)) {
-			panic("riscv_config: invalid node id: ram: %s",
-				line[0].c_str());
-		}
+		parse_value(line[0], ram_node->node_id);
 		ram_list.back()->node_list.push_back(ram_node);
 	}};
+
 	config_fn_map["ram.#.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -439,6 +463,7 @@ void riscv_config::config_uart()
 	block_start_fn_map["uart"] = {1, 1, [&] (riscv_config_line &line) {
 		uart_list.push_back(std::make_shared<riscv_uart>());
 	}};
+
 	config_fn_map["uart.@"] = {2, 2, [&] (riscv_config_line &line) {
 		auto range = std::make_shared<riscv_address_range>();
 		if (!parse_address_range(line[1], range)) {
@@ -454,26 +479,23 @@ void riscv_config::config_core()
 	block_start_fn_map["core"] = {1, 1, [&] (riscv_config_line &line) {
 		core_list.push_back(std::make_shared<riscv_core>());
 	}};
+
 	block_start_fn_map["core.#"] = {1, 1, [&] (riscv_config_line &line) {
 		auto core_node = std::make_shared<riscv_core_node>();
-		if (!parse_value(line[0], core_node->node_id)) {
-			panic("riscv_config: invalid node id: core: %s",
-				line[0].c_str());
-		}
+		parse_value(line[0], core_node->node_id);
 		core_list.back()->node_list.push_back(core_node);
 	}};
+
 	block_start_fn_map["core.#.#"] = {1, 1, [&] (riscv_config_line &line) {
 		auto core_hart = std::make_shared<riscv_core_hart>();
-		if (!parse_value(line[0], core_hart->hart_id)) {
-			panic("riscv_config: invalid hart id: core node id %u: %s",
-				core_list.back()->node_list.back()->node_id,
-				line[0].c_str());
-		}
+		parse_value(line[0], core_hart->hart_id);
 		core_list.back()->node_list.back()->hart_list.push_back(core_hart);
 	}};
+
 	config_fn_map["core.#.#.isa"] = {2, 2, [&] (riscv_config_line &line) {
 		core_list.back()->node_list.back()->hart_list.back()->isa = line[1];
 	}};
+
 	config_fn_map["core.#.#.timecmp"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], core_list.back()->node_list.back()->hart_list.back()->timecmp)) {
 			panic("riscv_config: invalid timecmp value: core node id %u: hart id %u: %s",
@@ -482,6 +504,7 @@ void riscv_config::config_core()
 				line[1].c_str());
 		}
 	}};
+
 	config_fn_map["core.#.#.ipi"] = {2, 2, [&] (riscv_config_line &line) {
 		if (!parse_value(line[1], core_list.back()->node_list.back()->hart_list.back()->ipi)) {
 			panic("riscv_config: invalid ipi value: core node id %u: hart id %u: %s",
