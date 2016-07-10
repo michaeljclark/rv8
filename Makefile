@@ -164,6 +164,7 @@ RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 # generated files
 RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-args.h
 RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-switch.h
+RV_INTERP_HDR = $(LIB_SRC_DIR)/asm/riscv-interp.h
 RV_JIT_HDR =    $(LIB_SRC_DIR)/asm/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/asm/riscv-jit.cc
 RV_META_HDR =   $(LIB_SRC_DIR)/asm/riscv-meta.h
@@ -269,13 +270,17 @@ c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 # generated targets
 
 meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
-	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC)
+	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
+	$(RV_INTERP_HDR)
 
 $(RV_ARGS_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
 
 $(RV_CODEC_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
+
+$(RV_INTERP_HDR): $(RV_META_DATA)
+	$(PARSE_META_BIN) -V -r $(META_DIR) > $(RV_INTERP_HDR)
 
 $(RV_JIT_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)

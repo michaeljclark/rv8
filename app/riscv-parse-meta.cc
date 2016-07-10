@@ -129,6 +129,7 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_map(bool print_map_instructions);
 	void print_c_header(std::string filename);
 	void print_args_h();
+	void print_interp_h();
 	void print_jit_h();
 	void print_jit_cc();
 	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
@@ -370,7 +371,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 					if (opcode->compressed) {
 						for (auto &constraint : opcode->compressed->constraint_list) {
 							if (constraint->hint.size() == 0) continue;
-							std::string arg = split(constraint->name, "_", false, false)[0];
+							std::string arg = split(constraint->name, "_")[0];
 							if (str.find(arg) != str.length() - arg.length()) continue;
 							std::string render_hint = replace(constraint->hint, arg, "");
 							str += "$" + latex_utf_substitute(render_hint) + "$";
@@ -396,7 +397,7 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 
 			// format the opcode name and arguments
 			auto name = opcode->name;
-			auto arg_comps = split(opcode->format->args, ",", false, false);
+			auto arg_comps = split(opcode->format->args, ",");
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 			if (arg_comps.size() == 1 && arg_comps[0] == "none") arg_comps[0] = ""; 
 
@@ -721,6 +722,66 @@ void riscv_parse_meta::print_args_h()
 	printf("#endif\n");
 }
 
+void riscv_parse_meta::print_interp_h()
+{
+	print_c_header("riscv-interp.h");
+	printf("#ifndef riscv_interp_h\n");
+	printf("#define riscv_interp_h\n");
+	printf("\n");
+	for (auto isa_width : isa_width_prefixes()) {
+		printf("template <typename T>\n");
+		printf("bool %s_exec(T &dec, riscv_proc_%s &proc, uintptr_t next_pc)\n",
+			isa_width.second.c_str(), isa_width.second.c_str());
+		printf("{\n");
+		printf("\tenum { xlen = %zu };\n", isa_width.first);
+		printf("\ttypedef int%zu_t sx;\n", isa_width.first);
+		printf("\ttypedef uint%zu_t ux;\n", isa_width.first);
+		printf("\n");
+		printf("\tswitch (dec.op) {\n");
+		for (auto &opcode : opcodes) {
+			std::string inst = opcode->instruction;
+			if (inst.size() == 0) continue;
+			if (!opcode->include_isa(isa_width.first)) continue;
+			bool branch_or_jump = (inst.find("pc = ") != std::string::npos);
+			printf("\t\tcase %s: {\n", opcode_format("riscv_op_", opcode, "_").c_str());
+			inst = replace(inst, "imm", "dec.imm");
+			inst = replace(inst, "pc", "proc.pc");
+			inst = replace(inst, "state", "proc.state");
+			if (inst.find("frd") != std::string::npos) {
+				inst = replace(inst, "frd", "proc.freg[dec.rd]");
+			} else {
+				inst = replace(inst, "rd", "proc.ireg[dec.rd]");
+			}
+			if (inst.find("frs1") != std::string::npos) {
+				inst = replace(inst, "frs1", "proc.freg[dec.rs1]");
+			} else {
+				inst = replace(inst, "rs1", "proc.ireg[dec.rs1]");
+			}
+			if (inst.find("frs2") != std::string::npos) {
+				inst = replace(inst, "frs2", "proc.freg[dec.rs2]");
+			} else {
+				inst = replace(inst, "rs2", "proc.ireg[dec.rs2]");
+			}
+			if (inst.find("frs3") != std::string::npos) {
+				inst = replace(inst, "frs3", "proc.freg[dec.rs3]");
+			} else {
+				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
+			}
+			printf("\t\t\t%s;\n", inst.c_str());
+			if (!branch_or_jump) printf("\t\t\tproc.pc = next_pc;\n");
+			printf("\t\t\tgoto x;\n");
+			printf("\t\t};\n");
+		}
+		printf("\t\tdefault:\n");
+		printf("\t\t\tbreak;\n");
+		printf("\t}\n");
+		printf("\treturn false; /* illegal instruction */\n");
+		printf("x:\treturn true;\n");
+		printf("}\n\n");
+	}
+	printf("#endif\n");
+}
+
 void riscv_parse_meta::print_jit_h()
 {
 	print_c_header("riscv-jit.h");
@@ -999,14 +1060,8 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 		for (auto &opcode : opcodes) {
 			riscv_compressed_list include_compressions;
 			for (auto comp : opcode->compressions) {
-				bool include_isa = false;
-				for (auto &ext_a : comp->comp_opcode->extensions) {
-					if (ext_a->isa_width != isa_width.first) continue;
-					for (auto &ext_b : opcode->extensions) {
-						if (ext_b->isa_width != isa_width.first) continue;
-						include_isa = true;
-					}
-				}
+				bool include_isa = opcode->include_isa(isa_width.first) &&
+					comp->comp_opcode->include_isa(isa_width.first);
 				if (include_isa) include_compressions.push_back(comp);
 			}
 			if (include_compressions.size() == 0) continue;
@@ -1111,10 +1166,7 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 		if (zero_not_oh) print_array_unknown_enum("0", no_comment);
 		else print_array_unknown_enum("riscv_op_unknown", no_comment);
 		for (auto &opcode : opcodes) {
-			bool include_isa = false;
-			for (auto &ext : opcode->extensions) {
-				if (ext->isa_width == isa_width.first) include_isa = true;
-			}
+			bool include_isa = opcode->include_isa(isa_width.first);
 			std::string opcode_key = opcode_format("", opcode, ".");
 			printf("\t%s%s,\n",
 				opcode_comment(opcode, no_comment).c_str(),
@@ -1486,6 +1538,7 @@ int main(int argc, const char *argv[])
 	bool include_pseudo = false;
 	bool print_args_h = false;
 	bool print_switch_h = false;
+	bool print_interp_h = false;
 	bool print_jit_h = false;
 	bool print_jit_cc = false;
 	bool print_meta_h = false;
@@ -1527,6 +1580,9 @@ int main(int argc, const char *argv[])
 		{ "-p", "--include-pseudo", cmdline_arg_type_none,
 			"Include pseudo opcodes in switch decoder",
 			[&](std::string s) { return (include_pseudo = true); } },
+		{ "-V", "--print-interp-h", cmdline_arg_type_none,
+			"Print interpreter header",
+			[&](std::string s) { return (print_interp_h = true); } },
 		{ "-H", "--print-meta-h", cmdline_arg_type_none,
 			"Print metadata header",
 			[&](std::string s) { return (print_meta_h = true); } },
@@ -1569,7 +1625,8 @@ int main(int argc, const char *argv[])
 		!print_switch_h && !print_args_h &&
 		!print_jit_h && !print_jit_cc &&
 		!print_meta_h && !print_meta_cc &&
-		!print_strings_h && !print_strings_cc))
+		!print_strings_h && !print_strings_cc &&
+		!print_interp_h))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
@@ -1611,6 +1668,10 @@ int main(int argc, const char *argv[])
 	if (print_switch_h) {
 		inst_set.generate_codec(include_pseudo);
 		inst_set.print_switch_h(no_comment, zero_not_oh);
+	}
+
+	if (print_interp_h) {
+		inst_set.print_interp_h();
 	}
 
 	if (print_jit_h) {

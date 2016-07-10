@@ -65,7 +65,7 @@ int64_t riscv_parse_value(const char* valstr)
 
 riscv_bitrange::riscv_bitrange(std::string bitrange)
 {
-	std::vector<std::string> comps = split(bitrange, ":", false, false);
+	std::vector<std::string> comps = split(bitrange, ":");
 	if (comps.size() < 1 || comps.size() > 2) {
 		panic("invalid bitrange: %s", bitrange.c_str());
 	}
@@ -100,7 +100,7 @@ riscv_bitspec::riscv_bitspec(std::string bitspec)
 	 * when [scatter] is ommitted, bits are right justified from bit 0
 	 */
 
-	std::vector<std::string> comps = split(bitspec, ",", false, false);
+	std::vector<std::string> comps = split(bitspec, ",");
 	for (std::string comp : comps) {
 		size_t bopen = comp.find("[");
 		size_t bclose = comp.find("]");
@@ -108,7 +108,7 @@ riscv_bitspec::riscv_bitspec(std::string bitspec)
 			riscv_bitrange gather(comp.substr(0, bopen));
 			std::string scatter_spec = comp.substr(bopen + 1, bclose - bopen - 1);
 			riscv_bitrange_list scatter;
-			for (auto scatter_comp : split(scatter_spec, "|", false, false)) {
+			for (auto scatter_comp : split(scatter_spec, "|")) {
 				scatter.push_back(riscv_bitrange(scatter_comp));
 			}
 			segments.push_back(riscv_bitseg(gather, scatter));
@@ -187,11 +187,11 @@ std::string riscv_bitspec::to_template()
 
 riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)
 {
-	std::vector<std::string> spart = split(bit_spec, "=", false, false);
+	std::vector<std::string> spart = split(bit_spec, "=");
 	if (spart.size() != 2) {
 		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 	}
-	std::vector<std::string> rpart = split(spart[0], "..", false, false);
+	std::vector<std::string> rpart = split(spart[0], "..");
 	ssize_t msb, lsb, val;
 	if (rpart.size() == 1) {
 		msb = lsb = strtoul(rpart[0].c_str(), nullptr, 10);
@@ -281,7 +281,7 @@ std::string riscv_meta_model::format_type(riscv_arg_ptr arg)
 
 std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
 {
-	std::string name = strip_suffix ? split(codec->name, "+", false, false)[0] : codec->name;
+	std::string name = strip_suffix ? split(codec->name, "+")[0] : codec->name;
 	name = replace(name, "·", dot);
 	name = replace(name, "+", dot);
 	return prefix + name;
@@ -603,7 +603,7 @@ void riscv_meta_model::parse_type(std::vector<std::string> &part)
 		part[0], part[1]
 	);
 	for (size_t i = 2; i < part.size(); i++) {
-		std::vector<std::string> spec = split(part[i], "=", false, false);
+		std::vector<std::string> spec = split(part[i], "=");
 		type->parts.push_back(riscv_named_bitspec(riscv_bitspec(spec[0]), spec.size() > 1 ? spec[1] : ""));
 	}
 	types.push_back(type);

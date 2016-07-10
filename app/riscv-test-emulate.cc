@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <cassert>
 #include <cinttypes>
+#include <cmath>
 #include <vector>
 #include <map>
 #include <string>
@@ -30,42 +31,37 @@
 #include "riscv-elf-format.h"
 #include "riscv-strings.h"
 
+inline float f32_sqrt(float a) { return std::sqrt(a); }
+inline double f64_sqrt(double a) { return std::sqrt(a); }
+inline float f32_classify(float a) { return 0; } /* unimplemented */
+inline double f64_classify(double a) { return 0; } /* unimplemented */
+
+namespace riscv {
+	#include "riscv-interp.h"
+}
+
 using namespace riscv;
 
-void rv64_exec(riscv_decode &dec, riscv_proc_rv64 &proc)
+/*
+This simple proof of concept machine generated interpreter
+needs work. The Linux ecall syscall emulation currently only
+handles write and exit (required for test/hello-world-pcrel).
+
+The register state, stack and heap has not been set up yet.
+*/
+
+void rv64_emulate_ecall(riscv_decode &dec, riscv_proc_rv64 &proc)
 {
-	uintptr_t next_pc;
-	uint64_t inst = riscv_get_inst(proc.pc, &next_pc);
-	riscv_decode_inst_rv64(dec, inst);
-	switch (dec.op) {
-		case riscv_op_addi:
-			proc.ireg[dec.rd] = proc.ireg[dec.rs1] + dec.imm;
-			proc.pc = next_pc;
+	switch (proc.ireg[riscv_ireg_a7]) {
+		case 64: /* sys_write */
+			proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
+				(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
 			break;
-		case riscv_op_auipc:
-			proc.ireg[dec.rd] = uintptr_t(proc.pc) + dec.imm;
-			proc.pc = next_pc;
-			break;
-		case riscv_op_lui:
-			proc.ireg[dec.rd] = dec.imm;
-			proc.pc = next_pc;
-			break;
-		case riscv_op_ecall:
-			switch (proc.ireg[riscv_ireg_a7]) {
-				case 64: /* sys_write */
-					proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
-						(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
-					break;
-				case 93: /* sys_exit */
-					exit(proc.ireg[riscv_ireg_a0]);
-					break;
-				default:
-					panic("illegal syscall: %d", proc.ireg[riscv_ireg_a7]);
-			}
-			proc.pc = next_pc;
+		case 93: /* sys_exit */
+			exit(proc.ireg[riscv_ireg_a0]);
 			break;
 		default:
-			panic("illegal instruciton: %s", riscv_inst_name_sym[dec.op]);
+			panic("illegal syscall: %d", proc.ireg[riscv_ireg_a7]);
 	}
 }
 
@@ -75,7 +71,17 @@ void rv64_run(uintptr_t entry)
 	riscv_proc_rv64 proc;
 	proc.pc = entry;
 	while (true) {
-		rv64_exec(dec, proc);
+		uintptr_t next_pc;
+		uint64_t inst = riscv_get_inst(proc.pc, &next_pc);
+		riscv_decode_inst_rv64(dec, inst);
+		if (!riscv::rv64_exec(dec, proc, next_pc)) {
+			if (dec.op == riscv_op_ecall) {
+				rv64_emulate_ecall(dec, proc);
+				proc.pc = next_pc;
+			} else {
+				panic("illegal instruciton: %s", riscv_inst_name_sym[dec.op]);
+			}
+		}
 	}
 }
 
