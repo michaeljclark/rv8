@@ -236,6 +236,14 @@ struct riscv_opcode
 		return false;
 	}
 
+	bool include_isa(size_t width) {
+		bool include_isa = false;
+		for (auto &ext : extensions) {
+			if (ext->isa_width == width) include_isa = true;
+		}
+		return include_isa;
+	}
+
 	riscv_arg_ptr find_arg(ssize_t bit) {
 		for (auto arg : args) {
 			if (arg->bitspec.matches_bit(bit)) return arg;
