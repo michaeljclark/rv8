@@ -108,6 +108,7 @@ The following table shows the RISC-V Meta tools:
 
 - gcc-5 or clang-3.7
 - riscv-gnu-toolchain (required for `make test emulate`)
+- ragel
 
 ## Performance Statistics
 

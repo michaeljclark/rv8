@@ -21,12 +21,13 @@ CXX :=          $(shell which clang++ || which g++ || which c++)
 endif
 endif
 
-# linker and archiver
+# linker, archiver and ragel parser generator
+RAGEL :=        $(shell which ragel)
 LD :=           $(CXX)
 AR :=           $(shell which ar)
 
 # compiler function tests
-check_opt =     $(shell T=$$(mktemp /tmp/test.XXXX.$(2)); echo 'int main() { return 0; }' > $$T ; $(1) $(3) $$T -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T)
+check_opt =     $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
 
 # compiler flag test definitions
 LIBCPP_FLAGS =  -stdlib=libc++
@@ -141,6 +142,8 @@ TLSF_LIB =      $(LIB_DIR)/libtlsf.a
 # libriscv_util
 RV_UTIL_SRCS =  $(LIB_SRC_DIR)/util/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/util/riscv-color.cc \
+                $(LIB_SRC_DIR)/util/riscv-config.cc \
+                $(LIB_SRC_DIR)/util/riscv-config-parser.cc \
                 $(LIB_SRC_DIR)/util/riscv-util.cc
 RV_UTIL_OBJS =  $(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
@@ -197,6 +200,12 @@ PARSE_META_SRCS = $(APP_SRC_DIR)/riscv-parse-meta.cc
 PARSE_META_OBJS = $(call app_src_objs, $(PARSE_META_SRCS))
 PARSE_META_BIN = $(BIN_DIR)/riscv-parse-meta
 
+# test-config
+TEST_CONFIG_SRCS = $(APP_SRC_DIR)/riscv-test-config.cc
+TEST_CONFIG_OBJS = $(call app_src_objs, $(TEST_CONFIG_SRCS))
+TEST_CONFIG_ASM = $(call app_src_asm, $(TEST_CONFIG_SRCS))
+TEST_CONFIG_BIN = $(BIN_DIR)/riscv-test-config
+
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
 TEST_DECODER_OBJS = $(call app_src_objs, $(TEST_DECODER_SRCS))
@@ -221,6 +230,7 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(RV_ASM_SRCS) \
            $(PARSE_META_SRCS) \
            $(PARSE_ELF_SRCS) \
+           $(TEST_CONFIG_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS) \
            $(TEST_ENCODER_SRCS)
@@ -229,6 +239,7 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
            $(PARSE_ELF_BIN) \
            $(PARSE_META_BIN) \
+           $(TEST_CONFIG_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN) \
            $(TEST_ENCODER_BIN)
@@ -246,6 +257,7 @@ map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make test)
 test-clean: ; (cd test && make clean)
+test-config: ; $(TEST_CONFIG_BIN) test/spike.rv
 emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
@@ -259,28 +271,28 @@ c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC)
 
-$(RV_ARGS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_ARGS_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
 
-$(RV_CODEC_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_CODEC_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
 
-$(RV_JIT_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_JIT_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)
 
-$(RV_JIT_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_JIT_SRC): $(RV_META_DATA)
 	$(PARSE_META_BIN) -K -r $(META_DIR) > $(RV_JIT_SRC)
 
-$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_META_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
 
-$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_META_SRC): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
 
-$(RV_STR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_STR_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SH -r $(META_DIR) > $(RV_STR_HDR)
 
-$(RV_STR_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_STR_SRC): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
 
 # lib targets
@@ -323,6 +335,10 @@ $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
+$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
 $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
@@ -342,6 +358,8 @@ else
 cmd = @echo "$1"; $2
 endif
 
+$(LIB_SRC_DIR)/%.cc : $(LIB_SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, RAGEL $@, $(RAGEL) $< -o $@)
 $(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
