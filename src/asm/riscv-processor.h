@@ -134,6 +134,10 @@ namespace riscv {
 
 		UX pc;
 
+		struct {
+			UX lr;
+		} state;
+
 		IREG ireg[ireg_count];
 		FREG freg[freg_count];
 		UX   csr[csr_count];
