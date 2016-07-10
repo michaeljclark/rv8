@@ -258,8 +258,8 @@ map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 test: ; (cd test && make test)
 test-clean: ; (cd test && make clean)
-test-config: ; $(TEST_CONFIG_BIN) test/spike.rv
-emulate: all test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
+test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) test/spike.rv
+emulate: $(TEST_EMULATE_BIN) test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
 danger: ; @echo Please do not make danger
 
 c_args: all ; @$(PARSE_META_BIN) -A -r $(META_DIR)

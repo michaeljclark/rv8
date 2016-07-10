@@ -29,7 +29,7 @@ pcie {
     irq 0;
   };
 };
-leds { interface gpio; ngpio 4; @ 0x48002000:0x48002003; };
+leds { interface gpio; ngpio 4; @ 0x4800_2000:0x48002003; };
 rtc { @ 0x2000; };
 ram { 0 { @ 0x80000000:0x8FFFFFFF; }; };
 uart { @ 0x48000000; };
