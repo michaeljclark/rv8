@@ -220,11 +220,15 @@ usage: riscv-parse-meta [<options>]
                   --no-comment, -N            Don't emit comments in generated source
            --numeric-constants, -0            Use numeric constants in generated source
               --include-pseudo, -p            Include pseudo opcodes in switch decoder
+              --print-interp-h, -V            Print interpreter header
                 --print-meta-h, -H            Print metadata header
                --print-meta-cc, -C            Print metadata source
+             --print-strings-h, -SH           Print strings header
+            --print-strings-cc, -SC           Print strings source
                 --print-args-h, -A            Print args header
               --print-switch-h, -S            Print switch header
                  --print-jit-h, -J            Print jit header
+                --print-jit-cc, -K            Print jit source
                         --help, -h            Show help
 ```
 
