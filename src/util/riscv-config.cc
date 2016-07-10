@@ -25,6 +25,7 @@
 bool riscv_config::parse_value(std::string valstr, uint64_t &val)
 {
 	char *endptr = nullptr;
+	valstr = replace(valstr, "_", "");
 	if (valstr.find("0x") == 0) {
 		val = strtoull(valstr.c_str() + 2, &endptr, 16);
 	} else if (valstr.find("0b") == 0) {
