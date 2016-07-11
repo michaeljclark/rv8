@@ -45,7 +45,7 @@ typedef uint8_t  Elf64_Byte;
    padding, align 16
    auxv table, AT_NULL terminated
    envp array, null terminated
-   argv poinarray, null terminated
+   argv pointer array, null terminated
    argc <- stack pointer
  */
 
