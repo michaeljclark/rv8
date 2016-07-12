@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 #include <functional>
 #include <algorithm>
 #include <string>
