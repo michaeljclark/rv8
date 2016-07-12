@@ -37,7 +37,7 @@
 #include "riscv-elf-format.h"
 #include "riscv-strings.h"
 #include "riscv-disasm.h"
-#include "riscv-linux.h"
+#include "riscv-abi.h"
 #include "riscv-syscalls.h"
 
 inline float f32_sqrt(float a) { return std::sqrt(a); }
@@ -50,6 +50,15 @@ namespace riscv {
 }
 
 using namespace riscv;
+
+struct riscv_proc_proxy_rv64 : riscv_proc_rv64
+{
+	uintptr_t heap_begin;
+	uintptr_t heap_end;
+	std::vector<std::pair<void*,size_t>> mapped_segments;
+
+	riscv_proc_proxy_rv64() : riscv_proc_rv64(), heap_begin(0), heap_end(0) {}
+};
 
 struct riscv_emulator
 {
@@ -68,6 +77,15 @@ struct riscv_emulator
 		machine generated interpreter in src/asm/riscv-interp.h
 		created by parse-meta using C-psuedo code in meta/instructions
 	*/
+
+	inline static const int elf_p_flags_mmap(int v)
+	{
+		int prot = 0;
+		if (v & PF_X) prot |= PROT_EXEC;
+		if (v & PF_W) prot |= PROT_WRITE;
+		if (v & PF_R) prot |= PROT_READ;
+		return prot;
+	}
 
 	// Register dump
 	template <typename T>
@@ -93,25 +111,24 @@ struct riscv_emulator
 	void emulate_ecall(riscv_decode &dec, T &proc, uintptr_t next_pc)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case 64:  riscv_linux_sys_write(proc); break;
-			case 80:  riscv_linux_sys_fstat(proc); break;
-			case 93:  riscv_linux_sys_exit(proc); break;
+			case 57:  riscv_sys_close(proc); break;
+			case 64:  riscv_sys_write(proc); break;
+			case 80:  riscv_sys_fstat(proc); break;
+			case 93:  riscv_sys_exit(proc); break;
+			case 214: riscv_sys_brk(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 		proc.pc = next_pc;
 	}
 
 	// Simple RV64 emulator main loop
-	void rv64_run(uintptr_t entry, uintptr_t stack_top)
+	template <typename T>
+	void rv64_run(T &proc)
 	{
 		riscv_decode dec;
-		riscv_proc_rv64 proc;
-		proc.pc = entry;
-		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
-
+		uintptr_t inst, next_pc;
 		while (true) {
-			uintptr_t next_pc;
-			uint64_t inst = riscv_get_inst(proc.pc, &next_pc);
+			inst = riscv_get_inst(proc.pc, &next_pc);
 			riscv_decode_inst_rv64(dec, inst);
 			if (registers) print_registers(proc);
 			if (disassebly) print_disassembly(dec, proc.pc);
@@ -125,30 +142,26 @@ struct riscv_emulator
 	}
 
 	// Simple code to map a single stack segment
-	void* map_stack(uintptr_t stack_top, uintptr_t stack_size)
+	template <typename T>
+	void map_stack(T &proc, uintptr_t stack_top, uintptr_t stack_size)
 	{
 		void *addr = mmap((void*)(stack_top - stack_size), stack_size,
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
 			panic("map_stack: error: mmap: %s", strerror(errno));
 		}
+
+		// keep track of the mapped segment and set the stack_top
+		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
+		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
+
 		printf("guest stack =  0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W\n",
 			(stack_top - stack_size), stack_top);
-
-		return addr;
-	}
-
-	inline const int elf_p_flags_mmap(int v)
-	{
-		int prot = 0;
-		if (v & PF_X) prot |= PROT_EXEC;
-		if (v & PF_W) prot |= PROT_WRITE;
-		if (v & PF_R) prot |= PROT_READ;
-		return prot;
 	}
 
 	// Simple code currently maps all segments copy-on-write RWX
-	void* map_pt_load_segment(const char* filename, Elf64_Phdr &phdr)
+	template <typename T>
+	void map_load_segment(T &proc, const char* filename, Elf64_Phdr &phdr)
 	{
 		int fd = open(filename, O_RDONLY);
 		if (fd < 0) {
@@ -160,11 +173,15 @@ struct riscv_emulator
 		if (addr == MAP_FAILED) {
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
-		printf("guest text  =  0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s\n",
-			uintptr_t(phdr.p_vaddr), uintptr_t(phdr.p_vaddr + phdr.p_memsz),
-			elf_p_flags_name(phdr.p_flags).c_str());
 
-		return addr;
+		// keep track of the mapped segment and set the heap_end
+		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+		uintptr_t seg_end = uintptr_t(phdr.p_vaddr + phdr.p_memsz);
+		if (proc.heap_begin < seg_end) proc.heap_begin = proc.heap_end = seg_end;
+
+		printf("guest text  =  0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s\n",
+			uintptr_t(phdr.p_vaddr), seg_end,
+			elf_p_flags_name(phdr.p_flags).c_str());
 	}
 
 	void parse_commandline(int argc, const char *argv[])
@@ -212,30 +229,33 @@ struct riscv_emulator
 		free(heapptr);
 	}
 
-	void run()
+	void exec()
 	{
 		// load ELF (headers only)
 		elf.load(filename, true);
 
+		// Processor state
+		riscv_proc_proxy_rv64 proc;
+
 		// Find the PT_LOAD segments and mmap then into memory
-		std::vector<std::pair<void*,size_t>> pt_load_segments;
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
-				pt_load_segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr,phdr.p_memsz));
-				map_pt_load_segment(filename.c_str(), phdr);
+				map_load_segment(proc, filename.c_str(), phdr);
 			}
 		}
 
-		// Create a stack
-		void* stack_addr = map_stack(stack_top, stack_size);
+		// Map a stack and set the stack pointer
+		map_stack(proc, stack_top, stack_size);
 
-		// Run the emulator
-		rv64_run(uintptr_t(elf.ehdr.e_entry), stack_top);
+		// Set the program counter to the entry address
+		proc.pc = elf.ehdr.e_entry;
+
+		// Start the emulator
+		rv64_run(proc);
 
 		// Unmap segments
-		munmap(stack_addr, stack_size);
-		for (auto &seg: pt_load_segments) {
+		for (auto &seg: proc.mapped_segments) {
 			munmap(seg.first, seg.second);
 		}
 	}
@@ -246,6 +266,6 @@ int main(int argc, const char *argv[])
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
 	emulator.process_info(argv);
-	emulator.run();
+	emulator.exec();
 	return 0;
 }

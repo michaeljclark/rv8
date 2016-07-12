@@ -1,15 +1,15 @@
 //
-//  riscv-linux.h
+//  riscv-abi.h
 //
 
-#ifndef riscv_linux_h
-#define riscv_linux_h
+#ifndef riscv_abi_h
+#define riscv_abi_h
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct riscv_linux_stat
+struct riscv_abi_stat
 {
 	uint64_t _dev;
 	uint64_t _ino;
