@@ -76,9 +76,9 @@ const char* elf_p_type_name(int v)
 const std::string elf_p_flags_name(int v)
 {
 	std::string s;
-	if (v & PF_X) s+= "+X";
-	if (v & PF_W) s+= "+W";
 	if (v & PF_R) s+= "+R";
+	if (v & PF_W) s+= "+W";
+	if (v & PF_X) s+= "+X";
 	return s;
 }
 
