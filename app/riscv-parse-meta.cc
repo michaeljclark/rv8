@@ -743,6 +743,8 @@ void riscv_parse_meta::print_interp_h()
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
 			bool branch_or_jump = (inst.find("pc = ") != std::string::npos);
+			bool branch = (inst.find("if") == 0);
+			bool jump = branch_or_jump && !branch;
 			printf("\t\tcase %s: {\n", opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
 			inst = replace(inst, "pc", "proc.pc");
@@ -750,7 +752,7 @@ void riscv_parse_meta::print_interp_h()
 			if (inst.find("frd") != std::string::npos) {
 				inst = replace(inst, "frd", "proc.freg[dec.rd]");
 			} else {
-				inst = replace(inst, "rd", "proc.ireg[dec.rd]");
+				inst = replace(inst, "rd", "if (dec.rd != 0) proc.ireg[dec.rd]");
 			}
 			if (inst.find("frs1") != std::string::npos) {
 				inst = replace(inst, "frs1", "proc.freg[dec.rs1]");
@@ -768,7 +770,8 @@ void riscv_parse_meta::print_interp_h()
 				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
 			}
 			printf("\t\t\t%s;\n", inst.c_str());
-			if (!branch_or_jump) printf("\t\t\tproc.pc = next_pc;\n");
+			if (branch) printf("\t\t\telse proc.pc = next_pc;\n");
+			else if (!jump) printf("\t\t\tproc.pc = next_pc;\n");
 			printf("\t\t\tgoto x;\n");
 			printf("\t\t};\n");
 		}
