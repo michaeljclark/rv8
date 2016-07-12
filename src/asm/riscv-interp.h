@@ -239,57 +239,57 @@ bool rv32_exec(T &dec, riscv_proc_rv32 &proc, uintptr_t next_pc)
 			goto x;
 		};
 		case riscv_op_lr_w: {
-			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))));
+			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_sc_w: {
-			if (proc.state.lr == proc.ireg[dec.rs1]) *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]);
+			if (proc.state.lr == proc.ireg[dec.rs1]) *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]);
 			else proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoswap_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoadd_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoxor_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoor_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoand_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomin_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomax_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amominu_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomaxu_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
@@ -877,112 +877,112 @@ bool rv64_exec(T &dec, riscv_proc_rv64 &proc, uintptr_t next_pc)
 			goto x;
 		};
 		case riscv_op_lr_w: {
-			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))));
+			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_sc_w: {
-			if (proc.state.lr == proc.ireg[dec.rs1]) *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]);
+			if (proc.state.lr == proc.ireg[dec.rs1]) *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]);
 			else proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoswap_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoadd_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoxor_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoor_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoand_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomin_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomax_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amominu_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomaxu_w: {
-			s32 t(*(s32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))); *((u32*)(uintptr_t(proc.ireg[dec.rs1].r.wu.val))) = u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s32 t(*(s32*)proc.ireg[dec.rs1]); *((s32*)proc.ireg[dec.rs1]) = u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_lr_d: {
-			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))));
+			proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s64*)proc.ireg[dec.rs1]));
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_sc_d: {
-			if (proc.state.lr == proc.ireg[dec.rs1]) *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]);
+			if (proc.state.lr == proc.ireg[dec.rs1]) *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]);
 			else proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoswap_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]); if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoadd_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) + t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoxor_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) ^ t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoor_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) | t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amoand_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) & t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomin_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) < t ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) < t ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomax_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = s64(proc.ireg[dec.rs2]) > t ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]) > t ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amominu_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = u64(proc.ireg[dec.rs2]) < u64(t) ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = u64(proc.ireg[dec.rs2]) < u64(t) ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};
 		case riscv_op_amomaxu_d: {
-			s64 t(*(s64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))); *((u64*)(uintptr_t(proc.ireg[dec.rs1].r.lu.val))) = u64(proc.ireg[dec.rs2]) > u64(t) ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
+			s64 t(*(s64*)proc.ireg[dec.rs1]); *((s64*)proc.ireg[dec.rs1]) = u64(proc.ireg[dec.rs2]) > u64(t) ? s64(proc.ireg[dec.rs2]) : t; if (dec.rd != 0) proc.ireg[dec.rd] = t;
 			proc.pc = next_pc;
 			goto x;
 		};

@@ -37,6 +37,7 @@ namespace riscv {
 		inline ireg_rv32() { memset(&r, 0, sizeof(r)); }
 		inline ireg_rv32& operator=(int32_t val) { r.x.val = val; return *this; }
 		inline operator int32_t() const { return r.x.val; }
+		inline operator int32_t*() const { return reinterpret_cast<int32_t*>(r.w.val); }
 	};
 
 	/* RV64 integer register */
@@ -73,6 +74,8 @@ namespace riscv {
 		inline ireg_rv64() { memset(&r, 0, sizeof(r)); }
 		inline ireg_rv64& operator=(int64_t val) { r.x.val = val; return *this; }
 		inline operator int64_t() const { return r.x.val; }
+		inline operator int32_t*() const { return reinterpret_cast<int32_t*>(r.w.val); }
+		inline operator int64_t*() const { return reinterpret_cast<int64_t*>(r.l.val); }
 	};
 
 	/* FP32 register */
@@ -135,12 +138,12 @@ namespace riscv {
 		UX pc;
 
 		struct {
-			UX lr;
+			SX lr;
 		} state;
 
 		IREG ireg[ireg_count];
 		FREG freg[freg_count];
-		UX   csr[csr_count];
+		SX   csr[csr_count];
 
 		riscv_proc_t() : pc(0), ireg(), freg(), csr{0} {}
 	};
