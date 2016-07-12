@@ -30,11 +30,11 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 #include "riscv-codec.h"
+#include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
-#include "riscv-strings.h"
 
 using namespace riscv;
 
@@ -125,48 +125,7 @@ struct riscv_compress_elf
 	template <typename T>
 	void print_continuation_disassembly(T &dec)
 	{
-		std::string args;
-		const char *fmt = riscv_inst_format[dec.op];
-		while (*fmt) {
-			switch (*fmt) {
-				case 'O': args += riscv_inst_name_sym[dec.op]; break;
-				case '(': args += "("; break;
-				case ',': args += ","; break;
-				case ')': args += ")"; break;
-				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
-				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
-				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
-				case '3': args += riscv_freg_name_sym[dec.rd]; break;
-				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
-				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
-				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
-				case '7': args += format_string("%d", dec.rs1); break;
-				case 'i': args += format_string("%lld", dec.imm); break;
-				case 'o': args += format_string("%lld", dec.imm); break;
-				case 'c': {
-					const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
-					if (csr_name) args += format_string("%s", csr_name);
-					else args += format_string("0x%03x", dec.imm & 0xfff);
-					break;
-				}
-				case 'r':
-					switch(dec.rm) {
-						case riscv_rm_rne: args += "rne"; break;
-						case riscv_rm_rtz: args += "rtz"; break;
-						case riscv_rm_rdn: args += "rdn"; break;
-						case riscv_rm_rup: args += "rup"; break;
-						case riscv_rm_rmm: args += "rmm"; break;
-						default:           args += "unk"; break;
-					}
-					break;
-				case '\t': while (args.length() < 12) args += " "; break;
-				case 'A': if (dec.aq) args += ".aq"; break;
-				case 'R': if (dec.rl) args += ".rl"; break;
-				default:
-					break;
-			}
-			fmt++;
-		}
+		std::string args = riscv_disasm_inst_simple(dec);
 		debug("0x%016tx %-7s%-7s%-7s%-7s%-30s%-18s %s%s%s",
 			dec.pc,
 			dec.label_target ? format_string("%u", dec.label_target).c_str() : "",
@@ -496,7 +455,7 @@ struct riscv_compress_elf
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			riscv_disasm_inst(dec, dec_hist, dec.pc, dec.pc + riscv_inst_length(dec.inst), 0, gp,
+			riscv_disasm_inst_print(dec, dec_hist, dec.pc, dec.pc + riscv_inst_length(dec.inst), 0, gp,
 				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 		}

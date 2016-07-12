@@ -19,21 +19,22 @@
 #include "riscv-meta.h"
 #include "riscv-codec.h"
 #include "riscv-format.h"
-#include "riscv-disasm.h"
 #include "riscv-strings.h"
+#include "riscv-util.h"
+#include "riscv-disasm.h"
 
 using namespace riscv;
 
-const char* riscv_null_symbol_lookup(uintptr_t, bool nearest) { return nullptr; }
-const char* riscv_null_symbol_colorize(const char *type) { return ""; }
+const char* riscv::null_symbol_lookup(uintptr_t, bool nearest) { return nullptr; }
+const char* riscv::null_symbol_colorize(const char *type) { return ""; }
 
-const void print_add(size_t &offset, const char *str)
+static const void print_add(size_t &offset, const char *str)
 {
 	printf("%s", str);
 	offset += strlen(str);
 }
 
-const void print_pad(size_t &offset, size_t pad_to)
+static const void print_pad(size_t &offset, size_t pad_to)
 {
 	static const char *space32 = "                                        ";
 	if (pad_to < offset) pad_to = offset;
@@ -42,7 +43,7 @@ const void print_pad(size_t &offset, size_t pad_to)
 	offset += x;
 }
 
-const void print_fmt(size_t &offset, const char* fmt, ...)
+static const void print_fmt(size_t &offset, const char* fmt, ...)
 {
     std::vector<char> buf(32);
     va_list ap;
@@ -62,14 +63,14 @@ const void print_fmt(size_t &offset, const char* fmt, ...)
     offset += strlen(buf.data());
 }
 
-const void print_pad(size_t &offset, size_t pad_to, const char *str)
+static const void print_pad(size_t &offset, size_t pad_to, const char *str)
 {
 	print_add(offset, str);
 	print_pad(offset, pad_to);
 }
 
-const void print_addr(size_t &offset, uint64_t addr,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
+static const void print_addr(size_t &offset, uint64_t addr,
+	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
 	print_pad(offset, 80);
 	printf("%s", colorize("address"));
@@ -84,9 +85,9 @@ const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_inst(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
+void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
 	uintptr_t pc, uintptr_t next_pc, uintptr_t pc_offset, uintptr_t gp,
-	riscv_symbol_name_fn symlookup, riscv_symbol_colorize_fn colorize)
+	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
 	uint64_t addr = pc - pc_offset;

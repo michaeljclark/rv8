@@ -28,11 +28,11 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 #include "riscv-codec.h"
+#include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
-#include "riscv-strings.h"
 
 using namespace riscv;
 

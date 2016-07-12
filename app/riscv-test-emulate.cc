@@ -36,6 +36,7 @@
 #include "riscv-elf-file.h"
 #include "riscv-elf-format.h"
 #include "riscv-strings.h"
+#include "riscv-disasm.h"
 #include "riscv-linux.h"
 #include "riscv-syscalls.h"
 
@@ -83,48 +84,7 @@ struct riscv_emulator
 	template <typename T>
 	void print_disassembly(T &dec, uintptr_t pc)
 	{
-		std::string args;
-		const char *fmt = riscv_inst_format[dec.op];
-		while (*fmt) {
-			switch (*fmt) {
-				case 'O': args += riscv_inst_name_sym[dec.op]; break;
-				case '(': args += "("; break;
-				case ',': args += ","; break;
-				case ')': args += ")"; break;
-				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
-				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
-				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
-				case '3': args += riscv_freg_name_sym[dec.rd]; break;
-				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
-				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
-				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
-				case '7': args += format_string("%d", dec.rs1); break;
-				case 'i': args += format_string("%lld", dec.imm); break;
-				case 'o': args += format_string("%lld", dec.imm); break;
-				case 'c': {
-					const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
-					if (csr_name) args += format_string("%s", csr_name);
-					else args += format_string("0x%03x", dec.imm & 0xfff);
-					break;
-				}
-				case 'r':
-					switch(dec.rm) {
-						case riscv_rm_rne: args += "rne"; break;
-						case riscv_rm_rtz: args += "rtz"; break;
-						case riscv_rm_rdn: args += "rdn"; break;
-						case riscv_rm_rup: args += "rup"; break;
-						case riscv_rm_rmm: args += "rmm"; break;
-						default:           args += "unk"; break;
-					}
-					break;
-				case '\t': while (args.length() < 12) args += " "; break;
-				case 'A': if (dec.aq) args += ".aq"; break;
-				case 'R': if (dec.rl) args += ".rl"; break;
-				default:
-					break;
-			}
-			fmt++;
-		}
+		std::string args = riscv_disasm_inst_simple(dec);
 		printf("0x%016tx %-30s\n", pc, args.c_str());
 	}
 

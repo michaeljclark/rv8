@@ -29,6 +29,7 @@
 #include "riscv-cmdline.h"
 #include "riscv-color.h"
 #include "riscv-codec.h"
+#include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
@@ -152,7 +153,7 @@ struct riscv_parse_elf
 			dec.pc = pc;
 			dec.inst = riscv_get_inst(pc, &next_pc);
 			riscv_decode_inst_rv64(dec, dec.inst);
-			riscv_disasm_inst(dec, dec_hist, pc, next_pc, pc_offset, gp,
+			riscv_disasm_inst_print(dec, dec_hist, pc, next_pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			pc = next_pc;
