@@ -44,7 +44,7 @@ void elf_file::clear()
 	sections.resize(0);
 }
 
-void elf_file::load(std::string filename)
+void elf_file::load(std::string filename, bool headers_only)
 {
 	FILE *file;
 	struct stat stat_buf;
@@ -191,6 +191,8 @@ void elf_file::load(std::string filename)
 			}
 			break;
 	}
+
+	if (headers_only) return;
 
 	// Find strtab and symtab
 	for (size_t i = 0; i < shdrs.size(); i++) {

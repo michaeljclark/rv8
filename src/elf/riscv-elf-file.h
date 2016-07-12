@@ -38,7 +38,7 @@ struct elf_file
 	elf_file(std::string filename);
 
 	void clear();
-	void load(std::string filename);
+	void load(std::string filename, bool headers_only = false);
 	void save(std::string filename);
 
 	void byteswap_symbol_table(ELFENDIAN endian);
