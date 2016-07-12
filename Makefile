@@ -49,7 +49,7 @@ DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare
 CPPFLAGS =
 CFLAGS =        $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
-CXXFLAGS =      -std=c++14 $(CFLAGS)
+CXXFLAGS =      -std=c++1y $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 DARWIN_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
