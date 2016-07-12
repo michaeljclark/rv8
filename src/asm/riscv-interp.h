@@ -26,11 +26,11 @@ bool rv32_exec(T &dec, riscv_proc_rv32 &proc, uintptr_t next_pc)
 			goto x;
 		};
 		case riscv_op_jal: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = proc.pc + 4; proc.pc = proc.pc + dec.imm;
+			if (dec.rd != 0) proc.ireg[dec.rd] = next_pc; proc.pc = proc.pc + dec.imm;
 			goto x;
 		};
 		case riscv_op_jalr: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = proc.pc + 4; proc.pc = proc.ireg[dec.rs1] + dec.imm;
+			if (dec.rd != 0) proc.ireg[dec.rd] = next_pc; proc.pc = proc.ireg[dec.rs1] + dec.imm;
 			goto x;
 		};
 		case riscv_op_beq: {
@@ -579,11 +579,11 @@ bool rv64_exec(T &dec, riscv_proc_rv64 &proc, uintptr_t next_pc)
 			goto x;
 		};
 		case riscv_op_jal: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = proc.pc + 4; proc.pc = proc.pc + dec.imm;
+			if (dec.rd != 0) proc.ireg[dec.rd] = next_pc; proc.pc = proc.pc + dec.imm;
 			goto x;
 		};
 		case riscv_op_jalr: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = proc.pc + 4; proc.pc = proc.ireg[dec.rs1] + dec.imm;
+			if (dec.rd != 0) proc.ireg[dec.rd] = next_pc; proc.pc = proc.ireg[dec.rs1] + dec.imm;
 			goto x;
 		};
 		case riscv_op_beq: {

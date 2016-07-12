@@ -747,7 +747,9 @@ void riscv_parse_meta::print_interp_h()
 			bool jump = branch_or_jump && !branch;
 			printf("\t\tcase %s: {\n", opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
+			inst = replace(inst, "next_pc", "NEXT_PC");
 			inst = replace(inst, "pc", "proc.pc");
+			inst = replace(inst, "NEXT_PC", "next_pc");
 			inst = replace(inst, "state", "proc.state");
 			if (inst.find("frd") != std::string::npos) {
 				inst = replace(inst, "frd", "proc.freg[dec.rd]");
