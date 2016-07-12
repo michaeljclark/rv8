@@ -107,9 +107,16 @@ The following table shows the RISC-V Meta tools:
 
 ## Dependencies
 
-- gcc-5 or clang-3.7
+- gmake
+- gcc-5.4 or clang-3.4
 - riscv-gnu-toolchain (required for `make test emulate`)
-- ragel
+- ragel (required to regenerate config grammar)
+
+## Supported Platforms
+
+- Linux
+- macOS
+- FreeBSD
 
 ## Performance Statistics
 
