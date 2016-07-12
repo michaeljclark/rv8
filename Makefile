@@ -40,7 +40,10 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 
 # default optimizer, debug and warning flags
 TOP_DIR =       $(shell pwd)
-INCLUDES :=     -I$(TOP_DIR)/src -I$(TOP_DIR)/src/asm -I$(TOP_DIR)/src/elf -I$(TOP_DIR)/src/meta -I$(TOP_DIR)/src/model -I$(TOP_DIR)/src/util  -I$(TOP_DIR)/src/tlsf
+INCLUDES :=     -I$(TOP_DIR)/src -I$(TOP_DIR)/src/asm \
+                -I$(TOP_DIR)/src/meta -I$(TOP_DIR)/src/model \
+                -I$(TOP_DIR)/src/elf -I$(TOP_DIR)/src/linux \
+                -I$(TOP_DIR)/src/util  -I$(TOP_DIR)/src/tlsf
 OPT_FLAGS =     -O3
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare
