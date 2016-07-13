@@ -1,10 +1,11 @@
 //
-//  tlsf-init.h
+//  tlsf-init.cc
 //
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
 #include <sys/mman.h>
 
 #include "tlsf.h"
@@ -32,3 +33,11 @@ void free(void *ptr)
 	tlsf_free(heap_tlsf, ptr);
 }
 
+void* operator new(std::size_t sz) {
+    return malloc(sz);
+}
+
+void operator delete(void* ptr) noexcept
+{
+    free(ptr);
+}

@@ -137,9 +137,9 @@ RV_META_DATA =  $(META_DIR$)/args \
                 $(META_DIR$)/types
 
 # libtlsf
-TLSF_SRCS =     $(LIB_SRC_DIR)/tlsf/tlsf.c \
-                $(LIB_SRC_DIR)/tlsf/tlsf-init.c
-TLSF_OBJS =     $(call c_src_objs, $(TLSF_SRCS))
+TLSF_SRCS =     $(LIB_SRC_DIR)/tlsf/tlsf.cc \
+                $(LIB_SRC_DIR)/tlsf/tlsf-init.cc
+TLSF_OBJS =     $(call lib_src_objs, $(TLSF_SRCS))
 TLSF_LIB =      $(LIB_DIR)/libtlsf.a
 
 # libriscv_util
@@ -370,8 +370,6 @@ $(LIB_SRC_DIR)/%.cc : $(LIB_SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, RAGEL $@, $(RAGEL) $< -o $@)
 $(OBJ_DIR)/%.o : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
-$(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
-	$(call cmd, CXX $@, $(CC) $(CFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(OBJ_DIR)/%.o : $(LIB_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(DEP_DIR)/%.cc.P : $(APP_SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
