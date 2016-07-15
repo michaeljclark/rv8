@@ -41,8 +41,8 @@ srl        "Shift Right Logical"                            "rd = ux(rs1) >> (rs
 sra        "Shift Right Arithmetic"                         "rd = sx(rs1) >> (rs2 & 0b111111)"
 or         "Or"                                             "rd = ux(rs1) | ux(rs2)"
 and        "And"                                            "rd = ux(rs1) & ux(rs2)"
-fence      "Fence"
-fence.i    "Fence Instruction"
+fence      "Fence"                                          ";"
+fence.i    "Fence Instruction"                              ";"
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
 

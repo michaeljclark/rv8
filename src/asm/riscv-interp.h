@@ -198,6 +198,16 @@ bool rv32_exec(T &dec, riscv_proc_rv32 &proc, uintptr_t next_pc)
 			proc.pc = next_pc;
 			goto x;
 		};
+		case riscv_op_fence: {
+			;;
+			proc.pc = next_pc;
+			goto x;
+		};
+		case riscv_op_fence_i: {
+			;;
+			proc.pc = next_pc;
+			goto x;
+		};
 		case riscv_op_mul: {
 			if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) * ux(proc.ireg[dec.rs2]);
 			proc.pc = next_pc;
@@ -718,6 +728,16 @@ bool rv64_exec(T &dec, riscv_proc_rv64 &proc, uintptr_t next_pc)
 		};
 		case riscv_op_and: {
 			if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) & ux(proc.ireg[dec.rs2]);
+			proc.pc = next_pc;
+			goto x;
+		};
+		case riscv_op_fence: {
+			;;
+			proc.pc = next_pc;
+			goto x;
+		};
+		case riscv_op_fence_i: {
+			;;
 			proc.pc = next_pc;
 			goto x;
 		};
