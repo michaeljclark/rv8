@@ -15,6 +15,7 @@ extern "C" {
  */
 
 const char* sbi_get_config(void);
+size_t sbi_num_harts(void);
 size_t sbi_hart_id(void);
 int sbi_send_ipi(size_t hart_id);
 bool sbi_clear_ipi(void);
