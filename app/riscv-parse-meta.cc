@@ -730,7 +730,7 @@ void riscv_parse_meta::print_interp_h()
 	printf("\n");
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("template <typename T>\n");
-		printf("bool %s_exec(T &dec, riscv_proc_%s &proc, uintptr_t next_pc)\n",
+		printf("bool %s_exec(T &dec, riscv_proc_%s &proc, uintptr_t inst_length)\n",
 			isa_width.second.c_str(), isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
@@ -747,9 +747,8 @@ void riscv_parse_meta::print_interp_h()
 			bool jump = branch_or_jump && !branch;
 			printf("\t\tcase %s: {\n", opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
-			inst = replace(inst, "next_pc", "NEXT_PC");
 			inst = replace(inst, "pc", "proc.pc");
-			inst = replace(inst, "NEXT_PC", "next_pc");
+			inst = replace(inst, "length(inst)", "inst_length");
 			inst = replace(inst, "state", "proc.state");
 			if (inst.find("frd") != std::string::npos) {
 				inst = replace(inst, "frd", "proc.freg[dec.rd]");
@@ -772,8 +771,8 @@ void riscv_parse_meta::print_interp_h()
 				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
 			}
 			printf("\t\t\t%s;\n", inst.c_str());
-			if (branch) printf("\t\t\telse proc.pc = next_pc;\n");
-			else if (!jump) printf("\t\t\tproc.pc = next_pc;\n");
+			if (branch) printf("\t\t\telse proc.pc += inst_length;\n");
+			else if (!jump) printf("\t\t\tproc.pc += inst_length;\n");
 			printf("\t\t\tgoto x;\n");
 			printf("\t\t};\n");
 		}

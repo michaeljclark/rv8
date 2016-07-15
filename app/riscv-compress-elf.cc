@@ -66,6 +66,7 @@ struct riscv_compress_elf
 	bool do_print_disassembly = false;
 	bool do_print_continuations = false;
 	bool do_print_relocations = false;
+	bool do_print_external = false;
 	bool do_compress = false;
 	bool do_decompress = false;
 	bool help_or_error = false;
@@ -291,15 +292,15 @@ struct riscv_compress_elf
 
 	void disassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
-		uintptr_t pc = start, next_pc;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
 			dec.pc = pc - pc_offset;
-			dec.inst = riscv_get_inst(pc, &next_pc);
+			dec.inst = riscv_inst_fetch(pc, &inst_length);
 			riscv_decode_inst_rv64(dec, dec.inst);
 			riscv_decompress_inst_rv64(dec);
-			pc = next_pc;
+			pc += inst_length;
 		}
 	}
 
@@ -381,7 +382,6 @@ struct riscv_compress_elf
 		}
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			if (!dec.is_pcrel) continue; // skip relocating absolute references
 			if (dec.label_pair > 0) {
 				auto rbi = bi;
 				if (dec.label_branch) dec.addr = label_addr[dec.label_branch];
@@ -438,6 +438,18 @@ struct riscv_compress_elf
 		}
 	}
 
+	void print_external(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	{
+		std::map<uint32_t,intptr_t> label_addr;
+		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
+			auto &dec = *bi;
+			if ((dec.is_pcrel || dec.is_abs || dec.is_gprel) &&
+				(dec.addr < (start - pc_offset) || dec.addr >= (end - pc_offset))) {
+				print_continuation_disassembly(dec);
+			}
+		}
+	}
+
 	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		size_t line = 0;
@@ -455,7 +467,7 @@ struct riscv_compress_elf
 		std::deque<riscv_disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			riscv_disasm_inst_print(dec, dec_hist, dec.pc, dec.pc + riscv_inst_length(dec.inst), 0, gp,
+			riscv_disasm_inst_print(dec, dec_hist, dec.pc, 0, gp,
 				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 		}
@@ -486,6 +498,9 @@ struct riscv_compress_elf
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR)
 			{
+				printf("\nSection[%2lu] %s (0x%llx - 0x%llx)\n",
+					i, elf.shdr_name(i), shdr.sh_addr, shdr.sh_addr + shdr.sh_size);
+
 				std::deque<riscv_asm> bin;
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
@@ -496,23 +511,26 @@ struct riscv_compress_elf
 
 				// TODO - initial prototype pads text section with nop (addi x0,x0,0)
 				//      - relocate doesn't relocate absolute references.
+				//      - relocate doesn't relocate references outside the text segment
 				//      - relocate may need to scan data segment for code pointers.
 
 				pad_with_nops(bin, res.second); /* res.second = saving */
 				reassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 
+				bytes += res.first;
+				saving += res.second;
+
+				if (do_print_external) {
+					print_external(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
+				}
+
 				if (do_print_continuations) {
-					printf("\n%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 					print_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
 				if (do_print_disassembly) {
-					printf("\n%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
 				}
-
-				bytes += res.first;
-				saving += res.second;
 			}
 		}
 
@@ -534,8 +552,11 @@ struct riscv_compress_elf
 				"Print Continuations",
 				[&](std::string s) { return (do_print_continuations = true); } },
 			{ "-r", "-print-relocations", cmdline_arg_type_none,
-				"Print Relocations",
+				"Print Relocations (.init .fini)",
 				[&](std::string s) { return (do_print_relocations = true); } },
+			{ "-e", "-print-external", cmdline_arg_type_none,
+				"Print Not Relocated (referenecs outside .text)",
+				[&](std::string s) { return (do_print_external = true); } },
 			{ "-c", "--compress", cmdline_arg_type_none,
 				"Compress",
 				[&](std::string s) { return (do_compress = true); } },

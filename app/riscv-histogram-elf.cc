@@ -98,9 +98,9 @@ struct riscv_histogram_elf
 	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
 		riscv_decode dec;
-		uintptr_t pc = start, next_pc;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
-			uint64_t inst = riscv_get_inst(pc, &next_pc);
+			uint64_t inst = riscv_inst_fetch(pc, &inst_length);
 			riscv_decode_inst_rv64(dec, inst);
 			if (inst_histogram) {
 				histogram_add(hist, riscv_inst_name_sym[dec.op]);
@@ -108,7 +108,7 @@ struct riscv_histogram_elf
 			if (regs_histogram) {
 				histogram_add_regs(hist, dec);
 			}
-			pc = next_pc;
+			pc += inst_length;
 		}
 	}
 

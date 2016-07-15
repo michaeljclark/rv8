@@ -925,9 +925,10 @@ void decode_meta(uintptr_t start, uintptr_t end, const char *code)
 	size_t decoded = 0;
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		uintptr_t pc = start;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
-			riscv_decode_inst_op<false, true, true, true, true, true, true, true, true>(riscv_get_inst(pc, &pc));
+			riscv_decode_inst_op<false, true, true, true, true, true, true, true, true>(riscv_inst_fetch(pc, &inst_length));
+			pc += inst_length;
 			decoded++;
 		}
 	}
@@ -944,9 +945,10 @@ void decode_spike_nocache(uintptr_t start, uintptr_t end, const char* code)
 	proc.register_base_instructions();
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	for (size_t i = 0; i < count; i++) {
-		uintptr_t pc = start;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
-			proc.decode_inst_nocache(riscv_get_inst(pc, &pc));
+			proc.decode_inst_nocache(riscv_inst_fetch(pc, &inst_length));
+			pc += inst_length;
 			decoded++;
 		}
 	}
@@ -963,9 +965,10 @@ void decode_spike_cache(uintptr_t start, uintptr_t end, const char* code)
 	std::chrono::time_point<std::chrono::system_clock> s1 = std::chrono::system_clock::now();
 	size_t decoded = 0;
 	for (size_t i = 0; i < count; i++) {
-		uintptr_t pc = start;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
-			proc.decode_inst(riscv_get_inst(pc, &pc));
+			proc.decode_inst(riscv_inst_fetch(pc, &inst_length));
+			pc += inst_length;
 			decoded++;
 		}
 	}

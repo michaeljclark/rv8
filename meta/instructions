@@ -5,8 +5,8 @@
 
 lui        "Load Upper Immediate"                           "rd = imm"
 auipc      "Add Upper Immediate to PC"                      "rd = pc + imm"
-jal        "Jump and Link"                                  "rd = next_pc; pc = pc + imm"
-jalr       "Jump and Link Register"                         "rd = next_pc; pc = rs1 + imm"
+jal        "Jump and Link"                                  "rd = pc + length(inst); pc = pc + imm"
+jalr       "Jump and Link Register"                         "rd = pc + length(inst); pc = rs1 + imm"
 beq        "Branch Equal"                                   "if (sx(rs1) == sx(rs2)) pc = pc + imm"
 bne        "Branch Not Equal"                               "if (sx(rs1) != sx(rs2)) pc = pc + imm"
 blt        "Branch Less Than "                              "if (sx(rs1) < sx(rs2)) pc = pc + imm"

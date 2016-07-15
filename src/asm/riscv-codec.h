@@ -7,11 +7,17 @@
 
 /*
  *
- * Get instruction length
- * ======================
+ * Instruction length
+ * ==================
  * Returns the instruction length, either 2, 4, 6 or 8 bytes.
  *
  *   inline size_t riscv_inst_length(uint64_t inst)
+ *
+ * Instruction fetch
+ * =================
+ * Returns the instruction and its length
+ *
+ *   inline size_t riscv_inst_fetch(uintptr_t addr, uintptr_t *inst_length)
  *
  * Decoding instructions
  * =====================
@@ -99,27 +105,31 @@ inline size_t riscv_inst_length(uint64_t inst)
 	return (inst &      0b11) != 0b11      ? 2
 		 : (inst &   0b11100) != 0b11100   ? 4
 		 : (inst &  0b111111) == 0b011111  ? 6
-		 : 8;
+		 : (inst & 0b1111111) == 0b0111111 ? 8
+		 : 0;
 }
 
 /* Fetch Instruction */
 
-inline uint64_t riscv_get_inst(uintptr_t pc, uintptr_t *next_pc = nullptr)
+inline uint64_t riscv_inst_fetch(uintptr_t addr, uintptr_t *inst_length)
 {
-	// NOTE: currenttly supports maximum of 64-bit
+	// NOTE: currently supports maximum instruction size of 64-bits
 	uint64_t inst;
-	if ((*(uint16_t*)pc & 0b11) != 0b11) {
-		inst = htole16(*(uint16_t*)pc);
-		if (next_pc) *next_pc = pc + 2;
-	} else if ((*(uint16_t*)pc & 0b11100) != 0b11100) {
-		inst = htole32(*(uint32_t*)pc);
-		if (next_pc) *next_pc = pc + 4;
-	} else if ((*(uint16_t*)pc & 0b111111) == 0b011111) {
-		inst = uint64_t(htole32(*(uint32_t*)pc)) | uint64_t(htole16(*(uint16_t*)(pc + 4))) << 32;
-		if (next_pc) *next_pc = pc + 6;
+	if ((*(uint16_t*)addr & 0b11) != 0b11) {
+		inst = htole16(*(uint16_t*)addr);
+		*inst_length = 2;
+	} else if ((*(uint16_t*)addr & 0b11100) != 0b11100) {
+		inst = htole32(*(uint32_t*)addr);
+		*inst_length = 4;
+	} else if ((*(uint16_t*)addr & 0b111111) == 0b011111) {
+		inst = uint64_t(htole32(*(uint32_t*)addr)) | uint64_t(htole16(*(uint16_t*)(addr + 4))) << 32;
+		*inst_length = 6;
+	} else if ((*(uint16_t*)addr & 0b1111111) == 0b0111111) {
+		inst = htole64(*(uint64_t*)addr);
+		*inst_length = 8;
 	} else {
-		inst = htole64(*(uint64_t*)pc);
-		if (next_pc) *next_pc = pc + 8;
+		inst = 0; /* illegal instruction */
+		*inst_length = 8;
 	}
 	return inst;
 }

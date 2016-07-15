@@ -108,7 +108,7 @@ struct riscv_emulator
 
 	// Simple RV64 Linux syscall emulation (write, exit)
 	template <typename T>
-	void emulate_ecall(riscv_decode &dec, T &proc, uintptr_t next_pc)
+	void emulate_ecall(riscv_decode &dec, T &proc, uintptr_t inst_length)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
 			case 57:  riscv_sys_close(proc); break;
@@ -118,7 +118,7 @@ struct riscv_emulator
 			case 214: riscv_sys_brk(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
-		proc.pc = next_pc;
+		proc.pc += inst_length;
 	}
 
 	// Simple RV64 emulator main loop
@@ -126,14 +126,14 @@ struct riscv_emulator
 	void rv64_run(T &proc)
 	{
 		riscv_decode dec;
-		uintptr_t inst, next_pc;
+		uintptr_t inst, inst_length;
 		while (true) {
-			inst = riscv_get_inst(proc.pc, &next_pc);
+			inst = riscv_inst_fetch(proc.pc, &inst_length);
 			riscv_decode_inst_rv64(dec, inst);
 			if (registers) print_registers(proc);
 			if (disassebly) print_disassembly(dec, proc.pc);
-			if (riscv::rv64_exec(dec, proc, next_pc)) continue;
-			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, next_pc);
+			if (riscv::rv64_exec(dec, proc, inst_length)) continue;
+			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, inst_length);
 			else {
 				panic("illegal instruciton: pc=0x%" PRIx64 " inst=0x%" PRIx64,
 					proc.pc, inst);

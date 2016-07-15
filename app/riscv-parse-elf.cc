@@ -110,18 +110,18 @@ struct riscv_parse_elf
 	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		riscv_disasm dec;
-		uintptr_t pc = start, next_pc;
+		uintptr_t pc = start, inst_length;
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = riscv_get_inst(pc, &next_pc);
+			dec.inst = riscv_inst_fetch(pc, &inst_length);
 			riscv_decode_inst_rv64(dec, dec.inst);
 			riscv_decompress_inst_rv64(dec);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
-					if (next_pc < end) {
-						addr = next_pc - pc_offset;
+					if (pc + inst_length < end) {
+						addr = pc - pc_offset + inst_length;
 						if (continuations.find(addr) == continuations.end()) {
 							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
 						}
@@ -140,7 +140,7 @@ struct riscv_parse_elf
 				default:
 					break;
 			}
-			pc = next_pc;
+			pc += inst_length;
 		}
 	}
 
@@ -148,15 +148,15 @@ struct riscv_parse_elf
 	{
 		riscv_disasm dec;
 		std::deque<riscv_disasm> dec_hist;
-		uintptr_t pc = start, next_pc;
+		uintptr_t pc = start, inst_length;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = riscv_get_inst(pc, &next_pc);
+			dec.inst = riscv_inst_fetch(pc, &inst_length);
 			riscv_decode_inst_rv64(dec, dec.inst);
-			riscv_disasm_inst_print(dec, dec_hist, pc, next_pc, pc_offset, gp,
+			riscv_disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-			pc = next_pc;
+			pc += inst_length;
 		}
 	}
 

@@ -183,7 +183,7 @@ std::string riscv_disasm_inst_simple(T &dec)
 }
 
 void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
-	uintptr_t pc, uintptr_t next_pc, uintptr_t pc_offset, uintptr_t gp,
+	uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
 	riscv::symbol_name_fn symlookup = riscv::null_symbol_lookup,
 	riscv::symbol_colorize_fn colorize = riscv::null_symbol_colorize);
 
