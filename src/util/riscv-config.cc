@@ -30,12 +30,10 @@ bool riscv_config::parse_value(std::string valstr, uint64_t &val)
 		val = strtoull(valstr.c_str() + 2, &endptr, 16);
 	} else if (valstr.find("0b") == 0) {
 		val = strtoull(valstr.c_str() + 2, &endptr, 2);
-	} else if (valstr.find("0") == 0) {
-		val = strtoull(valstr.c_str() + 1, &endptr, 8);
 	} else {
 		val = strtoull(valstr.c_str(), &endptr, 10);
 	}
-	return (endptr != valstr.c_str());
+	return (endptr != valstr.c_str() && *endptr != '\0');
 }
 
 bool riscv_config::parse_address_range(std::string valstr, riscv_address_range_ptr range)

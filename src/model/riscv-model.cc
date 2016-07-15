@@ -51,14 +51,16 @@ std::string join(std::vector<T> list, std::string sep)
 int64_t riscv_parse_value(const char* valstr)
 {
 	int64_t val;
+	char *endptr = nullptr;
 	if (strncmp(valstr, "0x", 2) == 0) {
-		val = strtoull(valstr + 2, nullptr, 16);
+		val = strtoull(valstr + 2, &endptr, 16);
 	} else if (strncmp(valstr, "0b", 2) == 0) {
-		val = strtoull(valstr + 2, nullptr, 2);
-	} else if (strncmp(valstr, "0", 1) == 0) {
-		val = strtoull(valstr + 1, nullptr, 8);
+		val = strtoull(valstr + 2, &endptr, 2);
 	} else {
-		val = strtoull(valstr, nullptr, 10);
+		val = strtoull(valstr, &endptr, 10);
+	}
+	if (endptr != valstr && *endptr != '\0') {
+		panic("riscv_parse_value: invalid value: %s", valstr);
 	}
 	return val;
 }
