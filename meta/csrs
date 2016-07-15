@@ -4,7 +4,7 @@
 # <access> is one of urw, uro, srw, sro, hrw, hro, mrw, mro
 
 # User Trap Setup
-0x000  urw  ustatis    "User statis register"
+0x000  urw  ustatus    "User status register"
 0x004  urw  uie        "User interrupt-enable register"
 0x005  urw  utvec      "User trap handler base address"
 

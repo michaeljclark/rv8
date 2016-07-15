@@ -114,7 +114,7 @@ enum rvc_constraint
 
 enum riscv_csr
 {
-	riscv_csr_ustatis = 0x000,
+	riscv_csr_ustatus = 0x000,
 	riscv_csr_uie = 0x004,
 	riscv_csr_utvec = 0x005,
 	riscv_csr_uscratch = 0x040,
