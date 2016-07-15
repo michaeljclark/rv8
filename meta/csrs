@@ -65,6 +65,7 @@
 0x241  hrw  hepc       "Hypervisor exception program counter"
 0x242  hrw  hcause     "Hypervisor trap cause"
 0x243  hrw  hbadaddr   "Hypervisor bad address"
+0x244  hrw  hip        "Hypervisor interrupt pending"
 
 # Hypervisor Protection and Translation
 

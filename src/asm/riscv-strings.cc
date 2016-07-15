@@ -964,7 +964,7 @@ const char* riscv_csr_name_sym[] = {
 	"hepc",
 	"hcause",
 	"hbadaddr",
-	nullptr,
+	"hip",
 	nullptr,
 	nullptr,
 	nullptr,

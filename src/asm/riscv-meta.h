@@ -157,6 +157,7 @@ enum riscv_csr
 	riscv_csr_hepc = 0x241,
 	riscv_csr_hcause = 0x242,
 	riscv_csr_hbadaddr = 0x243,
+	riscv_csr_hip = 0x244,
 	riscv_csr_hcycle = 0xE00,
 	riscv_csr_htime = 0XE01,
 	riscv_csr_hinstret = 0xE02,
