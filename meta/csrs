@@ -47,7 +47,7 @@
 
 # Supervisor Timers and Counters
 0xD00  sro  scycle     "Supervisor cycle counter"
-0XD01  sro  stime      "Supervisor wall-clock time"
+0xD01  sro  stime      "Supervisor wall-clock time"
 0xD02  sro  sinstret   "Supervisor instructions-retired counter"
 0xD80  sro  scycleh    "Upper 32 bits of scycle, RV32I only"
 0xD81  sro  stimeh     "Upper 32 bits of stime, RV32I only"
@@ -71,7 +71,7 @@
 
 # Hypervisor Timers and Counters
 0xE00  sro  hcycle     "Hypervisor cycle counter"
-0XE01  sro  htime      "Hypervisor wall-clock time"
+0xE01  sro  htime      "Hypervisor wall-clock time"
 0xE02  sro  hinstret   "Hypervisor instructions-retired counter"
 0xE80  sro  hcycleh    "Upper 32 bits of hcycle, RV32I only"
 0xE81  sro  htimeh     "Upper 32 bits of htime, RV32I only"
@@ -81,7 +81,7 @@
 0xF10  mro  misa       "ISA and extensions supported"
 0xF11  mro  mvendorid  "Verndor ID"
 0xF12  mro  marchid    "Architecture ID"
-0XF13  mro  mimpid     "Implementation ID"
+0xF13  mro  mimpid     "Implementation ID"
 0xF14  mro  mhartid    "Hardware thread ID"
 
 # Machine Trap Setup
@@ -108,7 +108,7 @@
 
 # Machine Timers and Counters
 0xF00  mro  mcycle     "Machine cycle counter"
-0XF01  mro  mtime      "Machine wall-clock time"
+0xF01  mro  mtime      "Machine wall-clock time"
 0xF02  mro  minstret   "Machine instructions-retired counter"
 0xF80  mro  mcycleh    "Upper 32 bits of mcycle, RV32I only"
 0xF81  mro  mtimeh     "Upper 32 bits of mtime, RV32I only"
