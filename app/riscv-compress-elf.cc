@@ -498,8 +498,8 @@ struct riscv_compress_elf
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR)
 			{
-				printf("\nSection[%2lu] %s (0x%llx - 0x%llx)\n",
-					i, elf.shdr_name(i), shdr.sh_addr, shdr.sh_addr + shdr.sh_size);
+				printf("\nSection[%2lu] %s (0x%tx - 0x%tx)\n",
+					i, elf.shdr_name(i), uintptr_t(shdr.sh_addr), uintptr_t(shdr.sh_addr + shdr.sh_size));
 
 				std::deque<riscv_asm> bin;
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
