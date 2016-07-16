@@ -135,6 +135,9 @@ namespace riscv {
 		enum  { xlen = sizeof(ux) << 3 };
 		enum  { ireg_count = 32, freg_count = 32, csr_count = 4096 };
 
+		size_t node_id;
+		size_t hart_id;
+
 		UX pc;
 
 		struct {
@@ -145,7 +148,7 @@ namespace riscv {
 		FREG freg[freg_count];
 		SX   csr[csr_count];
 
-		riscv_proc_t() : pc(0), ireg(), freg(), csr{0} {}
+		riscv_proc_t() : node_id(0), hart_id(0), pc(0), ireg(), freg(), csr{0} {}
 	};
 
 	using riscv_proc_rv32 = riscv_proc_t<int32_t,uint32_t,ireg_rv32,freg_fp32>;
