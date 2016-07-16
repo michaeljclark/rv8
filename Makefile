@@ -3,15 +3,6 @@ OS :=           $(shell uname -s | sed 's/ /_/' | tr A-Z a-z)
 CPU :=          $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
 ARCH :=         $(OS)_$(CPU)
 
-# check which c compiler to use (default clang). e.g. make prefer_gcc=1
-ifeq ($(CC),)
-ifeq ($(prefer_gcc),1)
-CXX :=          $(shell which gcc || which clang || which cc)
-else
-CXX :=          $(shell which clang || which gcc || which ccc)
-endif
-endif
-
 # check which c++ compiler to use (default clang). e.g. make prefer_gcc=1
 ifeq ($(CXX),)
 ifeq ($(prefer_gcc),1)
@@ -46,14 +37,14 @@ INCLUDES :=     -I$(TOP_DIR)/src -I$(TOP_DIR)/src/asm \
                 -I$(TOP_DIR)/src/util  -I$(TOP_DIR)/src/tlsf
 OPT_FLAGS =     -O3
 DEBUG_FLAGS =   -g
-WARN_FLAGS =    -Wall -Wsign-compare
+WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations
 CPPFLAGS =
 CFLAGS =        $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-DARWIN_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000
+MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000 -static
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -84,10 +75,10 @@ LDFLAGS +=      $(NOEXEC_FLAGS)
 endif
 endif
 # check if we can link with a small zero page and text at high address
-ifeq ($(call check_opt,$(CXX),cc,$(DARWIN_LDFLAGS)), 0)
-LDFLAGS +=      $(DARWIN_LDFLAGS)
+ifeq ($(call check_opt,$(CXX),cc,$(MACOS_LDFLAGS)), 0)
+LDFLAGS +=      $(MACOS_LDFLAGS)
 endif
-# check if we can link with text at high address
+# check if we can static link text at high address
 ifeq ($(call check_opt,$(CXX),cc,$(LINUX_LDFLAGS)), 0)
 LDFLAGS +=      $(LINUX_LDFLAGS)
 endif
@@ -116,7 +107,6 @@ OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 
 # helper functions
-c_src_objs =    $(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .c,.o,$(1)))
 lib_src_objs =  $(subst $(LIB_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 app_src_objs =  $(subst $(APP_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 all_src_deps =  $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
@@ -355,7 +345,7 @@ $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(TLSF_LIB)
+$(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
