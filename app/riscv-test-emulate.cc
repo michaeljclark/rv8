@@ -62,11 +62,20 @@ struct riscv_proc_proxy_rv64 : riscv_processor_rv64
 
 struct riscv_emulator
 {
-	const size_t stack_top =  0x78000000; // 1920 MiB
-	const size_t stack_size = 0x01000000; //   16 MiB
+	static const size_t stack_top =  0x78000000; // 1920 MiB
+	static const size_t stack_size = 0x01000000; //   16 MiB
 
 	elf_file elf;
 	std::string filename;
+
+	struct riscv_inst_cache_ent
+	{
+		uint64_t inst;
+		riscv_decode dec;
+	};
+
+	static const size_t inst_cache_size = 8191;
+	riscv_inst_cache_ent inst_cache[inst_cache_size];
 
 	bool memory_debug = false;
 	bool emulator_debug = false;
@@ -145,7 +154,14 @@ struct riscv_emulator
 		uint64_t inst;
 		while (true) {
 			inst = riscv_inst_fetch(proc.pc, &inst_length);
-			riscv_decode_inst_rv64(dec, inst);
+			uint64_t inst_cache_key = inst % inst_cache_size;
+			if (inst_cache[inst_cache_key].inst == inst) {
+				dec = inst_cache[inst_cache_key].dec;
+			} else {
+				riscv_decode_inst_rv64(dec, inst);
+				inst_cache[inst_cache_key].inst = inst;
+				inst_cache[inst_cache_key].dec = dec;
+			}
 			if (log_registers) print_registers(proc);
 			if (log_instructions) print_disassembly(dec, proc);
 			if (riscv::rv64_exec(dec, proc, inst_length)) continue;

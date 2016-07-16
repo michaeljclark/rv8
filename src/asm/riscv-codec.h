@@ -65,19 +65,18 @@
 struct riscv_decode
 {
 	uint64_t  imm;
+	uint32_t  rd;
+	uint32_t  rs1;
+	uint32_t  rs2;
 	uint16_t  op;
-	uint16_t  codec;
-	uint32_t  rd   : 6;
-	uint32_t  rs1  : 6;
-	uint32_t  rs2  : 6;
-	uint32_t  rs3  : 6;
-	uint32_t  rm   : 3;
-	uint32_t  aq   : 1;
-	uint32_t  rl   : 1;
-	uint32_t  pad  : 3;
+	uint8_t   codec;
+	uint8_t   rs3 : 5;
+	uint8_t   rm :  3;
+	uint8_t   aq :  1;
+	uint8_t   rl :  1;
 
 	riscv_decode()
-		: imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pad(0) {}
+		: imm(0), rd(0), rs1(0), rs2(0), op(0), codec(0), rs3(0), rm(0), aq(0), rl(0) {}
 };
 
 namespace riscv
