@@ -62,8 +62,8 @@ struct riscv_proc_proxy_rv64 : riscv_processor_rv64
 
 struct riscv_emulator
 {
-	const size_t stack_top = 0x40000000;
-	const size_t stack_size = 0x10000;
+	const size_t stack_top =  0x78000000; // 1920 MiB
+	const size_t stack_size = 0x01000000; //   16 MiB
 
 	elf_file elf;
 	std::string filename;
