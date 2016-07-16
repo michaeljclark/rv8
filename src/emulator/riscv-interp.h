@@ -8,7 +8,7 @@
 #define riscv_interp_h
 
 template <typename T>
-bool rv32_exec(T &dec, riscv_proc_rv32 &proc, uintptr_t inst_length)
+bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 {
 	enum { xlen = 32 };
 	typedef int32_t sx;
@@ -556,7 +556,7 @@ x:	return true;
 }
 
 template <typename T>
-bool rv64_exec(T &dec, riscv_proc_rv64 &proc, uintptr_t inst_length)
+bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 {
 	enum { xlen = 64 };
 	typedef int64_t sx;

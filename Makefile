@@ -42,7 +42,7 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 TOP_DIR =       $(shell pwd)
 INCLUDES :=     -I$(TOP_DIR)/src -I$(TOP_DIR)/src/asm \
                 -I$(TOP_DIR)/src/meta -I$(TOP_DIR)/src/model \
-                -I$(TOP_DIR)/src/elf -I$(TOP_DIR)/src/abi \
+                -I$(TOP_DIR)/src/elf -I$(TOP_DIR)/src/emulator \
                 -I$(TOP_DIR)/src/util  -I$(TOP_DIR)/src/tlsf
 OPT_FLAGS =     -O3
 DEBUG_FLAGS =   -g
@@ -167,13 +167,13 @@ RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 # generated files
 RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-args.h
 RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-switch.h
-RV_INTERP_HDR = $(LIB_SRC_DIR)/asm/riscv-interp.h
 RV_JIT_HDR =    $(LIB_SRC_DIR)/asm/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/asm/riscv-jit.cc
 RV_META_HDR =   $(LIB_SRC_DIR)/asm/riscv-meta.h
 RV_META_SRC =   $(LIB_SRC_DIR)/asm/riscv-meta.cc
 RV_STR_HDR =    $(LIB_SRC_DIR)/asm/riscv-strings.h
 RV_STR_SRC =    $(LIB_SRC_DIR)/asm/riscv-strings.cc
+RV_INTERP_HDR = $(LIB_SRC_DIR)/emulator/riscv-interp.h
 
 # libriscv_asm
 RV_ASM_SRCS =   $(LIB_SRC_DIR)/asm/riscv-disasm.cc \
@@ -282,9 +282,6 @@ $(RV_ARGS_HDR): $(RV_META_DATA)
 $(RV_CODEC_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
 
-$(RV_INTERP_HDR): $(RV_META_DATA)
-	$(PARSE_META_BIN) -V -r $(META_DIR) > $(RV_INTERP_HDR)
-
 $(RV_JIT_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)
 
@@ -302,6 +299,9 @@ $(RV_STR_HDR): $(RV_META_DATA)
 
 $(RV_STR_SRC): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
+
+$(RV_INTERP_HDR): $(RV_META_DATA)
+	$(PARSE_META_BIN) -V -r $(META_DIR) > $(RV_INTERP_HDR)
 
 # lib targets
 

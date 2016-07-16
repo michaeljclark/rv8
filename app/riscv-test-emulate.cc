@@ -26,7 +26,6 @@
 
 #include "riscv-types.h"
 #include "riscv-endian.h"
-#include "riscv-processor.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
@@ -37,8 +36,9 @@
 #include "riscv-elf-format.h"
 #include "riscv-strings.h"
 #include "riscv-disasm.h"
+#include "riscv-processor.h"
 #include "riscv-abi.h"
-#include "riscv-syscalls.h"
+#include "riscv-proxy.h"
 
 inline float f32_sqrt(float a) { return std::sqrt(a); }
 inline double f64_sqrt(double a) { return std::sqrt(a); }
@@ -51,13 +51,13 @@ namespace riscv {
 
 using namespace riscv;
 
-struct riscv_proc_proxy_rv64 : riscv_proc_rv64
+struct riscv_proc_proxy_rv64 : riscv_processor_rv64
 {
 	uintptr_t heap_begin;
 	uintptr_t heap_end;
 	std::vector<std::pair<void*,size_t>> mapped_segments;
 
-	riscv_proc_proxy_rv64() : riscv_proc_rv64(), heap_begin(0), heap_end(0) {}
+	riscv_proc_proxy_rv64() : riscv_processor_rv64(), heap_begin(0), heap_end(0) {}
 };
 
 struct riscv_emulator
@@ -68,8 +68,10 @@ struct riscv_emulator
 	elf_file elf;
 	std::string filename;
 
-	bool registers = false;
-	bool disassebly = false;
+	bool memory_debug = false;
+	bool emulator_debug = false;
+	bool log_registers = false;
+	bool log_instructions = false;
 	bool help_or_error = false;
 
 	/*
@@ -124,11 +126,11 @@ struct riscv_emulator
 	void emulate_ecall(riscv_decode &dec, P &proc, uintptr_t inst_length)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case 57:  riscv_sys_close(proc); break;
-			case 64:  riscv_sys_write(proc); break;
-			case 80:  riscv_sys_fstat(proc); break;
-			case 93:  riscv_sys_exit(proc); break;
-			case 214: riscv_sys_brk(proc); break;
+			case riscv_syscall_close:  riscv_sys_close(proc); break;
+			case riscv_syscall_write:  riscv_sys_write(proc); break;
+			case riscv_syscall_fstat:  riscv_sys_fstat(proc); break;
+			case riscv_syscall_exit:   riscv_sys_exit(proc);  break;
+			case riscv_syscall_brk:    riscv_sys_brk(proc);   break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 		proc.pc += inst_length;
@@ -144,8 +146,8 @@ struct riscv_emulator
 		while (true) {
 			inst = riscv_inst_fetch(proc.pc, &inst_length);
 			riscv_decode_inst_rv64(dec, inst);
-			if (registers) print_registers(proc);
-			if (disassebly) print_disassembly(dec, proc);
+			if (log_registers) print_registers(proc);
+			if (log_instructions) print_disassembly(dec, proc);
 			if (riscv::rv64_exec(dec, proc, inst_length)) continue;
 			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, inst_length);
 			else {
@@ -169,8 +171,10 @@ struct riscv_emulator
 		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
-		printf("guest stack =  0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W\n",
-			(stack_top - stack_size), stack_top);
+		if (emulator_debug) {
+			debug("sp : mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
+				(stack_top - stack_size), stack_top);
+		}
 	}
 
 	// Simple code currently maps all segments copy-on-write RWX
@@ -193,21 +197,28 @@ struct riscv_emulator
 		uintptr_t seg_end = uintptr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (proc.heap_begin < seg_end) proc.heap_begin = proc.heap_end = seg_end;
 
-		printf("guest text  =  0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s\n",
-			uintptr_t(phdr.p_vaddr), seg_end,
-			elf_p_flags_name(phdr.p_flags).c_str());
+		if (emulator_debug) {
+			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
+				uintptr_t(phdr.p_vaddr), seg_end, elf_p_flags_name(phdr.p_flags).c_str());
+		}
 	}
 
 	void parse_commandline(int argc, const char *argv[])
 	{
 		cmdline_option options[] =
 		{
-			{ "-r", "--print-registers", cmdline_arg_type_none,
-				"Print Registers",
-				[&](std::string s) { return (registers = true); } },
-			{ "-d", "--print-disassembly", cmdline_arg_type_none,
-				"Print Disassembly",
-				[&](std::string s) { return (disassebly = true); } },
+			{ "-m", "--memory-debug", cmdline_arg_type_none,
+				"Memory debug",
+				[&](std::string s) { return (memory_debug = true); } },
+			{ "-d", "--emulator-debug", cmdline_arg_type_none,
+				"Emulator debug",
+				[&](std::string s) { return (emulator_debug = true); } },
+			{ "-r", "--log-registers", cmdline_arg_type_none,
+				"Log Registers",
+				[&](std::string s) { return (log_registers = true); } },
+			{ "-l", "--log-instructions", cmdline_arg_type_none,
+				"Log Instructions",
+				[&](std::string s) { return (log_instructions = true); } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -233,23 +244,29 @@ struct riscv_emulator
 	}
 
 	// print approximate location of host text, heap and stack
-	void process_info(const char **argv)
+	void memory_info(int argc, const char *argv[])
 	{
 		static const char *textptr = nullptr;
 		void *heapptr = malloc(8);
-		printf("host  text  = ~0x%016" PRIxPTR "\n", (uintptr_t)&textptr);
-		printf("host  heap  = ~0x%016" PRIxPTR "\n", (uintptr_t)heapptr);
-		printf("host  stack = ~0x%016" PRIxPTR "\n", (uintptr_t)argv);
+		debug("text : ~0x%016" PRIxPTR, (uintptr_t)&textptr);
+		debug("heap : ~0x%016" PRIxPTR, (uintptr_t)heapptr);
+		debug("stack: ~0x%016" PRIxPTR, (uintptr_t)argv);
 		free(heapptr);
 	}
 
-	void exec()
+	void exec(int argc, const char *argv[])
 	{
+		// print process information
+		if (memory_debug) {
+			memory_info(argc, argv);
+		}
+
 		// load ELF (headers only)
 		elf.load(filename, true);
 
-		// Processor state
+		// Processor
 		riscv_proc_proxy_rv64 proc;
+		proc.flags = emulator_debug ? riscv_processor_flag_emulator_debug : 0;
 
 		// Find the PT_LOAD segments and mmap then into memory
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
@@ -279,7 +296,6 @@ int main(int argc, const char *argv[])
 {
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
-	emulator.process_info(argv);
-	emulator.exec();
+	emulator.exec(argc, argv);
 	return 0;
 }

@@ -730,7 +730,7 @@ void riscv_parse_meta::print_interp_h()
 	printf("\n");
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("template <typename T>\n");
-		printf("bool %s_exec(T &dec, riscv_proc_%s &proc, uintptr_t inst_length)\n",
+		printf("bool %s_exec(T &dec, riscv_processor_%s &proc, uintptr_t inst_length)\n",
 			isa_width.second.c_str(), isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
