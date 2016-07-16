@@ -70,7 +70,7 @@ template <typename P> void riscv_sys_brk(P &proc)
 	uintptr_t new_heap_end = (new_addr + page_size - 1) & ~(page_size-1);
 
 	// return if the heap is already big enough
-	proc.ireg[riscv_ireg_a0] = 0;
+	proc.ireg[riscv_ireg_a0] = new_addr;
 	if (proc.heap_end >= new_heap_end) return;
 
 	// map a new heap segment
