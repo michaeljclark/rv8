@@ -110,7 +110,8 @@ struct riscv_parse_elf
 	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		riscv_disasm dec;
-		uintptr_t pc = start, inst_length;
+		size_t inst_length;
+		uintptr_t pc = start;
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;

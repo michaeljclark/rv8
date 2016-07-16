@@ -98,7 +98,8 @@ struct riscv_histogram_elf
 	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
 		riscv_decode dec;
-		uintptr_t pc = start, inst_length;
+		size_t inst_length;
+		uintptr_t pc = start;
 		while (pc < end) {
 			uint64_t inst = riscv_inst_fetch(pc, &inst_length);
 			riscv_decode_inst_rv64(dec, inst);

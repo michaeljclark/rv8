@@ -111,7 +111,7 @@ inline size_t riscv_inst_length(uint64_t inst)
 
 /* Fetch Instruction */
 
-inline uint64_t riscv_inst_fetch(uintptr_t addr, uintptr_t *inst_length)
+inline uint64_t riscv_inst_fetch(uintptr_t addr, size_t *inst_length)
 {
 	// NOTE: currently supports maximum instruction size of 64-bits
 	uint64_t inst;

@@ -5,12 +5,12 @@
 #ifndef riscv_syscalls_h
 #define riscv_syscalls_h
 
-template <typename T> void riscv_sys_close(T &proc)
+template <typename P> void riscv_sys_close(P &proc)
 {
 	proc.ireg[riscv_ireg_a0] = close(proc.ireg[riscv_ireg_a0]);
 }
 
-template <typename T> void riscv_sys_write(T &proc)
+template <typename P> void riscv_sys_write(P &proc)
 {
 	proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
 		(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
@@ -45,7 +45,7 @@ inline void riscv_cvtstat(riscv_abi_stat *abi_stat, struct stat *host_stat)
 #endif
 }
 
-template <typename T> void riscv_sys_fstat(T &proc)
+template <typename P> void riscv_sys_fstat(P &proc)
 {
 	struct stat host_stat;
 	memset(&host_stat, 0, sizeof(host_stat));
@@ -55,12 +55,12 @@ template <typename T> void riscv_sys_fstat(T &proc)
 	}
 }
 
-template <typename T> void riscv_sys_exit(T &proc)
+template <typename P> void riscv_sys_exit(P &proc)
 {
 	exit(proc.ireg[riscv_ireg_a0]);
 }
 
-template <typename T> void riscv_sys_brk(T &proc)
+template <typename P> void riscv_sys_brk(P &proc)
 {
 	const uintptr_t page_size = 4096;
 

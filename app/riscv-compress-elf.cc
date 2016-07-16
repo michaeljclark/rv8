@@ -292,7 +292,8 @@ struct riscv_compress_elf
 
 	void disassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
-		uintptr_t pc = start, inst_length;
+		size_t inst_length;
+		uintptr_t pc = start;
 		while (pc < end) {
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
