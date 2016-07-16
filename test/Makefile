@@ -8,6 +8,7 @@
 TARGET = riscv64-unknown-elf
 
 CC = ${RISCV}/bin/${TARGET}-gcc
+CXX = ${RISCV}/bin/${TARGET}-g++
 AS = ${RISCV}/bin/${TARGET}-as
 LD = ${RISCV}/bin/${TARGET}-ld
 STRIP = ${RISCV}/bin/${TARGET}-strip
@@ -23,7 +24,9 @@ PROGRAMS = \
 	hello-world-pcrel \
 	hello-world-pcrel-giga \
 	hello-world-pcrel-nano \
-	hello-world-pcrel-pico
+	hello-world-pcrel-pico \
+	test-fib \
+	test-sieve
 
 all: $(PROGRAMS)
 
@@ -35,6 +38,12 @@ test: $(PROGRAMS)
 	${SPIKE} ${PK} hello-world-libc-strip
 	${SPIKE} ${PK} hello-world-abs
 	${SPIKE} ${PK} hello-world-pcrel
+
+test-fib.o: test-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
+
+test-sieve.o: test-sieve.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-sieve: test-sieve.o ; $(CC) $(CFLAGS) $^ -o $@
 
 hello-world-libc.o: hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
 hello-world-libc: hello-world-libc.o ; $(CC) $(CFLAGS) $^ -o $@
