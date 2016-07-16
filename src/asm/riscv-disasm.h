@@ -143,7 +143,7 @@ std::string riscv_disasm_inst_simple(T &dec)
 		switch (*fmt) {
 			case 'O': args += riscv_inst_name_sym[dec.op]; break;
 			case '(': args += "("; break;
-			case ',': args += ","; break;
+			case ',': args += ", "; break;
 			case ')': args += ")"; break;
 			case '0': args += riscv_ireg_name_sym[dec.rd]; break;
 			case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
@@ -154,7 +154,9 @@ std::string riscv_disasm_inst_simple(T &dec)
 			case '6': args += riscv_freg_name_sym[dec.rs3]; break;
 			case '7': args += format_string("%d", dec.rs1); break;
 			case 'i': args += format_string("%lld", dec.imm); break;
-			case 'o': args += format_string("%lld", dec.imm); break;
+			case 'o': args += format_string("pc %c %td",
+				intptr_t(dec.imm) < 0 ? '-' : '+',
+				intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm)); break;
 			case 'c': {
 				const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
 				if (csr_name) args += format_string("%s", csr_name);

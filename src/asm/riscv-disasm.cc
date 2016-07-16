@@ -126,7 +126,7 @@ void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hi
 	while (*fmt) {
 		switch (*fmt) {
 			case '(': print_add(offset, "("); break;
-			case ',': print_add(offset, ","); break;
+			case ',': print_add(offset, ", "); break;
 			case ')': print_add(offset, ")"); break;
 			case '0': print_add(offset, riscv_ireg_name_sym[dec.rd]); break;
 			case '1': print_add(offset, riscv_ireg_name_sym[dec.rs1]); break;
@@ -137,8 +137,10 @@ void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hi
 			case '6': print_add(offset, riscv_freg_name_sym[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
 			case 'i': print_fmt(offset, "%lld", dec.imm); break;
- 			case 'o':
-	 			print_fmt(offset, "%lld", dec.imm);
+			case 'o':
+				print_fmt(offset, "pc %c %td",
+					intptr_t(dec.imm) < 0 ? '-' : '+',
+					intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm));
 				break;
 			case 'c':
 				csr_name = riscv_csr_name_sym[dec.imm & 0xfff];

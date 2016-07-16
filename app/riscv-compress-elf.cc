@@ -111,14 +111,14 @@ struct riscv_compress_elf
 
 	void print_continuation_disassembly_header()
 	{
-		debug("\n%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s",
+		debug("\n%-18s %-7s%-7s%-7s%-7s%-12s%-23s%-18s %s",
 			"program counter", "target", "pair", "cont",
 			"branch", "instruction", "operands",
 			"address", "flags"
 		);
-		debug("%-18s %-7s%-7s%-7s%-7s%-12s%-18s%-18s %s\n",
+		debug("%-18s %-7s%-7s%-7s%-7s%-12s%-23s%-18s %s\n",
 			"==================", "======", "======", "======",
-			"======", "===========", "=================",
+			"======", "===========", "======================",
 			"==================", "====="
 		);
 	}
@@ -127,7 +127,7 @@ struct riscv_compress_elf
 	void print_continuation_disassembly(T &dec)
 	{
 		std::string args = riscv_disasm_inst_simple(dec);
-		debug("0x%016tx %-7s%-7s%-7s%-7s%-30s%-18s %s%s%s",
+		debug("0x%016tx %-7s%-7s%-7s%-7s%-35s%-18s %s%s%s",
 			dec.pc,
 			dec.label_target ? format_string("%u", dec.label_target).c_str() : "",
 			dec.label_pair ? format_string("%u", dec.label_pair).c_str() : "",
