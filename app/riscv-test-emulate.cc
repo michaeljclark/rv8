@@ -99,12 +99,31 @@ struct riscv_emulator
 	}
 
 	template <typename P>
-	void print_registers(P &proc)
+	void print_int_regeisters(P &proc)
 	{
 		for (size_t i = 0; i < 32; i++) {
 			char fmt[32];
 			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%ux%%s", (P::xlen >> 2));
-			printf(fmt, riscv_ireg_name_sym[i], proc.ireg[i], (i + 1) % 4 == 0 ? "\n" : " ");
+			printf(fmt, riscv_ireg_name_sym[i], proc.ireg[i],
+				(i + 1) % 4 == 0 ? "\n" : " ");
+		}
+	}
+
+	template <typename P>
+	void print_f32_regeisters(P &proc)
+	{
+		for (size_t i = 0; i < 32; i++) {
+			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
+				proc.freg[i].r.s.val, (i + 1) % 4 == 0 ? "\n" : " ");
+		}
+	}
+
+	template <typename P>
+	void print_f64_regeisters(P &proc)
+	{
+		for (size_t i = 0; i < 32; i++) {
+			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
+				proc.freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
 		}
 	}
 
@@ -162,7 +181,7 @@ struct riscv_emulator
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (log_registers) print_registers(proc);
+			if (log_registers) print_int_regeisters(proc);
 			if (log_instructions) print_disassembly(dec, proc);
 			if (riscv::rv64_exec(dec, proc, inst_length)) continue;
 			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, inst_length);
