@@ -289,262 +289,262 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_flw: {
-			proc.freg[dec.rd] = *(f32*)(proc.ireg[dec.rs1] + dec.imm);
+			proc.freg[dec.rd].r.s.val = *(f32*)(proc.ireg[dec.rs1] + dec.imm);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsw: {
-			*(f32*)(proc.ireg[dec.rs1] + dec.imm) = f32(proc.freg[dec.rs2]);
+			*(f32*)(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmadd_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmsub_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmsub_s: {
-			proc.freg[dec.rd] = -(f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmadd_s: {
-			proc.freg[dec.rd] = -(f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fadd_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) * f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val * proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) / f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val / proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnj_s: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u32(~(1U<<31))) | (proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | (proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjn_s: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u32(~(1U<<31))) | ~(proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | ~(proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjx_s: {
-			proc.freg[dec.rd] = proc.freg[dec.rs1] ^ (proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.wu.val ^ (proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmin_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) < f32(proc.freg[dec.rs1]) ? f32(proc.freg[dec.rs2]) : f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val < proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) > f32(proc.freg[dec.rs1]) ? f32(proc.freg[dec.rs2]) : f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val > proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsqrt_s: {
-			proc.freg[dec.rd] = f32_sqrt(f32(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32_sqrt(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fle_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) <= f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_flt_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) < f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_feq_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) == f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_w_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s32(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_wu_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_w: {
-			proc.freg[dec.rd] = f32(s32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(s32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_wu: {
-			proc.freg[dec.rd] = f32(u32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(u32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_x_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1]);
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.wu.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fclass_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32_classify(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = f32_classify(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_s_x: {
-			proc.freg[dec.rd] = s32(proc.ireg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = s32(proc.ireg[dec.rs1]);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fld: {
-			proc.freg[dec.rd] = *(f64*)(proc.ireg[dec.rs1] + dec.imm);
+			proc.freg[dec.rd].r.d.val = *(f64*)(proc.ireg[dec.rs1] + dec.imm);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsd: {
-			*(f64*)(proc.ireg[dec.rs1] + dec.imm) = f64(proc.freg[dec.rs2]);
+			*(f64*)(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmadd_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmsub_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmsub_d: {
-			proc.freg[dec.rd] = -(f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmadd_d: {
-			proc.freg[dec.rd] = -(f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fadd_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) * f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val * proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) / f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val / proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnj_d: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u64(~(1ULL<<63))) | (proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | (proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjn_d: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjx_d: {
-			proc.freg[dec.rd] = proc.freg[dec.rs1] ^ (proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.lu.val ^ (proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmin_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) < f64(proc.freg[dec.rs1]) ? f64(proc.freg[dec.rs2]) : f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val < proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) > f64(proc.freg[dec.rs1]) ? f64(proc.freg[dec.rs2]) : f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val > proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_d: {
-			proc.freg[dec.rd] = f32(f64(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_s: {
-			proc.freg[dec.rd] = f64(f32(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsqrt_d: {
-			proc.freg[dec.rd] = f64_sqrt(f64(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64_sqrt(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fle_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) <= f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_flt_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) < f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_feq_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) == f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_w_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s32(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_wu_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_w: {
-			proc.freg[dec.rd] = f64(s32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(s32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_wu: {
-			proc.freg[dec.rd] = f64(u32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(u32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fclass_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64_classify(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = f64_classify(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -977,312 +977,312 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_flw: {
-			proc.freg[dec.rd] = *(f32*)(proc.ireg[dec.rs1] + dec.imm);
+			proc.freg[dec.rd].r.s.val = *(f32*)(proc.ireg[dec.rs1] + dec.imm);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsw: {
-			*(f32*)(proc.ireg[dec.rs1] + dec.imm) = f32(proc.freg[dec.rs2]);
+			*(f32*)(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmadd_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmsub_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmsub_s: {
-			proc.freg[dec.rd] = -(f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmadd_s: {
-			proc.freg[dec.rd] = -(f32(proc.freg[dec.rs1]) * f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fadd_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) + f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) - f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) * f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val * proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) / f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val / proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnj_s: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u32(~(1U<<31))) | (proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | (proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjn_s: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u32(~(1U<<31))) | ~(proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | ~(proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjx_s: {
-			proc.freg[dec.rd] = proc.freg[dec.rs1] ^ (proc.freg[dec.rs2] & u32(1U<<31));
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.wu.val ^ (proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmin_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) < f32(proc.freg[dec.rs1]) ? f32(proc.freg[dec.rs2]) : f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val < proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_s: {
-			proc.freg[dec.rd] = f32(proc.freg[dec.rs2]) > f32(proc.freg[dec.rs1]) ? f32(proc.freg[dec.rs2]) : f32(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val > proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsqrt_s: {
-			proc.freg[dec.rd] = f32_sqrt(f32(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32_sqrt(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fle_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) <= f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_flt_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) < f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_feq_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32(proc.freg[dec.rs1]) == f32(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_w_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s32(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_wu_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_w: {
-			proc.freg[dec.rd] = f32(s32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(s32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_wu: {
-			proc.freg[dec.rd] = f32(u32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(u32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_x_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1]);
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.wu.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fclass_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f32_classify(f32(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = f32_classify(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_s_x: {
-			proc.freg[dec.rd] = s32(proc.ireg[dec.rs1]);
+			proc.freg[dec.rd].r.s.val = s32(proc.ireg[dec.rs1]);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_l_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s64(proc.freg[dec.rs1]);
+			if (dec.rd != 0) proc.ireg[dec.rd] = s64(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_lu_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1]);
+			if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_l: {
-			proc.freg[dec.rd] = f32(s64(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(s64(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_lu: {
-			proc.freg[dec.rd] = f32(u64(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.s.val = f32(u64(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fld: {
-			proc.freg[dec.rd] = *(f64*)(proc.ireg[dec.rs1] + dec.imm);
+			proc.freg[dec.rd].r.d.val = *(f64*)(proc.ireg[dec.rs1] + dec.imm);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsd: {
-			*(f64*)(proc.ireg[dec.rs1] + dec.imm) = f64(proc.freg[dec.rs2]);
+			*(f64*)(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmadd_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmsub_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs3]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmsub_d: {
-			proc.freg[dec.rd] = -(f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fnmadd_d: {
-			proc.freg[dec.rd] = -(f64(proc.freg[dec.rs1]) * f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs3]));
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fadd_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) + f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) - f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) * f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val * proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) / f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val / proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnj_d: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u64(~(1ULL<<63))) | (proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | (proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjn_d: {
-			proc.freg[dec.rd] = (proc.freg[dec.rs1] & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsgnjx_d: {
-			proc.freg[dec.rd] = proc.freg[dec.rs1] ^ (proc.freg[dec.rs2] & u64(1ULL<<63));
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.lu.val ^ (proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmin_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) < f64(proc.freg[dec.rs1]) ? f64(proc.freg[dec.rs2]) : f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val < proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_d: {
-			proc.freg[dec.rd] = f64(proc.freg[dec.rs2]) > f64(proc.freg[dec.rs1]) ? f64(proc.freg[dec.rs2]) : f64(proc.freg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val > proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_s_d: {
-			proc.freg[dec.rd] = f32(f64(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_s: {
-			proc.freg[dec.rd] = f64(f32(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(proc.freg[dec.rs1].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsqrt_d: {
-			proc.freg[dec.rd] = f64_sqrt(f64(proc.freg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64_sqrt(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fle_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) <= f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_flt_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) < f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_feq_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64(proc.freg[dec.rs1]) == f64(proc.freg[dec.rs2]) ? 1 : 0;
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val ? 1 : 0;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_w_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s32(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_wu_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_w: {
-			proc.freg[dec.rd] = f64(s32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(s32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_wu: {
-			proc.freg[dec.rd] = f64(u32(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(u32(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fclass_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = f64_classify(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = f64_classify(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_l_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = s64(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = s64(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_lu_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u64(f64(proc.freg[dec.rs1]));
+			if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_x_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1]);
+			if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.lu.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_l: {
-			proc.freg[dec.rd] = f64(s64(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(s64(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fcvt_d_lu: {
-			proc.freg[dec.rd] = f64(u64(proc.ireg[dec.rs1]));
+			proc.freg[dec.rd].r.d.val = f64(u64(proc.ireg[dec.rs1]));
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmv_d_x: {
-			proc.freg[dec.rd] = s64(proc.ireg[dec.rs1]);
+			proc.freg[dec.rd].r.d.val = s64(proc.ireg[dec.rs1]);
 			proc.pc += inst_length;
 			goto x;
 		};

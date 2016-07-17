@@ -91,8 +91,6 @@ struct riscv_freg_fp32
 	} r;
 
 	inline riscv_freg_fp32() { memset(&r, 0, sizeof(r)); }
-	inline riscv_freg_fp32& operator=(uint32_t val) { r.xu.val = val; return *this; }
-	inline operator uint32_t() const { return r.xu.val; }
 };
 
 /* FP64 register */
@@ -118,8 +116,6 @@ struct riscv_freg_fp64
 	} r;
 
 	inline riscv_freg_fp64() { memset(&r, 0, sizeof(r)); }
-	inline riscv_freg_fp64& operator=(uint64_t val) { r.xu.val = val; return *this; }
-	inline operator uint64_t() const { return r.xu.val; }
 };
 
 /* Processor flags */
