@@ -103,8 +103,9 @@ struct riscv_emulator
 	{
 		for (size_t i = 0; i < 32; i++) {
 			char fmt[32];
-			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%ux%%s", (P::xlen >> 2));
-			printf(fmt, riscv_ireg_name_sym[i], proc.ireg[i],
+			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%u%sx%%s",
+				(P::xlen >> 2), P::xlen == 64 ? "ll" : "");
+			printf(fmt, riscv_ireg_name_sym[i], proc.ireg[i].r.xu.val,
 				(i + 1) % 4 == 0 ? "\n" : " ");
 		}
 	}
