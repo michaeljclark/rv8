@@ -182,7 +182,11 @@ struct riscv_emulator
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (log_registers) print_int_regeisters(proc);
+			if (log_registers) {
+				print_int_regeisters(proc);
+				print_f32_regeisters(proc);
+				print_f64_regeisters(proc);
+			}
 			if (log_instructions) print_disassembly(dec, proc);
 			if (riscv::rv64_exec(dec, proc, inst_length)) continue;
 			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, inst_length);
