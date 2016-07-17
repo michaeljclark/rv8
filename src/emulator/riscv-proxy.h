@@ -70,7 +70,7 @@ template <typename P> void riscv_sys_brk(P &proc)
 	uintptr_t new_heap_end = (new_addr + page_size - 1) & ~(page_size-1);
 
 	// return if the heap is already big enough
-	if (proc.heap_end >= new_heap_end) {
+	if (proc.heap_end >= new_heap_end || new_heap_end == curr_heap_end) {
 		proc.ireg[riscv_ireg_a0] = new_addr;
 		return;
 	}
@@ -79,9 +79,7 @@ template <typename P> void riscv_sys_brk(P &proc)
 	void *addr = mmap((void*)curr_heap_end, new_heap_end - curr_heap_end,
 		PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (addr == MAP_FAILED) {
-		if (proc.flags & riscv_processor_flag_emulator_debug) {
-			debug("brk: error: mmap: %s", strerror(errno));
-		}
+		debug("brk: error: mmap: %s", strerror(errno));
 		proc.ireg[riscv_ireg_a0] = -ENOMEM;
 	} else {
 		// keep track of the mapped segment and set the new heap_end
@@ -89,7 +87,7 @@ template <typename P> void riscv_sys_brk(P &proc)
 		proc.heap_end = new_heap_end;
 		if (proc.flags & riscv_processor_flag_emulator_debug) {
 			debug("brk: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
-				proc.heap_begin, proc.heap_end);
+				curr_heap_end, new_heap_end);
 		}
 		proc.ireg[riscv_ireg_a0] = new_addr;
 	}
