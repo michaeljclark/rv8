@@ -26,6 +26,7 @@ PROGRAMS = \
 	hello-world-pcrel-nano \
 	hello-world-pcrel-pico \
 	test-fib \
+	test-float \
 	test-sieve
 
 all: $(PROGRAMS)
@@ -41,6 +42,9 @@ test: $(PROGRAMS)
 
 test-fib.o: test-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
+
+test-float.o: test-float.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-float: test-float.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-sieve.o: test-sieve.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-sieve: test-sieve.o ; $(CC) $(CFLAGS) $^ -o $@
