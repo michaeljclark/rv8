@@ -215,6 +215,9 @@ void elf_file::load(std::string filename, bool headers_only)
 	sections.resize(shdrs.size());
 	for (size_t i = 0; i < shdrs.size(); i++) {
 		uint64_t section_end = shdrs[i].sh_offset + shdrs[i].sh_size;
+		sections[i].offset = shdrs[i].sh_offset;
+		sections[i].size = shdrs[i].sh_size;
+		if (shdrs[i].sh_type == SHT_NOBITS) continue;
 		for (auto &bound : bounds) {
 			if (shdrs[i].sh_offset < bound.second && bound.first < section_end) {
 				fclose(file);
@@ -222,9 +225,6 @@ void elf_file::load(std::string filename, bool headers_only)
 					i, filename.c_str());
 			}
 		}
-		sections[i].offset = shdrs[i].sh_offset;
-		sections[i].size = shdrs[i].sh_size;
-		if (shdrs[i].sh_type == SHT_NOBITS) continue;
 		if (shdrs[i].sh_offset + shdrs[i].sh_size > (uint64_t)stat_buf.st_size) {
 			fclose(file);
 			panic("section offset %ld > %d range: %s",
