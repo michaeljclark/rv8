@@ -18,8 +18,12 @@ int main()
 	printf("\n");
 	printf("int main()\n");
 	printf("{\n");
+
 	/* TODO - loop over ISA and fuzz operands using type metadata */
 	FPU_IDENTITY(fmadd_s, 1.0f, 2.0f, 3.0f);
+
 	printf("\treturn 0;\n");
-	printf("}\n");	return 0;
+	printf("}\n");
+
+	return 0;
 }

@@ -127,7 +127,6 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_latex_row(riscv_latex_row &row, std::string ts, bool remove_question_marks);
 	void print_latex(bool remove_question_marks);
 	void print_map(bool print_map_instructions);
-	void print_c_header(std::string filename);
 	void print_args_h();
 	void print_interp_h();
 	void print_fpu_h();
@@ -697,18 +696,18 @@ static void print_array_unknown_uint64(uint64_t num, bool no_comment)
 	printf("\t%s0x%016" PRIx64 ",\n", no_comment ? "" : unknown_op_comment, num);
 }
 
-void riscv_parse_meta::print_c_header(std::string filename)
-{
-	printf("//\n");
-	printf("//  %s\n", filename.c_str());
-	printf("//\n");
-	printf("//  DANGER - This is machine generated code\n");
-	printf("//\n\n");
-}
+static const char* kCHeader =
+R"C(//
+//  %s
+//
+//  DANGER - This is machine generated code
+//
+
+)C";
 
 void riscv_parse_meta::print_args_h()
 {
-	print_c_header("riscv-args.h");
+	printf(kCHeader, "riscv-args.h");
 	printf("#ifndef riscv_args_h\n");
 	printf("#define riscv_args_h\n");
 	printf("\n");
@@ -726,7 +725,7 @@ void riscv_parse_meta::print_args_h()
 
 void riscv_parse_meta::print_interp_h()
 {
-	print_c_header("riscv-interp.h");
+	printf(kCHeader, "riscv-interp.h");
 	printf("#ifndef riscv_interp_h\n");
 	printf("#define riscv_interp_h\n");
 	printf("\n");
@@ -841,7 +840,10 @@ static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv
 	return riscv_operand_desc(primitive,arg_name);
 }
 
-static const char* kFpuHeader =
+void riscv_parse_meta::print_fpu_h()
+{
+	static const char* kFpuHeader =
+
 R"C(
 typedef signed int         s32;
 typedef unsigned int       u32;
@@ -862,9 +864,7 @@ typedef s32 sx;
 #define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
 )C";
 
-void riscv_parse_meta::print_fpu_h()
-{
-	print_c_header("test-fpu.h");
+	printf(kCHeader, "test-fpu.h");
 	printf("#ifndef test_fpu_h\n");
 	printf("#define test_fpu_h\n");
 	printf("%s\n", kFpuHeader);
@@ -938,7 +938,15 @@ void riscv_parse_meta::print_fpu_h()
 
 void riscv_parse_meta::print_fpu_c()
 {
-	print_c_header("test-fpu.c");
+	static const char* kFpuSourceHeader =
+
+R"C(#include <stdio.h>
+#include <assert.h>
+
+#include "test-fpu.h"
+
+int main()
+{
 	printf("#include <stdio.h>\n");
 	printf("#include <assert.h>\n");
 	printf("\n");
@@ -947,29 +955,28 @@ void riscv_parse_meta::print_fpu_c()
 	printf("int main()\n");
 	printf("{\n");
 
-	// encapsulated C emit header
-	printf("\tprintf(\"#include <stdio.h>\\n\");\n");
-	printf("\tprintf(\"#include <assert.h>\\n\");\n");
-	printf("\tprintf(\"\\n\");\n");
-	printf("\tprintf(\"#include \\\"test-fpu.h\\\"\\n\");\n");
-	printf("\tprintf(\"\\n\");\n");
-	printf("\tprintf(\"int main()\\n\");\n");
-	printf("\tprintf(\"{\\n\");\n");
+)C";
 
-	printf("\t/* TODO - loop over ISA and fuzz operands using type metadata */\n");
-	printf("\tFPU_IDENTITY(fmadd_s, 1.0f, 2.0f, 3.0f);\n");
+	static const char* kFpuSourceFooter =
 
-	// encapsulated C emit footer
-	printf("\tprintf(\"\\treturn 0;\\n\");\n");
-	printf("\tprintf(\"}\\n\");");
-
+R"C(
 	printf("\treturn 0;\n");
 	printf("}\n");
+
+	return 0;
+}
+)C";
+
+	printf(kCHeader, "test-fpu.c");
+	printf("%s", kFpuSourceHeader);
+	printf("\t/* TODO - loop over ISA and fuzz operands using type metadata */\n");
+	printf("\tFPU_IDENTITY(fmadd_s, 1.0f, 2.0f, 3.0f);\n");
+	printf("%s", kFpuSourceFooter);
 }
 
 void riscv_parse_meta::print_jit_h()
 {
-	print_c_header("riscv-jit.h");
+	printf(kCHeader, "riscv-jit.h");
 	printf("#ifndef riscv_jit_h\n");
 	printf("#define riscv_jit_h\n");
 	printf("\n");
@@ -997,18 +1004,22 @@ void riscv_parse_meta::print_jit_h()
 
 void riscv_parse_meta::print_jit_cc()
 {
-	print_c_header("riscv-jit.cc");
+	static const char* kJitSource =
 
-	printf("#include <cstdint>\n");
-	printf("#include <cstdlib>\n");
-	printf("#include <cassert>\n");
-	printf("\n");
-	printf("#include \"riscv-types.h\"\n");
-	printf("#include \"riscv-endian.h\"\n");
-	printf("#include \"riscv-jit.h\"\n");
-	printf("#include \"riscv-meta.h\"\n");
-	printf("#include \"riscv-codec.h\"\n");
-	printf("\n");
+R"C(#include <cstdint>
+#include <cstdlib>
+#include <cassert>
+
+#include "riscv-types.h"
+#include "riscv-endian.h"
+#include "riscv-jit.h"
+#include "riscv-meta.h"
+#include "riscv-codec.h"
+
+)C";
+
+	printf(kCHeader, "riscv-jit.cc");
+	printf("%s", kJitSource);
 
 	for (auto &opcode : opcodes) {
 		// exclude compressed and psuedo instructions
@@ -1057,15 +1068,56 @@ void riscv_parse_meta::print_jit_cc()
 
 void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-meta.h");
-	printf("#ifndef riscv_meta_h\n");
-	printf("#define riscv_meta_h\n");
-	printf("\n");
+	static const char* kMetaHeader =
 
-	printf("#ifdef __cplusplus\n");
-	printf("extern \"C\" {\n");
-	printf("#endif\n");
-	printf("\n");
+R"C(#ifndef riscv_meta_h
+#define riscv_meta_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+)C";
+
+	static const char* kMetaDeclarations =
+
+R"C(
+/* Instruction compression data structure */
+struct riscv_comp_data
+{
+	const int op;
+	const rvc_constraint* constraints;
+};
+
+/* Instruction arg structure */
+struct riscv_arg_data
+{
+	const riscv_arg_name arg_name;
+	const riscv_arg_type arg_type;
+	const riscv_type type;
+	const unsigned int width;
+};
+
+/* Opcode metadata tables */
+extern const riscv_codec riscv_inst_codec[];
+extern const char* riscv_inst_format[];
+extern const riscv_arg_data* riscv_inst_arg_data[];
+extern const uint64_t riscv_inst_match[];
+extern const uint64_t riscv_inst_mask[];
+)C";
+
+	static const char* kMetaFooter =
+
+R"C(
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+)C";
+
+	printf(kCHeader, "riscv-meta.h");
+	printf("%s", kMetaHeader);
 
 	// Enums
 	std::string last_group;
@@ -1179,28 +1231,8 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 			no_comment || opcode->long_name.size() == 0 ? "" :
 				format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
 	}
-	printf("};\n\n");
-
-	// Instruction compression data structure
-	printf("struct riscv_comp_data\n{\n");
-	printf("\tconst int op;\n");
-	printf("\tconst rvc_constraint* constraints;\n");
-	printf("};\n\n");
-
-	// Instruction arg structure
-	printf("struct riscv_arg_data\n{\n");
-	printf("\tconst riscv_arg_name arg_name;\n");
-	printf("\tconst riscv_arg_type arg_type;\n");
-	printf("\tconst riscv_type type;\n");
-	printf("\tconst unsigned int width;\n");
-	printf("};\n\n");
-
-	// Opcode metadata tables
-	printf("extern const riscv_codec riscv_inst_codec[];\n");
-	printf("extern const char* riscv_inst_format[];\n");
-	printf("extern const riscv_arg_data* riscv_inst_arg_data[];\n");
-	printf("extern const uint64_t riscv_inst_match[];\n");
-	printf("extern const uint64_t riscv_inst_mask[];\n");
+	printf("};\n");
+	printf("%s", kMetaDeclarations);
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("extern const riscv_comp_data* riscv_inst_comp_%s[];\n",
 			isa_width.second.c_str());
@@ -1209,22 +1241,21 @@ void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
 		printf("extern const int riscv_inst_decomp_%s[];\n",
 			isa_width.second.c_str());
 	}
-	printf("\n");
-	printf("#ifdef __cplusplus\n");
-	printf("}\n");
-	printf("#endif\n");
-	printf("\n");
-	printf("#endif\n");
+	printf("%s", kMetaFooter);
 }
 
 void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-meta.cc");
+	static const char* kMetaSource =
 
-	printf("#include \"riscv-types.h\"\n");
-	printf("#include \"riscv-format.h\"\n");
-	printf("#include \"riscv-meta.h\"\n");
-	printf("\n");	
+R"C(#include "riscv-types.h"
+#include "riscv-format.h"
+#include "riscv-meta.h"
+
+)C";
+
+	printf(kCHeader, "riscv-meta.cc");
+	printf("%s", kMetaSource);
 
 	// Compression constraints
 	for (auto &opcode : opcodes) {
@@ -1369,31 +1400,36 @@ void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
 
 void riscv_parse_meta::print_strings_h(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-strings.h");
-	printf("#ifndef riscv_strings_h\n");
-	printf("#define riscv_strings_h\n");
-	printf("\n");
-	printf("#ifdef __cplusplus\n");
-	printf("extern \"C\" {\n");
-	printf("#endif\n");
-	printf("\n");
-	printf("extern const char* riscv_ireg_name_sym[];\n");
-	printf("extern const char* riscv_freg_name_sym[];\n");
-	printf("extern const char* riscv_inst_name_sym[];\n");
-	printf("extern const char* riscv_arg_name_sym[];\n");
-	printf("extern const char* riscv_arg_type_sym[];\n");
-	printf("extern const char* riscv_csr_name_sym[];\n");
-	printf("\n");
-	printf("#ifdef __cplusplus\n");
-	printf("}\n");
-	printf("#endif\n");
-	printf("\n");
-	printf("#endif\n");
+	static const char* kStringsHeader =
+
+R"C(#ifndef riscv_strings_h
+#define riscv_strings_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const char* riscv_ireg_name_sym[];
+extern const char* riscv_freg_name_sym[];
+extern const char* riscv_inst_name_sym[];
+extern const char* riscv_arg_name_sym[];
+extern const char* riscv_arg_type_sym[];
+extern const char* riscv_csr_name_sym[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+)C";
+
+	printf(kCHeader, "riscv-strings.h");
+	printf("%s", kStringsHeader);
 }
 
 void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-strings.cc");
+	printf(kCHeader, "riscv-strings.cc");
 
 	printf("#include \"riscv-strings.h\"\n");
 	printf("\n");
@@ -1468,7 +1504,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 
 void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 {
-	print_c_header("riscv-switch.h");
+	printf(kCHeader, "riscv-switch.h");
 	printf("#ifndef riscv_switch_h\n");
 	printf("#define riscv_switch_h\n");
 	printf("\n");

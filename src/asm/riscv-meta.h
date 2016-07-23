@@ -721,12 +721,14 @@ enum riscv_op
 	riscv_op_c_sdsp = 219,
 };
 
+/* Instruction compression data structure */
 struct riscv_comp_data
 {
 	const int op;
 	const rvc_constraint* constraints;
 };
 
+/* Instruction arg structure */
 struct riscv_arg_data
 {
 	const riscv_arg_name arg_name;
@@ -735,6 +737,7 @@ struct riscv_arg_data
 	const unsigned int width;
 };
 
+/* Opcode metadata tables */
 extern const riscv_codec riscv_inst_codec[];
 extern const char* riscv_inst_format[];
 extern const riscv_arg_data* riscv_inst_arg_data[];
