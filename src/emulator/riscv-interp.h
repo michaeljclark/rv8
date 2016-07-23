@@ -309,32 +309,32 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fnmsub_s: {
-			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
-			proc.pc += inst_length;
-			goto x;
-		};
-		case riscv_op_fnmadd_s: {
 			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
+		case riscv_op_fnmadd_s: {
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
+			proc.pc += inst_length;
+			goto x;
+		};
 		case riscv_op_fadd_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val + proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val - proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val * proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val / proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val / proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -439,32 +439,32 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fnmsub_d: {
-			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
-			proc.pc += inst_length;
-			goto x;
-		};
-		case riscv_op_fnmadd_d: {
 			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
+		case riscv_op_fnmadd_d: {
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
+			proc.pc += inst_length;
+			goto x;
+		};
 		case riscv_op_fadd_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val + proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val - proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val * proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val / proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val / proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -997,32 +997,32 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fnmsub_s: {
-			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
-			proc.pc += inst_length;
-			goto x;
-		};
-		case riscv_op_fnmadd_s: {
 			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
 			proc.pc += inst_length;
 			goto x;
 		};
+		case riscv_op_fnmadd_s: {
+			proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
+			proc.pc += inst_length;
+			goto x;
+		};
 		case riscv_op_fadd_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val + proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val - proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val * proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val / proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val / proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1147,32 +1147,32 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fnmsub_d: {
-			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
-			proc.pc += inst_length;
-			goto x;
-		};
-		case riscv_op_fnmadd_d: {
 			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
 			proc.pc += inst_length;
 			goto x;
 		};
+		case riscv_op_fnmadd_d: {
+			proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
+			proc.pc += inst_length;
+			goto x;
+		};
 		case riscv_op_fadd_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val + proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fsub_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val - proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmul_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val * proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fdiv_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val / proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val / proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
