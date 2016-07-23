@@ -344,7 +344,7 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fsgnjn_s: {
-			proc.freg[dec.rd].r.wu.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | ~(proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
+			proc.freg[dec.rd].r.wu.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | (~proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -474,7 +474,7 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fsgnjn_d: {
-			proc.freg[dec.rd].r.lu.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
+			proc.freg[dec.rd].r.lu.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | (~proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1032,7 +1032,7 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fsgnjn_s: {
-			proc.freg[dec.rd].r.wu.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | ~(proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
+			proc.freg[dec.rd].r.wu.val = (proc.freg[dec.rs1].r.wu.val & u32(~(1U<<31))) | (~proc.freg[dec.rs2].r.wu.val & u32(1U<<31));
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1182,7 +1182,7 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fsgnjn_d: {
-			proc.freg[dec.rd].r.lu.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | ~(proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
+			proc.freg[dec.rd].r.lu.val = (proc.freg[dec.rs1].r.lu.val & u64(~(1ULL<<63))) | (~proc.freg[dec.rs2].r.lu.val & u64(1ULL<<63));
 			proc.pc += inst_length;
 			goto x;
 		};
