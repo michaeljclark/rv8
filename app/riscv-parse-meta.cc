@@ -858,7 +858,7 @@ typedef s32 sx;
 typedef s32 sx;
 #endif
 
-#define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_fmadd_s ", " fmt_arg_fmadd_s ");\n", #fn, test_##fn(args), args)
+#define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_##fn ", " fmt_arg_##fn ");\n", #fn, test_##fn(args), args)
 #define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
 )C";
 
