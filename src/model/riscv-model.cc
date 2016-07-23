@@ -39,8 +39,8 @@ static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
 const riscv_primitive_type riscv_primitive_type_table[] = {
-	{ rvt_sx,  "x",  "sx",  "r", "%td",  "",    "intptr_t" },
-	{ rvt_ux,  "xu", "ux",  "r", "%tu",  "",    "uintptr_t" },
+	{ rvt_sx,  "x",  "sx",  "r", "%lld", "ll",  "intptr_t" },  // formats correct for RV64
+	{ rvt_ux,  "xu", "ux",  "r", "%llu", "ull", "uintptr_t" }, // formats correct for RV64
 	{ rvt_s8,  "b",  "s8",  "r", "%hhd", "",    "signed char" },
 	{ rvt_u8,  "bu", "u8",  "r", "%hhu", "",    "unsigned char" },
 	{ rvt_s16, "h",  "s16", "r", "%hd",  "",    "signed short" },

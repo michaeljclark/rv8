@@ -869,7 +869,9 @@ typedef s32 sx;
 	printf("#define test_fpu_h\n");
 	printf("%s\n", kFpuHeader);
 
+	// loop through FPU instructions
 	for (auto &opcode : opcodes) {
+
 		// find extension with minimum isa width
 		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
 			[](auto &a, auto &b){ return a->isa_width < b->isa_width; });
@@ -936,12 +938,48 @@ typedef s32 sx;
 	printf("#endif\n");
 }
 
+
+template <typename T> void typed_value_set(std::set<std::string> &values, const riscv_primitive_type *primitive)
+{
+	char fmt[16];
+	char buf[256];
+	snprintf(fmt, sizeof(fmt), "%s%s", primitive->c_fmt, primitive->c_suffix);
+	snprintf(buf, sizeof(buf), fmt, T(2)); values.insert(buf);
+	snprintf(buf, sizeof(buf), fmt, T(4)); values.insert(buf);
+	if (std::numeric_limits<T>::is_signed) {
+		snprintf(buf, sizeof(buf), fmt, T(-2)); values.insert(buf);
+		snprintf(buf, sizeof(buf), fmt, T(-4)); values.insert(buf);
+	}
+	if (std::numeric_limits<T>::is_iec559) {
+		snprintf(buf, sizeof(buf), fmt, T(0.5)); values.insert(buf);
+		snprintf(buf, sizeof(buf), fmt, T(0.25)); values.insert(buf);
+	}
+}
+
+static std::set<std::string> test_values(const riscv_primitive_type *primitive)
+{
+	std::set<std::string> values;
+	switch (primitive->enum_type) {
+		case rvt_sx:  typed_value_set<int64_t>(values, primitive); break;
+		case rvt_ux:  typed_value_set<uint64_t>(values, primitive); break;
+		case rvt_s32: typed_value_set<int32_t>(values, primitive); break;
+		case rvt_u32: typed_value_set<uint32_t>(values, primitive); break;
+		case rvt_s64: typed_value_set<int64_t>(values, primitive); break;
+		case rvt_u64: typed_value_set<uint64_t>(values, primitive); break;
+		case rvt_f32: typed_value_set<float>(values, primitive); break;
+		case rvt_f64: typed_value_set<double>(values, primitive); break;
+		default: break;
+	};
+	return values;
+}
+
 void riscv_parse_meta::print_fpu_c()
 {
 	static const char* kFpuSourceHeader =
 
 R"C(#include <stdio.h>
 #include <assert.h>
+#include <math.h>
 
 #include "test-fpu.h"
 
@@ -949,6 +987,7 @@ int main()
 {
 	printf("#include <stdio.h>\n");
 	printf("#include <assert.h>\n");
+	printf("#include <math.h>\n");
 	printf("\n");
 	printf("#include \"test-fpu.h\"\n");
 	printf("\n");
@@ -969,8 +1008,74 @@ R"C(
 
 	printf(kCHeader, "test-fpu.c");
 	printf("%s", kFpuSourceHeader);
-	printf("\t/* TODO - loop over ISA and fuzz operands using type metadata */\n");
-	printf("\tFPU_IDENTITY(fmadd_s, 1.0f, 2.0f, 3.0f);\n");
+
+	// loop through FPU instructions
+	for (auto &opcode : opcodes) {
+
+		// skip pseudo opcodes
+		if (opcode->name.find("@") == 0) continue;
+
+		// find extension with minimum isa width
+		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
+			[](auto &a, auto &b){ return a->isa_width < b->isa_width; });
+		if (ext_min_width_i == opcode->extensions.end()) continue;
+		auto ext = *ext_min_width_i;
+
+		// skip non floating point instructions
+		if (ext->alpha_code != 'f' && ext->alpha_code != 'd') continue;
+
+		// infer C argument types for test function
+		bool skip_imm = false;
+		std::vector<riscv_operand_desc> arg_list;
+		for (size_t i = 0; i < opcode->codec->args.size(); i++) {
+			auto arg = opcode->codec->args[i];
+			// round mode operand not supported
+			if (arg->name == "rm") continue;
+			// instructions with immediates not supported (fld, fsw)
+			if (arg->name.find("imm") != std::string::npos) skip_imm = true;
+			// infer primitive type based on the opcode components and operand types
+			arg_list.push_back(riscv_fpu_operand_type(opcode, ext, arg, i));
+		}
+		if (skip_imm) continue;
+
+		// generate test cases
+		switch (arg_list.size()) {
+			case 2: {
+				std::set<std::string> values1 = test_values(arg_list[1].first);
+				for (auto &v1 : values1) {
+					printf("\tFPU_IDENTITY(%s, %s);\n", opcode_format("", opcode, "_").c_str(),
+						v1.c_str());
+				}
+				break;
+			}
+			case 3: {
+				std::set<std::string> values1 = test_values(arg_list[1].first);
+				std::set<std::string> values2 = test_values(arg_list[2].first);
+				for (auto &v1 : values1) {
+					for (auto &v2 : values2) {
+						printf("\tFPU_IDENTITY(%s, %s, %s);\n", opcode_format("", opcode, "_").c_str(),
+							v1.c_str(), v2.c_str());
+					}
+				}
+				break;
+			}
+			case 4: {
+				std::set<std::string> values1 = test_values(arg_list[1].first);
+				std::set<std::string> values2 = test_values(arg_list[2].first);
+				std::set<std::string> values3 = test_values(arg_list[3].first);
+				for (auto &v1 : values1) {
+					for (auto &v2 : values2) {
+						for (auto &v3 : values3) {
+							printf("\tFPU_IDENTITY(%s, %s, %s, %s);\n", opcode_format("", opcode, "_").c_str(),
+								v1.c_str(), v2.c_str(), v3.c_str());
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+
 	printf("%s", kFpuSourceFooter);
 }
 

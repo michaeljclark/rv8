@@ -27,6 +27,7 @@ PROGRAMS = \
 	hello-world-pcrel-pico \
 	test-fib \
 	test-fpu \
+	test-fpu-assert \
 	test-printf \
 	test-sieve
 
@@ -46,6 +47,10 @@ test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-fpu.o: test-fpu.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fpu: test-fpu.o ; $(CC) $(CFLAGS) $^ -o $@
+
+test-fpu-assert.c: test-fpu ; ${SPIKE} ${PK} test-fpu | egrep -v '(nan|inf)' > $@
+test-fpu-assert.o: test-fpu-assert.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-fpu-assert: test-fpu-assert.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-printf.o: test-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-printf: test-printf.o ; $(CC) $(CFLAGS) $^ -o $@
