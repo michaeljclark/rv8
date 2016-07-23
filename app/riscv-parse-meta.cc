@@ -130,6 +130,8 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_c_header(std::string filename);
 	void print_args_h();
 	void print_interp_h();
+	void print_fpu_h();
+	void print_fpu_c();
 	void print_jit_h();
 	void print_jit_cc();
 	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
@@ -798,6 +800,171 @@ void riscv_parse_meta::print_interp_h()
 		printf("}\n\n");
 	}
 	printf("#endif\n");
+}
+
+typedef std::pair<const riscv_primitive_type*,std::string> riscv_operand_desc;
+
+static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_arg_ptr &arg, size_t i)
+{
+	// infer operand c type
+	std::vector<std::string> opcode_parts = split(opcode->name, ".");
+	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
+	if (arg->type == "ireg") {
+		if (i == 0 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
+		} else if (i == 1 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
+		}
+	} else if (arg->type == "freg") {
+		if (opcode_parts.size() == 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+		} else if (i == 0 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+		} else if (i == 1 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2]);
+		} else {
+			if (ext->alpha_code == 's') {
+				primitive = &riscv_primitive_type_table[rvt_f32];
+			} else if (ext->alpha_code == 'd') {
+				primitive = &riscv_primitive_type_table[rvt_f64];
+			}
+		}
+	}
+
+	// create operand name
+	std::string arg_name = arg->name;
+	arg_name = replace(arg_name, "frd", "d");
+	arg_name = replace(arg_name, "rd", "d");
+	arg_name = replace(arg_name, "frs", "s");
+	arg_name = replace(arg_name, "rs", "s");
+
+	return riscv_operand_desc(primitive,arg_name);
+}
+
+static const char* kFpuHeader =
+R"C(
+typedef signed int         s32;
+typedef unsigned int       u32;
+typedef signed long long   s64;
+typedef unsigned long long u64;
+typedef float              f32;
+typedef double             f64;
+
+#if _RISCV_SZPTR != _RISCV_SZINT
+typedef s64 sx;
+typedef s64 sx;
+#else
+typedef s32 sx;
+typedef s32 sx;
+#endif
+
+#define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_fmadd_s ", " fmt_arg_fmadd_s ");\n", #fn, test_##fn(args), args)
+#define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
+)C";
+
+void riscv_parse_meta::print_fpu_h()
+{
+	print_c_header("test-fpu.h");
+	printf("#ifndef test_fpu_h\n");
+	printf("#define test_fpu_h\n");
+	printf("%s\n", kFpuHeader);
+
+	for (auto &opcode : opcodes) {
+		// find extension with minimum isa width
+		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
+			[](auto &a, auto &b){ return a->isa_width < b->isa_width; });
+		if (ext_min_width_i == opcode->extensions.end()) continue;
+		auto ext = *ext_min_width_i;
+
+		// skip non floating point instructions
+		if (ext->alpha_code != 'f' && ext->alpha_code != 'd') continue;
+
+		// infer C argument types for test function
+		bool skip_imm = false;
+		std::vector<riscv_operand_desc> arg_list;
+		for (size_t i = 0; i < opcode->codec->args.size(); i++) {
+			auto arg = opcode->codec->args[i];
+			// round mode operand not supported
+			if (arg->name == "rm") continue;
+			// instructions with immediates not supported (fld, fsw)
+			if (arg->name.find("imm") != std::string::npos) skip_imm = true;
+			// infer primitive type based on the opcode components and operand types
+			arg_list.push_back(riscv_fpu_operand_type(opcode, ext, arg, i));
+		}
+		if (skip_imm) continue;
+
+		std::vector<std::string> fn_arity;
+		std::transform(arg_list.begin() + 1, arg_list.end(),
+			std::back_inserter(fn_arity), [](const riscv_operand_desc& arg) {
+				return format_string("%s %s", arg.first->meta_type, arg.second.c_str());
+		});
+
+		std::vector<std::string> arg_fmt;
+		std::transform(arg_list.begin() + 1, arg_list.end(),
+			std::back_inserter(arg_fmt), [](const riscv_operand_desc& arg) {
+				return format_string("%s%s", arg.first->c_fmt, arg.first->c_suffix);
+		});
+
+		std::vector<std::string> asm_arity;
+		std::transform(arg_list.begin(), arg_list.end(),
+			std::back_inserter(asm_arity), [](const riscv_operand_desc& arg) {
+				return format_string("%%[%s]", arg.second.c_str());
+		});
+
+		std::vector<std::string> asm_results;
+		std::transform(arg_list.begin() + 1, arg_list.end(),
+			std::back_inserter(asm_results), [](const riscv_operand_desc& arg) {
+				return format_string("[%s]\"%s\" (%s)",
+					arg.second.c_str(), arg.first->asm_type, arg.second.c_str());
+		});
+
+		// output function
+		if (ext->isa_width == 64) printf("#if _RISCV_SZPTR != _RISCV_SZINT\n");
+		printf("#define fmt_res_%s \"%s%s\"\n", opcode_format("", opcode, "_").c_str(), arg_list[0].first->c_fmt, arg_list[0].first->c_suffix);
+		printf("#define fmt_arg_%s \"%s\"\n", opcode_format("", opcode, "_").c_str(), join(arg_fmt, ", ").c_str());
+		printf("inline %s test_%s(%s)\n{\n\t%s %s;\n\tasm(\"%s %s\\n\"\n\t\t: [%s]\"=%s\" (%s)\n\t\t: %s\n\t\t:\n\t);\n\treturn %s;\n}\n",
+			arg_list[0].first->meta_type, opcode_format("", opcode, "_").c_str(), join(fn_arity, ", ").c_str(),
+			arg_list[0].first->meta_type, arg_list[0].second.c_str(),
+			opcode_format("", opcode, ".").c_str(), join(asm_arity, ", ").c_str(),
+			arg_list[0].second.c_str(), arg_list[0].first->asm_type, arg_list[0].second.c_str(),
+			join(asm_results, ", ").c_str(), arg_list[0].second.c_str()
+		);
+		if (ext->isa_width == 64) printf("#endif\n");
+		printf("\n");
+	}
+
+	printf("#endif\n");
+}
+
+void riscv_parse_meta::print_fpu_c()
+{
+	print_c_header("test-fpu.c");
+	printf("#include <stdio.h>\n");
+	printf("#include <assert.h>\n");
+	printf("\n");
+	printf("#include \"test-fpu.h\"\n");
+	printf("\n");
+	printf("int main()\n");
+	printf("{\n");
+
+	// encapsulated C emit header
+	printf("\tprintf(\"#include <stdio.h>\\n\");\n");
+	printf("\tprintf(\"#include <assert.h>\\n\");\n");
+	printf("\tprintf(\"\\n\");\n");
+	printf("\tprintf(\"#include \\\"test-fpu.h\\\"\\n\");\n");
+	printf("\tprintf(\"\\n\");\n");
+	printf("\tprintf(\"int main()\\n\");\n");
+	printf("\tprintf(\"{\\n\");\n");
+
+	printf("\t/* TODO - loop over ISA and fuzz operands using type metadata */\n");
+	printf("\tFPU_IDENTITY(fmadd_s, 1.0f, 2.0f, 3.0f);\n");
+
+	// encapsulated C emit footer
+	printf("\tprintf(\"\\treturn 0;\\n\");\n");
+	printf("\tprintf(\"}\\n\");");
+
+	printf("\treturn 0;\n");
+	printf("}\n");
 }
 
 void riscv_parse_meta::print_jit_h()
@@ -1557,6 +1724,8 @@ int main(int argc, const char *argv[])
 	bool print_args_h = false;
 	bool print_switch_h = false;
 	bool print_interp_h = false;
+	bool print_fpu_h = false;
+	bool print_fpu_c = false;
 	bool print_jit_h = false;
 	bool print_jit_cc = false;
 	bool print_meta_h = false;
@@ -1619,6 +1788,12 @@ int main(int argc, const char *argv[])
 		{ "-S", "--print-switch-h", cmdline_arg_type_none,
 			"Print switch header",
 			[&](std::string s) { return (print_switch_h = true); } },
+		{ "-FH", "--print-fpu-h", cmdline_arg_type_none,
+			"Print FPU test header",
+			[&](std::string s) { return (print_fpu_h = true); } },
+		{ "-FC", "--print-fpu-c", cmdline_arg_type_none,
+			"Print FPU test source",
+			[&](std::string s) { return (print_fpu_c = true); } },
 		{ "-J", "--print-jit-h", cmdline_arg_type_none,
 			"Print jit header",
 			[&](std::string s) { return (print_jit_h = true); } },
@@ -1644,6 +1819,7 @@ int main(int argc, const char *argv[])
 		!print_jit_h && !print_jit_cc &&
 		!print_meta_h && !print_meta_cc &&
 		!print_strings_h && !print_strings_cc &&
+		!print_fpu_h && !print_fpu_c &&
 		!print_interp_h))
 	{
 		printf("usage: %s [<options>]\n", argv[0]);
@@ -1690,6 +1866,14 @@ int main(int argc, const char *argv[])
 
 	if (print_interp_h) {
 		inst_set.print_interp_h();
+	}
+
+	if (print_fpu_h) {
+		inst_set.print_fpu_h();
+	}
+
+	if (print_fpu_c) {
+		inst_set.print_fpu_c();
 	}
 
 	if (print_jit_h) {

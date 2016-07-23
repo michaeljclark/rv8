@@ -38,6 +38,50 @@ static const char* COMPRESSION_FILE    = "compression";
 static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
+const riscv_primitive_type riscv_primitive_type_table[] = {
+	{ rvt_sx,  "x",  "sx",  "r", "%td",  "",    "intptr_t" },
+	{ rvt_ux,  "xu", "ux",  "r", "%tu",  "",    "uintptr_t" },
+	{ rvt_s8,  "b",  "s8",  "r", "%hhd", "",    "signed char" },
+	{ rvt_u8,  "bu", "u8",  "r", "%hhu", "",    "unsigned char" },
+	{ rvt_s16, "h",  "s16", "r", "%hd",  "",    "signed short" },
+	{ rvt_u16, "hu", "u16", "r", "%hu",  "",    "unsigned short" },
+	{ rvt_s32, "w",  "s32", "r", "%d",   "",    "signed int" },
+	{ rvt_u32, "wu", "u32", "r", "%u",   "u",   "unsigned int" },
+	{ rvt_s64, "l",  "s64", "r", "%lld", "ll",  "signed long long" },
+	{ rvt_u64, "lu", "u64", "r", "%llu", "ull", "unsigned long long" },
+	{ rvt_f32, "s",  "f32", "f", "%f",   "f",   "float" },
+	{ rvt_f64, "d",  "f64", "f", "%lf",  "",    "double" },
+	{ rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
+};
+
+const riscv_primitive_type* riscv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type)
+{
+	struct riscv_primitive_spec_type_map : std::map<std::string,const riscv_primitive_type*>
+	{
+		riscv_primitive_spec_type_map() {
+			for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++)
+				(*this)[ent->spec_type] = ent;
+		}
+	};
+	static riscv_primitive_spec_type_map map;
+	auto ti = map.find(spec_type);
+	return (ti == map.end()) ? &riscv_primitive_type_table[default_type] : ti->second;
+}
+
+const riscv_primitive_type* riscv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type)
+{
+	struct riscv_primitive_meta_type_map : std::map<std::string,const riscv_primitive_type*>
+	{
+		riscv_primitive_meta_type_map() {
+			for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++)
+				(*this)[ent->meta_type] = ent;
+		}
+	};
+	static riscv_primitive_meta_type_map map;
+	auto ti = map.find(meta_type);
+	return (ti == map.end()) ? &riscv_primitive_type_table[default_type] : ti->second;
+}
+
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
 {

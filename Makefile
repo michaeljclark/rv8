@@ -99,6 +99,7 @@ endif
 # directories
 APP_SRC_DIR =   app
 LIB_SRC_DIR =   src
+TEST_SRC_DIR =  test
 BUILD_DIR =     build
 META_DIR =      meta
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
@@ -164,6 +165,8 @@ RV_META_SRC =   $(LIB_SRC_DIR)/asm/riscv-meta.cc
 RV_STR_HDR =    $(LIB_SRC_DIR)/asm/riscv-strings.h
 RV_STR_SRC =    $(LIB_SRC_DIR)/asm/riscv-strings.cc
 RV_INTERP_HDR = $(LIB_SRC_DIR)/emulator/riscv-interp.h
+RV_FPU_HDR =    $(TEST_SRC_DIR)/test-fpu.h
+RV_FPU_SRC =    $(TEST_SRC_DIR)/test-fpu.c
 
 # libriscv_asm
 RV_ASM_SRCS =   $(LIB_SRC_DIR)/asm/riscv-disasm.cc \
@@ -264,7 +267,7 @@ c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
 meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
-	$(RV_INTERP_HDR)
+	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR)
 
 $(RV_ARGS_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
@@ -289,6 +292,12 @@ $(RV_STR_HDR): $(RV_META_DATA)
 
 $(RV_STR_SRC): $(RV_META_DATA)
 	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
+
+$(RV_FPU_HDR): $(RV_META_DATA)
+	$(PARSE_META_BIN) -N -0 -FH -r $(META_DIR) > $(RV_FPU_HDR)
+
+$(RV_FPU_SRC): $(RV_META_DATA)
+	$(PARSE_META_BIN) -N -0 -FC -r $(META_DIR) > $(RV_FPU_SRC)
 
 $(RV_INTERP_HDR): $(RV_META_DATA)
 	$(PARSE_META_BIN) -V -r $(META_DIR) > $(RV_INTERP_HDR)

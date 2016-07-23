@@ -61,6 +61,38 @@ typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
 
 int64_t riscv_parse_value(const char* valstr);
 
+enum rvt
+{
+	rvt_sx,
+	rvt_ux,
+	rvt_s8,
+	rvt_u8,
+	rvt_s16,
+	rvt_u16,
+	rvt_s32,
+	rvt_u32,
+	rvt_s64,
+	rvt_u64,
+	rvt_f32,
+	rvt_f64,
+	rvt_none,
+};
+
+struct riscv_primitive_type
+{
+	rvt enum_type;
+	const char* spec_type;
+	const char* meta_type;
+	const char* asm_type;
+	const char* c_fmt;
+	const char* c_suffix;
+	const char* c_type;
+};
+
+extern const riscv_primitive_type riscv_primitive_type_table[];
+extern const riscv_primitive_type* riscv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type = rvt_sx);
+extern const riscv_primitive_type* riscv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type = rvt_sx);
+
 struct riscv_bitrange
 {
 	ssize_t msb;

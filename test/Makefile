@@ -26,7 +26,8 @@ PROGRAMS = \
 	hello-world-pcrel-nano \
 	hello-world-pcrel-pico \
 	test-fib \
-	test-float \
+	test-fpu \
+	test-printf \
 	test-sieve
 
 all: $(PROGRAMS)
@@ -43,8 +44,11 @@ test: $(PROGRAMS)
 test-fib.o: test-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
 
-test-float.o: test-float.c ; $(CC) $(CFLAGS) -c $^ -o $@
-test-float: test-float.o ; $(CC) $(CFLAGS) $^ -o $@
+test-fpu.o: test-fpu.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-fpu: test-fpu.o ; $(CC) $(CFLAGS) $^ -o $@
+
+test-printf.o: test-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-printf: test-printf.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-sieve.o: test-sieve.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-sieve: test-sieve.o ; $(CC) $(CFLAGS) $^ -o $@
