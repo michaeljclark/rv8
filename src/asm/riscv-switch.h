@@ -519,14 +519,14 @@ inline uint64_t riscv_decode_inst_op(uint64_t inst)
 										case 0: if (rvs) op = riscv_op_uret; break;
 									}
 									break;
-								case 8192:
+								case 8256:
 									// sret
 									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
 										case 0: if (rvs) op = riscv_op_sret; break;
 									}
 									break;
-								case 8224: if (rvs) op = riscv_op_sfence_vm; break;
-								case 8256:
+								case 8320: if (rvs) op = riscv_op_sfence_vm; break;
+								case 8352:
 									// wfi
 									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
 										case 0: if (rvs) op = riscv_op_wfi; break;
