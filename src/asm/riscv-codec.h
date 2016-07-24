@@ -64,16 +64,16 @@
 
 struct riscv_decode
 {
-	uint64_t  imm;
-	uint32_t  rd;
-	uint32_t  rs1;
-	uint32_t  rs2;
-	uint16_t  op;
-	uint8_t   codec;
-	uint8_t   rs3 : 5;
-	uint8_t   rm :  3;
-	uint8_t   aq :  1;
-	uint8_t   rl :  1;
+	uint64_t  imm;     /* : 20 (44 variable redundant bits) pre-shifted */
+	uint32_t  rd;      /* : 5  (27 redundant bits) sized for rw perf */
+	uint32_t  rs1;     /* : 5  (27 redundant bits) sized for rw perf */
+	uint32_t  rs2;     /* : 5  (27 redundant bits) sized for rw perf */
+	uint16_t  op;      /* : 8  (219 entries) can grow */
+	uint8_t   codec;   /* : 5  (39 entries)  can grow */
+	uint8_t   rs3 : 5; /* less frequently used - 3rd operand for fmadd, fmsub */
+	uint8_t   rm :  3; /* less frequently used - round mode for some FPU ops */
+	uint8_t   aq :  1; /* less frequently used - acquire for atomic ops */
+	uint8_t   rl :  1; /* less frequently used - release for atomic ops */
 
 	riscv_decode()
 		: imm(0), rd(0), rs1(0), rs2(0), op(0), codec(0), rs3(0), rm(0), aq(0), rl(0) {}
