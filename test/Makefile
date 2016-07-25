@@ -37,11 +37,14 @@ all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS) *.o
 
-test: $(PROGRAMS)
+test: all
 	${SPIKE} ${PK} hello-world-libc
 	${SPIKE} ${PK} hello-world-libc-strip
 	${SPIKE} ${PK} hello-world-abs
 	${SPIKE} ${PK} hello-world-pcrel
+	${SPIKE} ${PK} test-fib
+	${SPIKE} ${PK} test-sieve
+	${SPIKE} ${PK} test-printf
 
 test-fib.o: test-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
