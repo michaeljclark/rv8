@@ -49,8 +49,8 @@ const riscv_primitive_type riscv_primitive_type_table[] = {
 	{ rvt_u32, "wu", "u32", "r", "%u",   "u",   "unsigned int" },
 	{ rvt_s64, "l",  "s64", "r", "%lld", "ll",  "signed long long" },
 	{ rvt_u64, "lu", "u64", "r", "%llu", "ull", "unsigned long long" },
-	{ rvt_f32, "s",  "f32", "f", "%f",   "f",   "float" },
-	{ rvt_f64, "d",  "f64", "f", "%lf",  "",    "double" },
+	{ rvt_f32, "s",  "f32", "f", "%.9e", "f",   "float" },
+	{ rvt_f64, "d",  "f64", "f", "%.17e", "",   "double" },
 	{ rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
 };
 
