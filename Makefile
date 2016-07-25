@@ -258,7 +258,8 @@ latex: all ; $(PARSE_META_BIN) -l -? -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
-test: ; (cd test && make test)
+test: ; (cd test && make all)
+test-run: ; (cd test && make test)
 test-clean: ; (cd test && make clean)
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) test/spike.rv
 emulate: $(TEST_EMULATE_BIN) test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
