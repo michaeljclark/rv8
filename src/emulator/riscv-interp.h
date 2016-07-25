@@ -389,7 +389,7 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fcvt_wu_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val);
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val > 0 ? proc.freg[dec.rs1].r.s.val : 0);
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -529,7 +529,7 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fcvt_wu_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val);
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val > 0 ? proc.freg[dec.rs1].r.d.val : 0);
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1077,7 +1077,7 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fcvt_wu_s: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val);
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.s.val > 0 ? proc.freg[dec.rs1].r.s.val : 0);
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1237,7 +1237,7 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fcvt_wu_d: {
-			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val);
+			if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.freg[dec.rs1].r.d.val > 0 ? proc.freg[dec.rs1].r.d.val : 0);
 			proc.pc += inst_length;
 			goto x;
 		};
