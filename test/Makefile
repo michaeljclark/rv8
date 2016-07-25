@@ -29,7 +29,8 @@ PROGRAMS = \
 	test-fpu \
 	test-fpu-assert \
 	test-printf \
-	test-sieve
+	test-sieve \
+	test-sieve-cpp
 
 all: $(PROGRAMS)
 
@@ -57,6 +58,9 @@ test-printf: test-printf.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-sieve.o: test-sieve.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-sieve: test-sieve.o ; $(CC) $(CFLAGS) $^ -o $@
+
+test-sieve-cpp.o: test-sieve-cpp.cc ; $(CXX) -std=c++11 $(CFLAGS) -c $^ -o $@
+test-sieve-cpp: test-sieve-cpp.o ; $(CXX) $(CFLAGS) $^ -o $@
 
 hello-world-libc.o: hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
 hello-world-libc: hello-world-libc.o ; $(CC) $(CFLAGS) $^ -o $@
