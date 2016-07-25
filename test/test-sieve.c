@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main(void)
 {
@@ -29,7 +30,7 @@ int main(void)
 		if(prime[i] != 0) largest_prime = i;
 	}
 
-	printf("%d\n", largest_prime);
+	assert(largest_prime == 9973);
 
 	return 0;
 }
