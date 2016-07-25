@@ -43,12 +43,18 @@ CFLAGS =        $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000 -static
+MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x80000000
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x80000000 -static
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
 CXXFLAGS +=     $(LIBCPP_FLAGS)
+endif
+
+# check if gperftool is enabled
+ifeq ($(enable_profile),1)
+CXXFLAGS +=    -I$(GPERFTOOL)/include/ -DENABLE_GPERFTOOL
+LDFLAGS +=     -L$(GPERFTOOL)/lib/ -lprofiler
 endif
 
 # check if hardening is enabled. e.g. make enable_harden=1
@@ -352,7 +358,7 @@ $(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_
 
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;

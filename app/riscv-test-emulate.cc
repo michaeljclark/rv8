@@ -40,6 +40,10 @@
 #include "riscv-abi.h"
 #include "riscv-proxy.h"
 
+#if defined (ENABLE_GPERFTOOL)
+#include "gperftools/profiler.h"
+#endif
+
 inline float f32_sqrt(float a) { return std::sqrt(a); }
 inline double f64_sqrt(double a) { return std::sqrt(a); }
 inline float f32_classify(float a) { return 0; } /* unimplemented */
@@ -322,8 +326,16 @@ struct riscv_emulator
 		// Set the program counter to the entry address
 		proc.pc = elf.ehdr.e_entry;
 
+#if defined (ENABLE_GPERFTOOL)
+		ProfilerStart("test-emulate.out");
+#endif
+
 		// Start the emulator
 		rv64_run(proc);
+
+#if defined (ENABLE_GPERFTOOL)
+		ProfilerStop();
+#endif
 
 		// Unmap segments
 		for (auto &seg: proc.mapped_segments) {
