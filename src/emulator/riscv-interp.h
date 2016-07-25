@@ -354,12 +354,12 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fmin_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val < proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val > proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -484,12 +484,12 @@ bool rv32_exec(T &dec, riscv_processor_rv32 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fmin_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val < proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val > proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1042,12 +1042,12 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fmin_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val < proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_s: {
-			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs2].r.s.val > proc.freg[dec.rs1].r.s.val ? proc.freg[dec.rs2].r.s.val : proc.freg[dec.rs1].r.s.val;
+			proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			proc.pc += inst_length;
 			goto x;
 		};
@@ -1192,12 +1192,12 @@ bool rv64_exec(T &dec, riscv_processor_rv64 &proc, uintptr_t inst_length)
 			goto x;
 		};
 		case riscv_op_fmin_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val < proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
 		case riscv_op_fmax_d: {
-			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs2].r.d.val > proc.freg[dec.rs1].r.d.val ? proc.freg[dec.rs2].r.d.val : proc.freg[dec.rs1].r.d.val;
+			proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			proc.pc += inst_length;
 			goto x;
 		};
