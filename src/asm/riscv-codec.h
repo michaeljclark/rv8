@@ -113,18 +113,19 @@ inline size_t riscv_inst_length(uint64_t inst)
 inline uint64_t riscv_inst_fetch(uintptr_t addr, size_t *inst_length)
 {
 	// NOTE: currently supports maximum instruction size of 64-bits
-	uint64_t inst;
-	if ((*(uint16_t*)addr & 0b11) != 0b11) {
-		inst = htole16(*(uint16_t*)addr);
+
+	// optimistically read 32-bit instruction
+	uint64_t inst = htole32(*(uint32_t*)addr);
+	if ((inst & 0b11) != 0b11) {
+		inst &= 0xffff; // mask to 16-bits
 		*inst_length = 2;
-	} else if ((*(uint16_t*)addr & 0b11100) != 0b11100) {
-		inst = htole32(*(uint32_t*)addr);
+	} else if ((inst & 0b11100) != 0b11100) {
 		*inst_length = 4;
-	} else if ((*(uint16_t*)addr & 0b111111) == 0b011111) {
-		inst = uint64_t(htole32(*(uint32_t*)addr)) | uint64_t(htole16(*(uint16_t*)(addr + 4))) << 32;
+	} else if ((inst & 0b111111) == 0b011111) {
+		inst |= uint64_t(htole16(*(uint16_t*)(addr + 4))) << 32;
 		*inst_length = 6;
-	} else if ((*(uint16_t*)addr & 0b1111111) == 0b0111111) {
-		inst = htole64(*(uint64_t*)addr);
+	} else if ((inst & 0b1111111) == 0b0111111) {
+		inst |= uint64_t(htole32(*(uint32_t*)(addr + 4))) << 32;
 		*inst_length = 8;
 	} else {
 		inst = 0; /* illegal instruction */
