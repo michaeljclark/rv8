@@ -186,7 +186,7 @@ To print opcodes header: ```make c_header```
 
 To print opcodes source: ```make c_source```
 
-To run the proof of concept emulator: ```make emulate```
+To run the proof of concept emulator: ```make test-emulate```
 
 ## Parse ELF Utility
 

@@ -262,7 +262,12 @@ test: ; (cd test && make all)
 test-run: ; (cd test && make test)
 test-clean: ; (cd test && make clean)
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) test/spike.rv
-emulate: $(TEST_EMULATE_BIN) test ; $(TEST_EMULATE_BIN) test/hello-world-pcrel
+test-emulate: $(TEST_EMULATE_BIN) test ;
+	$(TEST_EMULATE_BIN) test/hello-world-pcrel
+	$(TEST_EMULATE_BIN) test/test-fib
+	$(TEST_EMULATE_BIN) test/test-fpu-assert
+	$(TEST_EMULATE_BIN) test/test-sieve
+	$(TEST_EMULATE_BIN) test/test-printf
 danger: ; @echo Please do not make danger
 
 c_args: all ; @$(PARSE_META_BIN) -A -r $(META_DIR)
