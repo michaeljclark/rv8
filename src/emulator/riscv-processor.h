@@ -85,7 +85,9 @@ struct riscv_freg_fp32
 	enum  { xlen = sizeof(ux) << 3 };
 
 	union {
+		struct { int32_t val; }                      w;
 		struct { uint32_t val; }                     wu;
+		struct { int32_t val; }                      x;
 		struct { uint32_t val; }                     xu;
 		struct { float    val; }                     s;
 	} r;
@@ -102,15 +104,19 @@ struct riscv_freg_fp64
 	enum  { xlen = sizeof(ux) << 3 };
 
 	union {
+		struct { int64_t val; }                      l;
 		struct { uint64_t val; }                     lu;
+		struct { int64_t val; }                      x;
 		struct { uint64_t val; }                     xu;
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 		struct { double   val; }                     d;
 		struct { float    val;    uint32_t pad; }    s;
+		struct { int32_t  val;    uint32_t pad; }    w;
 		struct { uint32_t val;    uint32_t pad; }    wu;
 	#else
 		struct { double   val; }                     d;
 		struct { uint32_t pad;    float    val; }    s;
+		struct { uint32_t pad;    int32_t  val; }    w;
 		struct { uint32_t pad;    uint32_t val; }    wu;
 	#endif
 	} r;

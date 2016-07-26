@@ -765,6 +765,12 @@ void riscv_parse_meta::print_interp_h()
 			inst = replace(inst, "u64(frd)", "frd.r.lu.val");
 			inst = replace(inst, "u64(frs1)", "frs1.r.lu.val");
 			inst = replace(inst, "u64(frs2)", "frs2.r.lu.val");
+			inst = replace(inst, "s32(frd)", "frd.r.w.val");
+			inst = replace(inst, "s32(frs1)", "frs1.r.w.val");
+			inst = replace(inst, "s32(frs2)", "frs2.r.w.val");
+			inst = replace(inst, "s64(frd)", "frd.r.l.val");
+			inst = replace(inst, "s64(frs1)", "frs1.r.l.val");
+			inst = replace(inst, "s64(frs2)", "frs2.r.l.val");
 			if (inst.find("frd") != std::string::npos) {
 				inst = replace(inst, "frd", "proc.freg[dec.rd]");
 			} else {

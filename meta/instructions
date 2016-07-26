@@ -148,7 +148,7 @@ fcvt.w.s   "FP Convert Float to Word (SP)"                  "rd = s32(f32(frs1))
 fcvt.wu.s  "FP Convert Float to Word Unsigned (SP)"         "rd = u32(f32(frs1) > 0 ? f32(frs1) : 0)"
 fcvt.s.w   "FP Convert Word to Float (SP)"                  "f32(frd) = f32(s32(rs1))"
 fcvt.s.wu  "FP Convert Word Unsigned to Float (SP)"         "f32(frd) = f32(u32(rs1))"
-fmv.x.s    "FP Move to Integer Register (SP)"               "rd = u32(frs1)"
+fmv.x.s    "FP Move to Integer Register (SP)"               "rd = s32(frs1)"
 fclass.s   "FP Classify (SP)"                               "rd = f32_classify(f32(frs1))"
 fmv.s.x    "FP Move from Integer Register (SP)"             "u32(frd) = u32(rs1)"
 
@@ -192,7 +192,7 @@ fclass.d   "FP Classify (DP)"                               "rd = f64_classify(f
 
 fcvt.l.d   "FP Convert Float to Double Word (DP)"           "rd = s64(f64(frs1))
 fcvt.lu.d  "FP Convert Float to Double Word Unsigned (DP)"  "rd = u64(f64(frs1))"
-fmv.x.d    "FP Move to Integer Register (DP)"               "rd = u64(frs1)"
+fmv.x.d    "FP Move to Integer Register (DP)"               "rd = s64(frs1)"
 fcvt.d.l   "FP Convert Double Word to Float (DP)"           "f64(frd) = f64(s64(rs1))"
 fcvt.d.lu  "FP Convert Double Word Unsigned Float (DP)"     "f64(frd) = f64(u64(rs1))"
 fmv.d.x    "FP Move from Integer Register (DP)"             "u64(frd) = u64(rs1)"
