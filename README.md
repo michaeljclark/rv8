@@ -109,62 +109,15 @@ The following table shows the RISC-V Meta tools:
 
 - gmake
 - gcc-5.4 or clang-3.4
-- riscv-gnu-toolchain (required for `make test emulate`)
 - ragel (required to regenerate config grammar)
+- riscv-gnu-toolchain (required for `make test-emulate`)
+- Note: Set RISCV environment variable to point to toolchain
 
 ## Supported Platforms
 
 - Linux
 - macOS
 - FreeBSD
-
-## Performance Statistics
-
-The follow table shows the performance of the switch based instruction
-decoder compared to the riscv_isa_simulator instruction decoder.
-The code is compiled with `Apple LLVM version 7.3.0 (clang-703.0.29)`
-
-##### Micro benchmark 33 RV64 instructions (1000000 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   | 33000000  |   ~1.7 | RV64       |
-|spike_nocache | 33000000  |  ~16.5 | RV64       |
-|spike_cache   | 33000000  |   ~3.7 | RV64       |
-
-##### Micro benchmark 32 RV64C instructions (1000000 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   | 32000000 |   ~1.7  | RV64C      |
-|spike_nocache | 32000000 |  ~23.5  | RV64C      |
-|spike_cache   | 32000000 |   ~2.8  | RV64C      |
-
-##### ELF benchmark vmlinux RV64 .init.text (10 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   |   161970 |   ~1.1  | RV64       |
-|spike_nocache |   161970 |  ~22.0  | RV64       |
-|spike_cache   |   161970 |  ~15.0  | RV64       |
-
-##### ELF benchmark vmlinux RV64 .text (10 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   | 4871200  |   ~1.1  | RV64       |
-|spike_nocache | 4871200  |  ~25.0  | RV64       |
-|spike_cache   | 4871200  |  ~20.0  | RV64       |
-
-##### ELF benchmark vmlinux RV64C .init.text (10 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   |   158550 |   ~3.8  | RV64C      |
-|spike_nocache |   158550 |  ~67.0  | RV64C      |
-|spike_cache   |   158550 |  ~25.0  | RV64C      |
-
-##### ELF benchmark vmlinux RV64C .text (10 iterations)
-|Decoder|Instruction Count|Time (ns)|Architecture|
-|:------|----------------:|--------:|:-----------|
-|meta_switch   | 4848690  |   ~3.8  | RV64C      |
-|spike_nocache | 4848690  |  ~76.0  | RV64C      |
-|spike_cache   | 4848690  |  ~32.0  | RV64C      |
 
 ## Build Instructions
 
