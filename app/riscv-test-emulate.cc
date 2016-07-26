@@ -44,11 +44,6 @@
 #include "gperftools/profiler.h"
 #endif
 
-inline float f32_sqrt(float a) { return std::sqrt(a); }
-inline double f64_sqrt(double a) { return std::sqrt(a); }
-inline float f32_classify(float a) { return 0; } /* unimplemented */
-inline double f64_classify(double a) { return 0; } /* unimplemented */
-
 namespace riscv {
 	#include "riscv-interp.h"
 }

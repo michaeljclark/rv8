@@ -49,6 +49,20 @@ enum riscv_fcsr
 	riscv_fcsr_NX = 16,
 };
 
+enum riscv_fclass
+{
+	riscv_fclass_neg_inf = 1,
+	riscv_fclass_neg_norm = 2,
+	riscv_fclass_neg_subnorm = 4,
+	riscv_fclass_neg_zero = 8,
+	riscv_fclass_pos_zero = 16,
+	riscv_fclass_pos_subnorm = 32,
+	riscv_fclass_pos_norm = 64,
+	riscv_fclass_pos_inf = 128,
+	riscv_fclass_signaling_nan = 256,
+	riscv_fclass_quiet_nan = 512,
+};
+
 enum riscv_cause
 {
 	riscv_cause_misaligned_fetch = 0,

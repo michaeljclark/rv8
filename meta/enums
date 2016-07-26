@@ -31,6 +31,18 @@ fcsr    OF                   4       "Overflow"
 fcsr    UF                   8       "Underflow"
 fcsr    NX                   16      "Inexact"
 
+# Floating Point types returned by fclass
+fclass  neg_inf              1       "negative infinity"
+fclass  neg_norm             2       "negative normal number"
+fclass  neg_subnorm          4       "negative subnormal number"
+fclass  neg_zero             8       "negative zero"
+fclass  pos_zero             16      "positive zero"
+fclass  pos_subnorm          32      "positive subnormal number"
+fclass  pos_norm             64      "positive normal number"
+fclass  pos_inf              128     "positive infinity"
+fclass  signaling_nan        256     "signaling NaN"
+fclass  quiet_nan            512     "quiet NaN"
+
 # Machine Cause Register faults (mcause), interrupt bit clear
 cause   misaligned_fetch     0       "Instruction address misaligned"
 cause   fault_fetch          1       "Instruction access fault"
