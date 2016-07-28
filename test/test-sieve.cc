@@ -1,14 +1,10 @@
-#include <cmath>
+#include <cstdio>
 #include <cstdint>
-#include <cstdlib>
+#include <cinttypes>
+#include <cmath>
 #include <vector>
-#include <algorithm>
-#include <iostream>
-#include <iomanip>
-#include <chrono>
 
 using namespace std;
-using namespace std::chrono;
 
 /* sieve */
 
@@ -30,20 +26,19 @@ struct sieve
 	}
 };
 
-void find_largest_prime_factor(long long n)
+int64_t find_smallest_prime_factor(int64_t n)
 {
-	long long limit = sqrt(n) * 3; // hack hack hack
+	int64_t limit = static_cast<int64_t>(sqrt(n)) * 2;
 	sieve s(limit);
-	int lf = 1;
-	for (int i = 3; i < limit; i++) {
-		if (s.is_prime(i) && n % i == 0) {
-			lf = i;
-		}
-	}
-	cout << lf << endl;
+	for (int64_t i = 3; i < limit; i++)
+		if (s.is_prime(i) && n % i == 0) return i;
+	return -1;
 }
 
 int main(int argc, const char * argv[])
 {
-	find_largest_prime_factor(1147072269041);
+	printf("factoring... ");
+	fflush(stdout);
+	int64_t f = find_smallest_prime_factor(1147072269041);
+	printf("%" PRId64 "\n", f);
 }

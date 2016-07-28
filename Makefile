@@ -264,10 +264,12 @@ test-clean: ; (cd test && make clean)
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) test/spike.rv
 test-emulate: $(TEST_EMULATE_BIN) test ;
 	$(TEST_EMULATE_BIN) test/hello-world-pcrel
-	$(TEST_EMULATE_BIN) test/test-fib
+	$(TEST_EMULATE_BIN) test/hello-world-libc
+	$(TEST_EMULATE_BIN) test/test-int-fib
+	$(TEST_EMULATE_BIN) test/test-fpu-printf
 	$(TEST_EMULATE_BIN) test/test-fpu-assert
 	$(TEST_EMULATE_BIN) test/test-sieve
-	$(TEST_EMULATE_BIN) test/test-printf
+
 danger: ; @echo Please do not make danger
 
 c_args: all ; @$(PARSE_META_BIN) -A -r $(META_DIR)

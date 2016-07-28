@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static const char *hello_world = "Hello World\n";
+static const char *hello_world = "‶Hello World″\n";
 
 int main()
 {

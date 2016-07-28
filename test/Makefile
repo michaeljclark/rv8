@@ -16,6 +16,7 @@ SPIKE = ${RISCV}/bin/spike
 PK = ${RISCV}/${TARGET}/bin/pk
 
 CFLAGS = -Os -Wall -fpie -ffunction-sections -fdata-sections
+CXXFLAGS = -std=c++1y $(CFLAGS)
 
 PROGRAMS = \
 	hello-world-libc \
@@ -25,12 +26,11 @@ PROGRAMS = \
 	hello-world-pcrel-giga \
 	hello-world-pcrel-nano \
 	hello-world-pcrel-pico \
-	test-fib \
+	test-int-fib \
 	test-fpu \
 	test-fpu-assert \
-	test-printf \
-	test-sieve \
-	test-sieve-cpp
+	test-fpu-printf \
+	test-sieve
 
 all: $(PROGRAMS)
 
@@ -38,16 +38,15 @@ clean:
 	rm -f $(PROGRAMS) *.o
 
 test: all
-	${SPIKE} ${PK} hello-world-libc
-	${SPIKE} ${PK} hello-world-libc-strip
-	${SPIKE} ${PK} hello-world-abs
 	${SPIKE} ${PK} hello-world-pcrel
-	${SPIKE} ${PK} test-fib
+	${SPIKE} ${PK} hello-world-libc
+	${SPIKE} ${PK} test-int-fib
+	${SPIKE} ${PK} test-fpu-printf
+	${SPIKE} ${PK} test-fpu-assert
 	${SPIKE} ${PK} test-sieve
-	${SPIKE} ${PK} test-printf
 
-test-fib.o: test-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
-test-fib: test-fib.o ; $(CC) $(CFLAGS) $^ -o $@
+test-int-fib.o: test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-int-fib: test-int-fib.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-fpu.o: test-fpu.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fpu: test-fpu.o ; $(CC) $(CFLAGS) $^ -o $@
@@ -59,11 +58,8 @@ test-fpu-assert: test-fpu-assert.o ; $(CC) $(CFLAGS) $^ -o $@
 test-printf.o: test-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-printf: test-printf.o ; $(CC) $(CFLAGS) $^ -o $@
 
-test-sieve.o: test-sieve.c ; $(CC) $(CFLAGS) -c $^ -o $@
-test-sieve: test-sieve.o ; $(CC) $(CFLAGS) $^ -o $@
-
-test-sieve-cpp.o: test-sieve-cpp.cc ; $(CXX) -std=c++11 $(CFLAGS) -c $^ -o $@
-test-sieve-cpp: test-sieve-cpp.o ; $(CXX) $(CFLAGS) $^ -o $@
+test-sieve.o: test-sieve.cc ; $(CXX) $(CXXFLAGS) -c $^ -o $@
+test-sieve: test-sieve.o ; $(CXX) $(CXXFLAGS) $^ -o $@
 
 hello-world-libc.o: hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
 hello-world-libc: hello-world-libc.o ; $(CC) $(CFLAGS) $^ -o $@
