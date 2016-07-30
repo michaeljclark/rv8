@@ -39,6 +39,7 @@
 #include "riscv-processor.h"
 #include "riscv-fpu.h"
 #include "riscv-abi.h"
+#include "riscv-bits.h"
 #include "riscv-proxy.h"
 
 #if defined (ENABLE_GPERFTOOL)
@@ -155,11 +156,11 @@ struct riscv_emulator
 	void emulate_ecall(riscv_decode &dec, P &proc, uintptr_t inst_length)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case riscv_syscall_close:  riscv_sys_close(proc); break;
-			case riscv_syscall_write:  riscv_sys_write(proc); break;
-			case riscv_syscall_fstat:  riscv_sys_fstat(proc); break;
-			case riscv_syscall_exit:   riscv_sys_exit(proc);  break;
-			case riscv_syscall_brk:    riscv_sys_brk(proc);   break;
+			case riscv_syscall_close:  riscv::sys_close(proc); break;
+			case riscv_syscall_write:  riscv::sys_write(proc); break;
+			case riscv_syscall_fstat:  riscv::sys_fstat(proc); break;
+			case riscv_syscall_exit:   riscv::sys_exit(proc);  break;
+			case riscv_syscall_brk:    riscv::sys_brk(proc);   break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 		proc.pc += inst_length;
