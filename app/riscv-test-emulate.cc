@@ -37,6 +37,7 @@
 #include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-processor.h"
+#include "riscv-fpu.h"
 #include "riscv-abi.h"
 #include "riscv-proxy.h"
 

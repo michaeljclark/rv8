@@ -85,9 +85,9 @@ struct riscv_freg_fp32
 	enum  { xlen = sizeof(ux) << 3 };
 
 	union {
-		struct { int32_t val; }                      w;
+		struct { int32_t  val; }                     w;
 		struct { uint32_t val; }                     wu;
-		struct { int32_t val; }                      x;
+		struct { int32_t  val; }                     x;
 		struct { uint32_t val; }                     xu;
 		struct { float    val; }                     s;
 	} r;
@@ -104,9 +104,9 @@ struct riscv_freg_fp64
 	enum  { xlen = sizeof(ux) << 3 };
 
 	union {
-		struct { int64_t val; }                      l;
+		struct { int64_t  val; }                     l;
 		struct { uint64_t val; }                     lu;
-		struct { int64_t val; }                      x;
+		struct { int64_t  val; }                     x;
 		struct { uint64_t val; }                     xu;
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 		struct { double   val; }                     d;
@@ -159,42 +159,5 @@ struct riscv_processor_t
 
 using riscv_processor_rv32 = riscv_processor_t<int32_t,uint32_t,riscv_ireg_rv32,riscv_freg_fp32>;
 using riscv_processor_rv64 = riscv_processor_t<int64_t,uint64_t,riscv_ireg_rv64,riscv_freg_fp64>;
-
-inline float f32_sqrt(float a) { return std::sqrt(a); }
-inline double f64_sqrt(double a) { return std::sqrt(a); }
-
-inline float f32_classify(float a)
-{
-	union { uint32_t wu; float f; } v = { .f = a };
-	uint32_t neg = v.wu >> 31, exp = (v.wu >> 23) & ((1<<8)-1), man = v.wu & ((1<<23)-1);
-	bool inf = exp == ((1<<8)-1);
-	bool denorm = exp == 0;
-	if (denorm) {
-		if (man == 0) return neg ? riscv_fclass_neg_zero : riscv_fclass_pos_zero;
-		else return neg ? riscv_fclass_neg_subnorm : riscv_fclass_pos_subnorm;
-	} else if (inf) {
-		if (man == 0) return neg ? riscv_fclass_neg_inf : riscv_fclass_pos_inf;
-		else return man & (1<<22) ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
-	} else {
-		return neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm;
-	}
-}
-
-inline double f64_classify(double a)
-{
-	union { uint64_t lu; double d; } v = { .d = a };
-	uint64_t neg = v.lu >> 63, exp = (v.lu >> 52) & ((1ULL<<11)-1), man = v.lu & ((1ULL<<52)-1);
-	bool inf = exp == ((1ULL<<11)-1);
-	bool denorm = exp == 0;
-	if (denorm) {
-		if (man == 0) return neg ? riscv_fclass_neg_zero : riscv_fclass_pos_zero;
-		else return neg ? riscv_fclass_neg_subnorm : riscv_fclass_pos_subnorm;
-	} else if (inf) {
-		if (man == 0) return neg ? riscv_fclass_neg_inf : riscv_fclass_pos_inf;
-		else return man & (1ULL<<51) ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
-	} else {
-		return neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm;
-	}
-}
 
 #endif
