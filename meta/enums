@@ -43,6 +43,38 @@ fclass  pos_inf              128     "positive infinity"
 fclass  signaling_nan        256     "signaling NaN"
 fclass  quiet_nan            512     "quiet NaN"
 
+# FPU Status (mstatus.fs)
+fs      off                  0       "Off"
+fs      initial              1       "Initial"
+fs      clean                2       "Clean"
+fs      dirty                3       "Dirty"
+
+# Extension Status (mstatus.xs)
+xs      all                  0       "All off"
+xs      initial              1       "None dirty or clean, some on"
+xs      clean                2       "None dirty, some clean"
+xs      dirty                3       "Some dirty"
+
+# Base ISA field (misa)
+isa     rv32                 1       "RV32"
+isa     rv64                 2       "RV64"
+isa     rv128                3       "RV128"
+
+# ISA Extensions (misa)
+ext     I                    256     "RV32I/64I/128I Base ISA"
+ext     M                    4096    "Integer Multiply/Divide extension"
+ext     A                    1       "Atomic Extension"
+ext     F                    32      "Single-precision foating-point extension"
+ext     D                    8       "Double-precision foating-point extension"
+ext     C                    4       "Compressed extension"
+
+# Virtualization Management field (mstatus.vm)
+vm      mbare                0       "No translation or protection"
+vm      mbb                  1       "Single base-and-bound"
+vm      sv32                 8       "Page-based 32-bit virtual addressing"
+vm      sv39                 9       "Page-based 39-bit virtual addressing"
+vm      sv48                 10      "Page-based 48-bit virtual addressing"
+
 # Machine Cause Register faults (mcause), interrupt bit clear
 cause   misaligned_fetch     0       "Instruction address misaligned"
 cause   fault_fetch          1       "Instruction access fault"

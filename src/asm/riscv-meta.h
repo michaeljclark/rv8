@@ -63,6 +63,48 @@ enum riscv_fclass
 	riscv_fclass_quiet_nan = 512,
 };
 
+enum riscv_fs
+{
+	riscv_fs_off = 0,
+	riscv_fs_initial = 1,
+	riscv_fs_clean = 2,
+	riscv_fs_dirty = 3,
+};
+
+enum riscv_xs
+{
+	riscv_xs_all = 0,
+	riscv_xs_initial = 1,
+	riscv_xs_clean = 2,
+	riscv_xs_dirty = 3,
+};
+
+enum riscv_isa
+{
+	riscv_isa_rv32 = 1,
+	riscv_isa_rv64 = 2,
+	riscv_isa_rv128 = 3,
+};
+
+enum riscv_ext
+{
+	riscv_ext_I = 256,
+	riscv_ext_M = 4096,
+	riscv_ext_A = 1,
+	riscv_ext_F = 32,
+	riscv_ext_D = 8,
+	riscv_ext_C = 4,
+};
+
+enum riscv_vm
+{
+	riscv_vm_mbare = 0,
+	riscv_vm_mbb = 1,
+	riscv_vm_sv32 = 8,
+	riscv_vm_sv39 = 9,
+	riscv_vm_sv48 = 10,
+};
+
 enum riscv_cause
 {
 	riscv_cause_misaligned_fetch = 0,
