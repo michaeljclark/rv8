@@ -80,7 +80,7 @@ namespace riscv {
 		struct {
 			u64 pg_off  : 12;
 			u64 ppn     : 38; /* 20,9,9 */
-			u64 rsrv_16 : 14;
+			u64 rsrv_14 : 14;
 		} pa;
 	};
 
@@ -120,7 +120,7 @@ namespace riscv {
 		struct {
 			u64 pg_off  : 12;
 			u64 ppn     : 38; /* 11,9,9,9 */
-			u64 rsrv_16 : 14;
+			u64 rsrv_14 : 14;
 		} pa;
 	};
 
