@@ -54,6 +54,11 @@ namespace riscv {
 	};
 
 	struct sv32 {
+		enum {
+			levels = 2,
+			bits = 10,
+			size = sizeof(sv32_pte) >> 3,
+		};
 		typedef sv32_va  va_type;
 		typedef sv32_pa  pa_type;
 		typedef sv32_pte pte_type;
@@ -89,6 +94,11 @@ namespace riscv {
 	};
 
 	struct sv39 {
+		enum {
+			levels = 3,
+			bits = 9,
+			size = sizeof(sv39_pte) >> 3,
+		};
 		typedef sv39_va  va_type;
 		typedef sv39_pa  pa_type;
 		typedef sv39_pte pte_type;
@@ -124,6 +134,11 @@ namespace riscv {
 	};
 
 	struct sv48 {
+		enum {
+			levels = 4,
+			bits = 9,
+			size = sizeof(sv48_pte) >> 3,
+		};
 		typedef sv48_va  va_type;
 		typedef sv48_pa  pa_type;
 		typedef sv48_pte pte_type;
