@@ -37,8 +37,8 @@ namespace riscv {
 			return false; // TODO
 		}
 
-		// PTE is one of sv32, sv39, sv48
-		template <typename PTE> bool walk_page_table(uintptr_t va, PTE &pte)
+		// PTM is one of sv32, sv39, sv48
+		template <typename PTM> bool walk_page_table(uintptr_t va, typename PTM::pte_type &pte)
 		{
 			return false; // TODO
 		}
