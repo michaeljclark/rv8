@@ -83,10 +83,9 @@ namespace riscv {
 		as_tagged_va_ppn_type* lookup_tag(UX vaddr, UX asid)
 		{
 			UX va = vaddr & page_mask;
-			for (size_t i = 0; i < size; i++) {
-				if (tlb[i].va == va && tlb[i].asid == asid) {
-					return &tlb[i];
-				}
+			size_t i = (vaddr >> page_shift) & mask;
+			if (tlb[i].va == va && tlb[i].asid == asid) {
+				return &tlb[i];
 			}
 			return nullptr;
 		}
@@ -94,13 +93,7 @@ namespace riscv {
 		void insert_tag(UX vaddr, UX asid, UX ppn)
 		{
 			UX va = vaddr & page_mask;
-			size_t i;
-			for (i = 0; i < size; i++) {
-				if (tlb[i].va == UX(-1)) break;
-			}
-			if (i == size) {
-				i = (vaddr % 8191) & mask;
-			}
+			size_t i = (vaddr >> page_shift) & mask;
 			tlb[i].va = va;
 			tlb[i].asid = asid;
 			tlb[i].ppn = ppn;
