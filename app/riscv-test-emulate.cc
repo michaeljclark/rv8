@@ -40,6 +40,7 @@
 #include "riscv-fpu.h"
 #include "riscv-abi.h"
 #include "riscv-bits.h"
+#include "riscv-mmu.h"
 #include "riscv-proxy.h"
 
 #if defined (ENABLE_GPERFTOOL)

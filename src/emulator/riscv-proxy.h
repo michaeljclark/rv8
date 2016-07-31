@@ -64,8 +64,6 @@ namespace riscv {
 
 	template <typename P> void sys_brk(P &proc)
 	{
-		static const uintptr_t page_size = 4096;
-
 		// calculate the new heap address rounded up to the nearest page
 		uintptr_t new_addr = proc.ireg[riscv_ireg_a0];
 		uintptr_t curr_heap_end = round_up(proc.heap_end, page_size);
