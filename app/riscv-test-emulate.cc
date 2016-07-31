@@ -38,9 +38,9 @@
 #include "riscv-disasm.h"
 #include "riscv-processor.h"
 #include "riscv-fpu.h"
-#include "riscv-abi.h"
 #include "riscv-bits.h"
-#include "riscv-mmu.h"
+#include "riscv-pte.h"
+#include "riscv-abi.h"
 #include "riscv-proxy.h"
 
 #if defined (ENABLE_GPERFTOOL)

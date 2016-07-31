@@ -1,9 +1,9 @@
 //
-//  riscv-mmu.h
+//  riscv-pte.h
 //
 
-#ifndef riscv_mmu_h
-#define riscv_mmu_h
+#ifndef riscv_pte_h
+#define riscv_pte_h
 
 namespace riscv {
 

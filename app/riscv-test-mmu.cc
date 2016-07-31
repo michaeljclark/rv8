@@ -11,12 +11,16 @@
 #include <cstdarg>
 #include <cerrno>
 #include <cassert>
+#include <string>
+#include <vector>
+
+#include <sys/mman.h>
 
 #include "riscv-types.h"
 #include "riscv-endian.h"
+#include "riscv-util.h"
 #include "riscv-bits.h"
-#include "riscv-machine.h"
-#include "riscv-mmu.h"
+#include "riscv-pte.h"
 #include "riscv-cache.h"
 
 using namespace riscv;
