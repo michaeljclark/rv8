@@ -60,8 +60,6 @@ int main(int argc, char *argv[])
 	printf("rv_tlb_type::mask                : 0x%08tx\n", rv_tlb_type::mask);
 
 	rv_tlb_type tlb;
-	tlb.insert_tag(/* va */ 0x10000, /* asid */0, /* ppn */ 1);
-	auto ent = tlb.lookup_tag(0x10000, 0);
-	assert(ent != nullptr);
-	assert(ent->ppn == 1);
+	tlb.insert_ppn(/* va */ 0x10000, /* asid */ 0, /* ppn */ 1);
+	assert(tlb.lookup_ppn(/* va */ 0x10000, /* asid */ 0) == 1);
 }
