@@ -66,6 +66,6 @@ int main(int argc, char *argv[])
 	printf("rv_tlb_type::mask                : 0x%08tx\n", rv_tlb_type::mask);
 
 	rv_tlb_type tlb;
-	tlb.insert_ppn(/* va */ 0x10000, /* asid */ 0, /* ppn */ 1);
-	assert(tlb.lookup_ppn(/* va */ 0x10000, /* asid */ 0) == 1);
+	tlb.insert(/* va */ 0x10000, /* pte */ 0, /* asid */ 0, /* ppn */ 1);
+	assert(tlb.lookup(/* va */ 0x10000, /* asid */ 0).first == 1);
 }

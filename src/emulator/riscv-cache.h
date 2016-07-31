@@ -42,9 +42,10 @@ namespace riscv {
 		};
 
 		UX va;
+		UX pte;
 
-		as_tagged_va_ppn() : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(), va(UX(-1)) {}
-		as_tagged_va_ppn(UX va, UX asid, UX ppn) : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va(va) {}
+		as_tagged_va_ppn() : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(), va(UX(-1)), pte(UX(-1)) {}
+		as_tagged_va_ppn(UX va, UX pte, UX asid, UX ppn) : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va(va), pte(pte) {}
 	};
 
 	using rv32_as_tagged_va_ppn = as_tagged_va_ppn<u32,10,22>;
@@ -66,6 +67,7 @@ namespace riscv {
 			mask = (1ULL << shift) - 1,
 			key_size = sizeof(AST_PT_VA),
 			invalid_ppn = UX(-1),
+			invalid_pte = UX(-1),
 		};
 
 		as_tagged_va_ppn_type tlb[size];
@@ -87,18 +89,20 @@ namespace riscv {
 			}
 		}
 
-		UX lookup_ppn(UX vaddr, UX asid)
+		std::pair<UX,UX> lookup(UX vaddr, UX asid)
 		{
 			UX va = vaddr & page_mask;
 			size_t i = (vaddr >> page_shift) & mask;
-			return (tlb[i].va == va && tlb[i].asid == asid) ? tlb[i].ppn : invalid_ppn;
+			return (tlb[i].va == va && tlb[i].asid == asid) ?
+				std::pair<UX,UX>(UX(tlb[i].ppn), UX(tlb[i].pte)) :
+				std::pair<UX,UX>(invalid_ppn, invalid_pte);
 		}
 
-		void insert_ppn(UX vaddr, UX asid, UX ppn)
+		void insert(UX vaddr, UX pte, UX asid, UX ppn)
 		{
 			UX va = vaddr & page_mask;
 			size_t i = (vaddr >> page_shift) & mask;
-			tlb[i] = as_tagged_va_ppn_type(va, asid, ppn);
+			tlb[i] = as_tagged_va_ppn_type(va, pte, asid, ppn);
 		}
 	};
 
