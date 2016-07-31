@@ -53,6 +53,12 @@ namespace riscv {
 		} pte;
 	};
 
+	struct sv32 {
+		typedef sv32_va  va_type;
+		typedef sv32_pa  pa_type;
+		typedef sv32_pte pte_type;
+	};
+
 	/* sv39 */
 
 	union sv39_va {
@@ -82,6 +88,12 @@ namespace riscv {
 		} pte;
 	};
 
+	struct sv39 {
+		typedef sv39_va  va_type;
+		typedef sv39_pa  pa_type;
+		typedef sv39_pte pte_type;
+	};
+
 	/* sv48 */
 
 	union sv48_va {
@@ -109,6 +121,12 @@ namespace riscv {
 			u64 ppn     : 38; /* 11,9,9,9 */
 			u64 rsrv_16 : 16;
 		} pte;
+	};
+
+	struct sv48 {
+		typedef sv48_va  va_type;
+		typedef sv48_pa  pa_type;
+		typedef sv48_pte pte_type;
 	};
 
 }
