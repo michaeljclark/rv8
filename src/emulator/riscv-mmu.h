@@ -20,25 +20,25 @@ namespace riscv {
 		cache_type   l1_icache;
 		memory_type  mem;
 
-		template <typename P> u64 fetch_inst(P &proc, uintptr_t pc)
+		template <typename P> u64 fetch_inst(P &proc, UX pc)
 		{
 			return 0; // TODO
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool load(P &proc, uintptr_t va, T &val)
+		template <typename P, typename T> bool load(P &proc, UX va, T &val)
 		{
 			return false; // TODO
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool store(P &proc, uintptr_t va, T val)
+		template <typename P, typename T> bool store(P &proc, UX va, T val)
 		{
 			return false; // TODO
 		}
 
 		// PTM is one of sv32, sv39, sv48
-		template <typename PTM> bool walk_page_table(uintptr_t va, typename PTM::pte_type &pte)
+		template <typename PTM> bool walk_page_table(UX va, typename PTM::pte_type &pte)
 		{
 			return false; // TODO
 		}
