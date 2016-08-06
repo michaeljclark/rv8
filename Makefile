@@ -43,8 +43,8 @@ CFLAGS =        $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y -fno-exceptions -fno-rtti $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x80000000
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x80000000 -static
+MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000 -static
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
