@@ -104,8 +104,11 @@ struct riscv_proc_proxy : P
 	template <typename T>
 	void print_disassembly(T &dec)
 	{
+		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s\n";
+		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s\n";
+		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s\n";
 		std::string args = riscv_disasm_inst_simple(dec);
-		printf("core %3zu: 0x%016tx (%s) %-30s\n",
+		printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 			P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str());
 	}
 
