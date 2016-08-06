@@ -730,9 +730,9 @@ void riscv_parse_meta::print_interp_h()
 	printf("#define riscv_interp_h\n");
 	printf("\n");
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("template <typename T>\n");
-		printf("bool %s_exec(T &dec, riscv_processor_%s &proc, uintptr_t inst_length)\n",
-			isa_width.second.c_str(), isa_width.second.c_str());
+		printf("template <typename T, typename P>\n");
+		printf("bool %s_exec(T &dec, P &proc, uintptr_t inst_length)\n",
+			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
 		printf("\ttypedef int%zu_t sx;\n", isa_width.first);

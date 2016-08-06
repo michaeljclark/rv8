@@ -52,7 +52,7 @@ namespace riscv {
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
 		if ((proc.ireg[riscv_ireg_a0] = fstat(proc.ireg[riscv_ireg_a0], &host_stat)) == 0) {
-			riscv_abi_stat *abi_stat = (riscv_abi_stat*)proc.ireg[riscv_ireg_a1].r.xu.val;
+			riscv_abi_stat *abi_stat = (riscv_abi_stat*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
 			_cvtstat(abi_stat, &host_stat);
 		}
 	}

@@ -56,23 +56,9 @@ namespace riscv {
 
 using namespace riscv;
 
-struct riscv_proc_proxy_rv64 : riscv_processor_rv64
+template<typename P>
+struct riscv_proc_proxy : P
 {
-	uintptr_t heap_begin;
-	uintptr_t heap_end;
-	std::vector<std::pair<void*,size_t>> mapped_segments;
-
-	riscv_proc_proxy_rv64() : riscv_processor_rv64(), heap_begin(0), heap_end(0) {}
-};
-
-struct riscv_emulator
-{
-	static const size_t stack_top =  0x78000000; // 1920 MiB
-	static const size_t stack_size = 0x01000000; //   16 MiB
-
-	elf_file elf;
-	std::string filename;
-
 	struct riscv_inst_cache_ent
 	{
 		uint64_t inst;
@@ -82,56 +68,23 @@ struct riscv_emulator
 	static const size_t inst_cache_size = 8191;
 	riscv_inst_cache_ent inst_cache[inst_cache_size];
 
-	bool memory_debug = false;
-	bool emulator_debug = false;
-	bool log_registers = false;
-	bool log_instructions = false;
-	bool help_or_error = false;
+	std::vector<std::pair<void*,size_t>> mapped_segments;
 
-	/*
-		This simple proof of concept machine emulator uses a 
-		machine generated interpreter in src/asm/riscv-interp.h
-		created by parse-meta using C-psuedo code in meta/instructions
-	*/
+	uintptr_t heap_begin;
+	uintptr_t heap_end;
 
-	inline static const int elf_p_flags_mmap(int v)
-	{
-		int prot = 0;
-		if (v & PF_X) prot |= PROT_EXEC;
-		if (v & PF_W) prot |= PROT_WRITE;
-		if (v & PF_R) prot |= PROT_READ;
-		return prot;
-	}
+	bool log_registers;
+	bool log_instructions;
 
-	template <typename P>
-	void print_int_regeisters(P &proc)
-	{
-		for (size_t i = 0; i < 32; i++) {
-			char fmt[32];
-			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%u%sx%%s",
-				(P::xlen >> 2), P::xlen == 64 ? "ll" : "");
-			printf(fmt, riscv_ireg_name_sym[i], proc.ireg[i].r.xu.val,
-				(i + 1) % 4 == 0 ? "\n" : " ");
-		}
-	}
-
-	template <typename P>
-	void print_f32_regeisters(P &proc)
-	{
-		for (size_t i = 0; i < 32; i++) {
-			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
-				proc.freg[i].r.s.val, (i + 1) % 4 == 0 ? "\n" : " ");
-		}
-	}
-
-	template <typename P>
-	void print_f64_regeisters(P &proc)
-	{
-		for (size_t i = 0; i < 32; i++) {
-			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
-				proc.freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
-		}
-	}
+	riscv_proc_proxy() :
+		P(),
+		inst_cache(),
+		mapped_segments(),
+		heap_begin(0),
+		heap_end(0),
+		log_registers(false),
+		log_instructions(false)
+	{}
 
 	std::string format_inst(uintptr_t pc)
 	{
@@ -148,37 +101,91 @@ struct riscv_emulator
 		return buf;
 	}
 
-	template <typename T, typename P>
-	void print_disassembly(T &dec, P &proc)
+	template <typename T>
+	void print_disassembly(T &dec)
 	{
 		std::string args = riscv_disasm_inst_simple(dec);
-		printf("core %3zu: 0x%016tx (%s) %-30s\n", proc.hart_id, proc.pc, format_inst(proc.pc).c_str(), args.c_str());
+		printf("core %3zu: 0x%016tx (%s) %-30s\n",
+			P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str());
+	}
+
+	void print_int_regeisters()
+	{
+		for (size_t i = 0; i < 32; i++) {
+			char fmt[32];
+			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%u%sx%%s",
+				(P::xlen >> 2), P::xlen == 64 ? "ll" : "");
+			printf(fmt, riscv_ireg_name_sym[i],
+				P::ireg[i].r.xu.val, (i + 1) % 4 == 0 ? "\n" : " ");
+		}
+	}
+
+	void print_f32_regeisters()
+	{
+		for (size_t i = 0; i < 32; i++) {
+			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
+				P::freg[i].r.s.val, (i + 1) % 4 == 0 ? "\n" : " ");
+		}
+	}
+
+	void print_f64_regeisters()
+	{
+		for (size_t i = 0; i < 32; i++) {
+			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
+				P::freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
+		}
 	}
 
 	// Simple RV64 Linux syscall emulation (write, exit)
-	template <typename P>
-	void emulate_ecall(riscv_decode &dec, P &proc, uintptr_t inst_length)
+	void emulate_ecall(riscv_decode &dec, uintptr_t inst_length)
 	{
-		switch (proc.ireg[riscv_ireg_a7]) {
-			case riscv_syscall_close:  riscv::sys_close(proc); break;
-			case riscv_syscall_write:  riscv::sys_write(proc); break;
-			case riscv_syscall_fstat:  riscv::sys_fstat(proc); break;
-			case riscv_syscall_exit:   riscv::sys_exit(proc);  break;
-			case riscv_syscall_brk:    riscv::sys_brk(proc);   break;
-			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
+		switch (P::ireg[riscv_ireg_a7]) {
+			case riscv_syscall_close:  riscv::sys_close(*this); break;
+			case riscv_syscall_write:  riscv::sys_write(*this); break;
+			case riscv_syscall_fstat:  riscv::sys_fstat(*this); break;
+			case riscv_syscall_exit:   riscv::sys_exit(*this);  break;
+			case riscv_syscall_brk:    riscv::sys_brk(*this);   break;
+			default: panic("unknown syscall: %d", P::ireg[riscv_ireg_a7]);
 		}
-		proc.pc += inst_length;
+		P::pc += inst_length;
 	}
+};
 
-	// Simple RV64 emulator main loop
-	template <typename P>
-	void rv64_run(P &proc)
+struct riscv_proc_proxy_rv32 : riscv_proc_proxy<riscv_processor_rv32>
+{
+	void run()
 	{
 		riscv_decode dec;
 		size_t inst_length;
 		uint64_t inst;
 		while (true) {
-			inst = riscv_inst_fetch(proc.pc, &inst_length);
+			inst = riscv_inst_fetch(pc, &inst_length);
+			uint64_t inst_cache_key = inst % inst_cache_size;
+			if (inst_cache[inst_cache_key].inst == inst) {
+				dec = inst_cache[inst_cache_key].dec;
+			} else {
+				riscv_decode_inst_rv32(dec, inst);
+				inst_cache[inst_cache_key].inst = inst;
+				inst_cache[inst_cache_key].dec = dec;
+			}
+			if (log_registers) print_int_regeisters();
+			if (log_instructions) print_disassembly(dec);
+			if (rv32_exec(dec, *this, inst_length)) continue;
+			if (dec.op == riscv_op_ecall) emulate_ecall(dec, inst_length);
+			else panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
+		}
+	}
+};
+
+struct riscv_proc_proxy_rv64 : riscv_proc_proxy<riscv_processor_rv64>
+{
+	void run()
+	{
+		riscv_decode dec;
+		size_t inst_length;
+		uint64_t inst;
+		while (true) {
+			inst = riscv_inst_fetch(pc, &inst_length);
 			uint64_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -187,19 +194,42 @@ struct riscv_emulator
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (log_registers) {
-				print_int_regeisters(proc);
-				print_f32_regeisters(proc);
-				print_f64_regeisters(proc);
-			}
-			if (log_instructions) print_disassembly(dec, proc);
-			if (riscv::rv64_exec(dec, proc, inst_length)) continue;
-			if (dec.op == riscv_op_ecall) emulate_ecall(dec, proc, inst_length);
-			else {
-				panic("illegal instruciton: pc=0x%" PRIx64 " inst=0x%" PRIx64,
-					proc.pc, inst);
-			}
+			if (log_registers) print_int_regeisters();
+			if (log_instructions) print_disassembly(dec);
+			if (rv64_exec(dec, *this, inst_length)) continue;
+			if (dec.op == riscv_op_ecall) emulate_ecall(dec, inst_length);
+			else panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
 		}
+	}
+};
+
+struct riscv_emulator
+{
+	static const size_t stack_top =  0x78000000; // 1920 MiB
+	static const size_t stack_size = 0x01000000; //   16 MiB
+
+	elf_file elf;
+	std::string filename;
+
+	bool memory_debug = false;
+	bool emulator_debug = false;
+	bool log_registers = false;
+	bool log_instructions = false;
+	bool help_or_error = false;
+
+	/*
+		This simple proof of concept machine emulator uses a
+		machine generated interpreter in src/asm/riscv-interp.h
+		created by parse-meta using C-psuedo code in meta/instructions
+	*/
+
+	inline static const int elf_p_flags_mmap(int v)
+	{
+		int prot = 0;
+		if (v & PF_X) prot |= PROT_EXEC;
+		if (v & PF_W) prot |= PROT_WRITE;
+		if (v & PF_R) prot |= PROT_READ;
+		return prot;
 	}
 
 	// Simple code to map a single stack segment
@@ -286,6 +316,14 @@ struct riscv_emulator
 		}
 
 		filename = result.first[0];
+
+		// print process information
+		if (memory_debug) {
+			memory_info(argc, argv);
+		}
+
+		// load ELF (headers only)
+		elf.load(filename, true);
 	}
 
 	// print approximate location of host text, heap and stack
@@ -299,18 +337,11 @@ struct riscv_emulator
 		free(heapptr);
 	}
 
-	void exec(int argc, const char *argv[])
+	template <typename P>
+	void start()
 	{
-		// print process information
-		if (memory_debug) {
-			memory_info(argc, argv);
-		}
-
-		// load ELF (headers only)
-		elf.load(filename, true);
-
 		// Processor
-		riscv_proc_proxy_rv64 proc;
+		P proc;
 		proc.flags = emulator_debug ? riscv_processor_flag_emulator_debug : 0;
 
 		// Find the PT_LOAD segments and mmap then into memory
@@ -324,6 +355,10 @@ struct riscv_emulator
 		// Map a stack and set the stack pointer
 		map_stack(proc, stack_top, stack_size);
 
+		// Set logging options
+		proc.log_registers = log_registers;
+		proc.log_instructions = log_instructions;
+
 		// Set the program counter to the entry address
 		proc.pc = elf.ehdr.e_entry;
 
@@ -332,7 +367,7 @@ struct riscv_emulator
 #endif
 
 		// Start the emulator
-		rv64_run(proc);
+		proc.run();
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();
@@ -349,6 +384,10 @@ int main(int argc, const char *argv[])
 {
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
-	emulator.exec(argc, argv);
+	switch (emulator.elf.ei_class) {
+		case ELFCLASS32: emulator.start<riscv_proc_proxy_rv32>(); break;
+		case ELFCLASS64: emulator.start<riscv_proc_proxy_rv64>(); break;
+		default: panic("unknonwn elf class");
+	}
 	return 0;
 }

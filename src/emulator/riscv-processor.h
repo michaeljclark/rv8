@@ -157,7 +157,7 @@ struct riscv_processor_t
 	riscv_processor_t() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), freg(), csr{0} {}
 };
 
-using riscv_processor_rv32 = riscv_processor_t<int32_t,uint32_t,riscv_ireg_rv32,riscv_freg_fp32>;
+using riscv_processor_rv32 = riscv_processor_t<int32_t,uint32_t,riscv_ireg_rv32,riscv_freg_fp64>;
 using riscv_processor_rv64 = riscv_processor_t<int64_t,uint64_t,riscv_ireg_rv64,riscv_freg_fp64>;
 
 #endif
