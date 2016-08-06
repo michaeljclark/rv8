@@ -33,7 +33,7 @@ bool riscv_config::parse_value(std::string valstr, uint64_t &val)
 	} else {
 		val = strtoull(valstr.c_str(), &endptr, 10);
 	}
-	return (endptr != valstr.c_str() && *endptr != '\0');
+	return (*endptr == '\0');
 }
 
 bool riscv_config::parse_address_range(std::string valstr, riscv_address_range_ptr range)

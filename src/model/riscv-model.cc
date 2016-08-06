@@ -103,7 +103,7 @@ int64_t riscv_parse_value(const char* valstr)
 	} else {
 		val = strtoull(valstr, &endptr, 10);
 	}
-	if (endptr != valstr && *endptr != '\0') {
+	if (*endptr != '\0') {
 		panic("riscv_parse_value: invalid value: %s", valstr);
 	}
 	return val;
