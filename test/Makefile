@@ -55,8 +55,8 @@ test-fpu-assert.c: test-fpu ; ${SPIKE} ${PK} test-fpu | egrep -v '(nan|inf)' > $
 test-fpu-assert.o: test-fpu-assert.c ; $(CC) $(CFLAGS) -c $^ -o $@
 test-fpu-assert: test-fpu-assert.o ; $(CC) $(CFLAGS) $^ -o $@
 
-test-printf.o: test-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
-test-printf: test-printf.o ; $(CC) $(CFLAGS) $^ -o $@
+test-fpu-printf.o: test-fpu-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
+test-fpu-printf: test-fpu-printf.o ; $(CC) $(CFLAGS) $^ -o $@
 
 test-sieve.o: test-sieve.cc ; $(CXX) $(CXXFLAGS) -c $^ -o $@
 test-sieve: test-sieve.o ; $(CXX) $(CXXFLAGS) $^ -o $@
