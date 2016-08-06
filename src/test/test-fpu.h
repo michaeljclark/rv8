@@ -13,14 +13,8 @@ typedef signed long long   s64;
 typedef unsigned long long u64;
 typedef float              f32;
 typedef double             f64;
-
-#if _RISCV_SZPTR != _RISCV_SZINT
-typedef s64 sx;
-typedef s64 sx;
-#else
-typedef s32 sx;
-typedef s32 sx;
-#endif
+typedef signed long        sx;
+typedef unsigned long      ux;
 
 #define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_##fn ", " fmt_arg_##fn ");\n", #fn, test_##fn(args), args)
 #define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
@@ -207,7 +201,7 @@ inline f32 test_fsqrt_s(f32 s1)
 	return d;
 }
 
-#define fmt_res_fle_s "%lldll"
+#define fmt_res_fle_s "%ldl"
 #define fmt_arg_fle_s "%.9ef, %.9ef"
 inline sx test_fle_s(f32 s1, f32 s2)
 {
@@ -220,7 +214,7 @@ inline sx test_fle_s(f32 s1, f32 s2)
 	return d;
 }
 
-#define fmt_res_flt_s "%lldll"
+#define fmt_res_flt_s "%ldl"
 #define fmt_arg_flt_s "%.9ef, %.9ef"
 inline sx test_flt_s(f32 s1, f32 s2)
 {
@@ -233,7 +227,7 @@ inline sx test_flt_s(f32 s1, f32 s2)
 	return d;
 }
 
-#define fmt_res_feq_s "%lldll"
+#define fmt_res_feq_s "%ldl"
 #define fmt_arg_feq_s "%.9ef, %.9ef"
 inline sx test_feq_s(f32 s1, f32 s2)
 {
@@ -298,7 +292,7 @@ inline f32 test_fcvt_s_wu(u32 s1)
 	return d;
 }
 
-#define fmt_res_fmv_x_s "%lldll"
+#define fmt_res_fmv_x_s "%ldl"
 #define fmt_arg_fmv_x_s "%.9ef"
 inline sx test_fmv_x_s(f32 s1)
 {
@@ -311,7 +305,7 @@ inline sx test_fmv_x_s(f32 s1)
 	return d;
 }
 
-#define fmt_res_fclass_s "%lldll"
+#define fmt_res_fclass_s "%ldl"
 #define fmt_arg_fclass_s "%.9ef"
 inline sx test_fclass_s(f32 s1)
 {
@@ -325,7 +319,7 @@ inline sx test_fclass_s(f32 s1)
 }
 
 #define fmt_res_fmv_s_x "%.9ef"
-#define fmt_arg_fmv_s_x "%lldll"
+#define fmt_arg_fmv_s_x "%ldl"
 inline f32 test_fmv_s_x(sx s1)
 {
 	f32 d;
@@ -605,7 +599,7 @@ inline f64 test_fsqrt_d(f64 s1)
 	return d;
 }
 
-#define fmt_res_fle_d "%lldll"
+#define fmt_res_fle_d "%ldl"
 #define fmt_arg_fle_d "%.17e, %.17e"
 inline sx test_fle_d(f64 s1, f64 s2)
 {
@@ -618,7 +612,7 @@ inline sx test_fle_d(f64 s1, f64 s2)
 	return d;
 }
 
-#define fmt_res_flt_d "%lldll"
+#define fmt_res_flt_d "%ldl"
 #define fmt_arg_flt_d "%.17e, %.17e"
 inline sx test_flt_d(f64 s1, f64 s2)
 {
@@ -631,7 +625,7 @@ inline sx test_flt_d(f64 s1, f64 s2)
 	return d;
 }
 
-#define fmt_res_feq_d "%lldll"
+#define fmt_res_feq_d "%ldl"
 #define fmt_arg_feq_d "%.17e, %.17e"
 inline sx test_feq_d(f64 s1, f64 s2)
 {
@@ -696,7 +690,7 @@ inline f64 test_fcvt_d_wu(u32 s1)
 	return d;
 }
 
-#define fmt_res_fclass_d "%lldll"
+#define fmt_res_fclass_d "%ldl"
 #define fmt_arg_fclass_d "%.17e"
 inline sx test_fclass_d(f64 s1)
 {
@@ -740,7 +734,7 @@ inline u64 test_fcvt_lu_d(f64 s1)
 #endif
 
 #if _RISCV_SZPTR != _RISCV_SZINT
-#define fmt_res_fmv_x_d "%lldll"
+#define fmt_res_fmv_x_d "%ldl"
 #define fmt_arg_fmv_x_d "%.17e"
 inline sx test_fmv_x_d(f64 s1)
 {
@@ -786,7 +780,7 @@ inline f64 test_fcvt_d_lu(u64 s1)
 
 #if _RISCV_SZPTR != _RISCV_SZINT
 #define fmt_res_fmv_d_x "%.17e"
-#define fmt_arg_fmv_d_x "%lldll"
+#define fmt_arg_fmv_d_x "%ldl"
 inline f64 test_fmv_d_x(sx s1)
 {
 	f64 d;
@@ -799,8 +793,8 @@ inline f64 test_fmv_d_x(sx s1)
 }
 #endif
 
-#define fmt_res_frcsr "%lldll"
-#define fmt_arg_frcsr "%lldll, %lldll"
+#define fmt_res_frcsr "%ldl"
+#define fmt_arg_frcsr "%ldl, %ldl"
 inline sx test_frcsr(sx s1, sx csr12)
 {
 	sx d;
@@ -812,8 +806,8 @@ inline sx test_frcsr(sx s1, sx csr12)
 	return d;
 }
 
-#define fmt_res_frrm "%lldll"
-#define fmt_arg_frrm "%lldll, %lldll"
+#define fmt_res_frrm "%ldl"
+#define fmt_arg_frrm "%ldl, %ldl"
 inline sx test_frrm(sx s1, sx csr12)
 {
 	sx d;
@@ -825,8 +819,8 @@ inline sx test_frrm(sx s1, sx csr12)
 	return d;
 }
 
-#define fmt_res_frflags "%lldll"
-#define fmt_arg_frflags "%lldll, %lldll"
+#define fmt_res_frflags "%ldl"
+#define fmt_arg_frflags "%ldl, %ldl"
 inline sx test_frflags(sx s1, sx csr12)
 {
 	sx d;
@@ -838,8 +832,8 @@ inline sx test_frflags(sx s1, sx csr12)
 	return d;
 }
 
-#define fmt_res_fscsr "%lldll"
-#define fmt_arg_fscsr "%lldll, %lldll"
+#define fmt_res_fscsr "%ldl"
+#define fmt_arg_fscsr "%ldl, %ldl"
 inline sx test_fscsr(sx s1, sx csr12)
 {
 	sx d;
@@ -851,8 +845,8 @@ inline sx test_fscsr(sx s1, sx csr12)
 	return d;
 }
 
-#define fmt_res_fsrm "%lldll"
-#define fmt_arg_fsrm "%lldll, %lldll"
+#define fmt_res_fsrm "%ldl"
+#define fmt_arg_fsrm "%ldl, %ldl"
 inline sx test_fsrm(sx s1, sx csr12)
 {
 	sx d;
@@ -864,8 +858,8 @@ inline sx test_fsrm(sx s1, sx csr12)
 	return d;
 }
 
-#define fmt_res_fsflags "%lldll"
-#define fmt_arg_fsflags "%lldll, %lldll"
+#define fmt_res_fsflags "%ldl"
+#define fmt_arg_fsflags "%ldl, %ldl"
 inline sx test_fsflags(sx s1, sx csr12)
 {
 	sx d;

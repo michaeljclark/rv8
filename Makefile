@@ -105,7 +105,6 @@ endif
 # directories
 APP_SRC_DIR =   app
 LIB_SRC_DIR =   src
-TEST_SRC_DIR =  test
 BUILD_DIR =     build
 META_DIR =      meta
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
@@ -171,8 +170,8 @@ RV_META_SRC =   $(LIB_SRC_DIR)/asm/riscv-meta.cc
 RV_STR_HDR =    $(LIB_SRC_DIR)/asm/riscv-strings.h
 RV_STR_SRC =    $(LIB_SRC_DIR)/asm/riscv-strings.cc
 RV_INTERP_HDR = $(LIB_SRC_DIR)/emulator/riscv-interp.h
-RV_FPU_HDR =    $(TEST_SRC_DIR)/test-fpu.h
-RV_FPU_SRC =    $(TEST_SRC_DIR)/test-fpu.c
+RV_FPU_HDR =    $(LIB_SRC_DIR)/test/test-fpu.h
+RV_FPU_SRC =    $(LIB_SRC_DIR)/test/test-fpu.c
 
 # libriscv_asm
 RV_ASM_SRCS =   $(LIB_SRC_DIR)/asm/riscv-disasm.cc \
@@ -257,7 +256,7 @@ BINARIES = $(COMPRESS_ELF_BIN) \
 
 # build rules
 all: $(PARSE_META_BIN) meta $(BINARIES)
-clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR) && (cd test && make clean)
+clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 .PHONY: test
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
@@ -266,17 +265,19 @@ latex: all ; $(PARSE_META_BIN) -l -? -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
-test: ; (cd test && make all)
-test-run: ; (cd test && make test)
-test-clean: ; (cd test && make clean)
-test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) test/spike.rv
-test-emulate: $(TEST_EMULATE_BIN) test ;
-	$(TEST_EMULATE_BIN) test/hello-world-pcrel
-	$(TEST_EMULATE_BIN) test/hello-world-libc
-	$(TEST_EMULATE_BIN) test/test-int-fib
-	$(TEST_EMULATE_BIN) test/test-fpu-printf
-	$(TEST_EMULATE_BIN) test/test-fpu-assert
-	$(TEST_EMULATE_BIN) test/test-sieve
+
+test-run: test-run-64
+test-emulate: test-emulate-64
+
+test-build-64: ; make -f src/test/test.mk all TARGET=riscv64-unknown-elf
+test-run-64: ; make -f src/test/test.mk test TARGET=riscv64-unknown-elf
+test-emulate-64: ; make -f src/test/test.mk test TARGET=riscv64-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+
+test-build-32: ; make -f src/test/test.mk all TARGET=riscv32-unknown-elf
+test-run-32: ; make -f src/test/test.mk test TARGET=riscv32-unknown-elf
+test-emulate-32: ; make -f src/test/test.mk test TARGET=riscv32-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+
+test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
 danger: ; @echo Please do not make danger
 

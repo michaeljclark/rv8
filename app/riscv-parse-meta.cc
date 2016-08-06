@@ -858,14 +858,8 @@ typedef signed long long   s64;
 typedef unsigned long long u64;
 typedef float              f32;
 typedef double             f64;
-
-#if _RISCV_SZPTR != _RISCV_SZINT
-typedef s64 sx;
-typedef s64 sx;
-#else
-typedef s32 sx;
-typedef s32 sx;
-#endif
+typedef signed long        sx;
+typedef unsigned long      ux;
 
 #define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_##fn ", " fmt_arg_##fn ");\n", #fn, test_##fn(args), args)
 #define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
@@ -1046,6 +1040,7 @@ R"C(
 		if (skip_imm) continue;
 
 		// generate test cases
+		if (ext->isa_width == 64) printf("#if _RISCV_SZPTR != _RISCV_SZINT\n");
 		switch (arg_list.size()) {
 			case 2: {
 				std::set<std::string> values1 = test_values(arg_list[1].first);
@@ -1081,6 +1076,7 @@ R"C(
 				break;
 			}
 		}
+		if (ext->isa_width == 64) printf("#endif\n");
 	}
 
 	printf("%s", kFpuSourceFooter);
