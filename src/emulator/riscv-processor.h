@@ -138,6 +138,11 @@ struct riscv_processor_t
 	typedef SX sx;
 	typedef UX ux;
 
+	typedef SX       long_t;
+	typedef UX       ulong_t;
+	typedef int32_t  int_t;
+	typedef uint32_t uint_t;
+
 	enum  { xlen = sizeof(ux) << 3 };
 	enum  { ireg_count = 32, freg_count = 32, csr_count = 4096 };
 

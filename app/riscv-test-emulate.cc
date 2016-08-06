@@ -43,21 +43,17 @@
 #include "riscv-memory.h"
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
-#include "riscv-abi.h"
 #include "riscv-proxy.h"
+#include "riscv-interp.h"
 
 #if defined (ENABLE_GPERFTOOL)
 #include "gperftools/profiler.h"
 #endif
 
-namespace riscv {
-	#include "riscv-interp.h"
-}
-
 using namespace riscv;
 
 template<typename P>
-struct riscv_proc_proxy : P
+struct riscv_processor_base : P
 {
 	struct riscv_inst_cache_ent
 	{
@@ -76,7 +72,7 @@ struct riscv_proc_proxy : P
 	bool log_registers;
 	bool log_instructions;
 
-	riscv_proc_proxy() :
+	riscv_processor_base() :
 		P(),
 		inst_cache(),
 		mapped_segments(),
@@ -138,23 +134,9 @@ struct riscv_proc_proxy : P
 				P::freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
 		}
 	}
-
-	// Simple RV64 Linux syscall emulation (write, exit)
-	void emulate_ecall(riscv_decode &dec, uintptr_t inst_length)
-	{
-		switch (P::ireg[riscv_ireg_a7]) {
-			case riscv_syscall_close:  riscv::sys_close(*this); break;
-			case riscv_syscall_write:  riscv::sys_write(*this); break;
-			case riscv_syscall_fstat:  riscv::sys_fstat(*this); break;
-			case riscv_syscall_exit:   riscv::sys_exit(*this);  break;
-			case riscv_syscall_brk:    riscv::sys_brk(*this);   break;
-			default: panic("unknown syscall: %d", P::ireg[riscv_ireg_a7]);
-		}
-		P::pc += inst_length;
-	}
 };
 
-struct riscv_proc_proxy_rv32 : riscv_proc_proxy<riscv_processor_rv32>
+struct riscv_processor_proxy_rv32 : riscv_processor_base<riscv_processor_rv32>
 {
 	void run()
 	{
@@ -174,13 +156,17 @@ struct riscv_proc_proxy_rv32 : riscv_proc_proxy<riscv_processor_rv32>
 			if (log_registers) print_int_regeisters();
 			if (log_instructions) print_disassembly(dec);
 			if (rv32_exec(dec, *this, inst_length)) continue;
-			if (dec.op == riscv_op_ecall) emulate_ecall(dec, inst_length);
-			else panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
+			if (dec.op == riscv_op_ecall) {
+				proxy_syscall(*this);
+				pc += inst_length;
+				continue;
+			}
+			panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
 		}
 	}
 };
 
-struct riscv_proc_proxy_rv64 : riscv_proc_proxy<riscv_processor_rv64>
+struct riscv_processor_proxy_rv64 : riscv_processor_base<riscv_processor_rv64>
 {
 	void run()
 	{
@@ -200,8 +186,12 @@ struct riscv_proc_proxy_rv64 : riscv_proc_proxy<riscv_processor_rv64>
 			if (log_registers) print_int_regeisters();
 			if (log_instructions) print_disassembly(dec);
 			if (rv64_exec(dec, *this, inst_length)) continue;
-			if (dec.op == riscv_op_ecall) emulate_ecall(dec, inst_length);
-			else panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
+			if (dec.op == riscv_op_ecall) {
+				proxy_syscall(*this);
+				pc += inst_length;
+				continue;
+			}
+			panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
 		}
 	}
 };
@@ -388,8 +378,8 @@ int main(int argc, const char *argv[])
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
 	switch (emulator.elf.ei_class) {
-		case ELFCLASS32: emulator.start<riscv_proc_proxy_rv32>(); break;
-		case ELFCLASS64: emulator.start<riscv_proc_proxy_rv64>(); break;
+		case ELFCLASS32: emulator.start<riscv_processor_proxy_rv32>(); break;
+		case ELFCLASS64: emulator.start<riscv_processor_proxy_rv64>(); break;
 		default: panic("unknonwn elf class");
 	}
 	return 0;

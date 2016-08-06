@@ -737,6 +737,7 @@ void riscv_parse_meta::print_interp_h()
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
 		printf("\ttypedef int%zu_t sx;\n", isa_width.first);
 		printf("\ttypedef uint%zu_t ux;\n", isa_width.first);
+		printf("\tusing namespace riscv;\n");
 		printf("\n");
 		printf("\tswitch (dec.op) {\n");
 		for (auto &opcode : opcodes) {

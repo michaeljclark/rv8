@@ -13,6 +13,7 @@ bool rv32_exec(T &dec, P &proc, uintptr_t inst_length)
 	enum { xlen = 32 };
 	typedef int32_t sx;
 	typedef uint32_t ux;
+	using namespace riscv;
 
 	switch (dec.op) {
 		case riscv_op_lui: {
@@ -561,6 +562,7 @@ bool rv64_exec(T &dec, P &proc, uintptr_t inst_length)
 	enum { xlen = 64 };
 	typedef int64_t sx;
 	typedef uint64_t ux;
+	using namespace riscv;
 
 	switch (dec.op) {
 		case riscv_op_lui: {
