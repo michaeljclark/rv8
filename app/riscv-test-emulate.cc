@@ -88,7 +88,7 @@ struct riscv_processor_base : P
 		uintptr_t inst_length;
 		uint64_t inst = riscv_inst_fetch(pc, &inst_length);
 		switch (inst_length) {
-			case 2:  snprintf(buf, sizeof(buf), "0x%04tx", inst); break;
+			case 2:  snprintf(buf, sizeof(buf), "    0x%04tx", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
 			case 8:  snprintf(buf, sizeof(buf), "0x%016tx", inst); break;
