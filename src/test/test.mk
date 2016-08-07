@@ -5,19 +5,27 @@
 # Requires RISCV environment variable to be set
 # RISCV = /opt/riscv/toolchain
 
-CC = ${RISCV}/bin/${TARGET}-gcc
-CXX = ${RISCV}/bin/${TARGET}-g++
+CC = ${RISCV}/bin/${TARGET}-gcc -march=$(ARCH)
+CXX = ${RISCV}/bin/${TARGET}-g++ -march=$(ARCH)
 AS = ${RISCV}/bin/${TARGET}-as
 LD = ${RISCV}/bin/${TARGET}-ld
 STRIP = ${RISCV}/bin/${TARGET}-strip
 PK = ${RISCV}/${TARGET}/bin/pk
 
 ifeq ($(TARGET),riscv32-unknown-elf)
-SPIKE = ${RISCV}/bin/spike --isa=RV32IMAFD ${PK}
+SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
 endif
 
 ifeq ($(TARGET),riscv64-unknown-elf)
-SPIKE = ${RISCV}/bin/spike --isa=RV64IMAFD ${PK}
+SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
+endif
+
+ifeq ($(RVC),1)
+CC += -mrvc
+CXX += -mrvc
+TARGET_DIR = $(TARGET)-rvc
+else
+TARGET_DIR = $(TARGET)
 endif
 
 ifeq ($(EMULATOR),)
@@ -25,9 +33,9 @@ EMULATOR = $(SPIKE)
 endif
 
 SRC_DIR = src/test
-OBJ_DIR = build/$(TARGET)/obj
-BIN_DIR = build/$(TARGET)/bin
-GEN_DIR = build/$(TARGET)/gen
+OBJ_DIR = build/$(TARGET_DIR)/obj
+BIN_DIR = build/$(TARGET_DIR)/bin
+GEN_DIR = build/$(TARGET_DIR)/gen
 
 CFLAGS = -Os -Wall -fpie -ffunction-sections -fdata-sections
 CXXFLAGS = -std=c++1y $(CFLAGS)
@@ -42,9 +50,13 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-int-fib \
 	$(BIN_DIR)/test-fpu-printf \
-	$(BIN_DIR)/test-sieve \
-	$(BIN_DIR)/test-fpu \
+	$(BIN_DIR)/test-sieve
+
+ifneq ($(RVC),1)
+PROGRAMS += \
+	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert
+endif
 
 all: dirs $(PROGRAMS)
 
@@ -58,16 +70,18 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
+ifneq ($(RVC),1)
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
+endif
 	$(EMULATOR) $(BIN_DIR)/test-sieve
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-int-fib: $(OBJ_DIR)/test-int-fib.o ; $(CC) $(CFLAGS) $^ -o $@
 
-$(OBJ_DIR)/test-fpu.o: $(SRC_DIR)/test-fpu.c ; $(CC) $(CFLAGS) -c $^ -o $@
-$(BIN_DIR)/test-fpu: $(OBJ_DIR)/test-fpu.o ; $(CC) $(CFLAGS) $^ -o $@
+$(OBJ_DIR)/test-fpu-gen.o: $(SRC_DIR)/test-fpu-gen.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-fpu-gen: $(OBJ_DIR)/test-fpu-gen.o ; $(CC) $(CFLAGS) $^ -o $@
 
-$(GEN_DIR)/test-fpu-assert.c: $(BIN_DIR)/test-fpu ; $(SPIKE) $(BIN_DIR)/test-fpu | egrep -v '(nan|inf)' > $@
+$(GEN_DIR)/test-fpu-assert.c: $(BIN_DIR)/test-fpu-gen ; $(SPIKE) $(BIN_DIR)/test-fpu-gen | egrep -v '(nan|inf)' > $@
 $(OBJ_DIR)/test-fpu-assert.o: $(GEN_DIR)/test-fpu-assert.c ; $(CC) $(CFLAGS) -I$(SRC_DIR) -c $^ -o $@
 $(BIN_DIR)/test-fpu-assert: $(OBJ_DIR)/test-fpu-assert.o ; $(CC) $(CFLAGS) $^ -o $@
 

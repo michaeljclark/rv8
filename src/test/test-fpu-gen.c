@@ -1,5 +1,5 @@
 //
-//  test-fpu.c
+//  test-fpu-gen.c
 //
 //  DANGER - This is machine generated code
 //
@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include "test-fpu.h"
+#include "test-fpu-gen.h"
 
 int main()
 {
@@ -16,7 +16,7 @@ int main()
 	printf("#include <assert.h>\n");
 	printf("#include <math.h>\n");
 	printf("\n");
-	printf("#include \"test-fpu.h\"\n");
+	printf("#include \"test-fpu-gen.h\"\n");
 	printf("\n");
 	printf("int main()\n");
 	printf("{\n");

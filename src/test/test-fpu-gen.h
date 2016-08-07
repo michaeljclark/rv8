@@ -1,11 +1,11 @@
 //
-//  test-fpu.h
+//  test-fpu-gen.h
 //
 //  DANGER - This is machine generated code
 //
 
-#ifndef test_fpu_h
-#define test_fpu_h
+#ifndef test_fpu_gen_h
+#define test_fpu_gen_h
 
 typedef signed int         s32;
 typedef unsigned int       u32;

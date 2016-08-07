@@ -865,9 +865,9 @@ typedef unsigned long      ux;
 #define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
 )C";
 
-	printf(kCHeader, "test-fpu.h");
-	printf("#ifndef test_fpu_h\n");
-	printf("#define test_fpu_h\n");
+	printf(kCHeader, "test-fpu-gen.h");
+	printf("#ifndef test_fpu_gen_h\n");
+	printf("#define test_fpu_gen_h\n");
 	printf("%s\n", kFpuHeader);
 
 	// loop through FPU instructions
@@ -982,7 +982,7 @@ R"C(#include <stdio.h>
 #include <assert.h>
 #include <math.h>
 
-#include "test-fpu.h"
+#include "test-fpu-gen.h"
 
 int main()
 {
@@ -990,7 +990,7 @@ int main()
 	printf("#include <assert.h>\n");
 	printf("#include <math.h>\n");
 	printf("\n");
-	printf("#include \"test-fpu.h\"\n");
+	printf("#include \"test-fpu-gen.h\"\n");
 	printf("\n");
 	printf("int main()\n");
 	printf("{\n");
@@ -1007,7 +1007,7 @@ R"C(
 }
 )C";
 
-	printf(kCHeader, "test-fpu.c");
+	printf(kCHeader, "test-fpu-gen.c");
 	printf("%s", kFpuSourceHeader);
 
 	// loop through FPU instructions
