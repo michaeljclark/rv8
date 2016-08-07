@@ -53,6 +53,7 @@ ci·lui     rd,imm                 crd cimmui
 ci·none    none
 ciw·4spn   rd,rs1,imm             crdq cimm4spn         # rs1=sp
 cj         rd,offset              cimmj                 # rd=zero
+cj·jal     rd,offset              cimmj                 # rd=ra
 cl·lw      rd,offset(rs1)         crdq crs1q cimmw
 cl·ld      rd,offset(rs1)         crdq crs1q cimmd
 cl·lw+f    frd,offset(rs1)        cfrdq crs1q cimmw

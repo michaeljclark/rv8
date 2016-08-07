@@ -229,10 +229,18 @@ template <typename T> inline void decode_cb_sh6(T &dec, uint64_t inst)
 	dec.imm = arg_cimmsh6::decode(inst);
 }
 
-/* Decode CJ - imm */
+/* Decode CJ */
 template <typename T> inline void decode_cj(T &dec, uint64_t inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.imm = arg_cimmj::decode(inst);
+}
+
+/* Decode CJ jal */
+template <typename T> inline void decode_cj_jal(T &dec, uint64_t inst)
+{
+	dec.rd = riscv_ireg_ra;
+	dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = arg_cimmj::decode(inst);
 }
 

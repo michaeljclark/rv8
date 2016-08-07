@@ -232,7 +232,7 @@ c.sw       crs1q crs2q   cimmw 1..0=0 15..13=6                       cs·sw     
 c.fsw      crs1q cfrs2q  cimmw 1..0=0 15..13=7                       cs·sw+f          rv32c
 c.nop                          1..0=1 15..13=0 12=0 11..7=0 6..2=0   ci·none    rv32c rv64c
 c.addi     crs1rd      cnzimmi 1..0=1 15..13=0                       ci         rv32c rv64c
-c.jal                    cimmj 1..0=1 15..13=1                       cj               rv32c
+c.jal                    cimmj 1..0=1 15..13=1                       cj·jal           rv32c
 c.li       crs1rd        cimmi 1..0=1 15..13=2                       ci·li      rv32c rv64c
 c.addi16sp crs1rd     cimm16sp 1..0=1 15..13=3 11..7=2               ci·16sp    rv32c rv64c
 c.lui      crd          cimmui 1..0=1 15..13=3                       ci·lui     rv32c rv64c

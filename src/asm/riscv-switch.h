@@ -601,6 +601,7 @@ inline void riscv_decode_inst_type(T &dec, uint64_t inst)
 		case riscv_codec_ci_none:       riscv::decode_ci_none(dec, inst);                  break;
 		case riscv_codec_ciw_4spn:      riscv::decode_ciw_4spn(dec, inst);                 break;
 		case riscv_codec_cj:            riscv::decode_cj(dec, inst);                       break;
+		case riscv_codec_cj_jal:        riscv::decode_cj_jal(dec, inst);                   break;
 		case riscv_codec_cl_lw:         riscv::decode_cl_lw(dec, inst);                    break;
 		case riscv_codec_cl_ld:         riscv::decode_cl_ld(dec, inst);                    break;
 		case riscv_codec_cr:            riscv::decode_cr(dec, inst);                       break;
@@ -651,6 +652,7 @@ inline uint64_t riscv_encode_inst(T &dec)
 		case riscv_codec_ci_none:       return inst |= riscv::encode_ci_none(dec);         break;
 		case riscv_codec_ciw_4spn:      return inst |= riscv::encode_ciw_4spn(dec);        break;
 		case riscv_codec_cj:            return inst |= riscv::encode_cj(dec);              break;
+		case riscv_codec_cj_jal:        return inst |= riscv::encode_cj_jal(dec);          break;
 		case riscv_codec_cl_lw:         return inst |= riscv::encode_cl_lw(dec);           break;
 		case riscv_codec_cl_ld:         return inst |= riscv::encode_cl_ld(dec);           break;
 		case riscv_codec_cr:            return inst |= riscv::encode_cr(dec);              break;

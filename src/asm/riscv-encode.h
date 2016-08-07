@@ -183,8 +183,14 @@ template <typename T> inline uint64_t encode_cb_sh6(T &dec)
 	return arg_crs1rdq::encode(dec.rs1 + 8) | arg_cimmsh6::encode(dec.imm);
 }
 
-/* Encode CJ - imm */
+/* Encode CJ */
 template <typename T> inline uint64_t encode_cj(T &dec)
+{
+	return arg_cimmj::encode(dec.imm);
+}
+
+/* Encode CJ jal */
+template <typename T> inline uint64_t encode_cj_jal(T &dec)
 {
 	return arg_cimmj::encode(dec.imm);
 }

@@ -454,6 +454,7 @@ enum riscv_codec
 	riscv_codec_ci_none,
 	riscv_codec_ciw_4spn,
 	riscv_codec_cj,
+	riscv_codec_cj_jal,
 	riscv_codec_cl_lw,
 	riscv_codec_cl_ld,
 	riscv_codec_cr,

@@ -894,6 +894,11 @@ const riscv_arg_data riscv_codec_cj_args[] = {
 	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
 };
 
+const riscv_arg_data riscv_codec_cj_jal_args[] = {
+	{ riscv_arg_name_cimmj, riscv_arg_type_simm12, riscv_type_simm, 12 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
 const riscv_arg_data riscv_codec_cl_lw_args[] = {
 	{ riscv_arg_name_crdq, riscv_arg_type_creg3, riscv_type_creg, 3 },
 	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
@@ -1189,7 +1194,7 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_cs_sw,
 	riscv_codec_ci_none,
 	riscv_codec_ci,
-	riscv_codec_cj,
+	riscv_codec_cj_jal,
 	riscv_codec_ci_li,
 	riscv_codec_ci_16sp,
 	riscv_codec_ci_lui,
@@ -1635,7 +1640,7 @@ const riscv_arg_data* riscv_inst_arg_data[] = {
 	riscv_codec_cs_sw_f_args,
 	riscv_codec_ci_none_args,
 	riscv_codec_ci_args,
-	riscv_codec_cj_args,
+	riscv_codec_cj_jal_args,
 	riscv_codec_ci_li_args,
 	riscv_codec_ci_16sp_args,
 	riscv_codec_ci_lui_args,
