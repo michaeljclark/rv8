@@ -269,6 +269,9 @@ bench: all ; $(TEST_DECODER_BIN)
 test-run: test-run-rv64
 test-emulate: test-emulate-rv64
 
+test-run-all: test-run-rv64 test-run-rvc64 test-run-rv32 test-run-rvc32
+test-emulate-all: test-emulate-rv64 test-emulate-rvc64 test-emulate-rv32 test-emulate-rvc32
+
 test-build-rv64: ; make -f src/test/test.mk all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
 test-run-rv64: ; make -f src/test/test.mk test ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
 test-emulate-rv64: ; make -f src/test/test.mk test ARCH=RV64IMAFD TARGET=riscv64-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
