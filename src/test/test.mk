@@ -50,13 +50,9 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-int-fib \
 	$(BIN_DIR)/test-fpu-printf \
-	$(BIN_DIR)/test-sieve
-
-ifneq ($(RVC),1)
-PROGRAMS += \
 	$(BIN_DIR)/test-fpu-gen \
-	$(BIN_DIR)/test-fpu-assert
-endif
+	$(BIN_DIR)/test-fpu-assert \
+	$(BIN_DIR)/test-sieve
 
 all: dirs $(PROGRAMS)
 
@@ -70,9 +66,7 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
-ifneq ($(RVC),1)
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
-endif
 	$(EMULATOR) $(BIN_DIR)/test-sieve
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
