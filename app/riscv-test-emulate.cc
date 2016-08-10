@@ -43,8 +43,8 @@
 #include "riscv-memory.h"
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
-#include "riscv-proxy.h"
 #include "riscv-interp.h"
+#include "riscv-unknown-abi.h"
 
 #if defined (ENABLE_GPERFTOOL)
 #include "gperftools/profiler.h"

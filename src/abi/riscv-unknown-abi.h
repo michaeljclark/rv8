@@ -7,7 +7,7 @@
 
 namespace riscv {
 
-	template <typename P> struct lx_stat
+	template <typename P> struct unknown_stat
 	{
 		typename P::ulong_t dev;
 		typename P::ulong_t ino;
@@ -32,7 +32,7 @@ namespace riscv {
 	};
 
 	template <typename P>
-	void cvt_lx_stat(lx_stat<P> *abi_stat, struct stat *host_stat)
+	void cvt_unknown_stat(unknown_stat<P> *abi_stat, struct stat *host_stat)
 	{
 		abi_stat->dev        = host_stat->st_dev;
 		abi_stat->ino        = host_stat->st_ino;
@@ -77,8 +77,8 @@ namespace riscv {
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
 		if ((proc.ireg[riscv_ireg_a0] = fstat(proc.ireg[riscv_ireg_a0], &host_stat)) == 0) {
-			lx_stat<P> *abi_stat = (lx_stat<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
-			cvt_lx_stat(abi_stat, &host_stat);
+			unknown_stat<P> *abi_stat = (unknown_stat<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+			cvt_unknown_stat(abi_stat, &host_stat);
 		}
 	}
 
@@ -121,11 +121,11 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case riscv_syscall_close:  riscv::sys_close(proc); break;
-			case riscv_syscall_write:  riscv::sys_write(proc); break;
-			case riscv_syscall_fstat:  riscv::sys_fstat(proc); break;
-			case riscv_syscall_exit:   riscv::sys_exit(proc);  break;
-			case riscv_syscall_brk:    riscv::sys_brk(proc);   break;
+			case riscv_syscall_close:  sys_close(proc); break;
+			case riscv_syscall_write:  sys_write(proc); break;
+			case riscv_syscall_fstat:  sys_fstat(proc); break;
+			case riscv_syscall_exit:   sys_exit(proc);  break;
+			case riscv_syscall_brk:    sys_brk(proc);   break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 	}
