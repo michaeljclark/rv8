@@ -121,6 +121,7 @@ struct riscv_parse_meta : riscv_meta_model
 
 	std::string colorize_args(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
+	std::vector<std::string> get_inst_mnemonics(bool isa_widths, bool isa_extensions);
 
 	static std::string latex_utf_substitute(std::string str);
 
@@ -239,6 +240,31 @@ std::vector<std::string> riscv_parse_meta::get_unique_codecs()
 		}
 	}
 	return codec_names;
+}
+
+std::vector<std::string> riscv_parse_meta::get_inst_mnemonics(bool isa_widths, bool isa_extensions)
+{
+	std::vector<std::string> mnems;
+
+	// create mnemonics for instruction set widths
+	if (isa_widths) {
+		for (auto &ext : extensions) {
+			std::string mnem = ext->prefix + std::to_string(ext->isa_width);
+			if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+				mnems.push_back(mnem);
+		}
+	}
+
+	// create mnemonics for instruction set extensions
+	if (isa_extensions) {
+		for (auto &ext : extensions) {
+			std::string mnem = ext->prefix + ext->alpha_code;
+			if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+				mnems.push_back(mnem);
+		}
+	}
+
+	return mnems;
 }
 
 std::string riscv_parse_meta::latex_utf_substitute(std::string str)
@@ -730,7 +756,13 @@ void riscv_parse_meta::print_interp_h()
 	printf("#define riscv_interp_h\n");
 	printf("\n");
 	for (auto isa_width : isa_width_prefixes()) {
-		printf("template <typename T, typename P>\n");
+		printf("/* Execute Instruction RV%lu */\n\n", isa_width.first);
+		printf("template <");
+		std::vector<std::string> mnems = get_inst_mnemonics(false, true);
+		for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {
+			printf("bool %s, ", mi->c_str());
+		}
+		printf("typename T, typename P>\n");
 		printf("bool %s_exec(T &dec, P &proc, uintptr_t inst_length)\n",
 			isa_width.second.c_str());
 		printf("{\n");
@@ -792,10 +824,12 @@ void riscv_parse_meta::print_interp_h()
 			} else {
 				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
 			}
-			printf("\t\t\t%s;\n", inst.c_str());
-			if (branch) printf("\t\t\telse proc.pc += inst_length;\n");
-			else if (!jump) printf("\t\t\tproc.pc += inst_length;\n");
-			printf("\t\t\tgoto x;\n");
+			printf("\t\t\tif (rv%c) {\n", opcode->extensions.front()->alpha_code);
+			printf("\t\t\t\t%s;\n",  inst.c_str());
+			if (branch) printf("\t\t\t\telse proc.pc += inst_length;\n");
+			else if (!jump) printf("\t\t\t\tproc.pc += inst_length;\n");
+			printf("\t\t\t\tgoto x;\n");
+			printf("\t\t\t};\n");
 			printf("\t\t};\n");
 		}
 		printf("\t\tdefault:\n");
@@ -1617,23 +1651,8 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	printf("#define riscv_switch_h\n");
 	printf("\n");
 
-	std::vector<std::string> mnems;
-
-	// create mnemonics for instruction set widths
-	for (auto &ext : extensions) {
-		std::string mnem = ext->prefix + std::to_string(ext->isa_width);
-		if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
-			mnems.push_back(mnem);
-	}
-
-	// create mnemonics for instruction set extensions
-	for (auto &ext : extensions) {
-		std::string mnem = ext->prefix + ext->alpha_code;
-		if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
-			mnems.push_back(mnem);
-	}
-
 	// print opcode decoder
+	std::vector<std::string> mnems = get_inst_mnemonics(true, true);
 	printf("/* Decode Instruction Opcode */\n\n");
 	printf("template <");
 	for (auto mi = mnems.begin(); mi != mnems.end(); mi++) {

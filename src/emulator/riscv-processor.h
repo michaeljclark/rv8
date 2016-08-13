@@ -76,6 +76,12 @@ struct riscv_ireg_rv64
 	inline operator riscv::s64*() const { return reinterpret_cast<riscv::s64*>(r.l.val); }
 };
 
+/* FP0 register */
+
+struct riscv_freg_fp0
+{
+};
+
 /* FP32 register */
 
 struct riscv_freg_fp32
@@ -132,8 +138,8 @@ enum riscv_processor_flag {
 
 /* Processor state */
 
-template <typename SX, typename UX, typename IREG>
-struct riscv_int_processor
+template <typename SX, typename UX, typename IREG, typename FREG, int FREG_COUNT>
+struct riscv_processor_t
 {
 	typedef SX          sx;
 	typedef UX          ux;
@@ -145,7 +151,7 @@ struct riscv_int_processor
 	typedef riscv::u32  uint_t;
 
 	enum  { xlen = sizeof(ux) << 3 };
-	enum  { ireg_count = 32, csr_count = 4096 };
+	enum  { ireg_count = 32, freg_count = FREG_COUNT, csr_count = 4096 };
 
 	size_t node_id;
 	size_t hart_id;
@@ -157,24 +163,15 @@ struct riscv_int_processor
 	} state;
 
 	IREG ireg[ireg_count];
+	FREG freg[freg_count];
 	SX   csr[csr_count];
 
-	riscv_int_processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), csr{0} {}
+	riscv_processor_t() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), csr{0} {}
 };
 
-template <typename SX, typename UX, typename IREG, typename FREG>
-struct riscv_fpu_processor : riscv_int_processor<SX, UX, IREG>
-{
-	enum  { freg_count = 32 };
-
-	FREG freg[freg_count];
-
-	riscv_fpu_processor() : riscv_int_processor<SX, UX, IREG>(), freg() {}
-};
-
-using riscv_processor_rv32ima = riscv_int_processor<riscv::s32,riscv::u32,riscv_ireg_rv32>;
-using riscv_processor_rv64ima = riscv_int_processor<riscv::s64,riscv::u64,riscv_ireg_rv64>;
-using riscv_processor_rv32imafd = riscv_fpu_processor<riscv::s32,riscv::u32,riscv_ireg_rv32,riscv_freg_fp64>;
-using riscv_processor_rv64imafd = riscv_fpu_processor<riscv::s64,riscv::u64,riscv_ireg_rv64,riscv_freg_fp64>;
+using riscv_processor_rv32ima = riscv_processor_t<riscv::s32,riscv::u32,riscv_ireg_rv32,riscv_freg_fp64,0>;
+using riscv_processor_rv64ima = riscv_processor_t<riscv::s64,riscv::u64,riscv_ireg_rv64,riscv_freg_fp64,0>;
+using riscv_processor_rv32imafd = riscv_processor_t<riscv::s32,riscv::u32,riscv_ireg_rv32,riscv_freg_fp64,32>;
+using riscv_processor_rv64imafd = riscv_processor_t<riscv::s64,riscv::u64,riscv_ireg_rv64,riscv_freg_fp64,32>;
 
 #endif

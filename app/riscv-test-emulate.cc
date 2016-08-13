@@ -136,6 +136,20 @@ struct riscv_processor_base : P
 	}
 };
 
+struct riscv_processor_rv32ima_unit : riscv_processor_base<riscv_processor_rv32ima>
+{
+	inline void decode_inst(riscv_decode &dec, uint64_t inst)
+	{
+		riscv_decode_inst<riscv_decode,true,false>(dec, inst);
+		riscv_decompress_inst_rv32<riscv_decode>(dec);
+	}
+
+	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
+	{
+		return rv32_exec<true,true,true,true,false,false,true>(dec, *this, inst_length);
+	}
+};
+
 struct riscv_processor_rv32imafd_unit : riscv_processor_base<riscv_processor_rv32imafd>
 {
 	inline void decode_inst(riscv_decode &dec, uint64_t inst)
@@ -146,7 +160,21 @@ struct riscv_processor_rv32imafd_unit : riscv_processor_base<riscv_processor_rv3
 
 	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
 	{
-		return rv32_exec(dec, *this, inst_length);
+		return rv32_exec<true,true,true,true,true,true,true>(dec, *this, inst_length);
+	}
+};
+
+struct riscv_processor_rv64ima_unit : riscv_processor_base<riscv_processor_rv64ima>
+{
+	inline void decode_inst(riscv_decode &dec, uint64_t inst)
+	{
+		riscv_decode_inst<riscv_decode,false,true>(dec, inst);
+		riscv_decompress_inst_rv64<riscv_decode>(dec);
+	}
+
+	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
+	{
+		return rv64_exec<true,true,true,true,false,false,true>(dec, *this, inst_length);
 	}
 };
 
@@ -160,7 +188,7 @@ struct riscv_processor_rv64imafd_unit : riscv_processor_base<riscv_processor_rv6
 
 	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
 	{
-		return rv64_exec(dec, *this, inst_length);
+		return rv64_exec<true,true,true,true,true,true,true>(dec, *this, inst_length);
 	}
 };
 
@@ -195,7 +223,9 @@ struct riscv_proxy_runner : P
 	}
 };
 
+using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit>;
 using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit>;
+using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit>;
 using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit>;
 
 struct riscv_emulator
@@ -206,6 +236,7 @@ struct riscv_emulator
 	elf_file elf;
 	std::string filename;
 
+	bool soft_float = false;
 	bool memory_debug = false;
 	bool emulator_debug = false;
 	bool log_registers = false;
@@ -283,6 +314,9 @@ struct riscv_emulator
 			{ "-d", "--emulator-debug", cmdline_arg_type_none,
 				"Emulator debug",
 				[&](std::string s) { return (emulator_debug = true); } },
+			{ "-s", "--soft-float", cmdline_arg_type_none,
+				"Disable FPU instructions",
+				[&](std::string s) { return (soft_float = true); } },
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers",
 				[&](std::string s) { return (log_registers = true); } },
@@ -373,16 +407,33 @@ struct riscv_emulator
 			munmap(seg.first, seg.second);
 		}
 	}
+
+	void exec()
+	{
+		switch (elf.ei_class) {
+			case ELFCLASS32:
+				if (soft_float) {
+					start<riscv_processor_proxy_rv32ima>();
+				} else {
+					start<riscv_processor_proxy_rv32imafd>();
+				}
+				break;
+			case ELFCLASS64:
+				if (soft_float) {
+					start<riscv_processor_proxy_rv64ima>();
+				} else {
+					start<riscv_processor_proxy_rv64imafd>();
+				}
+				break;
+			default: panic("unknonwn elf class");
+		}
+	}
 };
 
 int main(int argc, const char *argv[])
 {
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
-	switch (emulator.elf.ei_class) {
-		case ELFCLASS32: emulator.start<riscv_processor_proxy_rv32imafd>(); break;
-		case ELFCLASS64: emulator.start<riscv_processor_proxy_rv64imafd>(); break;
-		default: panic("unknonwn elf class");
-	}
+	emulator.exec();
 	return 0;
 }
