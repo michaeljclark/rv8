@@ -457,8 +457,11 @@ void elf_file::recalculate_section_offsets()
 
 	// ELF section offsets
 	for (size_t i = 0; i < shdrs.size(); i++) {
-		if (i == 1) {
-			next_offset = (next_offset + (0x1000 - 1)) & -0x1000;
+		// TODO - we need to recalculate virtual addresses and handle section size changes
+		if (shdrs[i].sh_type == SHT_PROGBITS && shdrs[i].sh_addr != 0) {
+			// align relative to PT_LOAD
+			assert(phdrs.size() == 1);
+			next_offset = (shdrs[i].sh_addr - phdrs[0].p_vaddr) + phdrs[0].p_offset;
 		} else if (shdrs[i].sh_addralign > 0) {
 			next_offset = (next_offset + (shdrs[i].sh_addralign - 1)) & -shdrs[i].sh_addralign;
 		}
