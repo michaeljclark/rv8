@@ -136,7 +136,36 @@ struct riscv_processor_base : P
 	}
 };
 
-struct riscv_processor_proxy_rv32 : riscv_processor_base<riscv_processor_rv32>
+struct riscv_processor_rv32imafd_unit : riscv_processor_base<riscv_processor_rv32imafd>
+{
+	inline void decode_inst(riscv_decode &dec, uint64_t inst)
+	{
+		riscv_decode_inst<riscv_decode,true,false>(dec, inst);
+		riscv_decompress_inst_rv32<riscv_decode>(dec);
+	}
+
+	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
+	{
+		return rv32_exec(dec, *this, inst_length);
+	}
+};
+
+struct riscv_processor_rv64imafd_unit : riscv_processor_base<riscv_processor_rv64imafd>
+{
+	inline void decode_inst(riscv_decode &dec, uint64_t inst)
+	{
+		riscv_decode_inst<riscv_decode,false,true>(dec, inst);
+		riscv_decompress_inst_rv64<riscv_decode>(dec);
+	}
+
+	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
+	{
+		return rv64_exec(dec, *this, inst_length);
+	}
+};
+
+template <typename P>
+struct riscv_proxy_runner : P
 {
 	void run()
 	{
@@ -144,57 +173,30 @@ struct riscv_processor_proxy_rv32 : riscv_processor_base<riscv_processor_rv32>
 		size_t inst_length;
 		uint64_t inst;
 		while (true) {
-			inst = riscv_inst_fetch(pc, &inst_length);
-			uint64_t inst_cache_key = inst % inst_cache_size;
-			if (inst_cache[inst_cache_key].inst == inst) {
-				dec = inst_cache[inst_cache_key].dec;
+			inst = riscv_inst_fetch(P::pc, &inst_length);
+			uint64_t inst_cache_key = inst % P::inst_cache_size;
+			if (P::inst_cache[inst_cache_key].inst == inst) {
+				dec = P::inst_cache[inst_cache_key].dec;
 			} else {
-				riscv_decode_inst_rv32(dec, inst);
-				inst_cache[inst_cache_key].inst = inst;
-				inst_cache[inst_cache_key].dec = dec;
+				P::decode_inst(dec, inst);
+				P::inst_cache[inst_cache_key].inst = inst;
+				P::inst_cache[inst_cache_key].dec = dec;
 			}
-			if (log_registers) print_int_regeisters();
-			if (log_instructions) print_disassembly(dec);
-			if (rv32_exec(dec, *this, inst_length)) continue;
+			if (P::log_registers) P::print_int_regeisters();
+			if (P::log_instructions) P::print_disassembly(dec);
+			if (P::exec_inst(dec, inst_length)) continue;
 			if (dec.op == riscv_op_ecall) {
 				proxy_syscall(*this);
-				pc += inst_length;
+				P::pc += inst_length;
 				continue;
 			}
-			panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
+			panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(P::pc), inst);
 		}
 	}
 };
 
-struct riscv_processor_proxy_rv64 : riscv_processor_base<riscv_processor_rv64>
-{
-	void run()
-	{
-		riscv_decode dec;
-		size_t inst_length;
-		uint64_t inst;
-		while (true) {
-			inst = riscv_inst_fetch(pc, &inst_length);
-			uint64_t inst_cache_key = inst % inst_cache_size;
-			if (inst_cache[inst_cache_key].inst == inst) {
-				dec = inst_cache[inst_cache_key].dec;
-			} else {
-				riscv_decode_inst_rv64(dec, inst);
-				inst_cache[inst_cache_key].inst = inst;
-				inst_cache[inst_cache_key].dec = dec;
-			}
-			if (log_registers) print_int_regeisters();
-			if (log_instructions) print_disassembly(dec);
-			if (rv64_exec(dec, *this, inst_length)) continue;
-			if (dec.op == riscv_op_ecall) {
-				proxy_syscall(*this);
-				pc += inst_length;
-				continue;
-			}
-			panic("illegal instruciton: pc=0x%tx inst=0x%", uintptr_t(pc), inst);
-		}
-	}
-};
+using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit>;
+using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit>;
 
 struct riscv_emulator
 {
@@ -378,8 +380,8 @@ int main(int argc, const char *argv[])
 	riscv_emulator emulator;
 	emulator.parse_commandline(argc, argv);
 	switch (emulator.elf.ei_class) {
-		case ELFCLASS32: emulator.start<riscv_processor_proxy_rv32>(); break;
-		case ELFCLASS64: emulator.start<riscv_processor_proxy_rv64>(); break;
+		case ELFCLASS32: emulator.start<riscv_processor_proxy_rv32imafd>(); break;
+		case ELFCLASS64: emulator.start<riscv_processor_proxy_rv64imafd>(); break;
 		default: panic("unknonwn elf class");
 	}
 	return 0;
