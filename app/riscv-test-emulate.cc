@@ -8,16 +8,13 @@
 #include <cinttypes>
 #include <cstdarg>
 #include <cerrno>
-#include <cassert>
 #include <cmath>
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
 #include <deque>
 #include <map>
-#include <set>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -52,17 +49,22 @@
 
 using namespace riscv;
 
-template<typename P>
+/*
+ * Flat address space user-mode logging processor decorator
+ *
+ * This template is parameterized with a processor from riscv-processor.h
+ *
+ *   riscv_processor_rv32ima
+ *   riscv_processor_rv64ima
+ *   riscv_processor_rv32imafd
+ *   riscv_processor_rv64imafd
+ */
+
+template<typename T, typename P>
 struct riscv_processor_base : P
 {
-	struct riscv_inst_cache_ent
-	{
-		uint64_t inst;
-		riscv_decode dec;
-	};
-
-	static const size_t inst_cache_size = 8191;
-	riscv_inst_cache_ent inst_cache[inst_cache_size];
+	typedef T decode_type;
+	typedef P processor_type;
 
 	std::vector<std::pair<void*,size_t>> mapped_segments;
 
@@ -74,7 +76,6 @@ struct riscv_processor_base : P
 
 	riscv_processor_base() :
 		P(),
-		inst_cache(),
 		mapped_segments(),
 		heap_begin(0),
 		heap_end(0),
@@ -88,7 +89,7 @@ struct riscv_processor_base : P
 		uintptr_t inst_length;
 		uint64_t inst = riscv_inst_fetch(pc, &inst_length);
 		switch (inst_length) {
-			case 2:  snprintf(buf, sizeof(buf), "    0x%04tx", inst); break;
+			case 2:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
 			case 8:  snprintf(buf, sizeof(buf), "0x%016tx", inst); break;
@@ -97,7 +98,6 @@ struct riscv_processor_base : P
 		return buf;
 	}
 
-	template <typename T>
 	void print_disassembly(T &dec)
 	{
 		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s\n";
@@ -136,6 +136,9 @@ struct riscv_processor_base : P
 	}
 };
 
+
+/* Decode and Exec template parameters */
+
 #define RV_32  /*rv32*/true,  /*rv64*/false
 #define RV_64  /*rv32*/false, /*rv64*/true
 
@@ -144,131 +147,142 @@ struct riscv_processor_base : P
 #define RV_IMAFD  /*I*/true, /*M*/true, /*A*/true, /*S*/true, /*F*/true, /*D*/true, /*C*/false
 #define RV_IMAFDC /*I*/true, /*M*/true, /*A*/true, /*S*/true, /*F*/true, /*D*/true, /*C*/true
 
-struct riscv_processor_rv32ima_unit : riscv_processor_base<riscv_processor_rv32ima>
+
+/* RV32 Partial processor specialization templates (RV32IMA, RV32IMAC, RV32IMAFD, RV32IMAFDC) */
+
+template <typename T>
+struct riscv_processor_rv32ima_unit : riscv_processor_base<T,riscv_processor_rv32ima>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_32,RV_IMA>(dec, inst);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_32,RV_IMA>(dec, inst);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv32_exec<RV_IMA>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv32imac_unit : riscv_processor_base<riscv_processor_rv32ima>
+template <typename T>
+struct riscv_processor_rv32imac_unit : riscv_processor_base<T,riscv_processor_rv32ima>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_32,RV_IMAC>(dec, inst);
-		riscv_decompress_inst_rv32<riscv_decode>(dec);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_32,RV_IMAC>(dec, inst);
+		riscv_decompress_inst_rv32<T>(dec);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv32_exec<RV_IMAC>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv32imafd_unit : riscv_processor_base<riscv_processor_rv32imafd>
+template <typename T>
+struct riscv_processor_rv32imafd_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_32,RV_IMAFD>(dec, inst);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv32_exec<RV_IMAFD>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv32imafdc_unit : riscv_processor_base<riscv_processor_rv32imafd>
+template <typename T>
+struct riscv_processor_rv32imafdc_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_32,RV_IMAFDC>(dec, inst);
-		riscv_decompress_inst_rv32<riscv_decode>(dec);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
+		riscv_decompress_inst_rv32<T>(dec);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv32_exec<RV_IMAFDC>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv64ima_unit : riscv_processor_base<riscv_processor_rv64ima>
+
+/* RV64 Partial processor specialization templates (RV64IMA, RV64IMAC, RV64IMAFD, RV64IMAFDC) */
+
+template <typename T>
+struct riscv_processor_rv64ima_unit : riscv_processor_base<T,riscv_processor_rv64ima>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_64,RV_IMA>(dec, inst);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_64,RV_IMA>(dec, inst);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv64_exec<RV_IMA>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv64imac_unit : riscv_processor_base<riscv_processor_rv64ima>
+template <typename T>
+struct riscv_processor_rv64imac_unit : riscv_processor_base<T,riscv_processor_rv64ima>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_64,RV_IMAC>(dec, inst);
-		riscv_decompress_inst_rv64<riscv_decode>(dec);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_64,RV_IMAC>(dec, inst);
+		riscv_decompress_inst_rv64<T>(dec);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv64_exec<RV_IMAC>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv64imafd_unit : riscv_processor_base<riscv_processor_rv64imafd>
+template <typename T>
+struct riscv_processor_rv64imafd_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_64,RV_IMAFD>(dec, inst);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv64_exec<RV_IMAFD>(dec, *this, inst_length);
 	}
 };
 
-struct riscv_processor_rv64imafdc_unit : riscv_processor_base<riscv_processor_rv64imafd>
+template <typename T>
+struct riscv_processor_rv64imafdc_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
 {
-	inline void decode_inst(riscv_decode &dec, uint64_t inst)
-	{
-		riscv_decode_inst<riscv_decode,RV_64,RV_IMAFDC>(dec, inst);
-		riscv_decompress_inst_rv64<riscv_decode>(dec);
+	void decode_inst(T &dec, uint64_t inst) {
+		riscv_decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
+		riscv_decompress_inst_rv64<T>(dec);
 	}
 
-	inline bool exec_inst(riscv_decode &dec, size_t inst_length)
-	{
+	bool exec_inst(T &dec, size_t inst_length) {
 		return rv64_exec<RV_IMAFDC>(dec, *this, inst_length);
 	}
 };
 
+
+/* Simple processor stepper with instruction cache that delegates ecall to an abi proxy */
+
 template <typename P>
 struct riscv_proxy_runner : P
 {
-	void run()
+	static const size_t inst_cache_size = 8191;
+
+	struct riscv_inst_cache_ent
 	{
-		riscv_decode dec;
-		size_t inst_length;
 		uint64_t inst;
-		while (true) {
+		typename P::decode_type dec;
+	};
+
+	riscv_inst_cache_ent inst_cache[inst_cache_size];
+
+	bool step(size_t count)
+	{
+		typename P::decode_type dec;
+		size_t i = 0, inst_length;
+		uint64_t inst;
+		while (i < count) {
 			inst = riscv_inst_fetch(P::pc, &inst_length);
-			uint64_t inst_cache_key = inst % P::inst_cache_size;
-			if (P::inst_cache[inst_cache_key].inst == inst) {
-				dec = P::inst_cache[inst_cache_key].dec;
+			uint64_t inst_cache_key = inst % inst_cache_size;
+			if (inst_cache[inst_cache_key].inst == inst) {
+				dec = inst_cache[inst_cache_key].dec;
 			} else {
 				P::decode_inst(dec, inst);
-				P::inst_cache[inst_cache_key].inst = inst;
-				P::inst_cache[inst_cache_key].dec = dec;
+				inst_cache[inst_cache_key].inst = inst;
+				inst_cache[inst_cache_key].dec = dec;
 			}
 			if (P::log_registers) P::print_int_regeisters();
 			if (P::log_instructions) P::print_disassembly(dec);
@@ -278,23 +292,41 @@ struct riscv_proxy_runner : P
 				P::pc += inst_length;
 				continue;
 			}
-			panic("illegal instruciton: pc=0x%tx inst=%s",
+			debug("illegal instruciton: pc=0x%tx inst=%s",
 				uintptr_t(P::pc), P::format_inst(P::pc).c_str());
+			return false;
 		}
+		return true;
 	}
 };
 
-using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit>;
-using riscv_processor_proxy_rv32imac = riscv_proxy_runner<riscv_processor_rv32imac_unit>;
-using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit>;
-using riscv_processor_proxy_rv32imafdc = riscv_proxy_runner<riscv_processor_rv32imafdc_unit>;
-using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit>;
-using riscv_processor_proxy_rv64imac = riscv_proxy_runner<riscv_processor_rv64imac_unit>;
-using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit>;
-using riscv_processor_proxy_rv64imafdc = riscv_proxy_runner<riscv_processor_rv64imafdc_unit>;
+
+/* Parameterized kernel proxy processor models */
+
+using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit<riscv_decode>>;
+using riscv_processor_proxy_rv32imac = riscv_proxy_runner<riscv_processor_rv32imac_unit<riscv_decode>>;
+using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit<riscv_decode>>;
+using riscv_processor_proxy_rv32imafdc = riscv_proxy_runner<riscv_processor_rv32imafdc_unit<riscv_decode>>;
+using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit<riscv_decode>>;
+using riscv_processor_proxy_rv64imac = riscv_proxy_runner<riscv_processor_rv64imac_unit<riscv_decode>>;
+using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit<riscv_decode>>;
+using riscv_processor_proxy_rv64imafdc = riscv_proxy_runner<riscv_processor_rv64imafdc_unit<riscv_decode>>;
+
+
+/* Emulator */
 
 struct riscv_emulator
 {
+	/*
+		Simple ABI/AEE RISC-V emulator that uses a machine generated interpreter
+		created by parse-meta using the C-psuedo code in meta/instructions
+
+		Currently only a small number of syscalls are implemented
+
+		(ABI) application binary interface
+		(AEE) application execution environment
+	*/
+
 	static const size_t stack_top =  0x78000000; // 1920 MiB
 	static const size_t stack_size = 0x01000000; //   16 MiB
 
@@ -307,30 +339,24 @@ struct riscv_emulator
 	bool log_instructions = false;
 	bool help_or_error = false;
 
-	enum rv_ext {
-		rv_ext_none,
-		rv_ext_ima,
-		rv_ext_imac,
-		rv_ext_imafd,
-		rv_ext_imafdc,
-	} ext_mode = rv_ext_imafdc;
+	enum rv_isa {
+		rv_isa_none,
+		rv_isa_ima,
+		rv_isa_imac,
+		rv_isa_imafd,
+		rv_isa_imafdc,
+	} ext = rv_isa_imafdc;
 
-	/*
-		This simple proof of concept machine emulator uses a
-		machine generated interpreter in src/asm/riscv-interp.h
-		created by parse-meta using C-psuedo code in meta/instructions
-	*/
-
-	static rv_ext decode_isa_ext(std::string isa_ext)
+	static rv_isa decode_isa_ext(std::string isa_ext)
 	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_ext_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_ext_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_ext_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_ext_imafdc;
-		else return rv_ext_none;
+		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_isa_ima;
+		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_isa_imac;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_isa_imafd;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_isa_imafdc;
+		else return rv_isa_none;
 	}
 
-	inline static const int elf_p_flags_mmap(int v)
+	static const int elf_p_flags_mmap(int v)
 	{
 		int prot = 0;
 		if (v & PF_X) prot |= PROT_EXEC;
@@ -339,7 +365,7 @@ struct riscv_emulator
 		return prot;
 	}
 
-	// Simple code to map a single stack segment
+	/* Map a single stack segment into user address space */
 	template <typename P>
 	void map_stack(P &proc, uintptr_t stack_top, uintptr_t stack_size)
 	{
@@ -349,7 +375,7 @@ struct riscv_emulator
 			panic("map_stack: error: mmap: %s", strerror(errno));
 		}
 
-		// keep track of the mapped segment and set the stack_top
+		/* keep track of the mapped segment and set the stack_top */
 		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
@@ -359,7 +385,7 @@ struct riscv_emulator
 		}
 	}
 
-	// Simple code currently maps all segments copy-on-write RWX
+	/* Map ELF load segments into user address space */
 	template <typename P>
 	void map_load_segment(P &proc, const char* filename, Elf64_Phdr &phdr)
 	{
@@ -374,7 +400,7 @@ struct riscv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		// keep track of the mapped segment and set the heap_end
+		/* keep track of the mapped segment and set the heap_end */
 		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
 		uintptr_t seg_end = uintptr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (proc.heap_begin < seg_end) proc.heap_begin = proc.heap_end = seg_end;
@@ -397,7 +423,7 @@ struct riscv_emulator
 				[&](std::string s) { return (emulator_debug = true); } },
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
-				[&](std::string s) { return (ext_mode = decode_isa_ext(s)); } },
+				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers",
 				[&](std::string s) { return (log_registers = true); } },
@@ -418,8 +444,7 @@ struct riscv_emulator
 			help_or_error = true;
 		}
 
-		if (help_or_error)
-		{
+		if (help_or_error) {
 			printf("usage: %s [<options>] <elf_file>\n", argv[0]);
 			cmdline_option::print_options(options);
 			exit(9);
@@ -427,16 +452,16 @@ struct riscv_emulator
 
 		filename = result.first[0];
 
-		// print process information
+		/* print process information */
 		if (memory_debug) {
 			memory_info(argc, argv);
 		}
 
-		// load ELF (headers only)
+		/* load ELF (headers only) */
 		elf.load(filename, true);
 	}
 
-	// print approximate location of host text, heap and stack
+	/* print approximate location of host text, heap and stack of our user process */
 	void memory_info(int argc, const char *argv[])
 	{
 		static const char *textptr = nullptr;
@@ -447,14 +472,18 @@ struct riscv_emulator
 		free(heapptr);
 	}
 
+	/* Start the execuatable with the given processor template */
 	template <typename P>
 	void start()
 	{
-		// Processor
+		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? riscv_processor_flag_emulator_debug : 0;
+		proc.log_registers = log_registers;
+		proc.log_instructions = log_instructions;
+		proc.pc = elf.ehdr.e_entry;
 
-		// Find the PT_LOAD segments and mmap then into memory
+		/* Find the ELF executable PT_LOAD segments and mmap them into memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
@@ -462,58 +491,55 @@ struct riscv_emulator
 			}
 		}
 
-		// Map a stack and set the stack pointer
+		/* Map a stack and set the stack pointer */
 		map_stack(proc, stack_top, stack_size);
-
-		// Set logging options
-		proc.log_registers = log_registers;
-		proc.log_instructions = log_instructions;
-
-		// Set the program counter to the entry address
-		proc.pc = elf.ehdr.e_entry;
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");
 #endif
 
-		// Start the emulator
-		proc.run();
+		/* Step the CPU until it halts */
+		while(proc.step(1024));
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();
 #endif
 
-		// Unmap segments
+		/* Unmap memory segments */
 		for (auto &seg: proc.mapped_segments) {
 			munmap(seg.first, seg.second);
 		}
 	}
 
+	/* Start a specific processor implementation based on ELF type and ISA extensions */
 	void exec()
 	{
 		switch (elf.ei_class) {
 			case ELFCLASS32:
-				switch (ext_mode) {
-					case rv_ext_ima: start<riscv_processor_proxy_rv32ima>(); break;
-					case rv_ext_imac: start<riscv_processor_proxy_rv32imac>(); break;
-					case rv_ext_imafd: start<riscv_processor_proxy_rv32imafd>(); break;
-					case rv_ext_imafdc: start<riscv_processor_proxy_rv32imafdc>(); break;
-					case rv_ext_none: panic("isa extensions not configured"); break;
+				switch (ext) {
+					case rv_isa_ima: start<riscv_processor_proxy_rv32ima>(); break;
+					case rv_isa_imac: start<riscv_processor_proxy_rv32imac>(); break;
+					case rv_isa_imafd: start<riscv_processor_proxy_rv32imafd>(); break;
+					case rv_isa_imafdc: start<riscv_processor_proxy_rv32imafdc>(); break;
+					case rv_isa_none: panic("unknown isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
-				switch (ext_mode) {
-					case rv_ext_ima: start<riscv_processor_proxy_rv64ima>(); break;
-					case rv_ext_imac: start<riscv_processor_proxy_rv64imac>(); break;
-					case rv_ext_imafd: start<riscv_processor_proxy_rv64imafd>(); break;
-					case rv_ext_imafdc: start<riscv_processor_proxy_rv64imafdc>(); break;
-					case rv_ext_none: panic("isa extensions not configured"); break;
+				switch (ext) {
+					case rv_isa_ima: start<riscv_processor_proxy_rv64ima>(); break;
+					case rv_isa_imac: start<riscv_processor_proxy_rv64imac>(); break;
+					case rv_isa_imafd: start<riscv_processor_proxy_rv64imafd>(); break;
+					case rv_isa_imafdc: start<riscv_processor_proxy_rv64imafdc>(); break;
+					case rv_isa_none: panic("unknown isa extension"); break;
 				}
 				break;
 			default: panic("unknonwn elf class");
 		}
 	}
 };
+
+
+/* program main */
 
 int main(int argc, const char *argv[])
 {
