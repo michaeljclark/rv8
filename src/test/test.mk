@@ -37,7 +37,7 @@ OBJ_DIR = build/$(TARGET_DIR)/obj
 BIN_DIR = build/$(TARGET_DIR)/bin
 GEN_DIR = build/$(TARGET_DIR)/gen
 
-CFLAGS = -Os -Wall -fpie -ffunction-sections -fdata-sections
+CFLAGS = -Os -g -Wall -fpie -ffunction-sections -fdata-sections
 CXXFLAGS = -std=c++1y $(CFLAGS)
 
 PROGRAMS = \
