@@ -5,15 +5,15 @@
 #ifndef riscv_disasm_h
 #define riscv_disasm_h
 
-struct riscv_disasm : riscv_decode
-{
-	uintptr_t pc;
-	uint64_t  inst;
-
-	riscv_disasm() : riscv_decode(), pc(0), inst(0) {}
-};
-
 namespace riscv {
+
+	struct disasm : decode
+	{
+		uintptr_t pc;
+		uint64_t  inst;
+
+		disasm() : decode(), pc(0), inst(0) {}
+	};
 
 	enum rva {
 		rva_none,
@@ -132,61 +132,62 @@ namespace riscv {
 
 	const char* null_symbol_lookup(uintptr_t, bool nearest);
 	const char* null_symbol_colorize(const char *type);
-}
 
-template <typename T>
-std::string riscv_disasm_inst_simple(T &dec)
-{
-	std::string args;
-	const char *fmt = riscv_inst_format[dec.op];
-	while (*fmt) {
-		switch (*fmt) {
-			case 'O': args += riscv_inst_name_sym[dec.op]; break;
-			case '(': args += "("; break;
-			case ',': args += ", "; break;
-			case ')': args += ")"; break;
-			case '0': args += riscv_ireg_name_sym[dec.rd]; break;
-			case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
-			case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
-			case '3': args += riscv_freg_name_sym[dec.rd]; break;
-			case '4': args += riscv_freg_name_sym[dec.rs1]; break;
-			case '5': args += riscv_freg_name_sym[dec.rs2]; break;
-			case '6': args += riscv_freg_name_sym[dec.rs3]; break;
-			case '7': args += format_string("%d", dec.rs1); break;
-			case 'i': args += format_string("%lld", dec.imm); break;
-			case 'o': args += format_string("pc %c %td",
-				intptr_t(dec.imm) < 0 ? '-' : '+',
-				intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm)); break;
-			case 'c': {
-				const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
-				if (csr_name) args += format_string("%s", csr_name);
-				else args += format_string("0x%03x", dec.imm & 0xfff);
-				break;
-			}
-			case 'r':
-				switch(dec.rm) {
-					case riscv_rm_rne: args += "rne"; break;
-					case riscv_rm_rtz: args += "rtz"; break;
-					case riscv_rm_rdn: args += "rdn"; break;
-					case riscv_rm_rup: args += "rup"; break;
-					case riscv_rm_rmm: args += "rmm"; break;
-					default:           args += "unk"; break;
+	template <typename T>
+	std::string disasm_inst_simple(T &dec)
+	{
+		std::string args;
+		const char *fmt = riscv_inst_format[dec.op];
+		while (*fmt) {
+			switch (*fmt) {
+				case 'O': args += riscv_inst_name_sym[dec.op]; break;
+				case '(': args += "("; break;
+				case ',': args += ", "; break;
+				case ')': args += ")"; break;
+				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
+				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
+				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
+				case '3': args += riscv_freg_name_sym[dec.rd]; break;
+				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
+				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
+				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
+				case '7': args += format_string("%d", dec.rs1); break;
+				case 'i': args += format_string("%lld", dec.imm); break;
+				case 'o': args += format_string("pc %c %td",
+					intptr_t(dec.imm) < 0 ? '-' : '+',
+					intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm)); break;
+				case 'c': {
+					const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
+					if (csr_name) args += format_string("%s", csr_name);
+					else args += format_string("0x%03x", dec.imm & 0xfff);
+					break;
 				}
-				break;
-			case '\t': while (args.length() < 12) args += " "; break;
-			case 'A': if (dec.aq) args += ".aq"; break;
-			case 'R': if (dec.rl) args += ".rl"; break;
-			default:
-				break;
+				case 'r':
+					switch(dec.rm) {
+						case riscv_rm_rne: args += "rne"; break;
+						case riscv_rm_rtz: args += "rtz"; break;
+						case riscv_rm_rdn: args += "rdn"; break;
+						case riscv_rm_rup: args += "rup"; break;
+						case riscv_rm_rmm: args += "rmm"; break;
+						default:           args += "unk"; break;
+					}
+					break;
+				case '\t': while (args.length() < 12) args += " "; break;
+				case 'A': if (dec.aq) args += ".aq"; break;
+				case 'R': if (dec.rl) args += ".rl"; break;
+				default:
+					break;
+			}
+			fmt++;
 		}
-		fmt++;
+		return args;
 	}
-	return args;
-}
 
-void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
-	uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
-	riscv::symbol_name_fn symlookup = riscv::null_symbol_lookup,
-	riscv::symbol_colorize_fn colorize = riscv::null_symbol_colorize);
+	void disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
+		uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
+		symbol_name_fn symlookup = null_symbol_lookup,
+		symbol_colorize_fn colorize = null_symbol_colorize);
+
+}
 
 #endif

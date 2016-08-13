@@ -928,7 +928,7 @@ void decode_meta(uintptr_t start, uintptr_t end, const char *code)
 		size_t inst_length;
 		uintptr_t pc = start;
 		while (pc < end) {
-			riscv_decode_inst_op<false, true, true, true, true, true, true, true, true>(riscv_inst_fetch(pc, &inst_length));
+			decode_inst_op<false, true, true, true, true, true, true, true, true>(inst_fetch(pc, &inst_length));
 			pc += inst_length;
 			decoded++;
 		}
@@ -949,7 +949,7 @@ void decode_spike_nocache(uintptr_t start, uintptr_t end, const char* code)
 		size_t inst_length;
 		uintptr_t pc = start;
 		while (pc < end) {
-			proc.decode_inst_nocache(riscv_inst_fetch(pc, &inst_length));
+			proc.decode_inst_nocache(inst_fetch(pc, &inst_length));
 			pc += inst_length;
 			decoded++;
 		}
@@ -970,7 +970,7 @@ void decode_spike_cache(uintptr_t start, uintptr_t end, const char* code)
 		size_t inst_length;
 		uintptr_t pc = start;
 		while (pc < end) {
-			proc.decode_inst(riscv_inst_fetch(pc, &inst_length));
+			proc.decode_inst(inst_fetch(pc, &inst_length));
 			pc += inst_length;
 			decoded++;
 		}

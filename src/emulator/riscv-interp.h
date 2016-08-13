@@ -10,7 +10,7 @@
 /* Execute Instruction RV32 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc, typename T, typename P>
-bool rv32_exec(T &dec, P &proc, uintptr_t inst_length)
+bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 {
 	enum { xlen = 32 };
 	typedef int32_t sx;
@@ -775,7 +775,7 @@ x:	return true;
 /* Execute Instruction RV64 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc, typename T, typename P>
-bool rv64_exec(T &dec, P &proc, uintptr_t inst_length)
+bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 {
 	enum { xlen = 64 };
 	typedef int64_t sx;

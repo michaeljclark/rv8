@@ -86,9 +86,9 @@ struct riscv_processor_base : P
 	std::string format_inst(uintptr_t pc)
 	{
 		char buf[20];
-		uintptr_t inst_length;
-		uint64_t inst = riscv_inst_fetch(pc, &inst_length);
-		switch (inst_length) {
+		uintptr_t length;
+		uint64_t inst = inst_fetch(pc, &length);
+		switch (length) {
 			case 2:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
@@ -103,7 +103,7 @@ struct riscv_processor_base : P
 		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s\n";
 		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s\n";
 		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s\n";
-		std::string args = riscv_disasm_inst_simple(dec);
+		std::string args = disasm_inst_simple(dec);
 		printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 			P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str());
 	}
@@ -153,50 +153,50 @@ struct riscv_processor_base : P
 template <typename T>
 struct riscv_processor_rv32ima_unit : riscv_processor_base<T,riscv_processor_rv32ima>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_32,RV_IMA>(dec, inst);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_32,RV_IMA>(dec, inst);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv32_exec<RV_IMA>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv32<RV_IMA>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv32imac_unit : riscv_processor_base<T,riscv_processor_rv32ima>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_32,RV_IMAC>(dec, inst);
-		riscv_decompress_inst_rv32<T>(dec);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
+		decompress_inst_rv32<T>(dec);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv32_exec<RV_IMAC>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv32<RV_IMAC>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv32imafd_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv32_exec<RV_IMAFD>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv32<RV_IMAFD>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv32imafdc_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
-		riscv_decompress_inst_rv32<T>(dec);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
+		decompress_inst_rv32<T>(dec);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv32_exec<RV_IMAFDC>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv32<RV_IMAFDC>(dec, *this, inst_len);
 	}
 };
 
@@ -206,50 +206,50 @@ struct riscv_processor_rv32imafdc_unit : riscv_processor_base<T,riscv_processor_
 template <typename T>
 struct riscv_processor_rv64ima_unit : riscv_processor_base<T,riscv_processor_rv64ima>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_64,RV_IMA>(dec, inst);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_64,RV_IMA>(dec, inst);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv64_exec<RV_IMA>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv64<RV_IMA>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv64imac_unit : riscv_processor_base<T,riscv_processor_rv64ima>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_64,RV_IMAC>(dec, inst);
-		riscv_decompress_inst_rv64<T>(dec);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
+		decompress_inst_rv64<T>(dec);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv64_exec<RV_IMAC>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv64<RV_IMAC>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv64imafd_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv64_exec<RV_IMAFD>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv64<RV_IMAFD>(dec, *this, inst_len);
 	}
 };
 
 template <typename T>
 struct riscv_processor_rv64imafdc_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
 {
-	void decode_inst(T &dec, uint64_t inst) {
-		riscv_decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
-		riscv_decompress_inst_rv64<T>(dec);
+	void inst_decode(T &dec, uint64_t inst) {
+		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
+		decompress_inst_rv64<T>(dec);
 	}
 
-	bool exec_inst(T &dec, size_t inst_length) {
-		return rv64_exec<RV_IMAFDC>(dec, *this, inst_length);
+	bool inst_exec(T &dec, size_t inst_len) {
+		return exec_inst_rv64<RV_IMAFDC>(dec, *this, inst_len);
 	}
 };
 
@@ -272,24 +272,24 @@ struct riscv_proxy_runner : P
 	bool step(size_t count)
 	{
 		typename P::decode_type dec;
-		size_t i = 0, inst_length;
+		size_t i = 0, inst_len;
 		uint64_t inst;
 		while (i < count) {
-			inst = riscv_inst_fetch(P::pc, &inst_length);
+			inst = inst_fetch(P::pc, &inst_len);
 			uint64_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
 			} else {
-				P::decode_inst(dec, inst);
+				P::inst_decode(dec, inst);
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
 			if (P::log_registers) P::print_int_regeisters();
 			if (P::log_instructions) P::print_disassembly(dec);
-			if (P::exec_inst(dec, inst_length)) continue;
+			if (P::inst_exec(dec, inst_len)) continue;
 			if (dec.op == riscv_op_ecall) {
 				proxy_syscall(*this);
-				P::pc += inst_length;
+				P::pc += inst_len;
 				continue;
 			}
 			debug("illegal instruciton: pc=0x%tx inst=%s",
@@ -303,14 +303,14 @@ struct riscv_proxy_runner : P
 
 /* Parameterized kernel proxy processor models */
 
-using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit<riscv_decode>>;
-using riscv_processor_proxy_rv32imac = riscv_proxy_runner<riscv_processor_rv32imac_unit<riscv_decode>>;
-using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit<riscv_decode>>;
-using riscv_processor_proxy_rv32imafdc = riscv_proxy_runner<riscv_processor_rv32imafdc_unit<riscv_decode>>;
-using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit<riscv_decode>>;
-using riscv_processor_proxy_rv64imac = riscv_proxy_runner<riscv_processor_rv64imac_unit<riscv_decode>>;
-using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit<riscv_decode>>;
-using riscv_processor_proxy_rv64imafdc = riscv_proxy_runner<riscv_processor_rv64imafdc_unit<riscv_decode>>;
+using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit<decode>>;
+using riscv_processor_proxy_rv32imac = riscv_proxy_runner<riscv_processor_rv32imac_unit<decode>>;
+using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit<decode>>;
+using riscv_processor_proxy_rv32imafdc = riscv_proxy_runner<riscv_processor_rv32imafdc_unit<decode>>;
+using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit<decode>>;
+using riscv_processor_proxy_rv64imac = riscv_proxy_runner<riscv_processor_rv64imac_unit<decode>>;
+using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit<decode>>;
+using riscv_processor_proxy_rv64imafdc = riscv_proxy_runner<riscv_processor_rv64imafdc_unit<decode>>;
 
 
 /* Emulator */

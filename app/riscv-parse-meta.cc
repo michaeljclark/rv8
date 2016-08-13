@@ -763,7 +763,7 @@ void riscv_parse_meta::print_interp_h()
 			printf("bool %s, ", mi->c_str());
 		}
 		printf("typename T, typename P>\n");
-		printf("bool %s_exec(T &dec, P &proc, uintptr_t inst_length)\n",
+		printf("bool exec_inst_%s(T &dec, P &proc, uintptr_t inst_length)\n",
 			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
@@ -1158,6 +1158,8 @@ R"C(#include <cstdint>
 #include "riscv-meta.h"
 #include "riscv-codec.h"
 
+using namespace riscv;
+
 )C";
 
 	printf(kCHeader, "riscv-jit.cc");
@@ -1178,7 +1180,7 @@ R"C(#include <cstdint>
 		// output emit interface
 		printf("uint64_t riscv::%s(%s)\n{\n",
 			emit_name.c_str(), join(arg_list, ", ").c_str());
-		printf("\triscv_decode dec;\n");
+		printf("\tdecode dec;\n");
 		if (opcode->codec->args.size() > 0) {
 			std::vector<std::string> check_list;
 			for (auto &arg : opcode->codec->args) {
@@ -1202,7 +1204,7 @@ R"C(#include <cstdint>
 				printf("/* dec.? = %s unhandled */\n", arg->name.c_str());
 			}
 		}
-		printf("\treturn riscv_encode_inst(dec);\n");
+		printf("\treturn encode_inst(dec);\n");
 		printf("}\n\n");
 	}
 	printf("\n");
@@ -1660,7 +1662,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline uint64_t riscv_decode_inst_op(uint64_t inst)\n");
+	printf("inline uint64_t decode_inst_op(uint64_t inst)\n");
 	printf("{\n");
 	printf("\tuint64_t op = riscv_op_unknown;\n");
 	print_switch_decoder_node(root_node, 1);
@@ -1670,7 +1672,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	// print type decoder
 	printf("/* Decode Instruction Type */\n\n");
 	printf("template <typename T>\n");
-	printf("inline void riscv_decode_inst_type(T &dec, uint64_t inst)\n");
+	printf("inline void decode_inst_type(T &dec, uint64_t inst)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
@@ -1685,7 +1687,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	// print encoder
 	printf("/* Encode Instruction */\n\n");
 	printf("template <typename T>\n");
-	printf("inline uint64_t riscv_encode_inst(T &dec)\n");
+	printf("inline uint64_t encode_inst(T &dec)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
 	printf("\tuint64_t inst = riscv_inst_match[dec.op];\n");

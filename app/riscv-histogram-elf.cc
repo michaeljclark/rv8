@@ -60,7 +60,7 @@ struct riscv_histogram_elf
 		else hi->second++;
 	}
 
-	size_t reg_value(riscv_decode &dec, riscv_arg_name arg_name)
+	size_t reg_value(decode &dec, riscv_arg_name arg_name)
 	{
 		switch (arg_name) {
 			case riscv_arg_name_rd: return dec.rd;
@@ -74,7 +74,7 @@ struct riscv_histogram_elf
 		}
 	}
 
-	void histogram_add_regs(map_t &hist, riscv_decode &dec)
+	void histogram_add_regs(map_t &hist, decode &dec)
 	{
 		std::string key;
 		const riscv_arg_data *arg_data = riscv_inst_arg_data[dec.op];
@@ -97,12 +97,12 @@ struct riscv_histogram_elf
 
 	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
 	{
-		riscv_decode dec;
+		decode dec;
 		size_t inst_length;
 		uintptr_t pc = start;
 		while (pc < end) {
-			uint64_t inst = riscv_inst_fetch(pc, &inst_length);
-			riscv_decode_inst_rv64(dec, inst);
+			uint64_t inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, inst);
 			if (inst_histogram) {
 				histogram_add(hist, riscv_inst_name_sym[dec.op]);
 			}

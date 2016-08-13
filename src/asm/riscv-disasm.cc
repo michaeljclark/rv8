@@ -85,7 +85,7 @@ static const void print_addr(size_t &offset, uint64_t addr,
 	}
 }
 
-void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hist,
+void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 	uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
 	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
@@ -114,7 +114,7 @@ void riscv_disasm_inst_print(riscv_disasm &dec, std::deque<riscv_disasm> &dec_hi
 	print_pad(offset, 24);
 
 	// print instruction bytes
-	switch (riscv_inst_length(dec.inst)) {
+	switch (inst_length(dec.inst)) {
 		case 2: print_fmt(offset, "%04llx", dec.inst); break;
 		case 4: print_fmt(offset, "%08llx", dec.inst); break;
 		case 6: print_fmt(offset, "%012llx", dec.inst); break;

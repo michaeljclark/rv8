@@ -38,7 +38,7 @@
 
 using namespace riscv;
 
-struct riscv_asm : riscv_disasm
+struct riscv_asm : disasm
 {
 	uint64_t  addr;              /* decoded address if present */
 	uint32_t  label_target;      /* label target for this instruction */
@@ -49,7 +49,7 @@ struct riscv_asm : riscv_disasm
 	uint32_t  is_pcrel     : 1;  /* pc relative address present */
 	uint32_t  is_gprel     : 1;  /* gp relative address present */
 
-	riscv_asm() : riscv_disasm(),
+	riscv_asm() : disasm(),
 		label_target(0), label_pair(0), label_branch(0), label_cont(0),
 		is_abs(0), is_pcrel(0), is_gprel(0) {}
 };
@@ -126,7 +126,7 @@ struct riscv_compress_elf
 	template <typename T>
 	void print_continuation_disassembly(T &dec)
 	{
-		std::string args = riscv_disasm_inst_simple(dec);
+		std::string args = disasm_inst_simple(dec);
 		debug("0x%016tx %-7s%-7s%-7s%-7s%-35s%-18s %s%s%s",
 			dec.pc,
 			dec.label_target ? format_string("%u", dec.label_target).c_str() : "",
@@ -298,9 +298,9 @@ struct riscv_compress_elf
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
 			dec.pc = pc - pc_offset;
-			dec.inst = riscv_inst_fetch(pc, &inst_length);
-			riscv_decode_inst_rv64(dec, dec.inst);
-			riscv_decompress_inst_rv64(dec);
+			dec.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.inst);
+			decompress_inst_rv64(dec);
 			pc += inst_length;
 		}
 	}
@@ -352,7 +352,7 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (bi != bin.begin()) {
-				uintptr_t new_pc = (bi-1)->pc + riscv_inst_length((bi-1)->inst);
+				uintptr_t new_pc = (bi-1)->pc + inst_length((bi-1)->inst);
 				elf.update_sym_addr(dec.pc, new_pc);
 				relocations[dec.pc] = new_pc;
 				auto ci = continuations.find(dec.pc);
@@ -362,8 +362,8 @@ struct riscv_compress_elf
 					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
 				}
 			}
-			if (riscv_inst_length(dec.inst) == 4 && riscv_compress_inst_rv64(dec)) {
-				dec.inst = riscv_encode_inst(dec);
+			if (inst_length(dec.inst) == 4 && compress_inst_rv64(dec)) {
+				dec.inst = encode_inst(dec);
 				bytes += 2;
 				saving += 2;
 			} else {
@@ -394,13 +394,13 @@ struct riscv_compress_elf
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
 				} else {
-					dec.inst = riscv_encode_inst(dec);
-					rbi->inst = riscv_encode_inst(*rbi);
+					dec.inst = encode_inst(dec);
+					rbi->inst = encode_inst(*rbi);
 				}
 			} else if (dec.label_branch) {
 				dec.imm = label_addr[dec.label_branch] - intptr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
-				dec.inst = riscv_encode_inst(dec);
+				dec.inst = encode_inst(dec);
 			}
 		}
 	}
@@ -410,13 +410,13 @@ struct riscv_compress_elf
 		while (size > 0) {
 			riscv_asm dec;
 			dec.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
-			riscv_decode_inst_rv64(dec, dec.inst);
-			dec.pc = bin.back().pc + riscv_inst_length(bin.back().inst);
+			decode_inst_rv64(dec, dec.inst);
+			dec.pc = bin.back().pc + inst_length(bin.back().inst);
 			if (size == 2) {
-				riscv_compress_inst_rv64(dec);
-				dec.inst = riscv_encode_inst(dec);
+				compress_inst_rv64(dec);
+				dec.inst = encode_inst(dec);
 			}
-			size -= riscv_inst_length(dec.inst);
+			size -= inst_length(dec.inst);
 			bin.push_back(dec);
 		}
 	}
@@ -429,7 +429,7 @@ struct riscv_compress_elf
 			if (pc < start || pc > end) {
 				panic("pc outside of section range");
 			}
-			size_t inst_len = riscv_inst_length(dec.inst);
+			size_t inst_len = inst_length(dec.inst);
 			switch (inst_len) {
 				case 2: *((uint16_t*)pc) = htole16(dec.inst); break;
 				case 4: *((uint32_t*)pc) = htole32(dec.inst); break;
@@ -454,7 +454,7 @@ struct riscv_compress_elf
 	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
 		size_t line = 0;
-		std::deque<riscv_disasm> dec_hist;
+		std::deque<disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (line % 20 == 0) print_continuation_disassembly_header();
@@ -465,10 +465,10 @@ struct riscv_compress_elf
 
 	void print_disassembly(std::deque<riscv_asm> &bin, uintptr_t gp)
 	{
-		std::deque<riscv_disasm> dec_hist;
+		std::deque<disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			riscv_disasm_inst_print(dec, dec_hist, dec.pc, 0, gp,
+			disasm_inst_print(dec, dec_hist, dec.pc, 0, gp,
 				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
 		}
@@ -609,8 +609,8 @@ int main(int argc, const char *argv[])
 	printf("\n");
 	printf("riscv-elf-compress-0.0.0-alpha-0\n");
 	printf("\n");
-	printf("sizeof(riscv_decode) = %lu\n", sizeof(riscv_decode));
-	printf("sizeof(riscv_disasm) = %lu\n", sizeof(riscv_disasm));
+	printf("sizeof(decode) = %lu\n", sizeof(decode));
+	printf("sizeof(disasm) = %lu\n", sizeof(disasm));
 	printf("sizeof(riscv_asm)    = %lu\n", sizeof(riscv_asm));
 
 	riscv_compress_elf elf_compress;

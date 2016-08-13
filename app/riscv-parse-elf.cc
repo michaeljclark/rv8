@@ -109,15 +109,14 @@ struct riscv_parse_elf
 
 	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
-		riscv_disasm dec;
+		disasm dec;
 		size_t inst_length;
 		uintptr_t pc = start;
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = riscv_inst_fetch(pc, &inst_length);
-			riscv_decode_inst_rv64(dec, dec.inst);
-			riscv_decompress_inst_rv64(dec);
+			dec.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.inst);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
@@ -147,14 +146,14 @@ struct riscv_parse_elf
 
 	void print_disassembly(uintptr_t start, uintptr_t end, uintptr_t pc_offset, uintptr_t gp)
 	{
-		riscv_disasm dec;
-		std::deque<riscv_disasm> dec_hist;
+		disasm dec;
+		std::deque<disasm> dec_hist;
 		uintptr_t pc = start, inst_length;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = riscv_inst_fetch(pc, &inst_length);
-			riscv_decode_inst_rv64(dec, dec.inst);
-			riscv_disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
+			dec.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.inst);
+			disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 			pc += inst_length;

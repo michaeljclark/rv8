@@ -10,7 +10,7 @@
 /* Decode Instruction Opcode */
 
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
-inline uint64_t riscv_decode_inst_op(uint64_t inst)
+inline uint64_t decode_inst_op(uint64_t inst)
 {
 	uint64_t op = riscv_op_unknown;
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
@@ -569,7 +569,7 @@ inline uint64_t riscv_decode_inst_op(uint64_t inst)
 /* Decode Instruction Type */
 
 template <typename T>
-inline void riscv_decode_inst_type(T &dec, uint64_t inst)
+inline void decode_inst_type(T &dec, uint64_t inst)
 {
 	dec.codec = riscv_inst_codec[dec.op];
 	switch (dec.codec) {
@@ -619,7 +619,7 @@ inline void riscv_decode_inst_type(T &dec, uint64_t inst)
 /* Encode Instruction */
 
 template <typename T>
-inline uint64_t riscv_encode_inst(T &dec)
+inline uint64_t encode_inst(T &dec)
 {
 	dec.codec = riscv_inst_codec[dec.op];
 	uint64_t inst = riscv_inst_match[dec.op];
