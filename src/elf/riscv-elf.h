@@ -17,23 +17,37 @@
 
 // ELF Types
 
+/*
+ * Type aliases are defined here instead of using stdint.h types due to
+ * the use of signed long int and unsigned long int for int64_t and uint64_t
+ * by some library headers. These definitions are compatible with ILP32, LLP64
+ * and LP64, which supports Windows and SVR4 ABIs for x86 and RISC-V.
+ */
+
+typedef unsigned char      _elf_u8;
+typedef unsigned short int _elf_u16;
+typedef signed int         _elf_s32;
+typedef unsigned int       _elf_u32;
+typedef signed long long   _elf_s64;
+typedef unsigned long long _elf_u64;
+
 // Elf32 types
-typedef uint32_t Elf32_Addr;
-typedef uint16_t Elf32_Half;
-typedef uint32_t Elf32_Off;
-typedef int32_t  Elf32_Sword;
-typedef uint32_t Elf32_Word;
-typedef uint8_t	 Elf32_Byte;
+typedef _elf_u32 Elf32_Addr;
+typedef _elf_u16 Elf32_Half;
+typedef _elf_u32 Elf32_Off;
+typedef _elf_s32 Elf32_Sword;
+typedef _elf_u32 Elf32_Word;
+typedef _elf_u8  Elf32_Byte;
 
 // Elf64 types
-typedef uint64_t Elf64_Addr;
-typedef uint16_t Elf64_Half;
-typedef uint64_t Elf64_Off;
-typedef int32_t  Elf64_Sword;
-typedef uint32_t Elf64_Word;
-typedef uint64_t Elf64_Xword;
-typedef int64_t  Elf64_Sxword;
-typedef uint8_t  Elf64_Byte;
+typedef _elf_u64 Elf64_Addr;
+typedef _elf_u16 Elf64_Half;
+typedef _elf_u64 Elf64_Off;
+typedef _elf_s32 Elf64_Sword;
+typedef _elf_u32 Elf64_Word;
+typedef _elf_u64 Elf64_Xword;
+typedef _elf_s64 Elf64_Sxword;
+typedef _elf_u8  Elf64_Byte;
 
 
 // ELF Auxilliary table

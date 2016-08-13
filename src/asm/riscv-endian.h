@@ -2,6 +2,9 @@
 //  riscv-endian.h
 //
 
+#ifndef riscv_endian_h
+#define riscv_endian_h
+
 /*
  *   This header defines the following endian macros as defined here:
  *   http://austingroupbugs.net/view.php?id=162
@@ -238,4 +241,58 @@
 #define be64toh(x)              ((uint64_t)(x))
 #define le32toh(x)              bswap32((x))
 #endif
+
+#endif
+
+#if defined (__cplusplus)
+
+/*
+ * Type aliases are defined here instead of using stdint.h types due to
+ * the use of signed long int and unsigned long int for int64_t and uint64_t
+ * by some library headers. These definitions are compatible with ILP32, LLP64
+ * and LP64, which supports Windows and SVR4 ABIs for x86 and RISC-V.
+ */
+
+typedef signed short int     _bswap_s16;
+typedef unsigned short int   _bswap_u16;
+typedef signed int           _bswap_s32;
+typedef unsigned int         _bswap_u32;
+typedef signed long long     _bswap_s64;
+typedef unsigned long long   _bswap_u64;
+
+struct bswap_letoh { template <typename T> static T bswap(T val); };
+struct bswap_betoh { template <typename T> static T bswap(T val); };
+struct bswap_htole { template <typename T> static T bswap(T val); };
+struct bswap_htobe { template <typename T> static T bswap(T val); };
+
+template<> inline _bswap_u16 bswap_letoh::bswap(_bswap_u16 val) { return le16toh(val); }
+template<> inline _bswap_s16 bswap_letoh::bswap(_bswap_s16 val) { return le16toh(val); }
+template<> inline _bswap_u32 bswap_letoh::bswap(_bswap_u32 val) { return le32toh(val); }
+template<> inline _bswap_s32 bswap_letoh::bswap(_bswap_s32 val) { return le32toh(val); }
+template<> inline _bswap_u64 bswap_letoh::bswap(_bswap_u64 val) { return le64toh(val); }
+template<> inline _bswap_s64 bswap_letoh::bswap(_bswap_s64 val) { return le64toh(val); }
+
+template<> inline _bswap_u16 bswap_betoh::bswap(_bswap_u16 val) { return be16toh(val); }
+template<> inline _bswap_s16 bswap_betoh::bswap(_bswap_s16 val) { return be16toh(val); }
+template<> inline _bswap_u32 bswap_betoh::bswap(_bswap_u32 val) { return be32toh(val); }
+template<> inline _bswap_s32 bswap_betoh::bswap(_bswap_s32 val) { return be32toh(val); }
+template<> inline _bswap_u64 bswap_betoh::bswap(_bswap_u64 val) { return be64toh(val); }
+template<> inline _bswap_s64 bswap_betoh::bswap(_bswap_s64 val) { return be64toh(val); }
+
+template<> inline _bswap_u16 bswap_htole::bswap(_bswap_u16 val) { return htole16(val); }
+template<> inline _bswap_s16 bswap_htole::bswap(_bswap_s16 val) { return htole16(val); }
+template<> inline _bswap_u32 bswap_htole::bswap(_bswap_u32 val) { return htole32(val); }
+template<> inline _bswap_s32 bswap_htole::bswap(_bswap_s32 val) { return htole32(val); }
+template<> inline _bswap_u64 bswap_htole::bswap(_bswap_u64 val) { return htole64(val); }
+template<> inline _bswap_s64 bswap_htole::bswap(_bswap_s64 val) { return htole64(val); }
+
+template<> inline _bswap_u16 bswap_htobe::bswap(_bswap_u16 val) { return htobe16(val); }
+template<> inline _bswap_s16 bswap_htobe::bswap(_bswap_s16 val) { return htobe16(val); }
+template<> inline _bswap_u32 bswap_htobe::bswap(_bswap_u32 val) { return htobe32(val); }
+template<> inline _bswap_s32 bswap_htobe::bswap(_bswap_s32 val) { return htobe32(val); }
+template<> inline _bswap_u64 bswap_htobe::bswap(_bswap_u64 val) { return htobe64(val); }
+template<> inline _bswap_s64 bswap_htobe::bswap(_bswap_s64 val) { return htobe64(val); }
+
+#endif
+
 #endif

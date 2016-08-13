@@ -13,10 +13,11 @@ namespace riscv {
 	 * Host type checks
 	 */
 
-	static_assert(sizeof(signed long long) == sizeof(uint64_t), "requires 64-bit signed long long");
-	static_assert(sizeof(unsigned long long) == sizeof(uint64_t), "requires 64-bit unsigned long long");
-	static_assert(sizeof(float) == sizeof(uint32_t), "requires 32-bit float");
-	static_assert(sizeof(double) == sizeof(uint64_t), "requires 64-bit double");
+	static_assert(sizeof(short) == 2, "requires 16-bit short");
+	static_assert(sizeof(int) == 4, "requires 32-bit int");
+	static_assert(sizeof(long long) == 8, "requires 64-bit long long");
+	static_assert(sizeof(float) == 4, "requires 32-bit float");
+	static_assert(sizeof(double) == 8, "requires 64-bit double");
 
 	/*
 	 * Short-hand type aliases
@@ -24,16 +25,21 @@ namespace riscv {
 	 * The purpose is to use a placeholder type globally for the natural
 	 * register width of the target. The placeholder type names match the
 	 * C pseudo-code cast notation in meta/instructions
+	 *
+	 * Type aliases are defined here instead of using stdint.h types due to
+	 * the use of signed long int and unsigned long int for s64 and u64
+	 * by some library headers. These definitions are compatible with ILP32, LLP64
+	 * and LP64, which supports Windows and SVR4 ABIs for x86 and RISC-V.
 	 */
 
-	typedef int8_t             s8;
-	typedef uint8_t            u8;
-	typedef int16_t            s16;
-	typedef uint16_t           u16;
-	typedef int32_t            s32;
-	typedef uint32_t           u32;
-	typedef int64_t            s64;
-	typedef uint64_t           u64;
+	typedef signed char        s8;
+	typedef unsigned char      u8;
+	typedef signed short int   s16;
+	typedef unsigned short int u16;
+	typedef signed int         s32;
+	typedef unsigned int       u32;
+	typedef signed long long   s64;
+	typedef unsigned long long u64;
 	typedef signed __int128   s128;
 	typedef unsigned __int128 u128;
 	typedef double             f64;
@@ -43,10 +49,10 @@ namespace riscv {
 	 * Width-typed immediate template aliases
 	 */
 
-	template <uint64_t W> struct offset_t;
-	template <uint64_t W> struct ptr_t;
-	template <uint64_t W> struct simm_t;
-	template <uint64_t W> struct uimm_t;
+	template <int W> struct offset_t;
+	template <int W> struct ptr_t;
+	template <int W> struct simm_t;
+	template <int W> struct uimm_t;
 
 	using offset32 = offset_t<32>;
 	using offset21 = offset_t<21>;
@@ -72,9 +78,9 @@ namespace riscv {
 	 * Width-typed immediate template definitions
 	 */
 
-	template <uint64_t W> struct offset_t
+	template <int W> struct offset_t
 	{
-		enum : uint64_t { width = W };
+		enum { width = W };
 		enum : intptr_t { min = -(1LL<<(W-1)), max = (1LL<<(W-1))-1 };
 		enum : bool { is_signed = true, is_integral = false, is_offset = true, is_pointer = false };
 		typedef intptr_t value_type;
@@ -84,9 +90,9 @@ namespace riscv {
 		operator intptr_t() const { return imm; }
 	};
 
-	template <uint64_t W> struct ptr_t
+	template <int W> struct ptr_t
 	{
-		enum : uint64_t { width = W };
+		enum { width = W };
 		enum : uintptr_t { min = 0, max = W == 64 ? ~0 : (1ULL<< W)-1 };
 		enum : bool { is_signed = false, is_integral = true, is_offset = false, is_pointer = true };
 		typedef uintptr_t value_type;
@@ -96,28 +102,28 @@ namespace riscv {
 		operator uintptr_t() const { return imm; }
 	};
 
-	template <uint64_t W> struct simm_t
+	template <int W> struct simm_t
 	{
-		enum : uint64_t { width = W };
-		enum : int64_t { min = -(1LL<<(W-1)), max = (1LL<<(W-1))-1 };
+		enum { width = W };
+		enum : s64 { min = -(1LL<<(W-1)), max = (1LL<<(W-1))-1 };
 		enum : bool { is_signed = true, is_integral = true, is_offset = false, is_pointer = false };
-		typedef int64_t value_type;
-		int64_t imm;
-		simm_t(int64_t imm) : imm(imm) {}
+		typedef s64 value_type;
+		s64 imm;
+		simm_t(s64 imm) : imm(imm) {}
 		bool valid() { return imm <= max && imm >= min; }
-		operator int64_t() const { return imm; }
+		operator s64() const { return imm; }
 	};
 
-	template <uint64_t W> struct uimm_t
+	template <int W> struct uimm_t
 	{
-		enum : uint64_t { width = W };
-		enum : uint64_t { min = 0, max = (1ULL<< W)-1 };
+		enum { width = W };
+		enum : u64 { min = 0, max = (1ULL<< W)-1 };
 		enum : bool { is_signed = false, is_integral = true, is_offset = false, is_pointer = false };
-		typedef uint64_t value_type;
-		uint64_t imm;
-		uimm_t(uint64_t imm) : imm(imm) {}
+		typedef u64 value_type;
+		u64 imm;
+		uimm_t(u64 imm) : imm(imm) {}
 		bool valid() { return imm <= max; }
-		operator uint64_t() const { return imm; }
+		operator u64() const { return imm; }
 	};
 
 	/*
@@ -125,12 +131,12 @@ namespace riscv {
 	 *
 	 * (template constructors cannot take template parameters)
 	 *
-	 * simm<N>(uint64_t imm)
-	 * uimm<N>(uint64_t imm)
+	 * simm<N>(u64 imm)
+	 * uimm<N>(u64 imm)
 	 */
 
-	template <uint64_t W> constexpr simm_t<W> simm(const uint64_t imm) { return simm_t<W>(imm); }
-	template <uint64_t W> constexpr uimm_t<W> uimm(const uint64_t imm) { return uimm_t<W>(imm); }
+	template <int W> constexpr simm_t<W> simm(const u64 imm) { return simm_t<W>(imm); }
+	template <int W> constexpr uimm_t<W> uimm(const u64 imm) { return uimm_t<W>(imm); }
 
 	/* Sign extension template */
 
@@ -177,8 +183,8 @@ namespace riscv {
 		static_assert((L > 0), "L > 0");
 		static_assert((K < sizeof(1ULL) << 3), "K < sizeof(1ULL) << 3");
 
-		static inline constexpr uint64_t decode(uint64_t inst) { return 0; }
-		static inline constexpr uint64_t encode(uint64_t imm) { return 0; }
+		static inline constexpr u64 decode(u64 inst) { return 0; }
+		static inline constexpr u64 encode(u64 imm) { return 0; }
 	};
 
 	template<int K, int L, typename H, typename... T>
@@ -192,13 +198,13 @@ namespace riscv {
 		enum { offset = I::offset + H::width };
 		enum { shift = offset + L - H::width - H::m };
 
-		static inline constexpr uint64_t decode(uint64_t inst) {
-			const uint64_t mask = ((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
+		static inline constexpr u64 decode(u64 inst) {
+			const u64 mask = ((u64(1) << (H::n + 1)) - 1) ^ ((u64(1) << H::m) - 1);
 			return ((shift < 0 ? inst << -shift : inst >> shift) & mask) | I::decode(inst);
 		}
 
-		static inline constexpr uint64_t encode(uint64_t imm) {
-			const uint64_t mask = ((uint64_t(1) << (H::n + 1)) - 1) ^ ((uint64_t(1) << H::m) - 1);
+		static inline constexpr u64 encode(u64 imm) {
+			const u64 mask = ((u64(1) << (H::n + 1)) - 1) ^ ((u64(1) << H::m) - 1);
 			return ((shift < 0 ? (imm & mask) >> -shift : (imm & mask) << shift)) | I::encode(imm);
 		}
 	};
@@ -216,8 +222,8 @@ namespace riscv {
 	template<typename R, int W>
 	struct imm_arg_impl_t<R,W>
 	{
-		static inline constexpr R decode(uint64_t inst) { return 0; }
-		static inline constexpr R encode(uint64_t imm) { return 0; }
+		static inline constexpr R decode(u64 inst) { return 0; }
+		static inline constexpr R encode(u64 imm) { return 0; }
 	};
 
 	template<typename R, int W, typename H, typename... T>
@@ -225,26 +231,26 @@ namespace riscv {
 	{
 		typedef imm_arg_impl_t<R,W,T...> I;
 
-		static inline constexpr R decode(uint64_t inst) { return I::decode(inst) | H::decode(inst); }
-		static inline constexpr R encode(uint64_t imm) { return I::encode(imm) | H::encode(imm); }
+		static inline constexpr R decode(u64 inst) { return I::decode(inst) | H::decode(inst); }
+		static inline constexpr R encode(u64 imm) { return I::encode(imm) | H::encode(imm); }
 	};
 
 	template<int W, typename... Args>
-	struct simm_arg_t : imm_arg_impl_t<int64_t,W,Args...>
+	struct simm_arg_t : imm_arg_impl_t<s64,W,Args...>
 	{
-		typedef imm_arg_impl_t<int64_t,W,Args...> I;
+		typedef imm_arg_impl_t<s64,W,Args...> I;
 
-		static constexpr int64_t decode(uint64_t inst) { return sign_extend<int64_t,W>(I::decode(inst)); }
-		static constexpr int64_t encode(uint64_t imm) { return I::encode(imm); }
+		static constexpr s64 decode(u64 inst) { return sign_extend<s64,W>(I::decode(inst)); }
+		static constexpr s64 encode(u64 imm) { return I::encode(imm); }
 	};
 
 	template<int W, typename... Args>
-	struct uimm_arg_t : imm_arg_impl_t<uint64_t,W,Args...>
+	struct uimm_arg_t : imm_arg_impl_t<u64,W,Args...>
 	{
-		typedef imm_arg_impl_t<uint64_t,W,Args...> I;
+		typedef imm_arg_impl_t<u64,W,Args...> I;
 
-		static constexpr uint64_t decode(uint64_t inst) { return I::decode(inst); }
-		static constexpr uint64_t encode(uint64_t imm) { return I::encode(imm); }
+		static constexpr u64 decode(u64 inst) { return I::decode(inst); }
+		static constexpr u64 encode(u64 imm) { return I::encode(imm); }
 	};
 
 }

@@ -143,10 +143,12 @@ TLSF_OBJS =     $(call lib_src_objs, $(TLSF_SRCS))
 TLSF_LIB =      $(LIB_DIR)/libtlsf.a
 
 # libriscv_util
-RV_UTIL_SRCS =  $(LIB_SRC_DIR)/util/riscv-cmdline.cc \
+RV_UTIL_SRCS =  $(LIB_SRC_DIR)/util/riscv-base64.cc \
+                $(LIB_SRC_DIR)/util/riscv-cmdline.cc \
                 $(LIB_SRC_DIR)/util/riscv-color.cc \
                 $(LIB_SRC_DIR)/util/riscv-config.cc \
                 $(LIB_SRC_DIR)/util/riscv-config-parser.cc \
+                $(LIB_SRC_DIR)/util/riscv-host.cc \
                 $(LIB_SRC_DIR)/util/riscv-util.cc
 RV_UTIL_OBJS =  $(call lib_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
@@ -180,8 +182,8 @@ RV_FPU_SRC =    $(LIB_SRC_DIR)/test/test-fpu-gen.c
 # libriscv_asm
 RV_ASM_SRCS =   $(LIB_SRC_DIR)/asm/riscv-disasm.cc \
                 $(LIB_SRC_DIR)/asm/riscv-format.cc \
-                $(LIB_SRC_DIR)/asm/riscv-meta.cc \
                 $(LIB_SRC_DIR)/asm/riscv-jit.cc \
+                $(LIB_SRC_DIR)/asm/riscv-meta.cc \
                 $(LIB_SRC_DIR)/asm/riscv-strings.cc
 RV_ASM_OBJS =   $(call lib_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
@@ -206,29 +208,35 @@ PARSE_META_SRCS = $(APP_SRC_DIR)/riscv-parse-meta.cc
 PARSE_META_OBJS = $(call app_src_objs, $(PARSE_META_SRCS))
 PARSE_META_BIN = $(BIN_DIR)/riscv-parse-meta
 
+# test-bits
+TEST_BITS_SRCS = $(APP_SRC_DIR)/riscv-test-bits.cc
+TEST_BITS_OBJS = $(call app_src_objs, $(TEST_BITS_SRCS))
+TEST_BITS_BIN = $(BIN_DIR)/riscv-test-bits
+
 # test-config
 TEST_CONFIG_SRCS = $(APP_SRC_DIR)/riscv-test-config.cc
 TEST_CONFIG_OBJS = $(call app_src_objs, $(TEST_CONFIG_SRCS))
-TEST_CONFIG_ASM = $(call app_src_asm, $(TEST_CONFIG_SRCS))
 TEST_CONFIG_BIN = $(BIN_DIR)/riscv-test-config
 
 # test-decoder
 TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
 TEST_DECODER_OBJS = $(call app_src_objs, $(TEST_DECODER_SRCS))
-TEST_DECODER_ASM = $(call app_src_asm, $(TEST_DECODER_SRCS))
 TEST_DECODER_BIN = $(BIN_DIR)/riscv-test-decoder
 
 # test-emulate
 TEST_EMULATE_SRCS = $(APP_SRC_DIR)/riscv-test-emulate.cc
 TEST_EMULATE_OBJS = $(call app_src_objs, $(TEST_EMULATE_SRCS))
-TEST_EMULATE_ASM = $(call app_src_asm, $(TEST_EMULATE_SRCS))
 TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
 
 # test-encoder
 TEST_ENCODER_SRCS = $(APP_SRC_DIR)/riscv-test-encoder.cc
 TEST_ENCODER_OBJS = $(call app_src_objs, $(TEST_ENCODER_SRCS))
-TEST_ENCODER_ASM = $(call app_src_asm, $(TEST_ENCODER_SRCS))
 TEST_ENCODER_BIN = $(BIN_DIR)/riscv-test-encoder
+
+# test-endian
+TEST_ENDIAN_SRCS = $(APP_SRC_DIR)/riscv-test-endian.cc
+TEST_ENDIAN_OBJS = $(call app_src_objs, $(TEST_ENDIAN_SRCS))
+TEST_ENDIAN_BIN = $(BIN_DIR)/riscv-test-endian
 
 # test-mmu
 TEST_MMU_SRCS = $(APP_SRC_DIR)/riscv-test-mmu.cc
@@ -242,20 +250,24 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(RV_ASM_SRCS) \
            $(PARSE_META_SRCS) \
            $(PARSE_ELF_SRCS) \
+           $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
            $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS) \
            $(TEST_ENCODER_SRCS) \
+           $(TEST_ENDIAN_SRCS) \
            $(TEST_MMU_SRCS)
 
 BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
            $(PARSE_ELF_BIN) \
            $(PARSE_META_BIN) \
+           $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
            $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN) \
            $(TEST_ENCODER_BIN) \
+           $(TEST_ENDIAN_BIN) \
            $(TEST_MMU_BIN)
 
 # build rules
@@ -380,6 +392,10 @@ $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
+$(TEST_BITS_BIN): $(TEST_BITS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
 $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
@@ -393,6 +409,10 @@ $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

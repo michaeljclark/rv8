@@ -181,7 +181,7 @@ const std::string elf_file_info(elf_file &elf)
 const std::string elf_phdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Phdr &phdr = elf.phdrs[i];
-	return format_string("%s[%2lu]%s %-7s %-9s %s0x%-16tx 0x%-16tx 0x%-16tx 0x%-16tx 0x%-16tx%s %5lu",
+	return format_string("%s[%2lu]%s %-7s %-9s %s0x%-16llx 0x%-16llx 0x%-16llx 0x%-16llx 0x%-16llx%s %5lu",
 		colorize("legend"),
 		i,
 		colorize("reset"),
@@ -200,7 +200,7 @@ const std::string elf_phdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Shdr &shdr = elf.shdrs[i];
-	return format_string("%s[%2lu]%s %-20s %-12s %-20s %s0x%-16tx 0x%-8tx 0x%-8tx 0x%-4tx%s %4d %4d %4d",
+	return format_string("%s[%2lu]%s %-20s %-12s %-20s %s0x%-16llx 0x%-8llx 0x%-8llx 0x%-4llx%s %4d %4d %4d",
 		colorize("legend"),
 		i,
 		colorize("reset"),
@@ -221,7 +221,7 @@ const std::string elf_shdr_info(elf_file &elf, int i, elf_symbol_colorize_fn col
 const std::string elf_sym_info(elf_file &elf, int i, elf_symbol_colorize_fn colorize)
 {
 	Elf64_Sym &sym = elf.symbols[i];
-	return format_string("%s[%4lu]%s %s0x%-16tx%s %5d %-8s %-8s %-8s %6s %s%s%s",
+	return format_string("%s[%4lu]%s %s0x%-16llx%s %5d %-8s %-8s %-8s %6s %s%s%s",
 		colorize("legend"),
 		i,
 		colorize("reset"),
@@ -245,7 +245,7 @@ void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 	printf("%sMachine    %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
 	printf("%sType       %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
 	printf("%sData       %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
-	printf("%sEntryAddr  %s0x%-16tx\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);
+	printf("%sEntryAddr  %s0x%-16llx\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);
 }
 
 void elf_print_section_headers(elf_file &elf, elf_symbol_colorize_fn colorize)
