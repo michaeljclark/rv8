@@ -110,7 +110,7 @@ struct riscv_processor_base : P
 
 	void print_int_regeisters()
 	{
-		for (size_t i = 0; i < 32; i++) {
+		for (size_t i = riscv_ireg_x0; i < P::ireg_count; i++) {
 			char fmt[32];
 			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%u%sx%%s",
 				(P::xlen >> 2), P::xlen == 64 ? "ll" : "");
@@ -121,7 +121,7 @@ struct riscv_processor_base : P
 
 	void print_f32_regeisters()
 	{
-		for (size_t i = 0; i < 32; i++) {
+		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
 				P::freg[i].r.s.val, (i + 1) % 4 == 0 ? "\n" : " ");
 		}
@@ -129,7 +129,7 @@ struct riscv_processor_base : P
 
 	void print_f64_regeisters()
 	{
-		for (size_t i = 0; i < 32; i++) {
+		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
 				P::freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
 		}
