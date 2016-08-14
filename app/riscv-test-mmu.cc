@@ -68,4 +68,8 @@ int main(int argc, char *argv[])
 	rv_tlb_type tlb;
 	tlb.insert(/* va */ 0x10000, /* pte */ 0, /* asid */ 0, /* ppn */ 1);
 	assert(tlb.lookup(/* va */ 0x10000, /* asid */ 0).first == 1);
+
+	memory<u32> mem;
+	mem.add_segment(0x0, /*flags*/0, /*~8TB*/0x7ff00000000ULL, /*1GB*/0x40000000ULL);
+	assert(mem.ma_to_pa(0x1000) == 0x7ff00001000ULL);
 }
