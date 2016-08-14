@@ -282,36 +282,39 @@ pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 bench: all ; $(TEST_DECODER_BIN)
 
+# tests
+
+TEST_MK =       src/test/test.mk
+TEST_RV64 =     ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
+TEST_RV64C =    ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf
+TEST_RV32 =     ARCH=RV32IMAFD TARGET=riscv32-unknown-elf
+TEST_RV32C =    ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
+
 test-run: test-run-rv64
 test-emulate: test-emulate-rv64
 
-test-run-all: test-run-rv64 test-run-rvc64 test-run-rv32 test-run-rvc32
-test-emulate-all: test-emulate-rv64 test-emulate-rvc64 test-emulate-rv32 test-emulate-rvc32
+test-run-all: ; $(MAKE) -j1 test-run-rv64 test-run-rvc64 test-run-rv32 test-run-rvc32
+test-emulate-all: ; $(MAKE) -j1 test-emulate-rv64 test-emulate-rvc64 test-emulate-rv32 test-emulate-rvc32
 
-test-build-rv64: ; make -f src/test/test.mk all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
-test-run-rv64: ; make -f src/test/test.mk test ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
-test-emulate-rv64: ; make -f src/test/test.mk test ARCH=RV64IMAFD TARGET=riscv64-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+test-build-rv64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64)
+test-run-rv64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64)
+test-emulate-rv64: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64) EMULATOR=$(TEST_EMULATE_BIN)
 
-test-build-rvc64: ; make -f src/test/test.mk all ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf
-test-run-rvc64: ; make -f src/test/test.mk test ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf
-test-emulate-rvc64: ; make -f src/test/test.mk test ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+test-build-rvc64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64C)
+test-run-rvc64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64C)
+test-emulate-rvc64: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64C) EMULATOR=$(TEST_EMULATE_BIN)
 
-test-build-rv32: ; make -f src/test/test.mk all ARCH=RV32IMAFD TARGET=riscv32-unknown-elf
-test-run-rv32: ; make -f src/test/test.mk test ARCH=RV32IMAFD TARGET=riscv32-unknown-elf
-test-emulate-rv32: ; make -f src/test/test.mk test ARCH=RV32IMAFD TARGET=riscv32-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+test-build-rv32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32)
+test-run-rv32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32)
+test-emulate-rv32: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32) EMULATOR=$(TEST_EMULATE_BIN)
 
-test-build-rvc32: ; make -f src/test/test.mk all ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
-test-run-rvc32: ; make -f src/test/test.mk test ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
-test-emulate-rvc32: ; make -f src/test/test.mk test ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf EMULATOR=$(TEST_EMULATE_BIN)
+test-build-rvc32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32C)
+test-run-rvc32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32C)
+test-emulate-rvc32: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32C) EMULATOR=$(TEST_EMULATE_BIN)
 
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
 danger: ; @echo Please do not make danger
-
-c_args: all ; @$(PARSE_META_BIN) -A -r $(META_DIR)
-c_switch: all ; @$(PARSE_META_BIN) -S -r $(META_DIR)
-c_header: all ; @$(PARSE_META_BIN) -H -r $(META_DIR)
-c_source: all ; @$(PARSE_META_BIN) -C -r $(META_DIR)
 
 # generated targets
 
