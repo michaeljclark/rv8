@@ -38,7 +38,7 @@
 
 using namespace riscv;
 
-struct riscv_asm : disasm
+struct spasm : disasm
 {
 	uint64_t  addr;              /* decoded address if present */
 	uint32_t  label_target;      /* label target for this instruction */
@@ -49,7 +49,7 @@ struct riscv_asm : disasm
 	uint32_t  is_pcrel     : 1;  /* pc relative address present */
 	uint32_t  is_gprel     : 1;  /* gp relative address present */
 
-	riscv_asm() : disasm(),
+	spasm() : disasm(),
 		label_target(0), label_pair(0), label_branch(0), label_cont(0),
 		is_abs(0), is_pcrel(0), is_gprel(0) {}
 };
@@ -290,7 +290,7 @@ struct riscv_compress_elf
 		return false;
 	}
 
-	void disassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void disassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		size_t inst_length;
 		uintptr_t pc = start;
@@ -305,9 +305,9 @@ struct riscv_compress_elf
 		}
 	}
 
-	void scan_continuations(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t gp)
+	void scan_continuations(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t gp)
 	{
-		std::deque<riscv_asm> dec_hist;
+		std::deque<spasm> dec_hist;
 
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
@@ -336,7 +336,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void label_contntinuations(std::deque<riscv_asm> &bin)
+	void label_contntinuations(std::deque<spasm> &bin)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
@@ -346,7 +346,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	std::pair<size_t,size_t> compress(std::deque<riscv_asm> &bin)
+	std::pair<size_t,size_t> compress(std::deque<spasm> &bin)
 	{
 		size_t bytes = 0, saving = 0;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
@@ -373,7 +373,7 @@ struct riscv_compress_elf
 		return std::pair<size_t,size_t>(bytes, saving);
 	}
 
-	void relocate(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end)
+	void relocate(std::deque<spasm> &bin, uintptr_t start, uintptr_t end)
 	{
 		std::map<uint32_t,intptr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
@@ -405,10 +405,10 @@ struct riscv_compress_elf
 		}
 	}
 
-	void pad_with_nops(std::deque<riscv_asm> &bin, size_t size)
+	void pad_with_nops(std::deque<spasm> &bin, size_t size)
 	{
 		while (size > 0) {
-			riscv_asm dec;
+			spasm dec;
 			dec.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
 			decode_inst_rv64(dec, dec.inst);
 			dec.pc = bin.back().pc + inst_length(bin.back().inst);
@@ -421,7 +421,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void reassemble(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void reassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
@@ -439,7 +439,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_external(std::deque<riscv_asm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void print_external(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
 	{
 		std::map<uint32_t,intptr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
@@ -451,7 +451,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_continuations(std::deque<riscv_asm> &bin, uintptr_t gp)
+	void print_continuations(std::deque<spasm> &bin, uintptr_t gp)
 	{
 		size_t line = 0;
 		std::deque<disasm> dec_hist;
@@ -463,7 +463,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_disassembly(std::deque<riscv_asm> &bin, uintptr_t gp)
+	void print_disassembly(std::deque<spasm> &bin, uintptr_t gp)
 	{
 		std::deque<disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
@@ -502,7 +502,7 @@ struct riscv_compress_elf
 				printf("\nSection[%2lu] %s (0x%tx - 0x%tx)\n",
 					i, elf.shdr_name(i), uintptr_t(shdr.sh_addr), uintptr_t(shdr.sh_addr + shdr.sh_size));
 
-				std::deque<riscv_asm> bin;
+				std::deque<spasm> bin;
 				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 				scan_continuations(bin, shdr.sh_addr, shdr.sh_addr + shdr.sh_size, uintptr_t(gp_sym ? gp_sym->st_value : 0));
@@ -611,7 +611,7 @@ int main(int argc, const char *argv[])
 	printf("\n");
 	printf("sizeof(decode) = %lu\n", sizeof(decode));
 	printf("sizeof(disasm) = %lu\n", sizeof(disasm));
-	printf("sizeof(riscv_asm)    = %lu\n", sizeof(riscv_asm));
+	printf("sizeof(spasm) = %lu\n", sizeof(spasm));
 
 	riscv_compress_elf elf_compress;
 	elf_compress.parse_commandline(argc, argv);
