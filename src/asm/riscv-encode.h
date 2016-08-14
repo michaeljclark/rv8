@@ -226,6 +226,12 @@ template <typename T> inline uint64_t encode_r4_m(T &dec)
 	return arg_rd::encode(dec.rd) | arg_rs1::encode(dec.rs1) | arg_rs2::encode(dec.rs2) | arg_rs3::encode(dec.rs3) | arg_rm::encode(dec.rm);
 }
 
+/* Encode R fence */
+template <typename T> inline uint64_t encode_r_f(T &dec)
+{
+	return arg_pred::encode(dec.pred) | arg_succ::encode(dec.succ);
+}
+
 /* Encode I */
 template <typename T> inline uint64_t encode_i(T &dec)
 {

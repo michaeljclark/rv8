@@ -296,6 +296,15 @@ template <typename T> inline void decode_r4_m(T &dec, uint64_t inst)
 	dec.rm = arg_rm::decode(inst);
 }
 
+/* Decode R fence */
+template <typename T> inline void decode_r_f(T &dec, uint64_t inst)
+{
+	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.pred = arg_pred::decode(inst);
+	dec.succ = arg_succ::decode(inst);
+	dec.imm = 0;
+}
+
 /* Decode I */
 template <typename T> inline void decode_i(T &dec, uint64_t inst)
 {

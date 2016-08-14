@@ -420,10 +420,13 @@ uint64_t riscv::emit_and(ireg5 rd, ireg5 rs1, ireg5 rs2)
 	return encode_inst(dec);
 }
 
-uint64_t riscv::emit_fence()
+uint64_t riscv::emit_fence(arg4 pred, arg4 succ)
 {
 	decode dec;
+	if (!(pred.valid() && succ.valid())) return 0; /* illegal instruction */
 	dec.op = riscv_op_fence;
+	dec.pred = pred;
+	dec.succ = succ;
 	return encode_inst(dec);
 }
 
@@ -1075,10 +1078,12 @@ uint64_t riscv::emit_dret()
 	return encode_inst(dec);
 }
 
-uint64_t riscv::emit_sfence_vm()
+uint64_t riscv::emit_sfence_vm(ireg5 rs1)
 {
 	decode dec;
+	if (!(rs1.valid())) return 0; /* illegal instruction */
 	dec.op = riscv_op_sfence_vm;
+	dec.rs1 = rs1;
 	return encode_inst(dec);
 }
 

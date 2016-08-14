@@ -447,6 +447,7 @@ enum riscv_codec
 	riscv_codec_r4_m,
 	riscv_codec_r_a,
 	riscv_codec_r_l,
+	riscv_codec_r_f,
 	riscv_codec_cb,
 	riscv_codec_cb_imm,
 	riscv_codec_cb_sh5,

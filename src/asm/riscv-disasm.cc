@@ -157,6 +157,18 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 					default:           print_add(offset, "unk"); break;
 				}
 				break;
+			case 'p':
+				if (dec.pred & riscv_fence_i) print_add(offset, "i");
+				if (dec.pred & riscv_fence_o) print_add(offset, "o");
+				if (dec.pred & riscv_fence_r) print_add(offset, "r");
+				if (dec.pred & riscv_fence_w) print_add(offset, "w");
+				break;
+			case 's':
+				if (dec.succ & riscv_fence_i) print_add(offset, "i");
+				if (dec.succ & riscv_fence_o) print_add(offset, "o");
+				if (dec.succ & riscv_fence_r) print_add(offset, "r");
+				if (dec.succ & riscv_fence_w) print_add(offset, "w");
+				break;
 			case 'O':
 				printf("%s", colorize("opcode"));
 				print_add(offset, riscv_inst_name_sym[dec.op]);

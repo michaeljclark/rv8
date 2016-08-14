@@ -586,6 +586,7 @@ inline void decode_inst_type(T &dec, uint64_t inst)
 		case riscv_codec_r4_m:          riscv::decode_r4_m(dec, inst);                     break;
 		case riscv_codec_r_a:           riscv::decode_r_a(dec, inst);                      break;
 		case riscv_codec_r_l:           riscv::decode_r_l(dec, inst);                      break;
+		case riscv_codec_r_f:           riscv::decode_r_f(dec, inst);                      break;
 		case riscv_codec_cb:            riscv::decode_cb(dec, inst);                       break;
 		case riscv_codec_cb_imm:        riscv::decode_cb_imm(dec, inst);                   break;
 		case riscv_codec_cb_sh5:        riscv::decode_cb_sh5(dec, inst);                   break;
@@ -637,6 +638,7 @@ inline uint64_t encode_inst(T &dec)
 		case riscv_codec_r4_m:          return inst |= riscv::encode_r4_m(dec);            break;
 		case riscv_codec_r_a:           return inst |= riscv::encode_r_a(dec);             break;
 		case riscv_codec_r_l:           return inst |= riscv::encode_r_l(dec);             break;
+		case riscv_codec_r_f:           return inst |= riscv::encode_r_f(dec);             break;
 		case riscv_codec_cb:            return inst |= riscv::encode_cb(dec);              break;
 		case riscv_codec_cb_imm:        return inst |= riscv::encode_cb_imm(dec);          break;
 		case riscv_codec_cb_sh5:        return inst |= riscv::encode_cb_sh5(dec);          break;

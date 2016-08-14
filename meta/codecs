@@ -36,6 +36,8 @@ r·m+3f     rm,frd,frs1,frs2       frd frs1 frs2 rm
 r4·m       rm,frd,frs1,frs2,frs3  frd frs1 frs2 frs3 rm
 r·a        aqrl,rd,rs2,(rs1)      rd rs1 rs2 aq rl
 r·l        aqrl,rd,(rs1)          rd rs1 aq rl
+r·f        succ,pred              pred succ
+r+sf       rs1                    rs1
 cb         rs1,rs2,offset         crs1q cimmb           # rd=zero rs2=zero
 cb·imm     rd,rs1,imm             crs1rdq cnzimmi       # rd=rs1 rs2=zero
 cb·sh5     rd,rs1,imm             crs1rdq cimmsh5       # rd=rs1 rs2=zero

@@ -795,6 +795,17 @@ const riscv_arg_data riscv_codec_r_l_args[] = {
 	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
 };
 
+const riscv_arg_data riscv_codec_r_f_args[] = {
+	{ riscv_arg_name_pred, riscv_arg_type_arg4, riscv_type_arg, 4 },
+	{ riscv_arg_name_succ, riscv_arg_type_arg4, riscv_type_arg, 4 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
+const riscv_arg_data riscv_codec_r_sf_args[] = {
+	{ riscv_arg_name_rs1, riscv_arg_type_ireg5, riscv_type_ireg, 5 },
+	{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }
+};
+
 const riscv_arg_data riscv_codec_cb_args[] = {
 	{ riscv_arg_name_crs1q, riscv_arg_type_creg3, riscv_type_creg, 3 },
 	{ riscv_arg_name_cimmb, riscv_arg_type_simm9, riscv_type_simm, 9 },
@@ -1048,7 +1059,7 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_r,
 	riscv_codec_r,
 	riscv_codec_r,
-	riscv_codec_none,
+	riscv_codec_r_f,
 	riscv_codec_none,
 	riscv_codec_i,
 	riscv_codec_i,
@@ -1107,7 +1118,7 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_none,
 	riscv_codec_none,
 	riscv_codec_none,
-	riscv_codec_none,
+	riscv_codec_r,
 	riscv_codec_none,
 	riscv_codec_i,
 	riscv_codec_i,
@@ -1271,7 +1282,7 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,
-	riscv_fmt_none,
+	riscv_fmt_succ_pred,
 	riscv_fmt_none,
 	riscv_fmt_rd_offset_rs1,
 	riscv_fmt_rd_offset_rs1,
@@ -1330,7 +1341,7 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_none,
 	riscv_fmt_none,
 	riscv_fmt_none,
-	riscv_fmt_none,
+	riscv_fmt_rs1,
 	riscv_fmt_none,
 	riscv_fmt_rd_csr_rs1,
 	riscv_fmt_rd_csr_rs1,
@@ -1494,7 +1505,7 @@ const riscv_arg_data* riscv_inst_arg_data[] = {
 	riscv_codec_r_args,
 	riscv_codec_r_args,
 	riscv_codec_r_args,
-	riscv_codec_none_args,
+	riscv_codec_r_f_args,
 	riscv_codec_none_args,
 	riscv_codec_i_l_args,
 	riscv_codec_i_l_args,
@@ -1553,7 +1564,7 @@ const riscv_arg_data* riscv_inst_arg_data[] = {
 	riscv_codec_none_args,
 	riscv_codec_none_args,
 	riscv_codec_none_args,
-	riscv_codec_none_args,
+	riscv_codec_r_sf_args,
 	riscv_codec_none_args,
 	riscv_codec_i_csr_args,
 	riscv_codec_i_csr_args,

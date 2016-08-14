@@ -50,7 +50,7 @@ srl        rd rs1 rs2      31..25=0  14..12=5 6..2=0x0C 1..0=3            r     
 sra        rd rs1 rs2      31..25=32 14..12=5 6..2=0x0C 1..0=3            r     rv32i rv64i
 or         rd rs1 rs2      31..25=0  14..12=6 6..2=0x0C 1..0=3            r     rv32i rv64i
 and        rd rs1 rs2      31..25=0  14..12=7 6..2=0x0C 1..0=3            r     rv32i rv64i
-fence      31..28=ignore pred succ     19..15=ignore 14..12=0 11..7=ignore 6..2=0x03 1..0=3 none rv32i rv64i
+fence      31..28=ignore pred succ     19..15=ignore 14..12=0 11..7=ignore 6..2=0x03 1..0=3 r·f  rv32i rv64i
 fence.i    31..28=ignore 27..20=ignore 19..15=ignore 14..12=1 11..7=ignore 6..2=0x03 1..0=3 none rv32i rv64i
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
@@ -127,7 +127,7 @@ sret       11..7=0 19..15=0 31..20=0x102      14..12=0 6..2=0x1C 1..0=3  none   
 hret       11..7=0 19..15=0 31..20=0x202      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 mret       11..7=0 19..15=0 31..20=0x302      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 dret       11..7=0 19..15=0 31..20=0x7b2      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-sfence.vm  11..7=0 rs1      31..20=0x104      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
+sfence.vm  11..7=0 rs1      31..20=0x104      14..12=0 6..2=0x1C 1..0=3  r+sf   rv32s rv64s
 wfi        11..7=0 19..15=0 31..20=0x105      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 csrrw      rd      rs1      csr12             14..12=1 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
 csrrs      rd      rs1      csr12             14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s

@@ -2,6 +2,8 @@
 # <format> <format description>
 
 none
+rs1
+succ,pred
 offset
 rs1,rs2
 rd,imm
