@@ -54,14 +54,14 @@ using namespace riscv;
  *
  * This template is parameterized with a processor from riscv-processor.h
  *
- *   riscv_processor_rv32ima
- *   riscv_processor_rv64ima
- *   riscv_processor_rv32imafd
- *   riscv_processor_rv64imafd
+ *   processor_rv32ima
+ *   processor_rv64ima
+ *   processor_rv32imafd
+ *   processor_rv64imafd
  */
 
 template<typename T, typename P>
-struct riscv_processor_base : P
+struct processor_base : P
 {
 	typedef T decode_type;
 	typedef P processor_type;
@@ -74,7 +74,7 @@ struct riscv_processor_base : P
 	bool log_registers;
 	bool log_instructions;
 
-	riscv_processor_base() :
+	processor_base() :
 		P(),
 		mapped_segments(),
 		heap_begin(0),
@@ -151,7 +151,7 @@ struct riscv_processor_base : P
 /* RV32 Partial processor specialization templates (RV32IMA, RV32IMAC, RV32IMAFD, RV32IMAFDC) */
 
 template <typename T>
-struct riscv_processor_rv32ima_unit : riscv_processor_base<T,riscv_processor_rv32ima>
+struct processor_rv32ima_unit : processor_base<T,processor_rv32ima>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMA>(dec, inst);
@@ -163,7 +163,7 @@ struct riscv_processor_rv32ima_unit : riscv_processor_base<T,riscv_processor_rv3
 };
 
 template <typename T>
-struct riscv_processor_rv32imac_unit : riscv_processor_base<T,riscv_processor_rv32ima>
+struct processor_rv32imac_unit : processor_base<T,processor_rv32ima>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
@@ -176,7 +176,7 @@ struct riscv_processor_rv32imac_unit : riscv_processor_base<T,riscv_processor_rv
 };
 
 template <typename T>
-struct riscv_processor_rv32imafd_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
+struct processor_rv32imafd_unit : processor_base<T,processor_rv32imafd>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
@@ -188,7 +188,7 @@ struct riscv_processor_rv32imafd_unit : riscv_processor_base<T,riscv_processor_r
 };
 
 template <typename T>
-struct riscv_processor_rv32imafdc_unit : riscv_processor_base<T,riscv_processor_rv32imafd>
+struct processor_rv32imafdc_unit : processor_base<T,processor_rv32imafd>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
@@ -204,7 +204,7 @@ struct riscv_processor_rv32imafdc_unit : riscv_processor_base<T,riscv_processor_
 /* RV64 Partial processor specialization templates (RV64IMA, RV64IMAC, RV64IMAFD, RV64IMAFDC) */
 
 template <typename T>
-struct riscv_processor_rv64ima_unit : riscv_processor_base<T,riscv_processor_rv64ima>
+struct processor_rv64ima_unit : processor_base<T,processor_rv64ima>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMA>(dec, inst);
@@ -216,7 +216,7 @@ struct riscv_processor_rv64ima_unit : riscv_processor_base<T,riscv_processor_rv6
 };
 
 template <typename T>
-struct riscv_processor_rv64imac_unit : riscv_processor_base<T,riscv_processor_rv64ima>
+struct processor_rv64imac_unit : processor_base<T,processor_rv64ima>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
@@ -229,7 +229,7 @@ struct riscv_processor_rv64imac_unit : riscv_processor_base<T,riscv_processor_rv
 };
 
 template <typename T>
-struct riscv_processor_rv64imafd_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
+struct processor_rv64imafd_unit : processor_base<T,processor_rv64imafd>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
@@ -241,7 +241,7 @@ struct riscv_processor_rv64imafd_unit : riscv_processor_base<T,riscv_processor_r
 };
 
 template <typename T>
-struct riscv_processor_rv64imafdc_unit : riscv_processor_base<T,riscv_processor_rv64imafd>
+struct processor_rv64imafdc_unit : processor_base<T,processor_rv64imafd>
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
@@ -303,14 +303,14 @@ struct riscv_proxy_runner : P
 
 /* Parameterized kernel proxy processor models */
 
-using riscv_processor_proxy_rv32ima = riscv_proxy_runner<riscv_processor_rv32ima_unit<decode>>;
-using riscv_processor_proxy_rv32imac = riscv_proxy_runner<riscv_processor_rv32imac_unit<decode>>;
-using riscv_processor_proxy_rv32imafd = riscv_proxy_runner<riscv_processor_rv32imafd_unit<decode>>;
-using riscv_processor_proxy_rv32imafdc = riscv_proxy_runner<riscv_processor_rv32imafdc_unit<decode>>;
-using riscv_processor_proxy_rv64ima = riscv_proxy_runner<riscv_processor_rv64ima_unit<decode>>;
-using riscv_processor_proxy_rv64imac = riscv_proxy_runner<riscv_processor_rv64imac_unit<decode>>;
-using riscv_processor_proxy_rv64imafd = riscv_proxy_runner<riscv_processor_rv64imafd_unit<decode>>;
-using riscv_processor_proxy_rv64imafdc = riscv_proxy_runner<riscv_processor_rv64imafdc_unit<decode>>;
+using processor_proxy_rv32ima = riscv_proxy_runner<processor_rv32ima_unit<decode>>;
+using processor_proxy_rv32imac = riscv_proxy_runner<processor_rv32imac_unit<decode>>;
+using processor_proxy_rv32imafd = riscv_proxy_runner<processor_rv32imafd_unit<decode>>;
+using processor_proxy_rv32imafdc = riscv_proxy_runner<processor_rv32imafdc_unit<decode>>;
+using processor_proxy_rv64ima = riscv_proxy_runner<processor_rv64ima_unit<decode>>;
+using processor_proxy_rv64imac = riscv_proxy_runner<processor_rv64imac_unit<decode>>;
+using processor_proxy_rv64imafd = riscv_proxy_runner<processor_rv64imafd_unit<decode>>;
+using processor_proxy_rv64imafdc = riscv_proxy_runner<processor_rv64imafdc_unit<decode>>;
 
 
 /* Emulator */
@@ -478,7 +478,7 @@ struct riscv_emulator
 	{
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
-		proc.flags = emulator_debug ? riscv_processor_flag_emulator_debug : 0;
+		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
 		proc.log_registers = log_registers;
 		proc.log_instructions = log_instructions;
 		proc.pc = elf.ehdr.e_entry;
@@ -517,19 +517,19 @@ struct riscv_emulator
 		switch (elf.ei_class) {
 			case ELFCLASS32:
 				switch (ext) {
-					case rv_isa_ima: start<riscv_processor_proxy_rv32ima>(); break;
-					case rv_isa_imac: start<riscv_processor_proxy_rv32imac>(); break;
-					case rv_isa_imafd: start<riscv_processor_proxy_rv32imafd>(); break;
-					case rv_isa_imafdc: start<riscv_processor_proxy_rv32imafdc>(); break;
+					case rv_isa_ima: start<processor_proxy_rv32ima>(); break;
+					case rv_isa_imac: start<processor_proxy_rv32imac>(); break;
+					case rv_isa_imafd: start<processor_proxy_rv32imafd>(); break;
+					case rv_isa_imafdc: start<processor_proxy_rv32imafdc>(); break;
 					case rv_isa_none: panic("unknown isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
 				switch (ext) {
-					case rv_isa_ima: start<riscv_processor_proxy_rv64ima>(); break;
-					case rv_isa_imac: start<riscv_processor_proxy_rv64imac>(); break;
-					case rv_isa_imafd: start<riscv_processor_proxy_rv64imafd>(); break;
-					case rv_isa_imafdc: start<riscv_processor_proxy_rv64imafdc>(); break;
+					case rv_isa_ima: start<processor_proxy_rv64ima>(); break;
+					case rv_isa_imac: start<processor_proxy_rv64imac>(); break;
+					case rv_isa_imafd: start<processor_proxy_rv64imafd>(); break;
+					case rv_isa_imafdc: start<processor_proxy_rv64imafdc>(); break;
 					case rv_isa_none: panic("unknown isa extension"); break;
 				}
 				break;

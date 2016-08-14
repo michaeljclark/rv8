@@ -110,7 +110,7 @@ namespace riscv {
 			// keep track of the mapped segment and set the new heap_end
 			proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
 			proc.heap_end = new_heap_end;
-			if (proc.flags & riscv_processor_flag_emulator_debug) {
+			if (proc.flags & processor_flag_emulator_debug) {
 				debug("brk: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
 					curr_heap_end, new_heap_end);
 			}
