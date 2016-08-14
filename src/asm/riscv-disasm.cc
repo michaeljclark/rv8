@@ -178,10 +178,11 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 				printf("%s", colorize("reset"));
  				break;
 			case 'A':
-				if (dec.aq) print_add(offset, ".aq"); break;
+				if (dec.aq) print_add(offset, ".aq");
+				break;
 			case 'R':
-				if (dec.rl) print_add(offset, ".rl"); break;
- 				break;
+				if (dec.rl) print_add(offset, ".rl");
+				break;
 			default:
 				break;
 		}
