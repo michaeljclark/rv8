@@ -26,6 +26,8 @@ namespace riscv {
 
 		std::vector<memory_segment_type> segments;
 
+		~memory() { clear_segments(); }
+
 		/* map new memory segment given host physical address and size */
 		void add_segment(UX ma, UX flags, uintptr_t pa, size_t size)
 		{
@@ -39,6 +41,14 @@ namespace riscv {
 				(uintptr_t)pa, (uintptr_t)pa + size);
 			debug("        ma: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
 				(uintptr_t)ma, (uintptr_t)ma + size);
+		}
+
+		/* Unmap memory segments */
+		void clear_segments()
+		{
+			for (auto &seg: segments)
+				munmap((void*)seg.pa, seg.size);
+			segments.clear();
 		}
 
 		/* convert machine address to host physical address */
