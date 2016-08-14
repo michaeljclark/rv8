@@ -24,6 +24,12 @@ aqrl    acquire              2       "Acquire memory operation - prior writes fr
 aqrl    release              1       "Release memory operation - visible to other harts in subsequent reads"
 aqrl    acq_rel              3       "Read-modify-write - global order of reads and writes"
 
+# Fence (pred and succ values)
+fence   i                    8       "Input"
+fence   o                    4       "Output"
+fence   r                    2       "Read"
+fence   w                    1       "Write"
+
 # Floating Point Exception Register (fcsr)
 fcsr    NV                   1       "Invalid Operation"
 fcsr    DZ                   2       "Divide by Zero"

@@ -172,6 +172,22 @@ namespace riscv {
 						default:           args += "unk"; break;
 					}
 					break;
+				case 'p':
+					switch(dec.pred) {
+						if (dec.pred & riscv_fence_i) args += "i";
+						if (dec.pred & riscv_fence_o) args += "o";
+						if (dec.pred & riscv_fence_r) args += "r";
+						if (dec.pred & riscv_fence_w) args += "w";
+					}
+					break;
+				case 's':
+					switch(dec.succ) {
+						if (dec.succ & riscv_fence_i) args += "i";
+						if (dec.succ & riscv_fence_o) args += "o";
+						if (dec.succ & riscv_fence_r) args += "r";
+						if (dec.succ & riscv_fence_w) args += "w";
+					}
+					break;
 				case '\t': while (args.length() < 12) args += " "; break;
 				case 'A': if (dec.aq) args += ".aq"; break;
 				case 'R': if (dec.rl) args += ".rl"; break;

@@ -40,6 +40,14 @@ enum riscv_aqrl
 	riscv_aqrl_acq_rel = 3,
 };
 
+enum riscv_fence
+{
+	riscv_fence_i = 8,
+	riscv_fence_o = 4,
+	riscv_fence_r = 2,
+	riscv_fence_w = 1,
+};
+
 enum riscv_fcsr
 {
 	riscv_fcsr_NV = 1,
