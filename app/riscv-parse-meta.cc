@@ -828,7 +828,7 @@ void riscv_parse_meta::print_interp_h()
 			printf("\t\t\t\t%s;\n",  inst.c_str());
 			if (branch) printf("\t\t\t\telse proc.pc += inst_length;\n");
 			else if (!jump) printf("\t\t\t\tproc.pc += inst_length;\n");
-			printf("\t\t\t\tgoto x;\n");
+			printf("\t\t\t\treturn true;\n");
 			printf("\t\t\t};\n");
 			printf("\t\t};\n");
 		}
@@ -836,7 +836,6 @@ void riscv_parse_meta::print_interp_h()
 		printf("\t\t\tbreak;\n");
 		printf("\t}\n");
 		printf("\treturn false; /* illegal instruction */\n");
-		printf("x:\treturn true;\n");
 		printf("}\n\n");
 	}
 	printf("#endif\n");
