@@ -707,17 +707,17 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 
 static const char* unknown_op_comment = "/*              unknown */ ";
 
-static void print_array_unknown_str(const char *str, bool no_comment)
+static void print_array_illegal_str(const char *str, bool no_comment)
 {
 	printf("\t%s\"%s\",\n", no_comment ? "" : unknown_op_comment, str);
 }
 
-static void print_array_unknown_enum(const char *str, bool no_comment)
+static void print_array_illegal_enum(const char *str, bool no_comment)
 {
 	printf("\t%s%s,\n", no_comment ? "" : unknown_op_comment, str);
 }
 
-static void print_array_unknown_uint64(uint64_t num, bool no_comment)
+static void print_array_illegal_uint64(uint64_t num, bool no_comment)
 {
 	printf("\t%s0x%016" PRIx64 ",\n", no_comment ? "" : unknown_op_comment, num);
 }
@@ -1337,7 +1337,7 @@ R"C(
 
 	// Instruction codec enum
 	printf("enum riscv_codec\n{\n");
-	printf("\triscv_codec_unknown,\n");
+	printf("\triscv_codec_illegal,\n");
 	for (auto &codec : get_unique_codecs()) {
 		printf("\triscv_codec_%s,\n", codec.c_str());
 	}
@@ -1368,7 +1368,7 @@ R"C(
 
 	// Instruction opcode enum
 	printf("enum riscv_op\n{\n");
-	printf("\triscv_op_unknown = 0,\n");
+	printf("\triscv_op_illegal = 0,\n");
 	for (auto &opcode : opcodes) {
 		printf("\t%s = %lu,%s\n", opcode_format("riscv_op_", opcode, "_").c_str(), opcode->num,
 			no_comment || opcode->long_name.size() == 0 ? "" :
@@ -1437,7 +1437,7 @@ R"C(#include "riscv-types.h"
 			printf("\t{ %s, nullptr }\n};\n\n",
 				(zero_not_oh ?
 						"0" :
-						"riscv_op_unknown"));
+						"riscv_op_illegal"));
 		}
 		printf("\n");
 	}
@@ -1457,7 +1457,7 @@ R"C(#include "riscv-types.h"
 
 	// Instruction codecs
 	printf("const riscv_codec riscv_inst_codec[] = {\n");
-	print_array_unknown_enum("riscv_codec_unknown", no_comment);
+	print_array_illegal_enum("riscv_codec_illegal", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string codec_name = format_codec("", opcode->codec, "_");
 		printf("\t%sriscv_codec_%s,\n",\
@@ -1468,7 +1468,7 @@ R"C(#include "riscv-types.h"
 
 	// Instruction formats
 	printf("const char* riscv_inst_format[] = {\n");
-	print_array_unknown_enum("riscv_fmt_none", no_comment);
+	print_array_illegal_enum("riscv_fmt_none", no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s%s,\n",
 			opcode_comment(opcode, no_comment).c_str(),
@@ -1487,7 +1487,7 @@ R"C(#include "riscv-types.h"
 
 	// Instruction match bits
 	printf("const uint64_t riscv_inst_match[] = {\n");
-	print_array_unknown_uint64(0ULL, no_comment);
+	print_array_illegal_uint64(0ULL, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%016" PRIx64 ",\n",
 			opcode_comment(opcode, no_comment).c_str(), opcode->match);
@@ -1496,7 +1496,7 @@ R"C(#include "riscv-types.h"
 
 	// Instruction mask bits
 	printf("const uint64_t riscv_inst_mask[] = {\n");
-	print_array_unknown_uint64(0ULL, no_comment);
+	print_array_illegal_uint64(0ULL, no_comment);
 	for (auto &opcode : opcodes) {
 		printf("\t%s0x%016" PRIx64 ",\n",
 			opcode_comment(opcode, no_comment).c_str(), opcode->mask);
@@ -1506,7 +1506,7 @@ R"C(#include "riscv-types.h"
 	// RVC compression table (per isa width)
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("const riscv_comp_data* riscv_inst_comp_%s[] = {\n", isa_width.second.c_str());
-		print_array_unknown_enum("nullptr", no_comment);
+		print_array_illegal_enum("nullptr", no_comment);
 		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
 		for (auto &opcode : opcodes) {
 			std::string opcode_key = opcode_format("", opcode, ".");
@@ -1522,8 +1522,8 @@ R"C(#include "riscv-types.h"
 	// RVC decompression table
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("const int riscv_inst_decomp_%s[] = {\n", isa_width.second.c_str());
-		if (zero_not_oh) print_array_unknown_enum("0", no_comment);
-		else print_array_unknown_enum("riscv_op_unknown", no_comment);
+		if (zero_not_oh) print_array_illegal_enum("0", no_comment);
+		else print_array_illegal_enum("riscv_op_illegal", no_comment);
 		for (auto &opcode : opcodes) {
 			bool include_isa = opcode->include_isa(isa_width.first);
 			std::string opcode_key = opcode_format("", opcode, ".");
@@ -1535,7 +1535,7 @@ R"C(#include "riscv-types.h"
 						opcode_format("riscv_op_", opcode->compressed->decomp_opcode, "_").c_str()) :
 					(zero_not_oh ?
 						"0" :
-						"riscv_op_unknown"));
+						"riscv_op_illegal"));
 		}
 		printf("};\n\n");
 	}
@@ -1595,7 +1595,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 
 	// Instruction names
 	printf("const char* riscv_inst_name_sym[] = {\n");
-	print_array_unknown_str("unknown", no_comment);
+	print_array_illegal_str("illegal", no_comment);
 	for (auto &opcode : opcodes) {
 		std::string opcode_name = opcode_format("", opcode, ".", false);
 		printf("\t%s\"%s\",\n",
@@ -1663,7 +1663,7 @@ void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
 	printf(">\n");
 	printf("inline uint64_t decode_inst_op(uint64_t inst)\n");
 	printf("{\n");
-	printf("\tuint64_t op = riscv_op_unknown;\n");
+	printf("\tuint64_t op = riscv_op_illegal;\n");
 	print_switch_decoder_node(root_node, 1);
 	printf("\treturn op;\n");
 	printf("}\n\n");

@@ -77,7 +77,7 @@ const char* riscv_freg_name_sym[] = {
 };
 
 const char* riscv_inst_name_sym[] = {
-	"unknown",
+	"illegal",
 	"lui",
 	"auipc",
 	"jal",

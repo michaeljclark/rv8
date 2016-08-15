@@ -433,7 +433,7 @@ enum riscv_freg_name
 
 enum riscv_codec
 {
-	riscv_codec_unknown,
+	riscv_codec_illegal,
 	riscv_codec_none,
 	riscv_codec_u,
 	riscv_codec_uj,
@@ -565,7 +565,7 @@ enum riscv_arg_type
 
 enum riscv_op
 {
-	riscv_op_unknown = 0,
+	riscv_op_illegal = 0,
 	riscv_op_lui = 1,
 	riscv_op_auipc = 2,
 	riscv_op_jal = 3,

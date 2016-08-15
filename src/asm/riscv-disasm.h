@@ -47,7 +47,7 @@ namespace riscv {
 		{ riscv_op_auipc,   riscv_op_sw,       rva_pcrel },
 		{ riscv_op_auipc,   riscv_op_fsw,      rva_pcrel },
 		{ riscv_op_auipc,   riscv_op_fsd,      rva_pcrel },
-		{ riscv_op_unknown, riscv_op_unknown,  rva_none  },
+		{ riscv_op_illegal, riscv_op_illegal,  rva_none  },
 	};
 
 	// instruction buffer length

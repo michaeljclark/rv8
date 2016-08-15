@@ -521,7 +521,7 @@ struct riscv_emulator
 					case rv_isa_imac: start<processor_proxy_rv32imac>(); break;
 					case rv_isa_imafd: start<processor_proxy_rv32imafd>(); break;
 					case rv_isa_imafdc: start<processor_proxy_rv32imafdc>(); break;
-					case rv_isa_none: panic("unknown isa extension"); break;
+					case rv_isa_none: panic("illegal isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
@@ -530,10 +530,10 @@ struct riscv_emulator
 					case rv_isa_imac: start<processor_proxy_rv64imac>(); break;
 					case rv_isa_imafd: start<processor_proxy_rv64imafd>(); break;
 					case rv_isa_imafdc: start<processor_proxy_rv64imafdc>(); break;
-					case rv_isa_none: panic("unknown isa extension"); break;
+					case rv_isa_none: panic("illegal isa extension"); break;
 				}
 				break;
-			default: panic("unknonwn elf class");
+			default: panic("illegal elf class");
 		}
 	}
 };

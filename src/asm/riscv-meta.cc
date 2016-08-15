@@ -1021,7 +1021,7 @@ const riscv_arg_data riscv_codec_css_sdsp_f_args[] = {
 };
 
 const riscv_codec riscv_inst_codec[] = {
-	riscv_codec_unknown,
+	riscv_codec_illegal,
 	riscv_codec_u,
 	riscv_codec_u,
 	riscv_codec_uj,

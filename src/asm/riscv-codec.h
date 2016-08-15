@@ -141,7 +141,7 @@ namespace riscv
 	inline void decompress_inst_rv32(T &dec)
 	{
 	    int decomp_op = riscv_inst_decomp_rv32[dec.op];
-	    if (decomp_op != riscv_op_unknown) {
+	    if (decomp_op != riscv_op_illegal) {
 	        dec.op = decomp_op;
 	        dec.codec = riscv_inst_codec[decomp_op];
 	    }
@@ -151,7 +151,7 @@ namespace riscv
 	inline void decompress_inst_rv64(T &dec)
 	{
 	    int decomp_op = riscv_inst_decomp_rv64[dec.op];
-	    if (decomp_op != riscv_op_unknown) {
+	    if (decomp_op != riscv_op_illegal) {
 	        dec.op = decomp_op;
 	        dec.codec = riscv_inst_codec[decomp_op];
 	    }

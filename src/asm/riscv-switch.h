@@ -12,7 +12,7 @@
 template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
 inline uint64_t decode_inst_op(uint64_t inst)
 {
-	uint64_t op = riscv_op_unknown;
+	uint64_t op = riscv_op_illegal;
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
 		case 0:
 			// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd
