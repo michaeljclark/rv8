@@ -106,17 +106,17 @@ namespace riscv {
 		enum  { xlen = sizeof(ux) << 3 };
 
 		union {
-			struct { s64 val; }                     l;
-			struct { u64 val; }                     lu;
-			struct { s64 val; }                     x;
-			struct { u64 val; }                     xu;
+			struct { s64 val; }              l;
+			struct { u64 val; }              lu;
+			struct { s64 val; }              x;
+			struct { u64 val; }              xu;
 		#if _BYTE_ORDER == _LITTLE_ENDIAN
-			struct { f64 val; }                     d;
+			struct { f64 val; }              d;
 			struct { f32 val;  u32 pad; }    s;
 			struct { s32 val;  u32 pad; }    w;
 			struct { u32 val;  u32 pad; }    wu;
 		#else
-			struct { f64 val; }                     d;
+			struct { f64 val; }              d;
 			struct { u32 pad;  f32 val; }    s;
 			struct { u32 pad;  s32 val; }    w;
 			struct { u32 pad;  u32 val; }    wu;
