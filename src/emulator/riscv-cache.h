@@ -41,13 +41,13 @@ namespace riscv {
 			ppn_bits = PPN_BITS
 		};
 
-		UX va; // pte flags are stored in bits 11:0
+		UX va;
 
 		as_tagged_va_ppn() :
 			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(), va(UX(-1) & page_mask) {}
 
-		as_tagged_va_ppn(UX va, UX pte, UX asid, UX ppn) :
-			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va((va & page_mask) | (pte & ~page_mask)) {}
+		as_tagged_va_ppn(UX va, UX asid, UX ppn) :
+			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va(va) {}
 	};
 
 	using rv32_as_tagged_va_ppn = as_tagged_va_ppn<u32,10,22>;
@@ -90,6 +90,7 @@ namespace riscv {
 			}
 		}
 
+		// lookup TLB entry for the given vaddr+asid -> X:12[PPN],11:0[PTE.flags]
 		UX lookup(UX vaddr, UX asid)
 		{
 			UX va = vaddr & page_mask;
@@ -99,11 +100,13 @@ namespace riscv {
 				UX(tlb[vpn].ppn << page_shift) | (tlb[vpn].va & ~page_mask) : invalid_ppn;
 		}
 
-		void insert(UX vaddr, UX pte, UX asid, UX ppn)
+		// insert TLB entry for the given vaddr+asid <- X:12[PPN],11:0[PTE.flags]
+		void insert(UX vaddr, UX asid, UX ppnf)
 		{
 			UX va = vaddr & page_mask;
 			size_t i = (vaddr >> page_shift) & mask;
-			tlb[i] = as_tagged_va_ppn_type(va, pte, asid, ppn);
+			// pte flags are stored in bits 11:0 of the PPN
+			tlb[i] = as_tagged_va_ppn_type((va & page_mask) | (ppnf & ~page_mask), asid, ppnf >> page_shift);
 		}
 	};
 

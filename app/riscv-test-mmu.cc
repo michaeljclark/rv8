@@ -67,16 +67,22 @@ int main(int argc, char *argv[])
 
 	rv64_mmu mmu;
 
-	// insert entry into the TLB
-	mmu.l1_dtlb.insert(/* va */ 0x10000, /* pte */ 3, /* asid */ 0, /* ppn */ 1);
+	// insert entry for VA 0x10000 into the TLB (VA=0x10000, ASID=0, PPN=1, PTE.flags=DAGURWXV)
+	mmu.l1_dtlb.insert(/* va */ 0x10000, /* asid */ 0, /* ppn << page_shift | pte.flags */ 0x10ff);
 
-	// test the entry exists
-	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == 0x1003); /* ppn << page_shift | pte.flags */
+	// test that PPN 1 is returned for va (VA=0x10000, ASID=0) -> PPN=1, PTE.flags=DAGURWXV)
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == 0x10ff); /* ppn << page_shift | pte.flags */
+
+	// test that invalid_ppn is returned for (VA=0x11000, ASID=0)
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x11000, /* asid */ 0) == rv64_mmu::tlb_type::invalid_ppn);
+
+	// test that invalid_ppn is returned for (VA=0x11000, ASID=1)
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 1) == rv64_mmu::tlb_type::invalid_ppn);
 
 	// flush the TLB
 	mmu.l1_dtlb.flush();
 
-	// test the entry does not exist
+	// test that invalid_ppn is returned for (VA=0x10000, ASID=0)
 	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == rv64_mmu::tlb_type::invalid_ppn);
 
 	// add a memory segment to the mmu
