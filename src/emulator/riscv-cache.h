@@ -41,11 +41,13 @@ namespace riscv {
 			ppn_bits = PPN_BITS
 		};
 
-		UX va;
-		UX pte;
+		UX va; // pte flags are stored in bits 11:0
 
-		as_tagged_va_ppn() : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(), va(UX(-1)), pte(UX(-1)) {}
-		as_tagged_va_ppn(UX va, UX pte, UX asid, UX ppn) : as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va(va), pte(pte) {}
+		as_tagged_va_ppn() :
+			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(), va(UX(-1) & page_mask) {}
+
+		as_tagged_va_ppn(UX va, UX pte, UX asid, UX ppn) :
+			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va((va & page_mask) | (pte & ~page_mask)) {}
 	};
 
 	using rv32_as_tagged_va_ppn = as_tagged_va_ppn<u32,10,22>;
@@ -66,8 +68,7 @@ namespace riscv {
 			shift = ctz_pow2(size),
 			mask = (1ULL << shift) - 1,
 			key_size = sizeof(AST_PT_VA),
-			invalid_ppn = UX(-1),
-			invalid_pte = UX(-1),
+			invalid_ppn = UX(-1)
 		};
 
 		as_tagged_va_ppn_type tlb[size];
@@ -89,13 +90,13 @@ namespace riscv {
 			}
 		}
 
-		std::pair<UX,UX> lookup(UX vaddr, UX asid)
+		UX lookup(UX vaddr, UX asid)
 		{
 			UX va = vaddr & page_mask;
-			size_t i = (vaddr >> page_shift) & mask;
-			return (tlb[i].va == va && tlb[i].asid == asid) ?
-				std::pair<UX,UX>(UX(tlb[i].ppn), UX(tlb[i].pte)) :
-				std::pair<UX,UX>(invalid_ppn, invalid_pte);
+			size_t vpn = (vaddr >> page_shift) & mask;
+			// pte flags are returned in bits 11:0
+			return ((tlb[vpn].va & page_mask) == va && tlb[vpn].asid == asid) ?
+				UX(tlb[vpn].ppn << page_shift) | (tlb[vpn].va & ~page_mask) : invalid_ppn;
 		}
 
 		void insert(UX vaddr, UX pte, UX asid, UX ppn)
@@ -139,7 +140,7 @@ namespace riscv {
 			asid_bits =           AST_PT_VA::asid_bits,
 			ppn_bits =            AST_PT_VA::ppn_bits,
 
-			/* cache state (encode in uppermost 2 bits of ppn) */
+			/* TBA cache state (encode in uppermost 2 bits of ppn) */
 			ppn_state_modified =  UX(0) << (ppn_bits - 2), /* modified */
 			ppn_state_exclusive = UX(1) << (ppn_bits - 2), /* exclusive */
 			ppn_state_shared =    UX(2) << (ppn_bits - 2), /* shared */
@@ -155,7 +156,7 @@ namespace riscv {
 		void flush()
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
-				cache_key[i].ppn = ppn_state_invalid;
+				cache_key[i] = as_tagged_va_ppn_type();
 			}
 		}
 
@@ -163,7 +164,7 @@ namespace riscv {
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
 				if (cache_key[i].asid != asid) continue;
-				cache_key[i].ppn = ppn_state_invalid;
+				cache_key[i] = as_tagged_va_ppn_type();
 			}
 		}
 
