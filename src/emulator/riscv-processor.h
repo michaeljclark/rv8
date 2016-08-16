@@ -84,7 +84,7 @@ namespace riscv {
 	{
 		typedef u32 ux;
 
-		enum  { xlen = sizeof(ux) << 3 };
+		enum  { flen = sizeof(ux) << 3 };
 
 		union {
 			struct { s32 val; }              w;
@@ -103,7 +103,7 @@ namespace riscv {
 	{
 		typedef u64 ux;
 
-		enum  { xlen = sizeof(ux) << 3 };
+		enum  { flen = sizeof(ux) << 3 };
 
 		union {
 			struct { s64 val; }              l;
