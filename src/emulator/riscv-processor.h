@@ -147,7 +147,7 @@ namespace riscv {
 		typedef u32  uint_t;
 
 		enum  { xlen = sizeof(ux) << 3 };
-		enum  { ireg_count = 32, freg_count = FREG_COUNT, csr_count = 4096 };
+		enum  { ireg_count = 32, freg_count = FREG_COUNT };
 
 		size_t node_id;
 		size_t hart_id;
@@ -160,9 +160,8 @@ namespace riscv {
 
 		IREG ireg[ireg_count];
 		FREG freg[freg_count];
-		SX   csr[csr_count];
 
-		processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), csr{0} {}
+		processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg() {}
 	};
 
 	using processor_rv32ima = processor<s32,u32,ireg_rv32,freg_fp64,0>;
