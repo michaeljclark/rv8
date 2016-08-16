@@ -65,11 +65,23 @@ int main(int argc, char *argv[])
 	printf("rv_tlb_type::key_size            : %tu\n", rv_tlb_type::key_size);
 	printf("rv_tlb_type::mask                : 0x%08tx\n", rv_tlb_type::mask);
 
-	rv_tlb_type tlb;
-	tlb.insert(/* va */ 0x10000, /* pte */ 3, /* asid */ 0, /* ppn */ 1);
-	assert(tlb.lookup(/* va */ 0x10000, /* asid */ 0) == 0x1003); /* ppn << page_shift | pte.flags */
-
 	rv64_mmu mmu;
+
+	// insert entry into the TLB
+	mmu.l1_dtlb.insert(/* va */ 0x10000, /* pte */ 3, /* asid */ 0, /* ppn */ 1);
+
+	// test the entry exists
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == 0x1003); /* ppn << page_shift | pte.flags */
+
+	// flush the TLB
+	mmu.l1_dtlb.flush();
+
+	// test the entry does not exist
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == rv64_mmu::tlb_type::invalid_ppn);
+
+	// add a memory segment to the mmu
 	mmu.mem.add_segment(0x0, /*flags*/0, /*~8TB*/0x7ff00000000ULL, /*1GB*/0x40000000ULL);
+
+	// look up the PA (host PA) for a MA (emulator PA)
 	assert(mmu.mem.ma_to_pa(0x1000) == 0x7ff00001000ULL);
 }
