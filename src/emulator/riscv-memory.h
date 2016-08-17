@@ -16,10 +16,10 @@ namespace riscv {
 		pma_type_io              = 1<<2, /* IO memory region */
 
 		/* supported memory range cache policies */
-		pma_policy_write_back    = 1<<3, /* normal cache policy */
+		pma_policy_write_back    = 1<<3, /* write back caching (normal cache policy) */
 		pma_policy_write_through = 1<<4, /* write through cache to backing store */
-		pma_policy_write_combine = 1<<5, /* accumulate writes until a cache line is full */
-		pma_policy_write_around  = 1<<6, /* write directly to backing store */
+		pma_policy_write_combine = 1<<5, /* write accumulate until fence or cache line is full */
+		pma_policy_write_around  = 1<<6, /* uncacheable, write directly to backing store */
 
 		/* supported memory range backing store write sizes */
 		pma_io_size_1            = 1<<7,   /* b */
@@ -32,9 +32,9 @@ namespace riscv {
 		pma_order_channel_0      = 1<<12, /* hart point to point strong ordering */
 		pma_order_channel_1      = 1<<13, /* hart global strong ordering */
 
-		/* supported memory range coherence */
-		pma_policy_coherant      = 1<<14, /* hardware managed coherence */
-		pma_policy_incoherant    = 1<<15, /* software managed coherance */
+		/* supported memory range coherence policies */
+		pma_policy_coherent      = 1<<14, /* hardware managed coherence */
+		pma_policy_incoherent    = 1<<15, /* software managed coherance */
 		pma_policy_private       = 1<<16, /* non shared private */
 
 		/* support memory range atomic operations */
@@ -49,8 +49,8 @@ namespace riscv {
 		pma_amo_size_16          = 1<<23, /* amo<>.q */
 
 		/* supported memory range io idempotency (N/A main memory) */
-		pma_io_reads_idempotent  = 1<<24, /* reads are idempotent (allow speculative or redundant reads) */
-		pma_io_writes_idempotent = 1<<25, /* writes are idempotent (allow speculative or redundant writes) */
+		pma_io_idempotent_read   = 1<<24, /* reads are idempotent (allow speculative or redundant reads) */
+		pma_io_idempotent_write  = 1<<25, /* writes are idempotent (allow speculative or redundant writes) */
 
 		/* supported memory range protection */
 		pma_prot_read            = 1<<26, /* region is readable */
