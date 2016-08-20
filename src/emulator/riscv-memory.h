@@ -11,7 +11,7 @@ namespace riscv {
 	enum pma
 	{
 		/* supported memory range types */
-		pma_type_none            = 1<<0, /* empty region */
+		pma_type_illegal         = 1<<0, /* illegal region */
 		pma_type_main            = 1<<1, /* main memory region */
 		pma_type_io              = 1<<2, /* IO memory region */
 
