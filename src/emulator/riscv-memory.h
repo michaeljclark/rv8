@@ -66,39 +66,39 @@ namespace riscv {
 	/*  host memory segment that contains mapping from machine physical address in the
 	    emulator domain to host virtual address in the process address domain */
 	template <typename UX>
-	struct host_memory_segment
+	struct user_memory_segment
 	{
 		UX mpa;         /* machine physical address (emulator address domain) */
-		uintptr_t hva;  /* host virtual address (process address domain) */
+		uintptr_t uva;  /* user virtual address     (process address domain) */
 		size_t size;
 		uint32_t flags;
 
-		host_memory_segment(UX mpa, uintptr_t hva, size_t size, UX flags) :
-			mpa(mpa), hva(hva), size(size), flags(0) {}
+		user_memory_segment(UX mpa, uintptr_t uva, size_t size, UX flags) :
+			mpa(mpa), uva(uva), size(size), flags(0) {}
 	};
 
-	/*  host_memory device uses host virtual address space to emulate
+	/*  user_memory device uses host virtual address space to emulate
 	 *  machine physical address space in the emulator */
 	template <typename UX>
-	struct host_memory
+	struct user_memory
 	{
-		typedef host_memory_segment<UX> memory_segment_type;
+		typedef user_memory_segment<UX> memory_segment_type;
 
 		std::vector<memory_segment_type> segments;
 
-		~host_memory() { clear_segments(); }
+		~user_memory() { clear_segments(); }
 
 		/* map new memory segment given host physical address and size */
-		void add_segment(UX mpa, uintptr_t hva, size_t size, UX flags)
+		void add_segment(UX mpa, uintptr_t uva, size_t size, UX flags)
 		{
-			void *addr = mmap((void*)hva, size,
+			void *addr = mmap((void*)uva, size,
 				PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 			if (addr == MAP_FAILED) {
 				panic("memory: error: mmap: %s", strerror(errno));
 			}
-			segments.push_back(memory_segment_type(mpa, hva, size, flags));
-			debug("memory: hva: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
-				(uintptr_t)hva, (uintptr_t)hva + size);
+			segments.push_back(memory_segment_type(mpa, uva, size, flags));
+			debug("memory: uva: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
+				(uintptr_t)uva, (uintptr_t)uva + size);
 			debug("        mpa: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
 				(uintptr_t)mpa, (uintptr_t)mpa + size);
 		}
@@ -107,16 +107,16 @@ namespace riscv {
 		void clear_segments()
 		{
 			for (auto &seg: segments)
-				munmap((void*)seg.hva, seg.size);
+				munmap((void*)seg.uva, seg.size);
 			segments.clear();
 		}
 
-		/* convert machine physical address to host virtual address */
-		uintptr_t mpa_to_hva(UX mpa)
+		/* convert machine physical address to user virtual address */
+		uintptr_t mpa_to_uva(UX mpa)
 		{
 			for (auto &seg : segments)
 				if (mpa >= seg.mpa && mpa < seg.mpa + seg.size)
-					return seg.hva + (mpa - seg.mpa);
+					return seg.uva + (mpa - seg.mpa);
 			return 0;
 		}
 

@@ -116,7 +116,7 @@ namespace riscv {
 
 	/* address space and physically tagged, virtually indexed cache */
 
-	template <typename UX, typename AST_PT_VA, const size_t cache_size, const size_t cache_ways, const size_t cache_line_size, typename MEMORY = host_memory<UX>>
+	template <typename UX, typename AST_PT_VA, const size_t cache_size, const size_t cache_ways, const size_t cache_line_size, typename MEMORY = user_memory<UX>>
 	struct as_tagged_cache
 	{
 		static_assert(ispow2(cache_size), "cache_size must be a power of 2");
