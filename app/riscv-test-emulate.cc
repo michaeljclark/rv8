@@ -37,6 +37,7 @@
 #include "riscv-fpu.h"
 #include "riscv-bits.h"
 #include "riscv-pte.h"
+#include "riscv-pma.h"
 #include "riscv-memory.h"
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
