@@ -32,7 +32,7 @@ namespace riscv {
 		pma_io_size_8            = 1<<12,  /* d  - 64-bit */
 		pma_io_size_16           = 1<<13,  /* q  - 128-bit */
 		pma_io_size_32           = 1<<14,  /* o  - 256-bit */
-		pma_io_size_64           = 1<<15,  /* do - 512-bit */
+		pma_io_size_64           = 1<<15,  /* qq - 512-bit */
 		pma_io_size_128          = 1<<16,  /* qo - 1024-bit */
 
 		/* supported memory ordering */
@@ -48,7 +48,7 @@ namespace riscv {
 		pma_io_amo_logical       = 1<<22, /* above + amoand, amoor, amoxor */
 		pma_io_amo_arithmetic    = 1<<23, /* above + amoadd, amomin, amomax, amominu, amomaxu */
 
-		/* supported memory range atomic operation sizes */
+		/* supported memory range atomic operation sizes (amo for aligend main memory is implied) */
 		pma_io_amo_size_4        = 1<<24, /* amo<>.w */
 		pma_io_amo_size_8        = 1<<25, /* amo<>.d */
 		pma_io_amo_size_16       = 1<<26, /* amo<>.q */
