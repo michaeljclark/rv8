@@ -116,14 +116,15 @@ namespace riscv {
 
 	/* address space and physically tagged, virtually indexed cache */
 
-	template <typename UX, typename AST_PT_VA, const size_t cache_size, const size_t cache_ways, const size_t cache_line_size>
+	template <typename UX, typename AST_PT_VA, const size_t cache_size, const size_t cache_ways, const size_t cache_line_size, typename MEMORY = host_memory<UX>>
 	struct as_tagged_cache
 	{
-	    static_assert(ispow2(cache_size), "cache_size must be a power of 2");
-	    static_assert(ispow2(cache_ways), "cache_ways must be a power of 2");
-	    static_assert(ispow2(cache_line_size), "cache_line_size must be a power of 2");
+		static_assert(ispow2(cache_size), "cache_size must be a power of 2");
+		static_assert(ispow2(cache_ways), "cache_ways must be a power of 2");
+		static_assert(ispow2(cache_line_size), "cache_line_size must be a power of 2");
 
-	    typedef AST_PT_VA as_tagged_va_ppn_type;
+		typedef AST_PT_VA as_tagged_va_ppn_type;
+		typedef MEMORY memory_type;
 
 		enum : UX {
 			size =                cache_size,
@@ -154,24 +155,24 @@ namespace riscv {
 		as_tagged_va_ppn_type cache_key[num_entries * num_ways];
 		u8 cache_data[num_entries * num_ways * cache_line_size];
 
-		as_tagged_cache() { flush(); }
-
-		void flush()
+		void flush(memory_type &mem)
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
+				// flush this line to memory
 				cache_key[i] = as_tagged_va_ppn_type();
 			}
 		}
 
-		void flush(UX asid)
+		void flush(memory_type &mem, UX asid)
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
 				if (cache_key[i].asid != asid) continue;
+				// flush this line to memory
 				cache_key[i] = as_tagged_va_ppn_type();
 			}
 		}
 
-		u8* get_cache_line(UX vaddr, UX ppn, UX asid)
+		u8* get_cache_line(memory_type &mem, UX vaddr, UX ppn, UX asid)
 		{
 			UX va = vaddr & cache_line_mask;
 			UX entry = vaddr & num_entries_mask;
@@ -183,9 +184,9 @@ namespace riscv {
 				}
 				ent++;
 			}
-
-			// TODO - choose way to flush and fetch this line from memory
-
+			// choose a way to flush
+			// flush the line to memory
+			// fetch the new line from memory
 			return nullptr;
 		}
 	};

@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
 	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == rv64_mmu::tlb_type::invalid_ppn);
 
 	// add a memory segment to the mmu
-	mmu.mem.add_segment(0x0, /*flags*/0, /*~8TB*/0x7ff00000000ULL, /*1GB*/0x40000000ULL);
+	mmu.mem.add_segment(0x0, /*~8TB*/0x7ff00000000ULL, /*1GB*/0x40000000ULL, /*flags*/0);
 
-	// look up the PA (host PA) for a MA (emulator PA)
-	assert(mmu.mem.ma_to_pa(0x1000) == 0x7ff00001000ULL);
+	// look up the Host Virtual Address for a Machine Physical Adress
+	assert(mmu.mem.mpa_to_hva(0x1000) == 0x7ff00001000ULL);
 }

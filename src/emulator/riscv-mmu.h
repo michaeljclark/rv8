@@ -7,12 +7,12 @@
 
 namespace riscv {
 
-	template <typename UX, typename TLB, typename CACHE>
+	template <typename UX, typename TLB, typename CACHE, typename MEMORY = host_memory<UX>>
 	struct mmu
 	{
 		typedef TLB tlb_type;
 		typedef CACHE cache_type;
-		typedef memory<UX> memory_type;
+		typedef MEMORY memory_type;
 
 		tlb_type     l1_dtlb;
 		tlb_type     l1_itlb;
