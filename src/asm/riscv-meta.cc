@@ -1282,7 +1282,7 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,
 	riscv_fmt_rd_rs1_rs2,
-	riscv_fmt_succ_pred,
+	riscv_fmt_pred_succ,
 	riscv_fmt_none,
 	riscv_fmt_rd_offset_rs1,
 	riscv_fmt_rd_offset_rs1,

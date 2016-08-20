@@ -10,7 +10,7 @@
 extern "C" {
 	extern const char* riscv_fmt_none;
 	extern const char* riscv_fmt_rs1;
-	extern const char* riscv_fmt_succ_pred;
+	extern const char* riscv_fmt_pred_succ;
 	extern const char* riscv_fmt_rs1_rs2;
 	extern const char* riscv_fmt_rd_imm;
 	extern const char* riscv_fmt_rd_offset;

@@ -3,7 +3,7 @@
 
 none
 rs1
-succ,pred
+pred,succ
 offset
 rs1,rs2
 rd,imm
