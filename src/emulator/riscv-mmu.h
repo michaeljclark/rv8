@@ -44,14 +44,15 @@ namespace riscv {
 		}
 	};
 
-	typedef rv32_as_tagged_cache<65536,8,64> rv32_cache_type;
-	typedef rv32_as_tagged_tlb<128> rv32_tlb_type;
+	typedef as_tagged_cache_rv32<65536,8,64> cache_type_rv32;
+	typedef as_tagged_tlb_rv32<128> tlb_type_rv32;
 
-	typedef rv64_as_tagged_cache<65536,8,64> rv64_cache_type;
-	typedef rv64_as_tagged_tlb<128> rv64_tlb_type;
+	typedef as_tagged_cache_rv64<65536,8,64> cache_type_rv64;
+	typedef as_tagged_tlb_rv64<128> tlb_type_rv64;
 
-	using rv32_mmu = mmu<u32,rv32_tlb_type,rv64_cache_type>;
-	using rv64_mmu = mmu<u64,rv64_tlb_type,rv64_cache_type>;
+	using mmu_rv32 = mmu<u32,tlb_type_rv32,cache_type_rv32>;
+	using mmu_rv64 = mmu<u64,tlb_type_rv32,cache_type_rv64>;
+
 }
 
 #endif

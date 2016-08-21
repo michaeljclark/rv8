@@ -7,6 +7,15 @@
 
 namespace riscv {
 
+	struct mmu_proxy
+	{
+		std::vector<std::pair<void*,size_t>> segments;
+		uintptr_t heap_begin;
+		uintptr_t heap_end;
+
+		mmu_proxy() : segments(), heap_begin(0), heap_end(0) {}
+	};
+
 	template <typename P> struct unknown_stat
 	{
 		typename P::ulong_t dev;
@@ -91,11 +100,11 @@ namespace riscv {
 	{
 		// calculate the new heap address rounded up to the nearest page
 		uintptr_t new_addr = proc.ireg[riscv_ireg_a0];
-		uintptr_t curr_heap_end = round_up(proc.heap_end, page_size);
+		uintptr_t curr_heap_end = round_up(proc.mmu.heap_end, page_size);
 		uintptr_t new_heap_end = round_up(new_addr, page_size);
 
 		// return if the heap is already big enough
-		if (proc.heap_end >= new_heap_end || new_heap_end == curr_heap_end) {
+		if (proc.mmu.heap_end >= new_heap_end || new_heap_end == curr_heap_end) {
 			proc.ireg[riscv_ireg_a0] = new_addr;
 			return;
 		}
@@ -108,8 +117,8 @@ namespace riscv {
 			proc.ireg[riscv_ireg_a0] = -ENOMEM;
 		} else {
 			// keep track of the mapped segment and set the new heap_end
-			proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
-			proc.heap_end = new_heap_end;
+			proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
+			proc.mmu.heap_end = new_heap_end;
 			if (proc.flags & processor_flag_emulator_debug) {
 				debug("brk: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
 					curr_heap_end, new_heap_end);

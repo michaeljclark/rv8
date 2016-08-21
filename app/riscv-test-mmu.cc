@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
 	assert(sizeof(sv48_pa) == 8);
 	assert(sizeof(sv48_pte) == 8);
 
-	typedef rv64_as_tagged_cache<65536,8,64> cache_type;
-	typedef rv64_as_tagged_tlb<128> tlb_type;
-	typedef rv64_mmu mmu_type;
+	typedef as_tagged_cache_rv64<65536,8,64> cache_type;
+	typedef as_tagged_tlb_rv64<128> tlb_type;
+	typedef mmu_rv64 mmu_type;
 
 	printf("cache_type::size              : %tu\n", cache_type::size);
 	printf("cache_type::key_size          : %tu\n", cache_type::key_size);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	mmu.l1_dtlb.flush();
 
 	// test that invalid_ppn is returned for (VA=0x10000, ASID=0)
-	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == rv64_mmu::tlb_type::invalid_ppn);
+	assert(mmu.l1_dtlb.lookup(/* va */ 0x10000, /* asid */ 0) == mmu_type::tlb_type::invalid_ppn);
 
 	// add RAM to the MMU emulation
 	mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);

@@ -35,6 +35,57 @@ namespace riscv {
 		} mstatus;
 	};
 
+	/* Processor state */
+
+	template <typename SX, typename UX, typename IREG, int IREG_COUNT, typename FREG, int FREG_COUNT>
+	struct processor_priv : processor<SX,UX,IREG,IREG_COUNT,FREG,FREG_COUNT>
+	{
+		typedef processor<SX,UX,IREG,IREG_COUNT,FREG,FREG_COUNT> processor_type;
+
+		typedef SX   sx;
+		typedef UX   ux;
+
+		typedef SX   long_t;
+		typedef UX   ulong_t;
+
+		typedef s32  int_t;
+		typedef u32  uint_t;
+
+		UX           cycle;
+		UX           fcsr;
+		UX           fflags;
+		UX           frm;
+		UX           mbadaddr;
+		UX           mcause;
+		UX           mcycle;
+		UX           medeleg;
+		UX           mepc;
+		UX           mhartid;
+		UX           mideleg;
+		UX           mie;
+		UX           minstret;
+		UX           mip;
+		UX           misa;
+		UX           mscounteren;
+		UX           mscratch;
+		mstatus<UX>  mstatus;
+		UX           mtvec;
+		UX           mucounteren;
+		UX           sbadaddr;
+		UX           scause;
+		UX           sepc;
+		UX           sie;
+		UX           sptbr;
+		UX           stvec;
+
+		processor_priv() : processor_type() {}
+	};
+
+	using processor_priv_rv32ima = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,0>;
+	using processor_priv_rv64ima = processor_priv<s64,u64,ireg_rv64,32,freg_fp64,0>;
+	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
+	using processor_priv_rv64imafd = processor_priv<s64,u64,ireg_rv64,32,freg_fp64,32>;
+
 }
 
 #endif

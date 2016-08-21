@@ -51,35 +51,22 @@
 using namespace riscv;
 
 /*
- * Flat address space user-mode logging processor decorator
- *
- * This template is parameterized with a processor from riscv-processor.h
- *
- *   processor_rv32ima
- *   processor_rv64ima
- *   processor_rv32imafd
- *   processor_rv64imafd
+ * Processor base template
  */
 
-template<typename T, typename P>
+template<typename T, typename P, typename M>
 struct processor_base : P
 {
 	typedef T decode_type;
 	typedef P processor_type;
-
-	std::vector<std::pair<void*,size_t>> mapped_segments;
-
-	uintptr_t heap_begin;
-	uintptr_t heap_end;
+	typedef M mmu_type;
 
 	bool log_registers;
 	bool log_instructions;
+	mmu_type mmu;
 
 	processor_base() :
 		P(),
-		mapped_segments(),
-		heap_begin(0),
-		heap_end(0),
 		log_registers(false),
 		log_instructions(false)
 	{}
@@ -151,8 +138,8 @@ struct processor_base : P
 
 /* RV32 Partial processor specialization templates (RV32IMA, RV32IMAC, RV32IMAFD, RV32IMAFDC) */
 
-template <typename T>
-struct processor_rv32ima_unit : processor_base<T,processor_rv32ima>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv32ima_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMA>(dec, inst);
@@ -163,8 +150,8 @@ struct processor_rv32ima_unit : processor_base<T,processor_rv32ima>
 	}
 };
 
-template <typename T>
-struct processor_rv32imac_unit : processor_base<T,processor_rv32ima>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv32imac_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
@@ -176,8 +163,8 @@ struct processor_rv32imac_unit : processor_base<T,processor_rv32ima>
 	}
 };
 
-template <typename T>
-struct processor_rv32imafd_unit : processor_base<T,processor_rv32imafd>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv32imafd_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
@@ -188,8 +175,8 @@ struct processor_rv32imafd_unit : processor_base<T,processor_rv32imafd>
 	}
 };
 
-template <typename T>
-struct processor_rv32imafdc_unit : processor_base<T,processor_rv32imafd>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv32imafdc_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
@@ -204,8 +191,8 @@ struct processor_rv32imafdc_unit : processor_base<T,processor_rv32imafd>
 
 /* RV64 Partial processor specialization templates (RV64IMA, RV64IMAC, RV64IMAFD, RV64IMAFDC) */
 
-template <typename T>
-struct processor_rv64ima_unit : processor_base<T,processor_rv64ima>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv64ima_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMA>(dec, inst);
@@ -216,8 +203,8 @@ struct processor_rv64ima_unit : processor_base<T,processor_rv64ima>
 	}
 };
 
-template <typename T>
-struct processor_rv64imac_unit : processor_base<T,processor_rv64ima>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv64imac_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
@@ -229,8 +216,8 @@ struct processor_rv64imac_unit : processor_base<T,processor_rv64ima>
 	}
 };
 
-template <typename T>
-struct processor_rv64imafd_unit : processor_base<T,processor_rv64imafd>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv64imafd_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
@@ -241,8 +228,8 @@ struct processor_rv64imafd_unit : processor_base<T,processor_rv64imafd>
 	}
 };
 
-template <typename T>
-struct processor_rv64imafdc_unit : processor_base<T,processor_rv64imafd>
+template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
+struct processor_rv64imafdc_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
@@ -255,10 +242,38 @@ struct processor_rv64imafdc_unit : processor_base<T,processor_rv64imafd>
 };
 
 
-/* Simple processor stepper with instruction cache that delegates ecall to an abi proxy */
+/* Processor ABI/AEE proxy emulator that delegates ecall to an abi proxy */
 
 template <typename P>
-struct riscv_proxy_runner : P
+struct processor_proxy : P
+{
+	bool illegal_inst(typename P::decode_type &dec, size_t inst_len) {
+		if (dec.op == riscv_op_ecall) {
+			proxy_syscall(*this);
+			P::pc += inst_len;
+			return true;
+		}
+		return false;
+	}
+};
+
+
+/* Processor privileged ISA emulator with soft-mmu */
+
+template <typename P>
+struct processor_priv : P
+{
+	bool illegal_inst(typename P::decode_type &dec, size_t inst_len) {
+		// TODO - emulate privileged instructions
+		return false;
+	}
+};
+
+
+/* Simple processor stepper with instruction cache */
+
+template <typename P>
+struct processor_stepper : P
 {
 	static const size_t inst_cache_size = 8191;
 
@@ -288,11 +303,7 @@ struct riscv_proxy_runner : P
 			if (P::log_registers) P::print_int_regeisters();
 			if (P::log_instructions) P::print_disassembly(dec);
 			if (P::inst_exec(dec, inst_len)) continue;
-			if (dec.op == riscv_op_ecall) {
-				proxy_syscall(*this);
-				P::pc += inst_len;
-				continue;
-			}
+			if (P::illegal_inst(dec, inst_len)) continue;
 			debug("illegal instruciton: pc=0x%tx inst=%s",
 				uintptr_t(P::pc), P::format_inst(P::pc).c_str());
 			return false;
@@ -302,19 +313,31 @@ struct riscv_proxy_runner : P
 };
 
 
-/* Parameterized kernel proxy processor models */
+/* Parameterized ABI proxy processor models */
 
-using processor_proxy_rv32ima = riscv_proxy_runner<processor_rv32ima_unit<decode>>;
-using processor_proxy_rv32imac = riscv_proxy_runner<processor_rv32imac_unit<decode>>;
-using processor_proxy_rv32imafd = riscv_proxy_runner<processor_rv32imafd_unit<decode>>;
-using processor_proxy_rv32imafdc = riscv_proxy_runner<processor_rv32imafdc_unit<decode>>;
-using processor_proxy_rv64ima = riscv_proxy_runner<processor_rv64ima_unit<decode>>;
-using processor_proxy_rv64imac = riscv_proxy_runner<processor_rv64imac_unit<decode>>;
-using processor_proxy_rv64imafd = riscv_proxy_runner<processor_rv64imafd_unit<decode>>;
-using processor_proxy_rv64imafdc = riscv_proxy_runner<processor_rv64imafdc_unit<decode>>;
+using proxy_emulator_rv32ima = processor_stepper<processor_proxy<processor_rv32ima_unit<decode,processor_rv32ima,mmu_proxy>>>;
+using proxy_emulator_rv32imac = processor_stepper<processor_proxy<processor_rv32imac_unit<decode,processor_rv32ima,mmu_proxy>>>;
+using proxy_emulator_rv32imafd = processor_stepper<processor_proxy<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_proxy>>>;
+using proxy_emulator_rv32imafdc = processor_stepper<processor_proxy<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_proxy>>>;
+using proxy_emulator_rv64ima = processor_stepper<processor_proxy<processor_rv64ima_unit<decode,processor_rv64ima,mmu_proxy>>>;
+using proxy_emulator_rv64imac = processor_stepper<processor_proxy<processor_rv64imac_unit<decode,processor_rv64ima,mmu_proxy>>>;
+using proxy_emulator_rv64imafd = processor_stepper<processor_proxy<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_proxy>>>;
+using proxy_emulator_rv64imafdc = processor_stepper<processor_proxy<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_proxy>>>;
 
 
-/* Emulator */
+/* Parameterized privileged soft-mmu processor models */
+
+using priv_emulator_rv32ima = processor_stepper<processor_priv<processor_rv32ima_unit<decode,processor_rv32ima,mmu_rv32>>>;
+using priv_emulator_rv32imac = processor_stepper<processor_priv<processor_rv32imac_unit<decode,processor_rv32ima,mmu_rv32>>>;
+using priv_emulator_rv32imafd = processor_stepper<processor_priv<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_rv32>>>;
+using priv_emulator_rv32imafdc = processor_stepper<processor_priv<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_rv32>>>;
+using priv_emulator_rv64ima = processor_stepper<processor_priv<processor_rv64ima_unit<decode,processor_rv64ima,mmu_rv64>>>;
+using priv_emulator_rv64imac = processor_stepper<processor_priv<processor_rv64imac_unit<decode,processor_rv64ima,mmu_rv64>>>;
+using priv_emulator_rv64imafd = processor_stepper<processor_priv<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_rv64>>>;
+using priv_emulator_rv64imafdc = processor_stepper<processor_priv<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_rv64>>>;
+
+
+/* RISC-V Emulator */
 
 struct riscv_emulator
 {
@@ -323,6 +346,8 @@ struct riscv_emulator
 		created by parse-meta using the C-psuedo code in meta/instructions
 
 		Currently only a small number of syscalls are implemented
+
+		privileged emulator with soft-mmu is a work in progress
 
 		(ABI) application binary interface
 		(AEE) application execution environment
@@ -334,6 +359,7 @@ struct riscv_emulator
 	elf_file elf;
 	std::string filename;
 
+	bool priv_mode = false;
 	bool memory_debug = false;
 	bool emulator_debug = false;
 	bool log_registers = false;
@@ -377,7 +403,7 @@ struct riscv_emulator
 		}
 
 		/* keep track of the mapped segment and set the stack_top */
-		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
+		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
 		if (emulator_debug) {
@@ -402,9 +428,9 @@ struct riscv_emulator
 		}
 
 		/* keep track of the mapped segment and set the heap_end */
-		proc.mapped_segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
 		uintptr_t seg_end = uintptr_t(phdr.p_vaddr + phdr.p_memsz);
-		if (proc.heap_begin < seg_end) proc.heap_begin = proc.heap_end = seg_end;
+		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
 		if (emulator_debug) {
 			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
@@ -425,6 +451,9 @@ struct riscv_emulator
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
+			{ "-p", "--privileged", cmdline_arg_type_none,
+				"Privileged ISA Emulation",
+				[&](std::string s) { return (priv_mode = true); } },
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers",
 				[&](std::string s) { return (log_registers = true); } },
@@ -473,9 +502,30 @@ struct riscv_emulator
 		free(heapptr);
 	}
 
-	/* Start the execuatable with the given processor template */
+	/* Start the execuatable with the given privileged processor template */
 	template <typename P>
-	void start()
+	void start_priv()
+	{
+		/* instantiate processor, set log options and program counter to entry address */
+		P proc;
+		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
+		proc.log_registers = log_registers;
+		proc.log_instructions = log_instructions;
+		proc.pc = elf.ehdr.e_entry;
+
+		/* Add 1GB RAM to the mmu (make this a command line option) */
+		proc.mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);
+
+		/* We need to copy the ELF into the privileged emulator address space */
+		// copy ELF to RAM
+
+		/* Step the CPU until it halts */
+		while(proc.step(1024));
+	}
+
+	/* Start the execuatable with the given proxy processor template */
+	template <typename P>
+	void start_proxy()
 	{
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
@@ -507,7 +557,7 @@ struct riscv_emulator
 #endif
 
 		/* Unmap memory segments */
-		for (auto &seg: proc.mapped_segments) {
+		for (auto &seg: proc.mmu.segments) {
 			munmap(seg.first, seg.second);
 		}
 	}
@@ -515,26 +565,50 @@ struct riscv_emulator
 	/* Start a specific processor implementation based on ELF type and ISA extensions */
 	void exec()
 	{
-		switch (elf.ei_class) {
-			case ELFCLASS32:
-				switch (ext) {
-					case rv_isa_ima: start<processor_proxy_rv32ima>(); break;
-					case rv_isa_imac: start<processor_proxy_rv32imac>(); break;
-					case rv_isa_imafd: start<processor_proxy_rv32imafd>(); break;
-					case rv_isa_imafdc: start<processor_proxy_rv32imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
-				}
-				break;
-			case ELFCLASS64:
-				switch (ext) {
-					case rv_isa_ima: start<processor_proxy_rv64ima>(); break;
-					case rv_isa_imac: start<processor_proxy_rv64imac>(); break;
-					case rv_isa_imafd: start<processor_proxy_rv64imafd>(); break;
-					case rv_isa_imafdc: start<processor_proxy_rv64imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
-				}
-				break;
-			default: panic("illegal elf class");
+		if (priv_mode) {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					switch (ext) {
+						case rv_isa_ima: start_priv<priv_emulator_rv32ima>(); break;
+						case rv_isa_imac: start_priv<priv_emulator_rv32imac>(); break;
+						case rv_isa_imafd: start_priv<priv_emulator_rv32imafd>(); break;
+						case rv_isa_imafdc: start_priv<priv_emulator_rv32imafdc>(); break;
+						case rv_isa_none: panic("illegal isa extension"); break;
+					}
+					break;
+				case ELFCLASS64:
+					switch (ext) {
+						case rv_isa_ima: start_priv<priv_emulator_rv64ima>(); break;
+						case rv_isa_imac: start_priv<priv_emulator_rv64imac>(); break;
+						case rv_isa_imafd: start_priv<priv_emulator_rv64imafd>(); break;
+						case rv_isa_imafdc: start_priv<priv_emulator_rv64imafdc>(); break;
+						case rv_isa_none: panic("illegal isa extension"); break;
+					}
+					break;
+				default: panic("illegal elf class");
+			}
+		} else {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					switch (ext) {
+						case rv_isa_ima: start_proxy<proxy_emulator_rv32ima>(); break;
+						case rv_isa_imac: start_proxy<proxy_emulator_rv32imac>(); break;
+						case rv_isa_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
+						case rv_isa_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
+						case rv_isa_none: panic("illegal isa extension"); break;
+					}
+					break;
+				case ELFCLASS64:
+					switch (ext) {
+						case rv_isa_ima: start_proxy<proxy_emulator_rv64ima>(); break;
+						case rv_isa_imac: start_proxy<proxy_emulator_rv64imac>(); break;
+						case rv_isa_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
+						case rv_isa_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
+						case rv_isa_none: panic("illegal isa extension"); break;
+					}
+					break;
+				default: panic("illegal elf class");
+			}
 		}
 	}
 };

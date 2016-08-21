@@ -27,8 +27,8 @@ namespace riscv {
 		as_tagged_ppn(UX asid, UX ppn) : ppn(ppn), asid(asid) {}
 	};
 
-	using rv32_as_tagged_ppn = as_tagged_ppn<u32,10,22>;
-	using rv64_as_tagged_ppn = as_tagged_ppn<u64,26,38>;
+	using as_tagged_ppn_rv32 = as_tagged_ppn<u32,10,22>;
+	using as_tagged_ppn_rv64 = as_tagged_ppn<u64,26,38>;
 
 
 	/* address space tagged virtual to physical mapping */
@@ -50,8 +50,8 @@ namespace riscv {
 			as_tagged_ppn<UX,ASID_BITS,PPN_BITS>(asid, ppn), va(va) {}
 	};
 
-	using rv32_as_tagged_va_ppn = as_tagged_va_ppn<u32,10,22>;
-	using rv64_as_tagged_va_ppn = as_tagged_va_ppn<u64,26,38>;
+	using as_tagged_va_ppn_rv32 = as_tagged_va_ppn<u32,10,22>;
+	using as_tagged_va_ppn_rv64 = as_tagged_va_ppn<u64,26,38>;
 
 
 	/* address space tagged tlb */
@@ -110,8 +110,8 @@ namespace riscv {
 		}
 	};
 
-	template <const size_t tlb_entries> using rv32_as_tagged_tlb = as_tagged_tlb<tlb_entries,u32,rv32_as_tagged_va_ppn>;
-	template <const size_t tlb_entries> using rv64_as_tagged_tlb = as_tagged_tlb<tlb_entries,u64,rv64_as_tagged_va_ppn>;
+	template <const size_t tlb_entries> using as_tagged_tlb_rv32 = as_tagged_tlb<tlb_entries,u32,as_tagged_va_ppn_rv32>;
+	template <const size_t tlb_entries> using as_tagged_tlb_rv64 = as_tagged_tlb<tlb_entries,u64,as_tagged_va_ppn_rv64>;
 
 
 	/* address space and physically tagged, virtually indexed cache */
@@ -192,10 +192,10 @@ namespace riscv {
 	};
 
 	template <const size_t cache_size, const size_t cache_ways, const size_t cache_line_size>
-	using rv32_as_tagged_cache = as_tagged_cache<u32,rv32_as_tagged_va_ppn,cache_size,cache_ways,cache_line_size>;
+	using as_tagged_cache_rv32 = as_tagged_cache<u32,as_tagged_va_ppn_rv32,cache_size,cache_ways,cache_line_size>;
 
 	template <const size_t cache_size, const size_t cache_ways, const size_t cache_line_size>
-	using rv64_as_tagged_cache = as_tagged_cache<u64,rv64_as_tagged_va_ppn,cache_size,cache_ways,cache_line_size>;
+	using as_tagged_cache_rv64 = as_tagged_cache<u64,as_tagged_va_ppn_rv64,cache_size,cache_ways,cache_line_size>;
 }
 
 #endif
