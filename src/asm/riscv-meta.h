@@ -108,9 +108,12 @@ enum riscv_vm
 {
 	riscv_vm_mbare = 0,
 	riscv_vm_mbb = 1,
+	riscv_vm_mbid = 2,
 	riscv_vm_sv32 = 8,
 	riscv_vm_sv39 = 9,
 	riscv_vm_sv48 = 10,
+	riscv_vm_sv57 = 11,
+	riscv_vm_sv64 = 12,
 };
 
 enum riscv_cause

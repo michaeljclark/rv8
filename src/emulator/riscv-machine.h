@@ -161,6 +161,12 @@ namespace riscv {
 		UX           mepc;        /* Machine Exception Program Counter */
 		UX           mcause;      /* Machine Cause Register */
 		UX           mbadaddr;    /* Machine Bad Address Register */
+		UX           mbase;       /* Mbb: Single Base Register */
+		UX           mbound;      /* Mbb: Single Bound Register */
+		UX           mibase;      /* Mbbid: Separate Instruction Base Register */
+		UX           mibound;     /* Mbbid: Separate Instruction Bound Register */
+		UX           mdbase;      /* Mbbid: Separate Data Base Register */
+		UX           mdbound;     /* Mbbid: Separate Data Bound Register */
 		sstatus<UX>  sstatus;     /* Machine Status Register */
 		UX           stvec;       /* Supervisor Mode Trap Vector Base-Address Register */
 		sip<UX>      sip;         /* Supervisor Interrupt Pending Register */
