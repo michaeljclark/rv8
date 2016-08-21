@@ -247,7 +247,7 @@ struct processor_rv64imafdc_unit : B
 template <typename P>
 struct processor_proxy : P
 {
-	bool illegal_inst(typename P::decode_type &dec, size_t inst_len) {
+	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
 		if (dec.op == riscv_op_ecall) {
 			proxy_syscall(*this);
 			P::pc += inst_len;
@@ -263,8 +263,25 @@ struct processor_proxy : P
 template <typename P>
 struct processor_priv : P
 {
-	bool illegal_inst(typename P::decode_type &dec, size_t inst_len) {
+	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
 		// TODO - emulate privileged instructions
+		switch (dec.op) {
+			case riscv_op_ecall:     /* TODO */ return false; break;
+			case riscv_op_ebreak:    /* TODO */ return false; break;
+			case riscv_op_uret:      /* TODO */ return false; break;
+			case riscv_op_sret:      /* TODO */ return false; break;
+			case riscv_op_hret:      /* TODO */ return false; break;
+			case riscv_op_mret:      /* TODO */ return false; break;
+			case riscv_op_sfence_vm: /* TODO */ return false; break;
+			case riscv_op_wfi:       /* TODO */ return false; break;
+			case riscv_op_csrrw:     /* TODO */ return false; break;
+			case riscv_op_csrrs:     /* TODO */ return false; break;
+			case riscv_op_csrrc:     /* TODO */ return false; break;
+			case riscv_op_csrrwi:    /* TODO */ return false; break;
+			case riscv_op_csrrsi:    /* TODO */ return false; break;
+			case riscv_op_csrrci:    /* TODO */ return false; break;
+			default: break;
+		}
 		return false;
 	}
 };
@@ -303,7 +320,7 @@ struct processor_stepper : P
 			if (P::log_registers) P::print_int_regeisters();
 			if (P::log_instructions) P::print_disassembly(dec);
 			if (P::inst_exec(dec, inst_len)) continue;
-			if (P::illegal_inst(dec, inst_len)) continue;
+			if (P::inst_priv(dec, inst_len)) continue;
 			debug("illegal instruciton: pc=0x%tx inst=%s",
 				uintptr_t(P::pc), P::format_inst(P::pc).c_str());
 			return false;
