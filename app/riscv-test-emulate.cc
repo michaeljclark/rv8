@@ -308,7 +308,7 @@ struct processor_stepper : P
 		size_t i = 0, inst_len;
 		uint64_t inst;
 		while (i < count) {
-			inst = inst_fetch(P::pc, &inst_len);
+			inst = inst_fetch(P::pc, &inst_len); // TODO - MMU
 			uint64_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -409,6 +409,15 @@ struct riscv_emulator
 		return prot;
 	}
 
+	static const int elf_pma_flags(int v)
+	{
+		int prot = 0;
+		if (v & PF_X) prot |= pma_prot_execute;
+		if (v & PF_W) prot |= pma_prot_write;
+		if (v & PF_R) prot |= pma_prot_read;
+		return prot;
+	}
+
 	/* Map a single stack segment into user address space */
 	template <typename P>
 	void map_stack(P &proc, uintptr_t stack_top, uintptr_t stack_size)
@@ -429,9 +438,35 @@ struct riscv_emulator
 		}
 	}
 
+	/* Map ELF load segments into mmu address space */
+	template <typename P>
+	void map_load_segment_mmu(P &proc, const char* filename, Elf64_Phdr &phdr)
+	{
+		int fd = open(filename, O_RDONLY);
+		if (fd < 0) {
+			panic("map_executable: error: open: %s: %s", filename, strerror(errno));
+		}
+		void *addr = mmap(nullptr, phdr.p_memsz,
+			elf_p_flags_mmap(phdr.p_flags), MAP_PRIVATE, fd, phdr.p_offset);
+		close(fd);
+		if (addr == MAP_FAILED) {
+			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
+		}
+
+		/* add the loaded segment to the emulator mmu */
+		proc.mmu.mem.add_segment(phdr.p_vaddr, uintptr_t(addr), phdr.p_memsz,
+			pma_type_main | elf_pma_flags(phdr.p_flags));
+
+		if (emulator_debug) {
+			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
+				uintptr_t(phdr.p_vaddr), uintptr_t(phdr.p_vaddr + phdr.p_memsz),
+				elf_p_flags_name(phdr.p_flags).c_str());
+		}
+	}
+
 	/* Map ELF load segments into user address space */
 	template <typename P>
-	void map_load_segment(P &proc, const char* filename, Elf64_Phdr &phdr)
+	void map_load_segment_user(P &proc, const char* filename, Elf64_Phdr &phdr)
 	{
 		int fd = open(filename, O_RDONLY);
 		if (fd < 0) {
@@ -451,7 +486,8 @@ struct riscv_emulator
 
 		if (emulator_debug) {
 			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
-				uintptr_t(phdr.p_vaddr), seg_end, elf_p_flags_name(phdr.p_flags).c_str());
+				uintptr_t(phdr.p_vaddr), uintptr_t(phdr.p_vaddr + phdr.p_memsz),
+				elf_p_flags_name(phdr.p_flags).c_str());
 		}
 	}
 
@@ -530,11 +566,16 @@ struct riscv_emulator
 		proc.log_instructions = log_instructions;
 		proc.pc = elf.ehdr.e_entry;
 
+		/* Find the ELF executable PT_LOAD segments and map them into the emulator mmu */
+		for (size_t i = 0; i < elf.phdrs.size(); i++) {
+			Elf64_Phdr &phdr = elf.phdrs[i];
+			if (phdr.p_flags & PT_LOAD) {
+				map_load_segment_mmu(proc, filename.c_str(), phdr);
+			}
+		}
+
 		/* Add 1GB RAM to the mmu (make this a command line option) */
 		proc.mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);
-
-		/* We need to copy the ELF into the privileged emulator address space */
-		// copy ELF to RAM
 
 		/* Step the CPU until it halts */
 		while(proc.step(1024));
@@ -551,11 +592,11 @@ struct riscv_emulator
 		proc.log_instructions = log_instructions;
 		proc.pc = elf.ehdr.e_entry;
 
-		/* Find the ELF executable PT_LOAD segments and mmap them into memory */
+		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
-				map_load_segment(proc, filename.c_str(), phdr);
+				map_load_segment_user(proc, filename.c_str(), phdr);
 			}
 		}
 

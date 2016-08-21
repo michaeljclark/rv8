@@ -37,10 +37,13 @@ namespace riscv {
 		void add_segment(UX mpa, uintptr_t uva, size_t size, UX flags)
 		{
 			segments.push_back(memory_segment_type(mpa, uva, size, flags));
-			debug("memory: uva: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
+			debug("memory: uva: 0x%016" PRIxPTR " - 0x%016" PRIxPTR,
 				(uintptr_t)uva, (uintptr_t)uva + size);
-			debug("        mpa: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
-				(uintptr_t)mpa, (uintptr_t)mpa + size);
+			debug("        mpa: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s%s%s",
+				(uintptr_t)mpa, (uintptr_t)mpa + size,
+				(flags & pma_prot_read) ? "+R" : "",
+				(flags & pma_prot_write) ? "+W" : "",
+				(flags & pma_prot_execute) ? "+X" : "");
 		}
 
 		/* mmap new main memory segment using fixed user physical address and size */
@@ -52,7 +55,7 @@ namespace riscv {
 				panic("memory: error: mmap: %s", strerror(errno));
 			}
 			add_segment(mpa, uintptr_t(addr), size,
-				pma_type_main | pma_prot_read | pma_prot_write | pma_prot_execute);
+				pma_type_main | pma_prot_read | pma_prot_write);
 		}
 
 		/* Unmap memory segments */
