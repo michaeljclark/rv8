@@ -11,8 +11,7 @@ and LaTeX documentation (`riscv-parse-meta`).
 The suite also contains simple decoupled libraries with an ELF parser, a
 functional metadata based RISC-V disassembler (`riscv-parse-elf`), a
 RVC compressor / decompressor (`riscv-compress-elf`) plus library routines
-and tools for benchmarking software decoders and generating statistics on
-RISC-V executables (`riscv-histogram-elf`).
+and tools for generating statistics on RISC-V executables (`riscv-histogram-elf`).
 
 RISC-V Meta is the starting point for a RISC-V binary translation and security
 sandboxing investigation.
@@ -122,8 +121,6 @@ The following table shows the RISC-V Meta tools:
 ## Build Instructions
 
 The meta compiler has been tested on Linux, Darwin and FreeBSD.
-
-To run the decoder benchmarks: ```make bench```
 
 To print a colour opcode map: ```make map```
 

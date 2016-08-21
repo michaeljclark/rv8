@@ -218,11 +218,6 @@ TEST_CONFIG_SRCS = $(APP_SRC_DIR)/riscv-test-config.cc
 TEST_CONFIG_OBJS = $(call app_src_objs, $(TEST_CONFIG_SRCS))
 TEST_CONFIG_BIN = $(BIN_DIR)/riscv-test-config
 
-# test-decoder
-TEST_DECODER_SRCS = $(APP_SRC_DIR)/riscv-test-decoder.cc
-TEST_DECODER_OBJS = $(call app_src_objs, $(TEST_DECODER_SRCS))
-TEST_DECODER_BIN = $(BIN_DIR)/riscv-test-decoder
-
 # test-emulate
 TEST_EMULATE_SRCS = $(APP_SRC_DIR)/riscv-test-emulate.cc
 TEST_EMULATE_OBJS = $(call app_src_objs, $(TEST_EMULATE_SRCS))
@@ -252,7 +247,6 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(PARSE_ELF_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
-           $(TEST_DECODER_SRCS) \
            $(TEST_EMULATE_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
@@ -264,7 +258,6 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(PARSE_META_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
-           $(TEST_DECODER_BIN) \
            $(TEST_EMULATE_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
@@ -280,7 +273,6 @@ dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir
 latex: all ; $(PARSE_META_BIN) -l -? -r $(META_DIR) > riscv-instructions.tex
 pdf: latex ; texi2pdf riscv-instructions.tex
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
-bench: all ; $(TEST_DECODER_BIN)
 
 # tests
 
@@ -400,10 +392,6 @@ $(TEST_BITS_BIN): $(TEST_BITS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(TEST_DECODER_BIN): $(TEST_DECODER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
