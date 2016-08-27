@@ -143,7 +143,7 @@ namespace riscv {
 		UX           mvendorid;   /* Vendor ID, (0 = not implemented) */
 		UX           marchid;     /* Architecture ID, (0 = not implemented) */
 		UX           mimpid;      /* Implementation ID, (0 = not implemented) */
-		UX           mhartid;     /* Hardware thread id */
+		UX           mhartid;     /* Hardware Thread ID */
 		mstatus<UX>  mstatus;     /* Machine Status Register */
 		UX           mtvec;       /* Machine Mode Trap Vector Base-Address Register */
 		UX           medeleg;     /* Machine Exception Delegation Mask (enum riscv_cause) */
@@ -152,8 +152,8 @@ namespace riscv {
 		mie<UX>      mie;         /* Machine Interrupt Enable Register */
 		u64          mtime;       /* Machine Time Register*/
 		u64          mtimecmp;    /* Machine Timer Compare Register */
-		u64          mcycle;      /* Machine Number of cycles */
-		u64          minstret;    /* Number of instructions retired */
+		u64          mcycle;      /* Machine Number of Cycles */
+		u64          minstret;    /* Number of Instructions Retired */
 		mcounten<UX> mhcounteren; /* Hypervisor Counter-enable Register */
 		mcounten<UX> mscounteren; /* Supervisor Counter-enable Register */
 		mcounten<UX> mucounteren; /* User Counter-enable Register */
@@ -167,19 +167,31 @@ namespace riscv {
 		UX           mibound;     /* Mbbid: Separate Instruction Bound Register */
 		UX           mdbase;      /* Mbbid: Separate Data Base Register */
 		UX           mdbound;     /* Mbbid: Separate Data Bound Register */
-		sstatus<UX>  sstatus;     /* Machine Status Register */
+		UX           mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
+		UX           mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
+		UX           mucycle_delta;   /* Machine User Number of Cycles Delta */
+		UX           mhtime_delta;    /* Machine Hypervisor Time Delta */
+		UX           mstime_delta;    /* Machine Supervisor Time Delta */
+		UX           mutime_delta;    /* Machine User Time Delta */
+		UX           mhinstret_delta; /* Machine Hypervisor Number of Instructions Retired Delta */
+		UX           msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
+		UX           muinstret_delta; /* Machine User Number of Instructions Retired Delta */
+		sstatus<UX>  sstatus;     /* Machine Status Register (⨡mstatus) */
 		UX           stvec;       /* Supervisor Mode Trap Vector Base-Address Register */
 		sip<UX>      sip;         /* Supervisor Interrupt Pending Register */
 		sie<UX>      sie;         /* Supervisor Interrupt Enable Register */
-		u64          stime;       /* Supervisor Time Register*/
+		u64          stime;       /* Supervisor Time Register */
 		u64          stimecmp;    /* Supervisor Timer Compare Register */
-		u64          scycle;      /* Supervisor Number of cycles */
-		u64          sinstret;    /* Supervisor Number of instructions retired */
+		u64          scycle;      /* Supervisor Number of Cycles */
+		u64          sinstret;    /* Supervisor Number of Instructions Retired */
 		UX           sscratch;    /* Supervisor Scratch Register */
 		UX           sepc;        /* Supervisor Exception Program Counter */
 		UX           scause;      /* Supervisor Cause Register */
 		UX           sbadaddr;    /* Supervisor Bad Address Register */
 		UX           sptbr;       /* Supervisor Page-Table Base Register */
+		u64          time;        /* User Time Register */
+		u64          cycle;       /* User Number of Cycles */
+		u64          instret;     /* User Number of Instructions Retired  */
 		UX           fcsr;        /* Floating-Point Control and Status Register */
 		UX           fflags;      /* Floating-Point Accrued Exceptions */
 		UX           frm;         /* Floating-Point Dynamic Rounding Mode */
