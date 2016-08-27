@@ -167,15 +167,15 @@ namespace riscv {
 		UX           mibound;     /* Mbbid: Separate Instruction Bound Register */
 		UX           mdbase;      /* Mbbid: Separate Data Base Register */
 		UX           mdbound;     /* Mbbid: Separate Data Bound Register */
-		UX           mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
-		UX           mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
-		UX           mucycle_delta;   /* Machine User Number of Cycles Delta */
-		UX           mhtime_delta;    /* Machine Hypervisor Time Delta */
-		UX           mstime_delta;    /* Machine Supervisor Time Delta */
-		UX           mutime_delta;    /* Machine User Time Delta */
-		UX           mhinstret_delta; /* Machine Hypervisor Number of Instructions Retired Delta */
-		UX           msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
-		UX           muinstret_delta; /* Machine User Number of Instructions Retired Delta */
+		u64          mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
+		u64          mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
+		u64          mucycle_delta;   /* Machine User Number of Cycles Delta */
+		u64          mhtime_delta;    /* Machine Hypervisor Time Delta */
+		u64          mstime_delta;    /* Machine Supervisor Time Delta */
+		u64          mutime_delta;    /* Machine User Time Delta */
+		u64          mhinstret_delta; /* Machine Hypervisor Number of Instructions Retired Delta */
+		u64          msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
+		u64          muinstret_delta; /* Machine User Number of Instructions Retired Delta */
 		sstatus<UX>  sstatus;     /* Machine Status Register (⨡mstatus) */
 		UX           stvec;       /* Supervisor Mode Trap Vector Base-Address Register */
 		sip<UX>      sip;         /* Supervisor Interrupt Pending Register */
