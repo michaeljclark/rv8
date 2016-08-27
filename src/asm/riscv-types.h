@@ -40,10 +40,43 @@ namespace riscv {
 	typedef unsigned int       u32;
 	typedef signed long long   s64;
 	typedef unsigned long long u64;
-	typedef signed __int128   s128;
-	typedef unsigned __int128 u128;
 	typedef double             f64;
 	typedef float              f32;
+
+	struct __s128
+	{
+		union {
+			struct { u8 arr[16];      }      b;
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			struct { u64 lo;  s64 hi; }      d;
+		#else
+			struct { s64 hi;  u64 lo; }      d;
+		#endif
+			signed __int128                  q;
+		} r;
+
+		__s128() : r{ .b = { {0} } } {}
+		__s128(const __s128 &o) : r{ .b = o.r.b } {}
+	};
+
+	struct __u128
+	{
+		union {
+			struct { u8 arr[16];      }      b;
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			struct { u64 lo;  u64 hi; }      d;
+		#else
+			struct { u64 hi;  u64 lo; }      d;
+		#endif
+			unsigned __int128                q;
+		} r;
+
+		__u128() : r{ .b = { {0} } } {}
+		__u128(const __u128 &o) : r{ .b = o.r.b } {}
+	};
+
+	typedef __s128             s128;
+	typedef __u128             u128;
 
 	/*
 	 * Width-typed immediate template aliases
