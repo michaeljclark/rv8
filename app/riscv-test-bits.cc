@@ -10,9 +10,10 @@
 #include <string>
 #include <map>
 
+#include "riscv-endian.h"
 #include "riscv-types.h"
-#include "riscv-host.h"
 #include "riscv-bits.h"
+#include "riscv-host.h"
 #include "riscv-util.h"
 
 using namespace riscv;

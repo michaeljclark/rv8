@@ -16,10 +16,10 @@
 
 #include <sys/mman.h>
 
-#include "riscv-types.h"
 #include "riscv-endian.h"
-#include "riscv-util.h"
+#include "riscv-types.h"
 #include "riscv-bits.h"
+#include "riscv-util.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
 #include "riscv-memory.h"

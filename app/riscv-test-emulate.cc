@@ -21,8 +21,9 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include "riscv-types.h"
 #include "riscv-endian.h"
+#include "riscv-types.h"
+#include "riscv-bits.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
@@ -35,7 +36,6 @@
 #include "riscv-disasm.h"
 #include "riscv-processor.h"
 #include "riscv-fpu.h"
-#include "riscv-bits.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
 #include "riscv-memory.h"

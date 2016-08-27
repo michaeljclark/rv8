@@ -11,8 +11,9 @@
 #include <cerrno>
 #include <cassert>
 
-#include "riscv-types.h"
 #include "riscv-endian.h"
+#include "riscv-types.h"
+#include "riscv-bits.h"
 
 using namespace riscv;
 

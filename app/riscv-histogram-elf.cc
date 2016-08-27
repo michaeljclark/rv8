@@ -20,8 +20,9 @@
 
 #include <unistd.h>
 
-#include "riscv-types.h"
 #include "riscv-endian.h"
+#include "riscv-types.h"
+#include "riscv-bits.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
