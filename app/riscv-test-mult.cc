@@ -87,15 +87,20 @@ R mult(T x, T y)
 template <typename R, typename T>
 void test_mult(T x, T y, const test_print_mode mode = test_print_all)
 {
-	R xy = R(x) * R(y);
-	R xyc = mult<R,T>(x, y);
+	R xy = mult<R,T>(x, y);
+	R xyc = R(x) * R(y);
 	bool pass = (xy == xyc);
 	if (mode == test_print_fail && pass) return;
-	printf("%s %-24s x=%-20llu y=%-20llu xy=%-20llu (0x%016llx) xyc=%-20llu (0x%016llx)\n",
-		   pass ? "PASS" : "FAIL", __func__,
-		   (unsigned long long)x, (unsigned long long)y,
-		   (unsigned long long)xy, (unsigned long long)xy,
-		   (unsigned long long)xyc, (unsigned long long)xyc);
+	printf("%s "
+		"%-11sx=%-40llu (0x%032llx)\n"
+		"%16sy=%-40llu (0x%032llx)\n"
+		"%15sxy=%-40llu (0x%032llx)\n"
+		"%14sxyc=%-40llu (0x%032llx)\n",
+		pass ? "PASS" : "FAIL", __func__,
+		(unsigned long long)x, (unsigned long long)x, "",
+		(unsigned long long)x, (unsigned long long)y, "",
+		(unsigned long long)xy, (unsigned long long)xy, "",
+		(unsigned long long)xyc, (unsigned long long)xyc);
 	if (mode == test_print_fail || mode == test_print_debug || !pass) {
 		mult<R,T,true>(x, y);
 	}
