@@ -71,6 +71,9 @@ namespace riscv {
 			invalid_ppn = UX(-1)
 		};
 
+		// TODO - the TLB will be mapped into the machine mode physical
+		// address space using user_memory::add_segment to allow machine
+		// introspection code to verify the TLB against PTEs
 		as_tagged_va_ppn_type tlb[size];
 
 		as_tagged_tlb() { flush(); }
@@ -107,6 +110,7 @@ namespace riscv {
 			size_t i = (vaddr >> page_shift) & mask;
 			// pte flags are stored in bits 11:0 of the PPN
 			tlb[i] = as_tagged_va_ppn_type((va & page_mask) | (ppnf & ~page_mask), asid, ppnf >> page_shift);
+			// we are implicitly evicting an entry by overwriting it
 		}
 	};
 
@@ -152,6 +156,8 @@ namespace riscv {
 			ppn_state_mask    =   UX(3) << (ppn_bits - 2),
 		};
 
+		// TODO - the cache index and the cache data will be mapped into the
+		// machine mode physical address space using user_memory::add_segment
 		as_tagged_va_ppn_type cache_key[num_entries * num_ways];
 		u8 cache_data[num_entries * num_ways * cache_line_size];
 
