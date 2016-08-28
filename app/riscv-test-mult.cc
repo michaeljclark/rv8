@@ -54,9 +54,11 @@ R mult(T x, T y)
 	T z2 =    x0 * y1;
 	T z3 =    x1 * y1;
 
-	// We need to handle carry for z1 and z2 when we reduce
-	// this code to use the smaller type (work in progress)
-	R r =     R(z0) + ((R(z1) + R(z2)) << qb) + (R(z3) << hb);
+	T z4 =    z1 + z2;
+	T carry = z4 < z1;
+
+	// TODO - The final assembly needs to split the value into hi and lo
+	R r =     R(z0) + (R(z4) << qb) + (R(z3) << hb) + (R(carry) << (qb+hb));
 
 	if (debug) {
 		printf("\n");
