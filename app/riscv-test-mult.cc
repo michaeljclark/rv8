@@ -103,21 +103,21 @@ void test_mult(T x, T y, const test_print_mode mode = test_print_all)
 
 int main()
 {
-	test_mult<uint16_t,uint8_t>(53, 63);
-	test_mult<uint16_t,uint8_t>(53, 67);
-	test_mult<uint16_t,uint8_t>(63, 191);
-	test_mult<uint16_t,uint8_t>(253, 253);
-	test_mult<uint32_t,uint16_t>(12345, 999);
-	test_mult<uint32_t,uint16_t>(12345, 63000);
-	test_mult<uint32_t,uint16_t>(65533, 65533);
-	test_mult<uint64_t,uint32_t>(123450, 9990);
-	test_mult<uint64_t,uint32_t>(123450, 630000);
-	test_mult<uint64_t,uint32_t>(87652393, 87652393);
-	test_mult<uint64_t,uint32_t>(613566756, 613566756);
-	test_mult<uint64_t,uint32_t>(4294967295, 630000);
-	test_mult<uint64_t,uint32_t>(4294967295, 87652393);
-	test_mult<uint64_t,uint32_t>(4294967295, 613566756);
-	test_mult<uint64_t,uint32_t>(4294967295, 4294967295);
+	test_mult<u16,u8>(53, 63);
+	test_mult<u16,u8>(53, 67);
+	test_mult<u16,u8>(63, 191);
+	test_mult<u16,u8>(253, 253);
+	test_mult<u32,u16>(12345, 999);
+	test_mult<u32,u16>(12345, 63000);
+	test_mult<u32,u16>(65533, 65533);
+	test_mult<u64,u32>(123450, 9990);
+	test_mult<u64,u32>(123450, 630000);
+	test_mult<u64,u32>(87652393, 87652393);
+	test_mult<u64,u32>(613566756, 613566756);
+	test_mult<u64,u32>(4294967295, 630000);
+	test_mult<u64,u32>(4294967295, 87652393);
+	test_mult<u64,u32>(4294967295, 613566756);
+	test_mult<u64,u32>(4294967295, 4294967295);
 
 	return 0;
 }
