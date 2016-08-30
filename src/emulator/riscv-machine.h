@@ -10,7 +10,7 @@ namespace riscv {
 	/* mstatus */
 
 	template <typename UX>
-	union mstatus {
+	union _mstatus {
 		struct { UX val; } xu;
 		struct {
 			UX uie  : 1; /* 0     User mode Interrupt Enable */
@@ -32,13 +32,13 @@ namespace riscv {
 			UX mxr  : 1; /* 19    Make eXecute Readable allows loads from X-only pages when enabled */
 			UX wpri : 4; /* 23:20 */
 			UX vm   : 4; /* 28:24 Virtual Memory Mode (mbare, mbb, sv32, sv39, sv48 )*/
-		} mstatus;
+		} status;
 	};
 
 	/* mip */
 
 	template <typename UX>
-	union mip {
+	union _mip {
 		struct { UX val; } xu;
 		struct {
 			UX usip  : 1; /* 0     User Software Interrupt Pending */
@@ -53,13 +53,13 @@ namespace riscv {
 			UX seip  : 1; /* 9     Supervisor External Interrupt Pending */
 			UX heip  : 1; /* 10    Hypervisor External Interrupt Pending */
 			UX meip  : 1; /* 11    Machine External Interrupt Pending */
-		}
+		} ip;
 	};
 
 	/* mie */
 
 	template <typename UX>
-	union mie {
+	union _mie {
 		struct { UX val; } xu;
 		struct {
 			UX usie  : 1; /* 0     User Software Interrupt Enable */
@@ -74,25 +74,47 @@ namespace riscv {
 			UX seie  : 1; /* 9     Supervisor External Interrupt Enable */
 			UX heie  : 1; /* 10    Hypervisor External Interrupt Enable */
 			UX meie  : 1; /* 11    Machine External Interrupt Enable */
-		}
+		} ie;
 	};
 
 	/* mcounten */
 
 	template <typename UX>
-	union mcounten {
+	union _mcount {
 		struct { UX val; } xu;
 		struct {
 			UX cy  : 1;   /* 0     Cycles Enabled */
 			UX tm  : 1;   /* 1     Timer Enabled */
 			UX ir  : 1;   /* 2     Instructions Retired Enabled */
-		}
+		} counten;
+	};
+
+	/* sstatus */
+
+	template <typename UX>
+	union _sstatus {
+		struct { UX val; } xu;
+		struct {
+			UX uie  : 1; /* 0     User mode Interrupt Enable */
+			UX sie  : 1; /* 1     Supervisor mode Interrupt Enable */
+			UX pad1 : 2; /* 2-3   */
+			UX upie : 1; /* 4     Prior User mode Interrupt Enable */
+			UX spie : 1; /* 5     Prior Supervisor mode Interrupt Enable */
+			UX pad2 : 1; /* 6-7   */
+		/*	UX upp  : 0           URET pop privilege (implicitly 0) */
+			UX spp  : 1; /* 8     SRET pop privilege */
+			UX pad3 : 1; /* 9-12  */
+			UX fs   : 2; /* 14:13 FPU register status */
+			UX xs   : 2; /* 16:15 Extension status */
+			UX pad4 : 1; /* 17    */
+			UX pum  : 1; /* 18    Protect User Memory causes U mode accesses to fault when enabled */
+		} status;
 	};
 
 	/* sip */
 
 	template <typename UX>
-	union sip {
+	union _sip {
 		struct { UX val; } xu;
 		struct {
 			UX usip  : 1; /* 0     User Software Interrupt Pending */
@@ -103,13 +125,13 @@ namespace riscv {
 			UX pad2  : 1; /* 6-7   */
 			UX ueip  : 1; /* 8     User External Interrupt Pending */
 			UX seip  : 1; /* 9     Supervisor External Interrupt Pending */
-		}
+		} ip;
 	};
 
 	/* sie */
 
 	template <typename UX>
-	union sie {
+	union _sie {
 		struct { UX val; } xu;
 		struct {
 			UX usie  : 1; /* 0     User Software Interrupt Enable */
@@ -120,7 +142,7 @@ namespace riscv {
 			UX pad2  : 2; /* 6-7   */
 			UX ueie  : 1; /* 8     User External Interrupt Enable */
 			UX seie  : 1; /* 9     Supervisor External Interrupt Enable */
-		}
+		} ie;
 	};
 
 	/* Processor state */
@@ -144,19 +166,19 @@ namespace riscv {
 		UX           marchid;         /* Architecture ID, (0 = not implemented) */
 		UX           mimpid;          /* Implementation ID, (0 = not implemented) */
 		UX           mhartid;         /* Hardware Thread ID */
-		mstatus<UX>  mstatus;         /* Machine Status Register */
+		_mstatus<UX> mstatus;         /* Machine Status Register */
 		UX           mtvec;           /* Machine Mode Trap Vector Base-Address Register */
 		UX           medeleg;         /* Machine Exception Delegation Mask (enum riscv_cause) */
 		UX           mideleg;         /* Machine Interrupt Delegation Mask (enum riscv_intr) */
-		mip<UX>      mip;             /* Machine Interrupt Pending Register */
-		mie<UX>      mie;             /* Machine Interrupt Enable Register */
+		_mip<UX>     mip;             /* Machine Interrupt Pending Register */
+		_mie<UX>     mie;             /* Machine Interrupt Enable Register */
 		u64          mtime;           /* Machine Time Register*/
 		u64          mtimecmp;        /* Machine Timer Compare Register */
 		u64          mcycle;          /* Machine Number of Cycles */
 		u64          minstret;        /* Number of Instructions Retired */
-		mcounten<UX> mhcounteren;     /* Hypervisor Counter-enable Register */
-		mcounten<UX> mscounteren;     /* Supervisor Counter-enable Register */
-		mcounten<UX> mucounteren;     /* User Counter-enable Register */
+		_mcount<UX>  mhcounteren;     /* Hypervisor Counter-enable Register */
+		_mcount<UX>  mscounteren;     /* Supervisor Counter-enable Register */
+		_mcount<UX>  mucounteren;     /* User Counter-enable Register */
 		UX           mscratch;        /* Machine Scratch Register */
 		UX           mepc;            /* Machine Exception Program Counter */
 		UX           mcause;          /* Machine Cause Register */
@@ -176,10 +198,10 @@ namespace riscv {
 		u64          mhinstret_delta; /* Machine Hypervisor Number of Instructions Retired Delta */
 		u64          msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
 		u64          muinstret_delta; /* Machine User Number of Instructions Retired Delta */
-		sstatus<UX>  sstatus;         /* Machine Status Register (⨡mstatus) */
+		_sstatus<UX> sstatus;         /* Machine Status Register (⨡mstatus) */
 		UX           stvec;           /* Supervisor Mode Trap Vector Base-Address Register */
-		sip<UX>      sip;             /* Supervisor Interrupt Pending Register */
-		sie<UX>      sie;             /* Supervisor Interrupt Enable Register */
+		_sip<UX>     sip;             /* Supervisor Interrupt Pending Register */
+		_sie<UX>     sie;             /* Supervisor Interrupt Enable Register */
 		u64          stime;           /* Supervisor Time Register */
 		u64          stimecmp;        /* Supervisor Timer Compare Register */
 		u64          scycle;          /* Supervisor Number of Cycles */

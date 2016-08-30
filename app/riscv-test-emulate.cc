@@ -42,6 +42,7 @@
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
 #include "riscv-interp.h"
+#include "riscv-machine.h"
 #include "riscv-unknown-abi.h"
 
 #if defined (ENABLE_GPERFTOOL)
@@ -261,7 +262,7 @@ struct processor_proxy : P
 /* Processor privileged ISA emulator with soft-mmu */
 
 template <typename P>
-struct processor_priv : P
+struct processor_privileged : P
 {
 	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
 		// TODO - emulate privileged instructions
@@ -344,14 +345,14 @@ using proxy_emulator_rv64imafdc = processor_stepper<processor_proxy<processor_rv
 
 /* Parameterized privileged soft-mmu processor models */
 
-using priv_emulator_rv32ima = processor_stepper<processor_priv<processor_rv32ima_unit<decode,processor_rv32ima,mmu_rv32>>>;
-using priv_emulator_rv32imac = processor_stepper<processor_priv<processor_rv32imac_unit<decode,processor_rv32ima,mmu_rv32>>>;
-using priv_emulator_rv32imafd = processor_stepper<processor_priv<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv32imafdc = processor_stepper<processor_priv<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv64ima = processor_stepper<processor_priv<processor_rv64ima_unit<decode,processor_rv64ima,mmu_rv64>>>;
-using priv_emulator_rv64imac = processor_stepper<processor_priv<processor_rv64imac_unit<decode,processor_rv64ima,mmu_rv64>>>;
-using priv_emulator_rv64imafd = processor_stepper<processor_priv<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_rv64>>>;
-using priv_emulator_rv64imafdc = processor_stepper<processor_priv<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_rv64>>>;
+using priv_emulator_rv32ima = processor_stepper<processor_privileged<processor_rv32ima_unit<decode,processor_priv_rv32ima,mmu_rv32>>>;
+using priv_emulator_rv32imac = processor_stepper<processor_privileged<processor_rv32imac_unit<decode,processor_priv_rv32ima,mmu_rv32>>>;
+using priv_emulator_rv32imafd = processor_stepper<processor_privileged<processor_rv32imafd_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
+using priv_emulator_rv32imafdc = processor_stepper<processor_privileged<processor_rv32imafdc_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
+using priv_emulator_rv64ima = processor_stepper<processor_privileged<processor_rv64ima_unit<decode,processor_priv_rv64ima,mmu_rv64>>>;
+using priv_emulator_rv64imac = processor_stepper<processor_privileged<processor_rv64imac_unit<decode,processor_priv_rv64ima,mmu_rv64>>>;
+using priv_emulator_rv64imafd = processor_stepper<processor_privileged<processor_rv64imafd_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
+using priv_emulator_rv64imafdc = processor_stepper<processor_privileged<processor_rv64imafdc_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
 
 
 /* RISC-V Emulator */
