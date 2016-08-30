@@ -78,7 +78,6 @@
 0xE82  sro  hinstreth  "Upper 32 bits of hinstret, RV32I only"
 
 # Machine Information Registers
-0xF10  mro  misa       "ISA and extensions supported"
 0xF11  mro  mvendorid  "Verndor ID"
 0xF12  mro  marchid    "Architecture ID"
 0xF13  mro  mimpid     "Implementation ID"
@@ -86,6 +85,7 @@
 
 # Machine Trap Setup
 0x300  mrw  mstatus    "Machine status register"
+0x301  mrw  misa       "ISA and extensions supported"
 0x302  mrw  medeleg    "Machine exception delegation register"
 0x303  mrw  mideleg    "Machine interrupt delegation register"
 0x304  mrw  mie        "Machine interrupt-enable register"
