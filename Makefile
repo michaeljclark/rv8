@@ -239,11 +239,11 @@ TEST_MMU_OBJS = $(call app_src_objs, $(TEST_MMU_SRCS))
 TEST_MMU_ASM = $(call app_src_asm, $(TEST_MMU_SRCS))
 TEST_MMU_BIN = $(BIN_DIR)/riscv-test-mmu
 
-# test-mult
-TEST_MULT_SRCS = $(APP_SRC_DIR)/riscv-test-mult.cc
-TEST_MULT_OBJS = $(call app_src_objs, $(TEST_MULT_SRCS))
-TEST_MULT_ASM = $(call app_src_asm, $(TEST_MULT_SRCS))
-TEST_MULT_BIN = $(BIN_DIR)/riscv-test-mult
+# test-mul
+TEST_MUL_SRCS = $(APP_SRC_DIR)/riscv-test-mul.cc
+TEST_MUL_OBJS = $(call app_src_objs, $(TEST_MUL_SRCS))
+TEST_MUL_ASM = $(call app_src_asm, $(TEST_MUL_SRCS))
+TEST_MUL_BIN = $(BIN_DIR)/riscv-test-mul
 
 # source and binaries
 ALL_SRCS = $(RV_UTIL_SRCS) \
@@ -257,7 +257,7 @@ ALL_SRCS = $(RV_UTIL_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_MMU_SRCS) \
-           $(TEST_MULT_SRCS)
+           $(TEST_MUL_SRCS)
 
 BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
@@ -269,7 +269,7 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
            $(TEST_MMU_BIN) \
-           $(TEST_MULT_BIN)
+           $(TEST_MUL_BIN)
 
 # build rules
 all: $(PARSE_META_BIN) meta $(BINARIES)
@@ -419,7 +419,7 @@ $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_MULT_BIN): $(TEST_MULT_OBJS) $(RV_ASM_LIB)
+$(TEST_MUL_BIN): $(TEST_MUL_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

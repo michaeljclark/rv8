@@ -1,5 +1,5 @@
 //
-//  riscv-test-mult.cc
+//  riscv-test-mul.cc
 //
 
 #undef NDEBUG
@@ -255,7 +255,7 @@ R mulu(typename R::utype x, typename R::utype y)
 /* multiply signed signed */
 
 template <typename R>
-R muls(typename R::stype x, typename R::stype y)
+R mul(typename R::stype x, typename R::stype y)
 {
 	typedef typename R::utype U;
 
@@ -355,7 +355,7 @@ U mulhu(U x, U y)
 /* multiply high signed signed */
 
 template <typename S>
-S mulhs(S x, S y)
+S mulh(S x, S y)
 {
 	typedef typename std::make_unsigned<S>::type U;
 
@@ -426,9 +426,9 @@ S mulhsu(S x, U y)
 /* test wrappers */
 
 template <typename L, typename R>
-void test_muls(typename R::stype x, typename R::stype y)
+void test_mul(typename R::stype x, typename R::stype y)
 {
-	R xy = muls<R>(x, y);
+	R xy = mul<R>(x, y);
 	L xya = (L(xy.val.p.hi) << (sizeof(L) << 2)) | L(xy.val.p.lo);
 	L xyc = L(x) * L(y);
 	bool pass = (xya == xyc);
@@ -503,33 +503,35 @@ void test_mulsu(typename R::stype x, typename R::utype y)
 int main()
 {
 	// test muls (signed signed)
-	test_muls<s16,_s16>(0, 127);
-	test_muls<s16,_s16>(77, 127);
-	test_muls<s16,_s16>(127, 127);
-	test_muls<s16,_s16>(-77, 127);
-	test_muls<s16,_s16>(-127, 127);
-	test_muls<s16,_s16>(-128, 127);
-	test_muls<s16,_s16>(-77, -77);
-	test_muls<s16,_s16>(-127, -127);
-	test_muls<s16,_s16>(-128, -128);
-	test_muls<s32,_s32>(0, 32767);
-	test_muls<s32,_s32>(77, 32767);
-	test_muls<s32,_s32>(32767, 32767);
-	test_muls<s32,_s32>(-77, 32767);
-	test_muls<s32,_s32>(-32767, 32767);
-	test_muls<s32,_s32>(-32768, 32767);
-	test_muls<s32,_s32>(-77, -77);
-	test_muls<s32,_s32>(-32767, -32767);
-	test_muls<s32,_s32>(-32768, -32768);
-	test_muls<s64,_s64>(0, 2147483647);
-	test_muls<s64,_s64>(77, 2147483647);
-	test_muls<s64,_s64>(2147483647, 2147483647);
-	test_muls<s64,_s64>(-77, 2147483647);
-	test_muls<s64,_s64>(-2147483647, 2147483647);
-	test_muls<s64,_s64>(-2147483648, 2147483647);
-	test_muls<s64,_s64>(-77, -77);
-	test_muls<s64,_s64>(-2147483647, -2147483647);
-	test_muls<s64,_s64>(-2147483648, -2147483648);
+	test_mul<s16,_s16>(0, 127);
+	test_mul<s16,_s16>(77, 127);
+	test_mul<s16,_s16>(127, 127);
+	test_mul<s16,_s16>(-77, 127);
+	test_mul<s16,_s16>(-127, 127);
+	test_mul<s16,_s16>(-128, 127);
+	test_mul<s16,_s16>(-77, -77);
+	test_mul<s16,_s16>(-127, -127);
+	test_mul<s16,_s16>(-128, -128);
+	test_mul<s32,_s32>(0, 32767);
+	test_mul<s32,_s32>(77, 32767);
+	test_mul<s32,_s32>(32767, 32767);
+	test_mul<s32,_s32>(-77, 32767);
+	test_mul<s32,_s32>(-32767, 32767);
+	test_mul<s32,_s32>(-32768, 32767);
+	test_mul<s32,_s32>(-77, -77);
+	test_mul<s32,_s32>(-32767, -32767);
+	test_mul<s32,_s32>(-32768, -32768);
+	test_mul<s64,_s64>(0, 2147483647);
+	test_mul<s64,_s64>(77, 2147483647);
+	test_mul<s64,_s64>(-77, 2147483647);
+	test_mul<s64,_s64>(-77, -77);
+	test_mul<s64,_s64>(2147483647, 2147483647);
+	test_mul<s64,_s64>(-2147483647, 2147483647);
+	test_mul<s64,_s64>(-2147483648, 2147483647);
+	test_mul<s64,_s64>(-2147483647, -2147483647);
+	test_mul<s64,_s64>(-2147483648, -2147483648);
+	test_mul<signed __int128,_s128>(-9223372036854775807LL,9223372036854775807LL);
+	test_mul<signed __int128,_s128>(9223372036854775807LL,9223372036854775807LL);
 
 	// test mulsu (signed unsigned)
 	test_mulsu<s16,_s16>(0, 127);
@@ -551,11 +553,13 @@ int main()
 	test_mulsu<s64,_s64>(0, 2147483647);
 	test_mulsu<s64,_s64>(2147483647, 1);
 	test_mulsu<s64,_s64>(77, 2147483647);
+	test_mulsu<s64,_s64>(-77, 4294967295);
 	test_mulsu<s64,_s64>(2147483647, 2147483647);
 	test_mulsu<s64,_s64>(2147483647, 4294967295);
 	test_mulsu<s64,_s64>(-2147483647, 4294967295);
 	test_mulsu<s64,_s64>(-2147483648, 4294967295);
-	test_mulsu<s64,_s64>(-77, 4294967295);
+	test_mulsu<signed __int128,_s128>(-9223372036854775807LL,18446744073709551615ULL);
+	test_mulsu<signed __int128,_s128>(9223372036854775807LL,18446744073709551615ULL);
 
 	// test mulu (unsigned unsigned)
 	test_mulu<u16,_u16>(53, 63);
@@ -573,36 +577,40 @@ int main()
 	test_mulu<u64,_u64>(4294967295, 87652393);
 	test_mulu<u64,_u64>(4294967295, 613566756);
 	test_mulu<u64,_u64>(4294967295, 4294967295);
+	test_mulu<u64,_u64>(4294967295, 4294967295);
+	test_mulu<unsigned __int128,_u128>(9223372036854775807ULL,18446744073709551615ULL);
 	test_mulu<unsigned __int128,_u128>(18446744073709551615ULL,18446744073709551615ULL);
 
 	// test mulhs (signed signed) high bits
-	assert(mulhs(s8(0), s8(127)) == s8(0));
-	assert(mulhs(s8(77), s8(127)) == s8(38));
-	assert(mulhs(s8(127), s8(127)) == s8(63));
-	assert(mulhs(s8(-77), s8(127)) == s8(-39));
-	assert(mulhs(s8(-127), s8(127)) == s8(-64));
-	assert(mulhs(s8(-128), s8(127)) == s8(-64));
-	assert(mulhs(s8(-77), s8(-77)) == s8(23));
-	assert(mulhs(s8(-127), s8(-127)) == s8(63));
-	assert(mulhs(s8(-128), s8(-128)) == s8(64));
-	assert(mulhs(s16(0), s16(32767)) == s16(0));
-	assert(mulhs(s16(77), s16(32767)) == s16(38));
-	assert(mulhs(s16(32767), s16(32767)) == s16(16383));
-	assert(mulhs(s16(-77), s16(32767)) == s16(-39));
-	assert(mulhs(s16(-32767), s16(32767)) == s16(-16384));
-	assert(mulhs(s16(-32768), s16(32767)) == s16(-16384));
-	assert(mulhs(s16(-77), s16(-77)) == s16(0));
-	assert(mulhs(s16(-32767), s16(-32767)) == s16(16383));
-	assert(mulhs(s16(-32768), s16(-32768)) == s16(16384));
-	assert(mulhs(s32(0), s32(2147483647)) == s32(0));
-	assert(mulhs(s32(77), s32(2147483647)) == s32(38));
-	assert(mulhs(s32(2147483647), s32(2147483647)) == s32(1073741823));
-	assert(mulhs(s32(-77), s32(2147483647)) == s32(-39));
-	assert(mulhs(s32(-2147483647), s32(2147483647)) == s32(-1073741824));
-	assert(mulhs(s32(-2147483648), s32(2147483647)) == s32(-1073741824));
-	assert(mulhs(s32(-77), s32(-77)) == s32(0));
-	assert(mulhs(s32(-2147483647), s32(-2147483647)) == s32(1073741823));
-	assert(mulhs(s32(-2147483648), s32(-2147483648)) == s32(1073741824));
+	assert(mulh(s8(0), s8(127)) == s8(0));
+	assert(mulh(s8(77), s8(127)) == s8(38));
+	assert(mulh(s8(127), s8(127)) == s8(63));
+	assert(mulh(s8(-77), s8(127)) == s8(-39));
+	assert(mulh(s8(-127), s8(127)) == s8(-64));
+	assert(mulh(s8(-128), s8(127)) == s8(-64));
+	assert(mulh(s8(-77), s8(-77)) == s8(23));
+	assert(mulh(s8(-127), s8(-127)) == s8(63));
+	assert(mulh(s8(-128), s8(-128)) == s8(64));
+	assert(mulh(s16(0), s16(32767)) == s16(0));
+	assert(mulh(s16(77), s16(32767)) == s16(38));
+	assert(mulh(s16(32767), s16(32767)) == s16(16383));
+	assert(mulh(s16(-77), s16(32767)) == s16(-39));
+	assert(mulh(s16(-32767), s16(32767)) == s16(-16384));
+	assert(mulh(s16(-32768), s16(32767)) == s16(-16384));
+	assert(mulh(s16(-77), s16(-77)) == s16(0));
+	assert(mulh(s16(-32767), s16(-32767)) == s16(16383));
+	assert(mulh(s16(-32768), s16(-32768)) == s16(16384));
+	assert(mulh(s32(0), s32(2147483647)) == s32(0));
+	assert(mulh(s32(77), s32(2147483647)) == s32(38));
+	assert(mulh(s32(-77), s32(2147483647)) == s32(-39));
+	assert(mulh(s32(-77), s32(-77)) == s32(0));
+	assert(mulh(s32(2147483647), s32(2147483647)) == s32(1073741823));
+	assert(mulh(s32(-2147483647), s32(2147483647)) == s32(-1073741824));
+	assert(mulh(s32(-2147483648), s32(2147483647)) == s32(-1073741824));
+	assert(mulh(s32(-2147483647), s32(-2147483647)) == s32(1073741823));
+	assert(mulh(s32(-2147483648), s32(-2147483648)) == s32(1073741824));
+	assert(mulh(s64(-9223372036854775807LL), s64(9223372036854775807LL)) == s64(-4611686018427387904LL));
+	assert(mulh(s64(9223372036854775807LL), s64(9223372036854775807LL)) == s64(4611686018427387903LL));
 
 	// test mulhsu (signed unsigned) high bits
 	assert(mulhsu(s8(0), u8(127)) == s8(0));
@@ -624,11 +632,13 @@ int main()
 	assert(mulhsu(s32(0), u32(2147483647)) == s32(0));
 	assert(mulhsu(s32(2147483647), u32(1)) == s32(0));
 	assert(mulhsu(s32(77), u32(2147483647)) == s32(38));
+	assert(mulhsu(s32(-77), u32(4294967295)) == s32(-77));
 	assert(mulhsu(s32(2147483647), u32(2147483647)) == s32(1073741823));
 	assert(mulhsu(s32(2147483647), u32(4294967295)) == s32(2147483646));
 	assert(mulhsu(s32(-2147483647), u32(4294967295)) == s32(-2147483647));
 	assert(mulhsu(s32(-2147483648), u32(4294967295)) == s32(-2147483648));
-	assert(mulhsu(s32(-77), u32(4294967295)) == s32(-77));
+	assert(mulhsu(s64(-9223372036854775807LL), u64(18446744073709551615ULL)) == s64(-9223372036854775807LL));
+	assert(mulhsu(s64(9223372036854775807LL), u64(18446744073709551615ULL)) == s64(9223372036854775806LL));
 
 	// test mulhu (unsigned unsigned) high bits
 	assert(mulhu(u8(53), u8(63)) == u8(13));
@@ -646,6 +656,7 @@ int main()
 	assert(mulhu(u32(4294967295), u32(87652393)) == u32(87652392));
 	assert(mulhu(u32(4294967295), u32(613566756)) == u32(613566755));
 	assert(mulhu(u32(4294967295), u32(4294967295)) == u32(4294967294));
+	assert(mulhu(u64(9223372036854775807ULL), u64(18446744073709551615ULL)) == u64(9223372036854775806ULL));
 	assert(mulhu(u64(18446744073709551615ULL), u64(18446744073709551615ULL)) == u64(18446744073709551614ULL));
 
 	return 0;

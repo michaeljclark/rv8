@@ -296,6 +296,27 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 				return true;
 			};
 		};
+		case riscv_op_mulh: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				proc.pc += inst_length;
+				return true;
+			};
+		};
+		case riscv_op_mulhsu: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				proc.pc += inst_length;
+				return true;
+			};
+		};
+		case riscv_op_mulhu: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				proc.pc += inst_length;
+				return true;
+			};
+		};
 		case riscv_op_div: {
 			if (rvm) {
 				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) / sx(proc.ireg[dec.rs2]);
@@ -1140,6 +1161,27 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		case riscv_op_mul: {
 			if (rvm) {
 				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) * ux(proc.ireg[dec.rs2]);
+				proc.pc += inst_length;
+				return true;
+			};
+		};
+		case riscv_op_mulh: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				proc.pc += inst_length;
+				return true;
+			};
+		};
+		case riscv_op_mulhsu: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				proc.pc += inst_length;
+				return true;
+			};
+		};
+		case riscv_op_mulhu: {
+			if (rvm) {
+				if (dec.rd != 0) proc.ireg[dec.rd] = mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};

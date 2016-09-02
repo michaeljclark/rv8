@@ -35,6 +35,7 @@
 #include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-processor.h"
+#include "riscv-alu.h"
 #include "riscv-fpu.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"

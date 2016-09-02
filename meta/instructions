@@ -61,9 +61,9 @@ sraw       "Shift Right Arithmetic Word"                    "rd = s32(rs1) >> (r
 # RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
 
 mul        "Multiply"                                       "rd = ux(rs1) * ux(rs2)"
-mulh       "Multiply High Signed Signed"                    # "rd = (sx(rs1) * sx(rs2)) >> xlen"
-mulhsu     "Multiply High Signed Unsigned"                  # "rd = (sx(rs1) * ux(rs2)) >> xlen"
-mulhu      "Multiply High Unsigned Unsigned"                # "rd = (ux(rs1) * ux(rs2)) >> xlen"
+mulh       "Multiply High Signed Signed"                    "rd = mulh(sx(rs1), sx(rs2))"
+mulhsu     "Multiply High Signed Unsigned"                  "rd = mulhsu(sx(rs1), ux(rs2))"
+mulhu      "Multiply High Unsigned Unsigned"                "rd = mulhu(ux(rs1), ux(rs2))"
 div        "Divide Signed"                                  "rd = sx(rs1) / sx(rs2)"
 divu       "Divide Unsigned"                                "rd = ux(rs1) / ux(rs2)"
 rem        "Remainder Signed"                               "rd = sx(rs1) % sx(rs2)"

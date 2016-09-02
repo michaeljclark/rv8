@@ -49,6 +49,7 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-int-fib \
+	$(BIN_DIR)/test-int-mul \
 	$(BIN_DIR)/test-fpu-printf \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert \
@@ -65,12 +66,16 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-pcrel
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
+	$(EMULATOR) $(BIN_DIR)/test-int-mul
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) $(BIN_DIR)/test-sieve
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-int-fib: $(OBJ_DIR)/test-int-fib.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-int-mul.o: $(SRC_DIR)/test-int-mul.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-int-mul: $(OBJ_DIR)/test-int-mul.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-fpu-gen.o: $(SRC_DIR)/test-fpu-gen.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-fpu-gen: $(OBJ_DIR)/test-fpu-gen.o ; $(CC) $(CFLAGS) $^ -o $@
