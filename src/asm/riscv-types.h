@@ -250,37 +250,37 @@ namespace riscv {
 	 */
 
 	template<typename R, int W, typename... Args>
-	struct imm_arg_impl_t;
+	struct imm_operand_impl_t;
 
 	template<typename R, int W>
-	struct imm_arg_impl_t<R,W>
+	struct imm_operand_impl_t<R,W>
 	{
 		static inline constexpr R decode(u64 inst) { return 0; }
 		static inline constexpr R encode(u64 imm) { return 0; }
 	};
 
 	template<typename R, int W, typename H, typename... T>
-	struct imm_arg_impl_t<R,W,H,T...> : imm_arg_impl_t<R,W,T...>
+	struct imm_operand_impl_t<R,W,H,T...> : imm_operand_impl_t<R,W,T...>
 	{
-		typedef imm_arg_impl_t<R,W,T...> I;
+		typedef imm_operand_impl_t<R,W,T...> I;
 
 		static inline constexpr R decode(u64 inst) { return I::decode(inst) | H::decode(inst); }
 		static inline constexpr R encode(u64 imm) { return I::encode(imm) | H::encode(imm); }
 	};
 
 	template<int W, typename... Args>
-	struct simm_arg_t : imm_arg_impl_t<s64,W,Args...>
+	struct simm_operand_t : imm_operand_impl_t<s64,W,Args...>
 	{
-		typedef imm_arg_impl_t<s64,W,Args...> I;
+		typedef imm_operand_impl_t<s64,W,Args...> I;
 
 		static constexpr s64 decode(u64 inst) { return sign_extend<s64,W>(I::decode(inst)); }
 		static constexpr s64 encode(u64 imm) { return I::encode(imm); }
 	};
 
 	template<int W, typename... Args>
-	struct uimm_arg_t : imm_arg_impl_t<u64,W,Args...>
+	struct uimm_operand_t : imm_operand_impl_t<u64,W,Args...>
 	{
-		typedef imm_arg_impl_t<u64,W,Args...> I;
+		typedef imm_operand_impl_t<u64,W,Args...> I;
 
 		static constexpr u64 decode(u64 inst) { return I::decode(inst); }
 		static constexpr u64 encode(u64 imm) { return I::encode(imm); }

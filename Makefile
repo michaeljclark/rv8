@@ -122,8 +122,7 @@ app_src_objs =  $(subst $(APP_SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 all_src_deps =  $(subst $(APP_SRC_DIR),$(DEP_DIR),$(subst $(LIB_SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1))))
 
 # riscv meta data
-RV_META_DATA =  $(META_DIR$)/args \
-                $(META_DIR$)/codecs \
+RV_META_DATA =  $(META_DIR$)/codecs \
                 $(META_DIR$)/compression \
                 $(META_DIR$)/constraints \
                 $(META_DIR$)/csrs \
@@ -133,6 +132,7 @@ RV_META_DATA =  $(META_DIR$)/args \
                 $(META_DIR$)/instructions \
                 $(META_DIR$)/formats \
                 $(META_DIR$)/opcodes \
+                $(META_DIR$)/operands \
                 $(META_DIR$)/registers \
                 $(META_DIR$)/types
 
@@ -167,7 +167,7 @@ RV_ELF_OBJS =   $(call lib_src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
 # generated files
-RV_ARGS_HDR =   $(LIB_SRC_DIR)/asm/riscv-args.h
+RV_OPANDS_HDR = $(LIB_SRC_DIR)/asm/riscv-operands.h
 RV_CODEC_HDR =  $(LIB_SRC_DIR)/asm/riscv-switch.h
 RV_JIT_HDR =    $(LIB_SRC_DIR)/asm/riscv-jit.h
 RV_JIT_SRC =    $(LIB_SRC_DIR)/asm/riscv-jit.cc
@@ -318,12 +318,12 @@ danger: ; @echo Please do not make danger
 
 # generated targets
 
-meta: $(RV_ARGS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
+meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
 	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR)
 
-$(RV_ARGS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_ARGS_HDR)
+$(RV_OPANDS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_OPANDS_HDR)
 
 $(RV_CODEC_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)

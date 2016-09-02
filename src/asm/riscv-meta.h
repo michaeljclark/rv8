@@ -480,90 +480,90 @@ enum riscv_codec
 	riscv_codec_css_sdsp,
 };
 
-enum riscv_arg_name
+enum riscv_operand_name
 {
-	riscv_arg_name_none,
-	riscv_arg_name_rd,
-	riscv_arg_name_rs1,
-	riscv_arg_name_rs2,
-	riscv_arg_name_rs3,
-	riscv_arg_name_frd,
-	riscv_arg_name_frs1,
-	riscv_arg_name_frs2,
-	riscv_arg_name_frs3,
-	riscv_arg_name_aq,
-	riscv_arg_name_rl,
-	riscv_arg_name_pred,
-	riscv_arg_name_succ,
-	riscv_arg_name_rm,
-	riscv_arg_name_imm20,
-	riscv_arg_name_oimm20,
-	riscv_arg_name_jimm20,
-	riscv_arg_name_imm12,
-	riscv_arg_name_oimm12,
-	riscv_arg_name_csr12,
-	riscv_arg_name_simm12,
-	riscv_arg_name_sbimm12,
-	riscv_arg_name_zimm,
-	riscv_arg_name_shamt5,
-	riscv_arg_name_shamt6,
-	riscv_arg_name_crd0,
-	riscv_arg_name_crdq,
-	riscv_arg_name_crs1q,
-	riscv_arg_name_crs1rdq,
-	riscv_arg_name_crs2q,
-	riscv_arg_name_crd,
-	riscv_arg_name_crs1,
-	riscv_arg_name_crs1rd,
-	riscv_arg_name_crs2,
-	riscv_arg_name_cfrdq,
-	riscv_arg_name_cfrs2q,
-	riscv_arg_name_cfrs2,
-	riscv_arg_name_cfrd,
-	riscv_arg_name_cimmsh5,
-	riscv_arg_name_cimmsh6,
-	riscv_arg_name_cimmi,
-	riscv_arg_name_cnzimmi,
-	riscv_arg_name_cimmui,
-	riscv_arg_name_cimmlwsp,
-	riscv_arg_name_cimmldsp,
-	riscv_arg_name_cimm16sp,
-	riscv_arg_name_cimmj,
-	riscv_arg_name_cimmb,
-	riscv_arg_name_cimmswsp,
-	riscv_arg_name_cimmsdsp,
-	riscv_arg_name_cimmsqsp,
-	riscv_arg_name_cimm4spn,
-	riscv_arg_name_cimmw,
-	riscv_arg_name_cimmd,
-	riscv_arg_name_cimmq,
+	riscv_operand_name_none,
+	riscv_operand_name_rd,
+	riscv_operand_name_rs1,
+	riscv_operand_name_rs2,
+	riscv_operand_name_rs3,
+	riscv_operand_name_frd,
+	riscv_operand_name_frs1,
+	riscv_operand_name_frs2,
+	riscv_operand_name_frs3,
+	riscv_operand_name_aq,
+	riscv_operand_name_rl,
+	riscv_operand_name_pred,
+	riscv_operand_name_succ,
+	riscv_operand_name_rm,
+	riscv_operand_name_imm20,
+	riscv_operand_name_oimm20,
+	riscv_operand_name_jimm20,
+	riscv_operand_name_imm12,
+	riscv_operand_name_oimm12,
+	riscv_operand_name_csr12,
+	riscv_operand_name_simm12,
+	riscv_operand_name_sbimm12,
+	riscv_operand_name_zimm,
+	riscv_operand_name_shamt5,
+	riscv_operand_name_shamt6,
+	riscv_operand_name_crd0,
+	riscv_operand_name_crdq,
+	riscv_operand_name_crs1q,
+	riscv_operand_name_crs1rdq,
+	riscv_operand_name_crs2q,
+	riscv_operand_name_crd,
+	riscv_operand_name_crs1,
+	riscv_operand_name_crs1rd,
+	riscv_operand_name_crs2,
+	riscv_operand_name_cfrdq,
+	riscv_operand_name_cfrs2q,
+	riscv_operand_name_cfrs2,
+	riscv_operand_name_cfrd,
+	riscv_operand_name_cimmsh5,
+	riscv_operand_name_cimmsh6,
+	riscv_operand_name_cimmi,
+	riscv_operand_name_cnzimmi,
+	riscv_operand_name_cimmui,
+	riscv_operand_name_cimmlwsp,
+	riscv_operand_name_cimmldsp,
+	riscv_operand_name_cimm16sp,
+	riscv_operand_name_cimmj,
+	riscv_operand_name_cimmb,
+	riscv_operand_name_cimmswsp,
+	riscv_operand_name_cimmsdsp,
+	riscv_operand_name_cimmsqsp,
+	riscv_operand_name_cimm4spn,
+	riscv_operand_name_cimmw,
+	riscv_operand_name_cimmd,
+	riscv_operand_name_cimmq,
 };
 
-enum riscv_arg_type
+enum riscv_operand_type
 {
-	riscv_arg_type_none,
-	riscv_arg_type_ireg5,
-	riscv_arg_type_freg5,
-	riscv_arg_type_arg1,
-	riscv_arg_type_arg4,
-	riscv_arg_type_arg3,
-	riscv_arg_type_simm32,
-	riscv_arg_type_offset32,
-	riscv_arg_type_offset21,
-	riscv_arg_type_simm12,
-	riscv_arg_type_offset12,
-	riscv_arg_type_uimm12,
-	riscv_arg_type_offset13,
-	riscv_arg_type_uimm5,
-	riscv_arg_type_uimm6,
-	riscv_arg_type_creg1,
-	riscv_arg_type_creg3,
-	riscv_arg_type_simm6,
-	riscv_arg_type_simm18,
-	riscv_arg_type_simm8,
-	riscv_arg_type_simm9,
-	riscv_arg_type_simm10,
-	riscv_arg_type_simm7,
+	riscv_operand_type_none,
+	riscv_operand_type_ireg5,
+	riscv_operand_type_freg5,
+	riscv_operand_type_arg1,
+	riscv_operand_type_arg4,
+	riscv_operand_type_arg3,
+	riscv_operand_type_simm32,
+	riscv_operand_type_offset32,
+	riscv_operand_type_offset21,
+	riscv_operand_type_simm12,
+	riscv_operand_type_offset12,
+	riscv_operand_type_uimm12,
+	riscv_operand_type_offset13,
+	riscv_operand_type_uimm5,
+	riscv_operand_type_uimm6,
+	riscv_operand_type_creg1,
+	riscv_operand_type_creg3,
+	riscv_operand_type_simm6,
+	riscv_operand_type_simm18,
+	riscv_operand_type_simm8,
+	riscv_operand_type_simm9,
+	riscv_operand_type_simm10,
+	riscv_operand_type_simm7,
 };
 
 enum riscv_op
@@ -797,11 +797,11 @@ struct riscv_comp_data
 	const rvc_constraint* constraints;
 };
 
-/* Instruction arg structure */
-struct riscv_arg_data
+/* Instruction operand structure */
+struct riscv_operand_data
 {
-	const riscv_arg_name arg_name;
-	const riscv_arg_type arg_type;
+	const riscv_operand_name operand_name;
+	const riscv_operand_type operand_type;
 	const riscv_type type;
 	const unsigned int width;
 };
@@ -809,7 +809,7 @@ struct riscv_arg_data
 /* Opcode metadata tables */
 extern const riscv_codec riscv_inst_codec[];
 extern const char* riscv_inst_format[];
-extern const riscv_arg_data* riscv_inst_arg_data[];
+extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
 extern const riscv_comp_data* riscv_inst_comp_rv32[];

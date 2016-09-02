@@ -65,7 +65,7 @@
 namespace riscv
 {
 
-	#include "riscv-args.h"
+	#include "riscv-operands.h"
 	#include "riscv-decode.h"
 	#include "riscv-encode.h"
 	#include "riscv-switch.h"

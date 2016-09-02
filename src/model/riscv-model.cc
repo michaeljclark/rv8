@@ -24,7 +24,7 @@
 #include "riscv-util.h"
 #include "riscv-model.h"
 
-static const char* ARGS_FILE           = "args";
+static const char* OPERANDS_FILE       = "operands";
 static const char* ENUMS_FILE          = "enums";
 static const char* TYPES_FILE          = "types";
 static const char* FORMATS_FILE        = "formats";
@@ -318,11 +318,11 @@ std::string riscv_meta_model::opcode_mask(riscv_opcode_ptr opcode)
 	return ss.str();
 }
 
-std::string riscv_meta_model::format_type(riscv_arg_ptr arg)
+std::string riscv_meta_model::format_type(riscv_operand_ptr operand)
 {
-	return arg->type + std::to_string((arg->type == "offset" || arg->type == "simm" || arg->type == "uimm") ?
-		arg->bitspec.decoded_msb() + 1 :
-		arg->bitspec.segments.front().first.msb - arg->bitspec.segments.front().first.lsb + 1);
+	return operand->type + std::to_string((operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") ?
+		operand->bitspec.decoded_msb() + 1 :
+		operand->bitspec.segments.front().first.msb - operand->bitspec.segments.front().first.lsb + 1);
 }
 
 std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
@@ -335,17 +335,17 @@ std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr c
 
 std::string riscv_meta_model::format_format(std::string prefix, riscv_format_ptr format, char special)
 {
-	std::string args;
-	for (auto i = format->args.begin(); i != format->args.end(); i++) {
+	std::string operands;
+	for (auto i = format->operands.begin(); i != format->operands.end(); i++) {
 		if (std::ispunct(*i)) {
-			if (i != format->args.begin() && i + 1 != format->args.end() && !std::ispunct(*(i - 1))) {
-				args += special;
+			if (i != format->operands.begin() && i + 1 != format->operands.end() && !std::ispunct(*(i - 1))) {
+				operands += special;
 			}
 		} else {
-			args += *i;
+			operands += *i;
 		}
 	}
-	return prefix + ltrim(rtrim(args, std::ispunct), std::ispunct);
+	return prefix + ltrim(rtrim(operands, std::ispunct), std::ispunct);
 }
 
 std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key)
@@ -357,14 +357,14 @@ std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr
 
 std::string riscv_meta_model::opcode_codec_key(riscv_opcode_ptr opcode)
 {
-	if (opcode->args.size() == 0) {
+	if (opcode->operands.size() == 0) {
 		return "none";
 	}
-	std::vector<std::string> codec_args;
-	for (auto arg : opcode->args) {
-		codec_args.push_back(arg->name);
+	std::vector<std::string> codec_operands;
+	for (auto operand : opcode->operands) {
+		codec_operands.push_back(operand->name);
 	}
-	return join(codec_args, "·");
+	return join(codec_operands, "·");
 }
 
 std::string riscv_meta_model::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
@@ -593,9 +593,9 @@ riscv_opcode_list riscv_meta_model::lookup_opcode_by_name(std::string opcode_nam
 	return riscv_opcode_list();
 }
 
-bool riscv_meta_model::is_arg(std::string mnem)
+bool riscv_meta_model::is_operand(std::string mnem)
 {
-	return (args_by_name.find(mnem) != args_by_name.end());
+	return (operands_by_name.find(mnem) != operands_by_name.end());
 }
 
 bool riscv_meta_model::is_ignore(std::string mnem)
@@ -618,21 +618,21 @@ bool riscv_meta_model::is_extension(std::string mnem)
 	return (extensions_by_name.find(mnem) != extensions_by_name.end());
 }
 
-void riscv_meta_model::parse_arg(std::vector<std::string> &part)
+void riscv_meta_model::parse_operand(std::vector<std::string> &part)
 {
 	if (part.size() < 6) {
-		panic("args requires 6 parameters: %s", join(part, " ").c_str());
+		panic("operands requires 6 parameters: %s", join(part, " ").c_str());
 	}
-	auto arg = args_by_name[part[0]] = std::make_shared<riscv_arg>(
+	auto operand = operands_by_name[part[0]] = std::make_shared<riscv_operand>(
 		part[0], part[1], part[2], part[3], part[4], part[5]
 	);
-	args.push_back(arg);
+	operands.push_back(operand);
 }
 
 void riscv_meta_model::parse_enum(std::vector<std::string> &part)
 {
 	if (part.size() < 4) {
-		panic("args requires 4 parameters: %s", join(part, " ").c_str());
+		panic("operands requires 4 parameters: %s", join(part, " ").c_str());
 	}
 	auto enumv = enums_by_name[part[0]] = std::make_shared<riscv_enum>(
 		part[0], part[1], part[2], part[3]
@@ -664,17 +664,17 @@ void riscv_meta_model::parse_codec(std::vector<std::string> &part)
 		part[0], part[1]
 	);
 	std::string codec_key;
-	std::vector<std::string> codec_args;
+	std::vector<std::string> codec_operands;
 	for (size_t i = 2; i < part.size(); i++) {
-		auto arg = args_by_name[part[i]];
-		if (!arg) {
-			panic("codec %s has unknown arg: %s",
+		auto operand = operands_by_name[part[i]];
+		if (!operand) {
+			panic("codec %s has unknown operand: %s",
 				codec->name.c_str(), part[i].c_str());
 		}
-		codec->args.push_back(arg);
-		codec_args.push_back(part[i]);
+		codec->operands.push_back(operand);
+		codec_operands.push_back(part[i]);
 	}
-	codec->codec_key = join(codec_args, "·");
+	codec->codec_key = join(codec_operands, "·");
 	if (codec->codec_key.size() == 0) {
 		codec->codec_key = "none";
 	}
@@ -747,8 +747,8 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 	for (size_t i = 1; i < part.size(); i++) {
 		std::string mnem = part[i];
 		std::transform(mnem.begin(), mnem.end(), mnem.begin(), ::tolower);
-		if (is_arg(mnem)) {
-			opcode->args.push_back(args_by_name[mnem]);
+		if (is_operand(mnem)) {
+			opcode->operands.push_back(operands_by_name[mnem]);
 		} else if (is_ignore(mnem)) {
 			// presently we ignore masks labeled as ignore
 		} else if (is_mask(mnem)) {
@@ -775,7 +775,7 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 				extension->opcodes.push_back(opcode);
 			}
 		} else {
-			debug("opcode %s: unknown arg: %s",
+			debug("opcode %s: unknown operand: %s",
 				opcode_name.c_str(), mnem.c_str());
 		}
 	}
@@ -880,7 +880,7 @@ void riscv_meta_model::parse_description(std::vector<std::string> &part)
 
 bool riscv_meta_model::read_metadata(std::string dirname)
 {
-	for (auto part : read_file(dirname + std::string("/") + ARGS_FILE)) parse_arg(part);
+	for (auto part : read_file(dirname + std::string("/") + OPERANDS_FILE)) parse_operand(part);
 	for (auto part : read_file(dirname + std::string("/") + ENUMS_FILE)) parse_enum(part);
 	for (auto part : read_file(dirname + std::string("/") + TYPES_FILE)) parse_type(part);
 	for (auto part : read_file(dirname + std::string("/") + FORMATS_FILE)) parse_format(part);

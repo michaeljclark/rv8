@@ -7,7 +7,7 @@
 
 struct riscv_bitrange;
 struct riscv_bitspec;
-struct riscv_arg;
+struct riscv_operand;
 struct riscv_enum;
 struct riscv_type;
 struct riscv_codec;
@@ -22,9 +22,9 @@ struct riscv_bitrange;
 struct riscv_latex_row;
 
 typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
-typedef std::shared_ptr<riscv_arg> riscv_arg_ptr;
-typedef std::vector<riscv_arg_ptr> riscv_arg_list;
-typedef std::map<std::string,riscv_arg_ptr> riscv_arg_map;
+typedef std::shared_ptr<riscv_operand> riscv_operand_ptr;
+typedef std::vector<riscv_operand_ptr> riscv_operand_list;
+typedef std::map<std::string,riscv_operand_ptr> riscv_operand_map;
 typedef std::shared_ptr<riscv_enum> riscv_enum_ptr;
 typedef std::vector<riscv_enum_ptr> riscv_enum_list;
 typedef std::map<std::string,riscv_enum_ptr> riscv_enum_map;
@@ -123,7 +123,7 @@ struct riscv_bitspec
 	std::string to_template();
 };
 
-struct riscv_arg
+struct riscv_operand
 {
 	std::string name;
 	riscv_bitspec bitspec;
@@ -132,7 +132,7 @@ struct riscv_arg
 	std::string fg_color;
 	std::string bg_color;
 
-	riscv_arg(std::string name, std::string bitspec, std::string type,
+	riscv_operand(std::string name, std::string bitspec, std::string type,
 		  std::string label, std::string fg_color, std::string bg_color)
 		: name(name), bitspec(bitspec), type(type),
 		  label(label), fg_color(fg_color), bg_color(bg_color) {}
@@ -180,7 +180,7 @@ struct riscv_codec
 	std::string name;
 	std::string format;
 	std::string codec_key;
-	riscv_arg_list args;
+	riscv_operand_list operands;
 
 	riscv_codec(std::string name, std::string format) : name(name), format(format) {}
 };
@@ -206,11 +206,11 @@ struct riscv_extension
 
 struct riscv_format
 {
-	std::string args;
+	std::string operands;
 	std::string description;
 
-	riscv_format(std::string args, std::string description)
-		: args(args), description(description) {}
+	riscv_format(std::string operands, std::string description)
+		: operands(operands), description(description) {}
 };
 
 struct riscv_register
@@ -243,7 +243,7 @@ struct riscv_opcode
 	std::string long_name;
 	std::string instruction;
 	std::string description;
-	riscv_arg_list args;
+	riscv_operand_list operands;
 	riscv_opcode_mask_list masks;
 	riscv_codec_ptr codec;
 	riscv_format_ptr format;
@@ -276,11 +276,11 @@ struct riscv_opcode
 		return include_isa;
 	}
 
-	riscv_arg_ptr find_arg(ssize_t bit) {
-		for (auto arg : args) {
-			if (arg->bitspec.matches_bit(bit)) return arg;
+	riscv_operand_ptr find_operand(ssize_t bit) {
+		for (auto operand : operands) {
+			if (operand->bitspec.matches_bit(bit)) return operand;
 		}
-		return riscv_arg_ptr();
+		return riscv_operand_ptr();
 	}
 
 	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
@@ -315,8 +315,8 @@ struct riscv_meta_model
 {
 	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
 
-	riscv_arg_list           args;
-	riscv_arg_map            args_by_name;
+	riscv_operand_list       operands;
+	riscv_operand_map        operands_by_name;
 	riscv_enum_list          enums;
 	riscv_enum_map           enums_by_name;
 	riscv_type_list          types;
@@ -341,7 +341,7 @@ struct riscv_meta_model
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
-	static std::string format_type(riscv_arg_ptr arg);
+	static std::string format_type(riscv_operand_ptr operand);
 	static std::string format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix = true);
 	static std::string format_format(std::string prefix, riscv_format_ptr format, char special);
 	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key = true);
@@ -360,13 +360,13 @@ struct riscv_meta_model
 	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
 	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
 
-	bool is_arg(std::string mnem);
+	bool is_operand(std::string mnem);
 	bool is_ignore(std::string mnem);
 	bool is_mask(std::string mnem);
 	bool is_codec(std::string mnem);
 	bool is_extension(std::string mnem);
 
-	void parse_arg(std::vector<std::string> &part);
+	void parse_operand(std::vector<std::string> &part);
 	void parse_enum(std::vector<std::string> &part);
 	void parse_type(std::vector<std::string> &part);
 	void parse_codec(std::vector<std::string> &part);

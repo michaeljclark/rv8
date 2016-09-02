@@ -119,7 +119,7 @@ struct riscv_parse_meta : riscv_meta_model
 	void generate_map();
 	void generate_codec(bool include_pseudo);
 
-	std::string colorize_args(riscv_opcode_ptr opcode);
+	std::string colorize_operands(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
 	std::vector<std::string> get_inst_mnemonics(bool isa_widths, bool isa_extensions);
 
@@ -128,7 +128,7 @@ struct riscv_parse_meta : riscv_meta_model
 	void print_latex_row(riscv_latex_row &row, std::string ts, bool remove_question_marks);
 	void print_latex(bool remove_question_marks);
 	void print_map(bool print_map_instructions);
-	void print_args_h();
+	void print_operands_h();
 	void print_interp_h();
 	void print_fpu_h();
 	void print_fpu_c();
@@ -192,14 +192,14 @@ void riscv_parse_meta::generate_codec(bool include_pseudo)
 	generate_codec_node(root_node, opcodes_copy);
 }
 
-std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)
+std::string riscv_parse_meta::colorize_operands(riscv_opcode_ptr opcode)
 {
 	std::vector<char> token;
 	std::vector<std::string> comps;
-	auto args = opcode->format->args;
+	auto operands = opcode->format->operands;
 
-	for (size_t i = 0; i < args.length(); i++) {
-		char c = args[i];
+	for (size_t i = 0; i < operands.length(); i++) {
+		char c = operands[i];
 		if (::isalnum(c)) {
 			token.push_back(c);
 		} else {
@@ -216,10 +216,10 @@ std::string riscv_parse_meta::colorize_args(riscv_opcode_ptr opcode)
 
 	for (size_t i = 0; i < comps.size(); i++) {
 		auto comp = comps[i];
-		auto arg = args_by_name[comp];
-		if (arg) {
+		auto operand = operands_by_name[comp];
+		if (operand) {
 			auto new_comp = riscv_colors_to_ansi_escape_sequence(
-				arg->fg_color, arg->bg_color, ansi_color_normal
+				operand->fg_color, operand->bg_color, ansi_color_normal
 			);
 			new_comp.append(comp);
 			new_comp.append(_COLOR_RESET);
@@ -325,30 +325,30 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 			ssize_t bit_width = opcode->extensions[0]->inst_width;
 
 			// calculate the column spans for this row
-			riscv_arg_ptr arg, larg;
+			riscv_operand_ptr operand, loperand;
 			bool lbound = false;
-			typedef std::tuple<riscv_opcode_ptr,riscv_arg_ptr,ssize_t,std::string> arg_tuple;
-			std::vector<arg_tuple> arg_parts;
+			typedef std::tuple<riscv_opcode_ptr,riscv_operand_ptr,ssize_t,std::string> operand_tuple;
+			std::vector<operand_tuple> operand_parts;
 			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
-				arg = opcode->find_arg(bit);
+				operand = opcode->find_operand(bit);
 
 				// figure out where to break columns
-				if (arg_parts.size() == 0 || std::get<1>(arg_parts.back()) != arg || lbound)
+				if (operand_parts.size() == 0 || std::get<1>(operand_parts.back()) != operand || lbound)
 				{
 					std::string str;
 					str += c;
-					arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
+					operand_parts.push_back(operand_tuple(opcode, operand, 1, str));
 				} else {
-					auto &sz = std::get<2>(arg_parts.back());
-					auto &str = std::get<3>(arg_parts.back());
+					auto &sz = std::get<2>(operand_parts.back());
+					auto &str = std::get<3>(operand_parts.back());
 					char lastc = str[str.length()-1];
 					if ((lastc == '?' && (c == '1' || c == '0')) ||
 						((lastc == '1' || lastc == '0') && c == '?'))
 					{
 						std::string str;
 						str += c;
-						arg_parts.push_back(arg_tuple(opcode, arg, 1, str));
+						operand_parts.push_back(operand_tuple(opcode, operand, 1, str));
 					} else {
 						sz++;
 						str += c;
@@ -364,19 +364,19 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 				}
 				lbound = (bit != 0 && bit == named_bitspec.first.segments.back().first.lsb);
 
-				larg = arg;
+				loperand = operand;
 			}
 
-			// update labels for segments with args
+			// update labels for segments with operands
 			ssize_t msb = bit_width-1;
-			for (size_t i = 0; i < arg_parts.size(); i++) {
-				auto &arg = std::get<1>(arg_parts[i]);
-				auto size = std::get<2>(arg_parts[i]);
-				auto &str = std::get<3>(arg_parts[i]);
-				if (arg) {
-					str = arg->label;
-					if (arg->type == "simm" || arg->type == "uimm" || arg->type == "offset") {
-						auto spec = arg->bitspec;
+			for (size_t i = 0; i < operand_parts.size(); i++) {
+				auto &operand = std::get<1>(operand_parts[i]);
+				auto size = std::get<2>(operand_parts[i]);
+				auto &str = std::get<3>(operand_parts[i]);
+				if (operand) {
+					str = operand->label;
+					if (operand->type == "simm" || operand->type == "uimm" || operand->type == "offset") {
+						auto spec = operand->bitspec;
 						if (spec.segments.size() == 1 && spec.segments.front().second.size() == 0) {
 							// indicate size for immediates with no custom bit decoding spec
 							str += std::to_string(size);
@@ -398,9 +398,9 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 					if (opcode->compressed) {
 						for (auto &constraint : opcode->compressed->constraint_list) {
 							if (constraint->hint.size() == 0) continue;
-							std::string arg = split(constraint->name, "_")[0];
-							if (str.find(arg) != str.length() - arg.length()) continue;
-							std::string render_hint = replace(constraint->hint, arg, "");
+							std::string operand = split(constraint->name, "_")[0];
+							if (str.find(operand) != str.length() - operand.length()) continue;
+							std::string render_hint = replace(constraint->hint, operand, "");
 							str += "$" + latex_utf_substitute(render_hint) + "$";
 						}
 					}
@@ -413,24 +413,24 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 
 			// construct the LaTeX for this row
 			std::stringstream ls;
-			for (size_t i = 0; i < arg_parts.size(); i++) {
-				auto size = std::get<2>(arg_parts[i]);
-				auto &str = std::get<3>(arg_parts[i]);
+			for (size_t i = 0; i < operand_parts.size(); i++) {
+				auto size = std::get<2>(operand_parts[i]);
+				auto &str = std::get<3>(operand_parts[i]);
 				ls << (i != 0 ? " & " : "")
 				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
 				   << "{" << (i == 0 ? "|" : "") << "c|}"
 				   << "{" << str << "}";
 			}
 
-			// format the opcode name and arguments
+			// format the opcode name and operands
 			auto name = opcode->name;
-			auto arg_comps = split(opcode->format->args, ",");
+			auto operand_comps = split(opcode->format->operands, ",");
 			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-			if (arg_comps.size() == 1 && arg_comps[0] == "none") arg_comps[0] = ""; 
+			if (operand_comps.size() == 1 && operand_comps[0] == "none") operand_comps[0] = "";
 
 			// print this row
 			printf("%s & \\scriptsize{%s %s} \\\\\n\\cline{1-%ld}\n",
-				ls.str().c_str(), name.c_str(), join(arg_comps, ", ").c_str(), kLatexTableColumns);
+				ls.str().c_str(), name.c_str(), join(operand_comps, ", ").c_str(), kLatexTableColumns);
 			break;
 		}
 		case riscv_latex_type_type_spec:
@@ -671,13 +671,13 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 				}
 				default:
 				{
-					riscv_arg_ptr arg = opcode->find_arg(bit);
-					if (arg) {
+					riscv_operand_ptr operand = opcode->find_operand(bit);
+					if (operand) {
 						printf("%s%c%s",
 							enable_colorize ? riscv_colors_to_ansi_escape_sequence(
-								arg->fg_color, arg->bg_color
+								operand->fg_color, operand->bg_color
 							).c_str() : "",
-							arg->char_code(),
+							operand->char_code(),
 							enable_colorize ? _COLOR_RESET : "");
 					} else {
 						printf("%c", c);
@@ -688,12 +688,12 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 		}
 		if (enable_colorize) {
 			printf(" %s%s%s %s",
-				_COLOR_OPCODE, opcode->name.c_str(), _COLOR_RESET, colorize_args(opcode).c_str());
+				_COLOR_OPCODE, opcode->name.c_str(), _COLOR_RESET, colorize_operands(opcode).c_str());
 		} else {
 			printf(" %s %s",
-				opcode->name.c_str(), opcode->format->args.c_str());
+				opcode->name.c_str(), opcode->format->operands.c_str());
 		}
-		ssize_t len = 30 - (opcode->name.length() + opcode->format->args.length());
+		ssize_t len = 30 - (opcode->name.length() + opcode->format->operands.length());
 		std::string ws;
 		for (ssize_t i = 0; i < len; i++) ws += ' ';
 		printf("%s%s# %s%s%s\n",
@@ -731,19 +731,19 @@ R"C(//
 
 )C";
 
-void riscv_parse_meta::print_args_h()
+void riscv_parse_meta::print_operands_h()
 {
-	printf(kCHeader, "riscv-args.h");
-	printf("#ifndef riscv_args_h\n");
-	printf("#define riscv_args_h\n");
+	printf(kCHeader, "riscv-operands.h");
+	printf("#ifndef riscv_operands_h\n");
+	printf("#define riscv_operands_h\n");
 	printf("\n");
 
 	// print immediate decoders
-	for (auto arg: args) {
-		printf("typedef %s%-60s arg_%s;\n",
-			(arg->type == "simm" || arg->type == "offset") ? "simm_arg_t" : "uimm_arg_t",
-			arg->bitspec.to_template().c_str(),
-			arg->name.c_str());
+	for (auto operand: operands) {
+		printf("typedef %s%-60s operand_%s;\n",
+			(operand->type == "simm" || operand->type == "offset") ? "simm_operand_t" : "uimm_operand_t",
+			operand->bitspec.to_template().c_str(),
+			operand->name.c_str());
 	}
 	printf("\n");
 	printf("#endif\n");
@@ -843,18 +843,18 @@ void riscv_parse_meta::print_interp_h()
 
 typedef std::pair<const riscv_primitive_type*,std::string> riscv_operand_desc;
 
-static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_arg_ptr &arg, size_t i)
+static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
 {
 	// infer operand c type
 	std::vector<std::string> opcode_parts = split(opcode->name, ".");
 	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
-	if (arg->type == "ireg") {
+	if (operand->type == "ireg") {
 		if (i == 0 && opcode_parts.size() > 2) {
 			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
 		} else if (i == 1 && opcode_parts.size() > 2) {
 			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
 		}
-	} else if (arg->type == "freg") {
+	} else if (operand->type == "freg") {
 		if (opcode_parts.size() == 2) {
 			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
 		} else if (i == 0 && opcode_parts.size() > 2) {
@@ -871,13 +871,13 @@ static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv
 	}
 
 	// create operand name
-	std::string arg_name = arg->name;
-	arg_name = replace(arg_name, "frd", "d");
-	arg_name = replace(arg_name, "rd", "d");
-	arg_name = replace(arg_name, "frs", "s");
-	arg_name = replace(arg_name, "rs", "s");
+	std::string operand_name = operand->name;
+	operand_name = replace(operand_name, "frd", "d");
+	operand_name = replace(operand_name, "rd", "d");
+	operand_name = replace(operand_name, "frs", "s");
+	operand_name = replace(operand_name, "rs", "s");
 
-	return riscv_operand_desc(primitive,arg_name);
+	return riscv_operand_desc(primitive,operand_name);
 }
 
 void riscv_parse_meta::print_fpu_h()
@@ -917,53 +917,53 @@ typedef unsigned long      ux;
 
 		// infer C argument types for test function
 		bool skip_imm = false;
-		std::vector<riscv_operand_desc> arg_list;
-		for (size_t i = 0; i < opcode->codec->args.size(); i++) {
-			auto arg = opcode->codec->args[i];
+		std::vector<riscv_operand_desc> operand_list;
+		for (size_t i = 0; i < opcode->codec->operands.size(); i++) {
+			auto operand = opcode->codec->operands[i];
 			// round mode operand not supported
-			if (arg->name == "rm") continue;
+			if (operand->name == "rm") continue;
 			// instructions with immediates not supported (fld, fsw)
-			if (arg->name.find("imm") != std::string::npos) skip_imm = true;
+			if (operand->name.find("imm") != std::string::npos) skip_imm = true;
 			// infer primitive type based on the opcode components and operand types
-			arg_list.push_back(riscv_fpu_operand_type(opcode, ext, arg, i));
+			operand_list.push_back(riscv_fpu_operand_type(opcode, ext, operand, i));
 		}
 		if (skip_imm) continue;
 
 		std::vector<std::string> fn_arity;
-		std::transform(arg_list.begin() + 1, arg_list.end(),
-			std::back_inserter(fn_arity), [](const riscv_operand_desc& arg) {
-				return format_string("%s %s", arg.first->meta_type, arg.second.c_str());
+		std::transform(operand_list.begin() + 1, operand_list.end(),
+			std::back_inserter(fn_arity), [](const riscv_operand_desc& operand) {
+				return format_string("%s %s", operand.first->meta_type, operand.second.c_str());
 		});
 
-		std::vector<std::string> arg_fmt;
-		std::transform(arg_list.begin() + 1, arg_list.end(),
-			std::back_inserter(arg_fmt), [](const riscv_operand_desc& arg) {
-				return format_string("%s%s", arg.first->c_fmt, arg.first->c_suffix);
+		std::vector<std::string> operand_fmt;
+		std::transform(operand_list.begin() + 1, operand_list.end(),
+			std::back_inserter(operand_fmt), [](const riscv_operand_desc& operand) {
+				return format_string("%s%s", operand.first->c_fmt, operand.first->c_suffix);
 		});
 
 		std::vector<std::string> asm_arity;
-		std::transform(arg_list.begin(), arg_list.end(),
-			std::back_inserter(asm_arity), [](const riscv_operand_desc& arg) {
-				return format_string("%%[%s]", arg.second.c_str());
+		std::transform(operand_list.begin(), operand_list.end(),
+			std::back_inserter(asm_arity), [](const riscv_operand_desc& operand) {
+				return format_string("%%[%s]", operand.second.c_str());
 		});
 
 		std::vector<std::string> asm_results;
-		std::transform(arg_list.begin() + 1, arg_list.end(),
-			std::back_inserter(asm_results), [](const riscv_operand_desc& arg) {
+		std::transform(operand_list.begin() + 1, operand_list.end(),
+			std::back_inserter(asm_results), [](const riscv_operand_desc& operand) {
 				return format_string("[%s]\"%s\" (%s)",
-					arg.second.c_str(), arg.first->asm_type, arg.second.c_str());
+					operand.second.c_str(), operand.first->asm_type, operand.second.c_str());
 		});
 
 		// output function
 		if (ext->isa_width == 64) printf("#if _RISCV_SZPTR != _RISCV_SZINT\n");
-		printf("#define fmt_res_%s \"%s%s\"\n", opcode_format("", opcode, "_").c_str(), arg_list[0].first->c_fmt, arg_list[0].first->c_suffix);
-		printf("#define fmt_arg_%s \"%s\"\n", opcode_format("", opcode, "_").c_str(), join(arg_fmt, ", ").c_str());
+		printf("#define fmt_res_%s \"%s%s\"\n", opcode_format("", opcode, "_").c_str(), operand_list[0].first->c_fmt, operand_list[0].first->c_suffix);
+		printf("#define fmt_arg_%s \"%s\"\n", opcode_format("", opcode, "_").c_str(), join(operand_fmt, ", ").c_str());
 		printf("inline %s test_%s(%s)\n{\n\t%s %s;\n\tasm(\"%s %s\\n\"\n\t\t: [%s]\"=%s\" (%s)\n\t\t: %s\n\t\t:\n\t);\n\treturn %s;\n}\n",
-			arg_list[0].first->meta_type, opcode_format("", opcode, "_").c_str(), join(fn_arity, ", ").c_str(),
-			arg_list[0].first->meta_type, arg_list[0].second.c_str(),
+			operand_list[0].first->meta_type, opcode_format("", opcode, "_").c_str(), join(fn_arity, ", ").c_str(),
+			operand_list[0].first->meta_type, operand_list[0].second.c_str(),
 			opcode_format("", opcode, ".").c_str(), join(asm_arity, ", ").c_str(),
-			arg_list[0].second.c_str(), arg_list[0].first->asm_type, arg_list[0].second.c_str(),
-			join(asm_results, ", ").c_str(), arg_list[0].second.c_str()
+			operand_list[0].second.c_str(), operand_list[0].first->asm_type, operand_list[0].second.c_str(),
+			join(asm_results, ", ").c_str(), operand_list[0].second.c_str()
 		);
 		if (ext->isa_width == 64) printf("#endif\n");
 		printf("\n");
@@ -1060,23 +1060,23 @@ R"C(
 
 		// infer C argument types for test function
 		bool skip_imm = false;
-		std::vector<riscv_operand_desc> arg_list;
-		for (size_t i = 0; i < opcode->codec->args.size(); i++) {
-			auto arg = opcode->codec->args[i];
+		std::vector<riscv_operand_desc> operand_list;
+		for (size_t i = 0; i < opcode->codec->operands.size(); i++) {
+			auto operand = opcode->codec->operands[i];
 			// round mode operand not supported
-			if (arg->name == "rm") continue;
+			if (operand->name == "rm") continue;
 			// instructions with immediates not supported (fld, fsw)
-			if (arg->name.find("imm") != std::string::npos) skip_imm = true;
+			if (operand->name.find("imm") != std::string::npos) skip_imm = true;
 			// infer primitive type based on the opcode components and operand types
-			arg_list.push_back(riscv_fpu_operand_type(opcode, ext, arg, i));
+			operand_list.push_back(riscv_fpu_operand_type(opcode, ext, operand, i));
 		}
 		if (skip_imm) continue;
 
 		// generate test cases
 		if (ext->isa_width == 64) printf("#if _RISCV_SZPTR != _RISCV_SZINT\n");
-		switch (arg_list.size()) {
+		switch (operand_list.size()) {
 			case 2: {
-				std::set<std::string> values1 = test_values(arg_list[1].first);
+				std::set<std::string> values1 = test_values(operand_list[1].first);
 				for (auto &v1 : values1) {
 					printf("\tFPU_IDENTITY(%s, %s);\n", opcode_format("", opcode, "_").c_str(),
 						v1.c_str());
@@ -1084,8 +1084,8 @@ R"C(
 				break;
 			}
 			case 3: {
-				std::set<std::string> values1 = test_values(arg_list[1].first);
-				std::set<std::string> values2 = test_values(arg_list[2].first);
+				std::set<std::string> values1 = test_values(operand_list[1].first);
+				std::set<std::string> values2 = test_values(operand_list[2].first);
 				for (auto &v1 : values1) {
 					for (auto &v2 : values2) {
 						printf("\tFPU_IDENTITY(%s, %s, %s);\n", opcode_format("", opcode, "_").c_str(),
@@ -1095,9 +1095,9 @@ R"C(
 				break;
 			}
 			case 4: {
-				std::set<std::string> values1 = test_values(arg_list[1].first);
-				std::set<std::string> values2 = test_values(arg_list[2].first);
-				std::set<std::string> values3 = test_values(arg_list[3].first);
+				std::set<std::string> values1 = test_values(operand_list[1].first);
+				std::set<std::string> values2 = test_values(operand_list[2].first);
+				std::set<std::string> values3 = test_values(operand_list[3].first);
 				for (auto &v1 : values1) {
 					for (auto &v2 : values2) {
 						for (auto &v3 : values3) {
@@ -1128,15 +1128,15 @@ void riscv_parse_meta::print_jit_h()
 
 		// create emit interface
 		std::string emit_name = opcode_format("emit_", opcode, "_");
-		std::vector<std::string> arg_list;
-		for (auto &arg : opcode->codec->args) {
-			auto type_name = format_type(arg) + " " + arg->name;
-			arg_list.push_back(type_name);
+		std::vector<std::string> operand_list;
+		for (auto &operand : opcode->codec->operands) {
+			auto type_name = format_type(operand) + " " + operand->name;
+			operand_list.push_back(type_name);
 		}
 
 		// output emit interface
 		printf("\tuint64_t %s(%s);\n",
-			emit_name.c_str(), join(arg_list, ", ").c_str());
+			emit_name.c_str(), join(operand_list, ", ").c_str());
 	}
 	printf("}\n");
 	printf("\n");
@@ -1170,37 +1170,37 @@ using namespace riscv;
 
 		// create emit interface
 		std::string emit_name = opcode_format("emit_", opcode, "_");
-		std::vector<std::string> arg_list;
-		for (auto &arg : opcode->codec->args) {
-			auto type_name = format_type(arg) + " " + arg->name;
-			arg_list.push_back(type_name);
+		std::vector<std::string> operand_list;
+		for (auto &operand : opcode->codec->operands) {
+			auto type_name = format_type(operand) + " " + operand->name;
+			operand_list.push_back(type_name);
 		}
 
 		// output emit interface
 		printf("uint64_t riscv::%s(%s)\n{\n",
-			emit_name.c_str(), join(arg_list, ", ").c_str());
+			emit_name.c_str(), join(operand_list, ", ").c_str());
 		printf("\tdecode dec;\n");
-		if (opcode->codec->args.size() > 0) {
+		if (opcode->codec->operands.size() > 0) {
 			std::vector<std::string> check_list;
-			for (auto &arg : opcode->codec->args) {
-				auto check_name = arg->name + ".valid()";
+			for (auto &operand : opcode->codec->operands) {
+				auto check_name = operand->name + ".valid()";
 				check_list.push_back(check_name);
 			}
 			printf("\tif (!(%s)) return 0; /* illegal instruction */\n",
 				join(check_list, " && ").c_str());
 		}
 		printf("\tdec.op = %s;\n", opcode_format("riscv_op_", opcode, "_").c_str());
-		for (auto &arg : opcode->codec->args) {
-			if (arg->type == "offset" || arg->type == "simm" || arg->type == "uimm") {
-				printf("\tdec.imm = %s;\n", arg->name.c_str());
-			} else if (arg->type == "ireg") {
-				printf("\tdec.%s = %s;\n", arg->name.c_str(), arg->name.c_str());
-			} else if (arg->type == "freg") {
-				printf("\tdec.%s = %s;\n", arg->name.substr(1).c_str(), arg->name.c_str());
-			} else if (arg->type == "arg") {
-				printf("\tdec.%s = %s;\n", arg->name.c_str(), arg->name.c_str());
+		for (auto &operand : opcode->codec->operands) {
+			if (operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") {
+				printf("\tdec.imm = %s;\n", operand->name.c_str());
+			} else if (operand->type == "ireg") {
+				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+			} else if (operand->type == "freg") {
+				printf("\tdec.%s = %s;\n", operand->name.substr(1).c_str(), operand->name.c_str());
+			} else if (operand->type == "arg") {
+				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
 			} else {
-				printf("/* dec.? = %s unhandled */\n", arg->name.c_str());
+				printf("/* dec.? = %s unhandled */\n", operand->name.c_str());
 			}
 		}
 		printf("\treturn encode_inst(dec);\n");
@@ -1232,11 +1232,11 @@ struct riscv_comp_data
 	const rvc_constraint* constraints;
 };
 
-/* Instruction arg structure */
-struct riscv_arg_data
+/* Instruction operand structure */
+struct riscv_operand_data
 {
-	const riscv_arg_name arg_name;
-	const riscv_arg_type arg_type;
+	const riscv_operand_name operand_name;
+	const riscv_operand_type operand_type;
 	const riscv_type type;
 	const unsigned int width;
 };
@@ -1244,7 +1244,7 @@ struct riscv_arg_data
 /* Opcode metadata tables */
 extern const riscv_codec riscv_inst_codec[];
 extern const char* riscv_inst_format[];
-extern const riscv_arg_data* riscv_inst_arg_data[];
+extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
 )C";
@@ -1343,26 +1343,26 @@ R"C(
 	}
 	printf("};\n\n");
 
-	// Instruction argument name enum
-	printf("enum riscv_arg_name\n{\n");
-	printf("\triscv_arg_name_none,\n");
-	for (auto &arg : args) {
-		printf("\triscv_arg_name_%s,\n", arg->name.c_str());
+	// Instruction operand name enum
+	printf("enum riscv_operand_name\n{\n");
+	printf("\triscv_operand_name_none,\n");
+	for (auto &operand : operands) {
+		printf("\triscv_operand_name_%s,\n", operand->name.c_str());
 	}
 	printf("};\n\n");
 
-	// instruction argument type enum
-	std::vector<std::string> arg_types;
-	for (auto &arg : args) {
-		auto type_name = format_type(arg);
-		if (std::find(arg_types.begin(), arg_types.end(), type_name) == arg_types.end()) {
-			arg_types.push_back(type_name);
+	// instruction operand type enum
+	std::vector<std::string> operand_types;
+	for (auto &operand : operands) {
+		auto type_name = format_type(operand);
+		if (std::find(operand_types.begin(), operand_types.end(), type_name) == operand_types.end()) {
+			operand_types.push_back(type_name);
 		}
 	}
-	printf("enum riscv_arg_type\n{\n");
-	printf("\triscv_arg_type_none,\n");
-	for (auto &arg_type : arg_types) {
-		printf("\triscv_arg_type_%s,\n", arg_type.c_str());
+	printf("enum riscv_operand_type\n{\n");
+	printf("\triscv_operand_type_none,\n");
+	for (auto &operand_type : operand_types) {
+		printf("\triscv_operand_type_%s,\n", operand_type.c_str());
 	}
 	printf("};\n\n");
 
@@ -1442,17 +1442,17 @@ R"C(#include "riscv-types.h"
 		printf("\n");
 	}
 
-	// Codec argument data
+	// Codec operand data
 	for (auto &codec : codecs) {
-		printf("const riscv_arg_data riscv_codec_%s_args[] = {\n", format_codec("", codec, "_", false).c_str());
-		for (auto &arg : codec->args) {
-			size_t width = arg->bitspec.decoded_msb() > 0 ?
-				arg->bitspec.decoded_msb() + 1 :
-				arg->bitspec.segments.front().first.msb - arg->bitspec.segments.back().first.lsb + 1;
-			printf("\t{ riscv_arg_name_%s, riscv_arg_type_%s, riscv_type_%s, %lu },\n",
-				arg->name.c_str(), format_type(arg).c_str(), arg->type.c_str(), width);
+		printf("const riscv_operand_data riscv_codec_%s_operands[] = {\n", format_codec("", codec, "_", false).c_str());
+		for (auto &operand : codec->operands) {
+			size_t width = operand->bitspec.decoded_msb() > 0 ?
+				operand->bitspec.decoded_msb() + 1 :
+				operand->bitspec.segments.front().first.msb - operand->bitspec.segments.back().first.lsb + 1;
+			printf("\t{ riscv_operand_name_%s, riscv_operand_type_%s, riscv_type_%s, %lu },\n",
+				operand->name.c_str(), format_type(operand).c_str(), operand->type.c_str(), width);
 		}
-		printf("\t{ riscv_arg_name_none, riscv_arg_type_none, riscv_type_none, 0 }\n};\n\n");
+		printf("\t{ riscv_operand_name_none, riscv_operand_type_none, riscv_type_none, 0 }\n};\n\n");
 	}
 
 	// Instruction codecs
@@ -1476,11 +1476,11 @@ R"C(#include "riscv-types.h"
 	}
 	printf("};\n\n");
 
-	// Instruction codecs argument data table
-	printf("const riscv_arg_data* riscv_inst_arg_data[] = {\n");
-	printf("\triscv_codec_none_args,\n");
+	// Instruction codecs operand data table
+	printf("const riscv_operand_data* riscv_inst_operand_data[] = {\n");
+	printf("\triscv_codec_none_operands,\n");
 	for (auto &opcode : opcodes) {
-		printf("\t%sriscv_codec_%s_args,\n",
+		printf("\t%sriscv_codec_%s_operands,\n",
 			opcode_comment(opcode, no_comment).c_str(), format_codec("", opcode->codec, "_", false).c_str());
 	}
 	printf("};\n\n");
@@ -1555,8 +1555,8 @@ extern "C" {
 extern const char* riscv_ireg_name_sym[];
 extern const char* riscv_freg_name_sym[];
 extern const char* riscv_inst_name_sym[];
-extern const char* riscv_arg_name_sym[];
-extern const char* riscv_arg_type_sym[];
+extern const char* riscv_operand_name_sym[];
+extern const char* riscv_operand_type_sym[];
 extern const char* riscv_csr_name_sym[];
 
 #ifdef __cplusplus
@@ -1604,26 +1604,26 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	}
 	printf("};\n\n");
 
-	// Instruction argument names
-	printf("const char* riscv_arg_name_sym[] = {\n");
+	// Instruction operand names
+	printf("const char* riscv_operand_name_sym[] = {\n");
 	printf("\t\"none\",\n");
-	for (auto &arg : args) {
-		printf("\t\"%s\",\n", arg->name.c_str());
+	for (auto &operand : operands) {
+		printf("\t\"%s\",\n", operand->name.c_str());
 	}
 	printf("};\n\n");
 
-	// Instruction argument type names
-	std::vector<std::string> arg_types;
-	for (auto &arg : args) {
-		auto type_name = format_type(arg);
-		if (std::find(arg_types.begin(), arg_types.end(), type_name) == arg_types.end()) {
-			arg_types.push_back(type_name);
+	// Instruction operand type names
+	std::vector<std::string> operand_types;
+	for (auto &operand : operands) {
+		auto type_name = format_type(operand);
+		if (std::find(operand_types.begin(), operand_types.end(), type_name) == operand_types.end()) {
+			operand_types.push_back(type_name);
 		}
 	}
-	printf("const char* riscv_arg_type_sym[] = {\n");
+	printf("const char* riscv_operand_type_sym[] = {\n");
 	printf("\t\"none\",\n");
-	for (auto &arg_type : arg_types) {
-		printf("\t\"%s\",\n", arg_type.c_str());
+	for (auto &operand_type : operand_types) {
+		printf("\t\"%s\",\n", operand_type.c_str());
 	}
 	printf("};\n\n");
 
@@ -1885,7 +1885,7 @@ int main(int argc, const char *argv[])
 	bool zero_not_oh = false;
 	bool remove_question_marks = false;
 	bool include_pseudo = false;
-	bool print_args_h = false;
+	bool print_operands_h = false;
 	bool print_switch_h = false;
 	bool print_interp_h = false;
 	bool print_fpu_h = false;
@@ -1946,9 +1946,9 @@ int main(int argc, const char *argv[])
 		{ "-SC", "--print-strings-cc", cmdline_arg_type_none,
 			"Print strings source",
 			[&](std::string s) { return (print_strings_cc = true); } },
-		{ "-A", "--print-args-h", cmdline_arg_type_none,
-			"Print args header",
-			[&](std::string s) { return (print_args_h = true); } },
+		{ "-A", "--print-operands-h", cmdline_arg_type_none,
+			"Print operands header",
+			[&](std::string s) { return (print_operands_h = true); } },
 		{ "-S", "--print-switch-h", cmdline_arg_type_none,
 			"Print switch header",
 			[&](std::string s) { return (print_switch_h = true); } },
@@ -1979,7 +1979,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if ((help_or_error |= !print_latex && !print_map &&
-		!print_switch_h && !print_args_h &&
+		!print_switch_h && !print_operands_h &&
 		!print_jit_h && !print_jit_cc &&
 		!print_meta_h && !print_meta_cc &&
 		!print_strings_h && !print_strings_cc &&
@@ -2019,8 +2019,8 @@ int main(int argc, const char *argv[])
 		inst_set.print_strings_cc(no_comment, zero_not_oh);
 	}
 
-	if (print_args_h) {
-		inst_set.print_args_h();
+	if (print_operands_h) {
+		inst_set.print_operands_h();
 	}
 
 	if (print_switch_h) {

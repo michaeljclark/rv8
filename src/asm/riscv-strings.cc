@@ -299,7 +299,7 @@ const char* riscv_inst_name_sym[] = {
 	"c.sdsp",
 };
 
-const char* riscv_arg_name_sym[] = {
+const char* riscv_operand_name_sym[] = {
 	"none",
 	"rd",
 	"rs1",
@@ -357,7 +357,7 @@ const char* riscv_arg_name_sym[] = {
 	"cimmq",
 };
 
-const char* riscv_arg_type_sym[] = {
+const char* riscv_operand_type_sym[] = {
 	"none",
 	"ireg5",
 	"freg5",

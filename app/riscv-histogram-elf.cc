@@ -61,16 +61,16 @@ struct riscv_histogram_elf
 		else hi->second++;
 	}
 
-	size_t reg_value(decode &dec, riscv_arg_name arg_name)
+	size_t reg_value(decode &dec, riscv_operand_name operand_name)
 	{
-		switch (arg_name) {
-			case riscv_arg_name_rd: return dec.rd;
-			case riscv_arg_name_rs1: return dec.rs1;
-			case riscv_arg_name_rs2: return dec.rs2;
-			case riscv_arg_name_frd: return dec.rd;
-			case riscv_arg_name_frs1: return dec.rs1;
-			case riscv_arg_name_frs2: return dec.rs2;
-			case riscv_arg_name_frs3: return dec.rs3;
+		switch (operand_name) {
+			case riscv_operand_name_rd: return dec.rd;
+			case riscv_operand_name_rs1: return dec.rs1;
+			case riscv_operand_name_rs2: return dec.rs2;
+			case riscv_operand_name_frd: return dec.rd;
+			case riscv_operand_name_frs1: return dec.rs1;
+			case riscv_operand_name_frs2: return dec.rs2;
+			case riscv_operand_name_frs3: return dec.rs3;
 			default: return 0;
 		}
 	}
@@ -78,21 +78,21 @@ struct riscv_histogram_elf
 	void histogram_add_regs(map_t &hist, decode &dec)
 	{
 		std::string key;
-		const riscv_arg_data *arg_data = riscv_inst_arg_data[dec.op];
-		while (arg_data->type != riscv_type_none) {
-			switch (arg_data->type) {
+		const riscv_operand_data *operand_data = riscv_inst_operand_data[dec.op];
+		while (operand_data->type != riscv_type_none) {
+			switch (operand_data->type) {
 				case riscv_type_ireg:
 				case riscv_type_freg:
-					key = std::string(arg_data->type == riscv_type_ireg ?
-						riscv_ireg_name_sym[reg_value(dec, arg_data->arg_name)] :
-						riscv_freg_name_sym[reg_value(dec, arg_data->arg_name)]) +
+					key = std::string(operand_data->type == riscv_type_ireg ?
+						riscv_ireg_name_sym[reg_value(dec, operand_data->operand_name)] :
+						riscv_freg_name_sym[reg_value(dec, operand_data->operand_name)]) +
 						(regs_position ? "-" : "") +
-						(regs_position ? riscv_arg_name_sym[arg_data->arg_name] : "");
+						(regs_position ? riscv_operand_name_sym[operand_data->operand_name] : "");
 					histogram_add(hist, key);
 					break;
 				default: break;
 			}
-			arg_data++;
+			operand_data++;
 		}
 	}
 
