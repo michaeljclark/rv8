@@ -281,11 +281,11 @@ R muls(typename R::stype x, typename R::stype y)
 	U c2 =    l1 < z0;
 	U rs =    xs ^ ys;
 	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
-	U l2 =    rs ? l1 - 1 : l1;
+	U l2 =    l1 - rs;
 	U hb =    l2 > l1;
-	U h2 =    hb ? h1 - 1 : h1;
-	U hi =    rs ? ~h2 : h2;
-	U lo =    rs ? ~l2 : l2;
+	U h2 =    h1 - hb;
+	U hi =    -rs ^ h2;
+	U lo =    -rs ^ l2;
 
 	return R(hi, lo);
 }
@@ -317,11 +317,11 @@ R mulsu(typename R::stype x, typename R::utype y)
 	U l1 =    z0 + (z4 << qb);
 	U c2 =    l1 < z0;
 	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
-	U l2 =    xs ? l1 - 1 : l1;
+	U l2 =    l1 - xs;
 	U hb =    l2 > l1;
-	U h2 =    hb ? h1 - 1 : h1;
-	U hi =    xs ? ~h2 : h2;
-	U lo =    xs ? ~l2 : l2;
+	U h2 =    h1 - hb;
+	U hi =    -xs ^ h2;
+	U lo =    -xs ^ l2;
 
 	return R(hi, lo);
 }
@@ -381,10 +381,10 @@ S mulhs(S x, S y)
 	U c2 =    l1 < z0;
 	U rs =    xs ^ ys;
 	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
-	U l2 =    rs ? l1 - 1 : l1;
+	U l2 =    l1 - rs;
 	U hb =    l2 > l1;
-	U h2 =    hb ? h1 - 1 : h1;
-	U hi =    rs ? ~h2 : h2;
+	U h2 =    h1 - hb;
+	U hi =    -rs ^ h2;
 
 	return hi;
 }
@@ -414,10 +414,10 @@ S mulhsu(S x, U y)
 	U l1 =    z0 + (z4 << qb);
 	U c2 =    l1 < z0;
 	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
-	U l2 =    xs ? l1 - 1 : l1;
+	U l2 =    l1 - xs;
 	U hb =    l2 > l1;
-	U h2 =    hb ? h1 - 1 : h1;
-	U hi =    xs ? ~h2 : h2;
+	U h2 =    h1 - hb;
+	U hi =    -xs ^ h2;
 
 	return hi;
 }
