@@ -1104,14 +1104,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_slliw: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.ireg[dec.rs1]) << dec.imm;
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) << dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_srliw: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.ireg[dec.rs1]) >> dec.imm;
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) >> dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1139,14 +1139,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_sllw: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.ireg[dec.rs1]) << (proc.ireg[dec.rs2] & 0b111111);
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) << (proc.ireg[dec.rs2] & 0b111111));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_srlw: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = u32(proc.ireg[dec.rs1]) >> (proc.ireg[dec.rs2] & 0b111111);
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) >> (proc.ireg[dec.rs2] & 0b111111));
 				proc.pc += inst_length;
 				return true;
 			};
