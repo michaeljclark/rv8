@@ -21,7 +21,7 @@ namespace riscv {
 			else return neg ? riscv_fclass_neg_subnorm : riscv_fclass_pos_subnorm;
 		} else if (inf) {
 			if (man == 0) return neg ? riscv_fclass_neg_inf : riscv_fclass_pos_inf;
-			else return man & (1<<22) ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
+			else return man & 1 ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
 		} else {
 			return neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm;
 		}
@@ -38,7 +38,7 @@ namespace riscv {
 			else return neg ? riscv_fclass_neg_subnorm : riscv_fclass_pos_subnorm;
 		} else if (inf) {
 			if (man == 0) return neg ? riscv_fclass_neg_inf : riscv_fclass_pos_inf;
-			else return man & (1ULL<<51) ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
+			else return man & 1 ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan;
 		} else {
 			return neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm;
 		}
