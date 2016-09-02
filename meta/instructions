@@ -71,11 +71,11 @@ remu       "Remainder Unsigned"                             "rd = ux(rs1) % ux(r
 
 # RV64M    "RV64M Standard Extension for Integer Multiply and Divide (in addition to RV32M)"
 
-mulw       "Multiple Word"                                  "rd = u32(rs1) * u32(rs2)"
+mulw       "Multiple Word"                                  "rd = s32(u32(rs1) * u32(rs2))"
 divw       "Divide Signed Word"                             "rd = s32(rs1) / s32(rs2)"
-divuw      "Divide Unsigned Word"                           "rd = u32(rs1) / u32(rs2)"
+divuw      "Divide Unsigned Word"                           "rd = s32(u32(rs1) / u32(rs2))"
 remw       "Remainder Signed Word"                          "rd = s32(rs1) % s32(rs2)"
-remuw      "Remainder Unsigned Word"                        "rd = u32(rs1) % u32(rs2)"
+remuw      "Remainder Unsigned Word"                        "rd = s32(u32(rs1) % u32(rs2))"
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
