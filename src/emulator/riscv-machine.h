@@ -161,6 +161,8 @@ namespace riscv {
 		typedef s32  int_t;
 		typedef u32  uint_t;
 
+		/* Privileged Control Registers */
+
 		UX           misa;            /* Extensions misa[25:0], Base misa[XLEN-1:XLEN-2] (enum riscv_isa) */
 		UX           mvendorid;       /* Vendor ID, (0 = not implemented) */
 		UX           marchid;         /* Architecture ID, (0 = not implemented) */
@@ -211,12 +213,6 @@ namespace riscv {
 		UX           scause;          /* Supervisor Cause Register */
 		UX           sbadaddr;        /* Supervisor Bad Address Register */
 		UX           sptbr;           /* Supervisor Page-Table Base Register */
-		u64          time;            /* User Time Register */
-		u64          cycle;           /* User Number of Cycles */
-		u64          instret;         /* User Number of Instructions Retired  */
-		UX           fcsr;            /* Floating-Point Control and Status Register */
-		UX           fflags;          /* Floating-Point Accrued Exceptions */
-		UX           frm;             /* Floating-Point Dynamic Rounding Mode */
 
 		processor_priv() : processor_type() {}
 	};

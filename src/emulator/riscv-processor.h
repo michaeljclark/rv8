@@ -161,7 +161,17 @@ namespace riscv {
 		IREG ireg[ireg_count];
 		FREG freg[freg_count];
 
-		processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg() {}
+		/* Base ISA CSRs */
+
+		u64          time;            /* User Time Register */
+		u64          cycle;           /* User Number of Cycles */
+		u64          instret;         /* User Number of Instructions Retired  */
+		UX           fcsr;            /* Floating-Point Control and Status Register */
+		UX           fflags;          /* Floating-Point Accrued Exceptions */
+		UX           frm;             /* Floating-Point Dynamic Rounding Mode */
+
+		processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), freg(),
+			time(0), cycle(0), instret(0), fcsr(0), fflags(0), frm(0) {}
 	};
 
 	using processor_rv32ima = processor<s32,u32,ireg_rv32,32,freg_fp64,0>;
