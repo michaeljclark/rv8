@@ -9,6 +9,7 @@
 #include <cstdarg>
 #include <cerrno>
 #include <cmath>
+#include <cfenv>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -249,11 +250,57 @@ struct processor_rv64imafdc_unit : B
 template <typename P>
 struct processor_proxy : P
 {
+	enum csr_op { csr_rw, csr_rs, csr_rc };
+
+	template <typename T>
+	void update_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
+	{
+		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = csr;
+		switch (op) {
+			case csr_rw: csr = value; break;
+			case csr_rs: if (value) csr |= value; break;
+			case csr_rc: if (value) csr &= ~value; break;
+		}
+	}
+
+	template <typename T>
+	void update_csr_hi(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
+	{
+		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
+		switch (op) {
+			case csr_rw: csr = (u64(value) << 32) | (csr & u32(-1)); break;
+			default: /* set and clear not supported on CSR hi bits */ break;
+		}
+	}
+
+	bool inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, size_t inst_len)
+	{
+		switch (csr) {
+			case riscv_csr_fflags:   update_csr(dec, op, P::fflags, value);     break;
+			case riscv_csr_frm:      update_csr(dec, op, P::frm, value);        break;
+			case riscv_csr_fcsr:     update_csr(dec, op, P::fcsr, value);       break;
+			case riscv_csr_cycle:    update_csr(dec, op, P::cycle, value);      break;
+			case riscv_csr_time:     update_csr(dec, op, P::time, value);       break;
+			case riscv_csr_instret:  update_csr(dec, op, P::instret, value);    break;
+			case riscv_csr_cycleh:   update_csr_hi(dec, op, P::cycle, value);   break;
+			case riscv_csr_timeh:    update_csr_hi(dec, op, P::time, value);    break;
+			case riscv_csr_instreth: update_csr_hi(dec, op, P::instret, value); break;
+			default: break;
+		}
+		P::pc += inst_len;
+		return true;
+	}
+
 	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
-		if (dec.op == riscv_op_ecall) {
-			proxy_syscall(*this);
-			P::pc += inst_len;
-			return true;
+		switch (dec.op) {
+			case riscv_op_ecall:  proxy_syscall(*this); P::pc += inst_len; return true;
+			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], inst_len);
+			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], inst_len);
+			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], inst_len);
+			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, inst_len);
+			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, inst_len);
+			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, inst_len);
+			default: break;
 		}
 		return false;
 	}
@@ -587,6 +634,11 @@ struct riscv_emulator
 	template <typename P>
 	void start_proxy()
 	{
+		/* disable floating point exceptions */
+		feclearexcept(FE_ALL_EXCEPT);
+
+		/* TODO support round mode */
+
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
