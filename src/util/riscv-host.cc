@@ -257,11 +257,13 @@ static int has_rdrand()
 
 #endif
 
+/* get_rdrand_seed - GCC x86 and X64 */
+
 #if defined __GNUC__ && (defined __i386__ || defined __x86_64__)
 
 #define HAVE_RDRAND 1
 
-static int get_rdrand_seed()
+static uint32_t get_rdrand_seed()
 {
 	if (host_cpu::enable_debug) debug("get_rdrand_seed");
 
@@ -275,6 +277,43 @@ static int get_rdrand_seed()
 	return _eax;
 }
 
+#endif
+
+#if defined _MSC_VER
+
+#if _MSC_VER >= 1700
+#define HAVE_RDRAND 1
+
+/* get_rdrand_seed - Visual Studio 2012 and above */
+
+static uint32_t get_rdrand_seed()
+{
+	if (host_cpu::enable_debug) debug("get_rdrand_seed");
+
+	int r;
+	while (_rdrand32_step(&r) == 0);
+	return r;
+}
+
+#elif defined _M_IX86
+#define HAVE_RDRAND 1
+
+/* get_rdrand_seed - Visual Studio 2010 and below - x86 only */
+
+static uint32_t get_rdrand_seed()
+{
+		if (host_cpu::enable_debug) debug("get_rdrand_seed");
+
+		int _eax;
+retry:
+		// rdrand eax
+		__asm _emit 0x0F __asm _emit 0xC7 __asm _emit 0xF0
+		__asm jnc retry
+		__asm mov _eax, eax
+		return _eax;
+}
+
+#endif
 #endif
 
 
