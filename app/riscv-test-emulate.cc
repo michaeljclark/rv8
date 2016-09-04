@@ -12,6 +12,8 @@
 #include <cfenv>
 #include <algorithm>
 #include <memory>
+#include <random>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <deque>
@@ -28,6 +30,7 @@
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
+#include "riscv-host.h"
 #include "riscv-cmdline.h"
 #include "riscv-codec.h"
 #include "riscv-elf.h"
@@ -424,6 +427,7 @@ struct riscv_emulator
 
 	elf_file elf;
 	std::string filename;
+	std::vector<uint32_t> entropy;
 
 	bool priv_mode = false;
 	bool memory_debug = false;
@@ -562,6 +566,9 @@ struct riscv_emulator
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (log_instructions = true); } },
+			{ "-s", "--seed", cmdline_arg_type_string,
+				"Random seed",
+				[&](std::string s) { entropy.push_back(strtoull(s.c_str(), nullptr, 10)); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -604,6 +611,39 @@ struct riscv_emulator
 		free(heapptr);
 	}
 
+	template <typename P>
+	void seed_registers(P &proc, size_t n)
+	{
+		// if no entropy is present, get n bits of entropy from the host
+		if (entropy.size() == 0) {
+			host_cpu &cpu = host_cpu::get_instance();
+			for (size_t i = 0; i < (n >> 5); i++) {
+				/* get_random_seed returns uint32_t value */
+				entropy.push_back(cpu.get_random_seed());
+			}
+		}
+
+		// print seed
+		if (emulator_debug) {
+			std::stringstream ss;
+			for (auto i = entropy.begin(); i != entropy.end(); i++) {
+				ss << (i != entropy.begin() ? "," : "") << format_string("0x%08x", *i);
+			}
+			debug("seed: %s", ss.str().c_str());
+		}
+
+		// seed the mersenne twister
+		std::mt19937 twister;
+		std::seed_seq seq(entropy.begin(), entropy.end());
+	    twister.seed(seq);
+
+	    // randomize the integer registers
+	    std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
+		for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
+			proc.ireg[i].r.xu.val = distribution(twister);
+		}
+	}
+
 	/* Start the execuatable with the given privileged processor template */
 	template <typename P>
 	void start_priv()
@@ -614,6 +654,9 @@ struct riscv_emulator
 		proc.log_registers = log_registers;
 		proc.log_instructions = log_instructions;
 		proc.pc = elf.ehdr.e_entry;
+
+		/* randomise integer register state with 512 bits of entropy */
+		seed_registers(proc, 512);
 
 		/* Find the ELF executable PT_LOAD segments and map them into the emulator mmu */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
@@ -645,6 +688,9 @@ struct riscv_emulator
 		proc.log_registers = log_registers;
 		proc.log_instructions = log_instructions;
 		proc.pc = elf.ehdr.e_entry;
+
+		/* randomise integer register state with 512 bits of entropy */
+		seed_registers(proc, 512);
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
