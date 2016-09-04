@@ -635,10 +635,10 @@ struct riscv_emulator
 		// seed the mersenne twister
 		std::mt19937 twister;
 		std::seed_seq seq(entropy.begin(), entropy.end());
-	    twister.seed(seq);
+		twister.seed(seq);
 
-	    // randomize the integer registers
-	    std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
+		// randomize the integer registers
+		std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
 		for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
 			proc.ireg[i].r.xu.val = distribution(twister);
 		}
