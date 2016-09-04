@@ -521,6 +521,5 @@ void bits_run_tests()
 
 int main(int argc, const char * argv[])
 {
-	x86_cpu_init();
 	bits_run_tests();
 }
