@@ -22,8 +22,8 @@ namespace riscv {
 		pma_cache_write_around   = 1<<6, /* uncacheable, write directly to backing store */
 
 		/* supported memory range cache allocation modes (4 combinations) */
-		pma_cache_alloc_read     = 1<<7,
-		pma_cache_alloc_write    = 1<<8,
+		pma_cache_alloc_read     = 1<<7, /* allocate cache on reads */
+		pma_cache_alloc_write    = 1<<8, /* allocate cache on writes */
 
 		/* supported memory range backing store write sizes */
 		pma_io_size_1            = 1<<9,   /* b  - 8-bit */
