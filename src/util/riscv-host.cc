@@ -191,11 +191,13 @@ host_cpu::host_cpu()
 	caps["AVX512VBMI"] = X86_HAS_AVX512VBMI;
 
 	/* print x86 capabilities */
-	printf("%s ", x86_cpu_vendor);
-	for (auto cap : caps) {
-		if (cap.second) printf("%s ", cap.first.c_str());
+	if (host_cpu::enable_debug) {
+		printf("%s ", x86_cpu_vendor);
+		for (auto cap : caps) {
+			if (cap.second) printf("%s ", cap.first.c_str());
+		}
+		printf("\n");
 	}
-	printf("\n");
 #endif
 }
 
@@ -302,15 +304,15 @@ static uint32_t get_rdrand_seed()
 
 static uint32_t get_rdrand_seed()
 {
-		if (host_cpu::enable_debug) debug("get_rdrand_seed");
+	if (host_cpu::enable_debug) debug("get_rdrand_seed");
 
-		int _eax;
+	int _eax;
 retry:
-		// rdrand eax
-		__asm _emit 0x0F __asm _emit 0xC7 __asm _emit 0xF0
-		__asm jnc retry
-		__asm mov _eax, eax
-		return _eax;
+	// rdrand eax
+	__asm _emit 0x0F __asm _emit 0xC7 __asm _emit 0xF0
+	__asm jnc retry
+	__asm mov _eax, eax
+	return _eax;
 }
 
 #endif
