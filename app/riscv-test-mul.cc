@@ -261,14 +261,13 @@ R mul(typename R::stype x, typename R::stype y)
 
 	const int qb = sizeof(U) << 2;
 	const U   mask = (U(1) << qb) - 1;
-	const int sshift = (sizeof(U) << 3) - 1;
 
-	U xs =    U(x) >> sshift;
-	U ys =    U(y) >> sshift;
-	U xu =    xs ? -x : x;
+	U xs =    x < 0;
+	U ys =    y < 0;
+	U xu =    ~(xs - 1) ^ (x - xs);
+	U yu =    ~(ys - 1) ^ (y - ys);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
-	U yu =    ys ? -y : y;
 	U y0 =    yu       & mask;
 	U y1 =    yu >> qb & mask;
 	U z0 =    x0 * y0;
@@ -300,10 +299,9 @@ R mulsu(typename R::stype x, typename R::utype y)
 
 	const int qb = sizeof(U) << 2;
 	const U   mask = (U(1) << qb) - 1;
-	const int sshift = (sizeof(U) << 3) - 1;
 
-	U xs =    U(x) >> sshift;
-	U xu =    xs ? -x : x;
+	U xs =    x < 0;
+	U xu =    ~(xs - 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
 	U y0 =    y        & mask;
@@ -361,14 +359,13 @@ S mulh(S x, S y)
 
 	const int qb = sizeof(U) << 2;
 	const U   mask = (U(1) << qb) - 1;
-	const int sshift = (sizeof(U) << 3) - 1;
 
-	U xs =    U(x) >> sshift;
-	U ys =    U(y) >> sshift;
-	U xu =    xs ? -x : x;
+	U xs =    x < 0;
+	U ys =    y < 0;
+	U xu =    ~(xs - 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
-	U yu =    ys ? -y : y;
+	U yu =    ~(ys - 1) ^ (y - ys);
 	U y0 =    yu       & mask;
 	U y1 =    yu >> qb & mask;
 	U z0 =    x0 * y0;
@@ -397,10 +394,9 @@ S mulhsu(S x, U y)
 {
 	const int qb = sizeof(U) << 2;
 	const U   mask = (U(1) << qb) - 1;
-	const int sshift = (sizeof(U) << 3) - 1;
 
-	U xs =    U(x) >> sshift;
-	U xu =    xs ? -x : x;
+	U xs =    x < 0;
+	U xu =    ~(xs - 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
 	U y0 =    y        & mask;
@@ -582,10 +578,10 @@ int main()
 	test_mul<s64,_s64>(-2147483648, -2147483648);
 	test_mul<signed __int128,_s128>(-9223372036854775807LL,9223372036854775807LL);
 	test_mul<signed __int128,_s128>(9223372036854775807LL,9223372036854775807LL);
-	test_random<s16,_s16,test_mul<s16,_s16>,100000>();
-	test_random<s32,_s32,test_mul<s32,_s32>,100000>();
-	test_random<s64,_s64,test_mul<s64,_s64>,100000>();
-	test_random<signed __int128,_s128,test_mul<signed __int128,_s128>,100000>();
+	test_random<s16,_s16,test_mul<s16,_s16>,1000000>();
+	test_random<s32,_s32,test_mul<s32,_s32>,1000000>();
+	test_random<s64,_s64,test_mul<s64,_s64>,1000000>();
+	test_random<signed __int128,_s128,test_mul<signed __int128,_s128>,1000000>();
 
 	// test mulsu (signed unsigned)
 	test_mulsu<s16,_s16>(0, 127);
@@ -614,10 +610,10 @@ int main()
 	test_mulsu<s64,_s64>(-2147483648, 4294967295);
 	test_mulsu<signed __int128,_s128>(-9223372036854775807LL,18446744073709551615ULL);
 	test_mulsu<signed __int128,_s128>(9223372036854775807LL,18446744073709551615ULL);
-	test_random<s16,_s16,test_mulsu<s16,_s16>,100000>();
-	test_random<s32,_s32,test_mulsu<s32,_s32>,100000>();
-	test_random<s64,_s64,test_mulsu<s64,_s64>,100000>();
-	test_random<signed __int128,_s128,test_mulsu<signed __int128,_s128>,100000>();
+	test_random<s16,_s16,test_mulsu<s16,_s16>,1000000>();
+	test_random<s32,_s32,test_mulsu<s32,_s32>,1000000>();
+	test_random<s64,_s64,test_mulsu<s64,_s64>,1000000>();
+	test_random<signed __int128,_s128,test_mulsu<signed __int128,_s128>,1000000>();
 
 	// test mulu (unsigned unsigned)
 	test_mulu<u16,_u16>(53, 63);
@@ -638,10 +634,10 @@ int main()
 	test_mulu<u64,_u64>(4294967295, 4294967295);
 	test_mulu<unsigned __int128,_u128>(9223372036854775807ULL,18446744073709551615ULL);
 	test_mulu<unsigned __int128,_u128>(18446744073709551615ULL,18446744073709551615ULL);
-	test_random<u16,_s16,test_mulu<u16,_u16>,100000>();
-	test_random<u32,_s32,test_mulu<u32,_u32>,100000>();
-	test_random<u64,_s64,test_mulu<u64,_u64>,100000>();
-	test_random<unsigned __int128,_s128,test_mulu<unsigned __int128,_u128>,100000>();
+	test_random<u16,_s16,test_mulu<u16,_u16>,1000000>();
+	test_random<u32,_s32,test_mulu<u32,_u32>,1000000>();
+	test_random<u64,_s64,test_mulu<u64,_u64>,1000000>();
+	test_random<unsigned __int128,_s128,test_mulu<unsigned __int128,_u128>,1000000>();
 
 	// test mulhs (signed signed) high bits
 	assert(mulh(s8(0), s8(127)) == s8(0));

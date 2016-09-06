@@ -41,14 +41,13 @@ namespace riscv {
 
 		const int qb = sizeof(U) << 2;
 		const U   mask = (U(1) << qb) - 1;
-		const int sshift = (sizeof(U) << 3) - 1;
 
-		U xs =    U(x) >> sshift;
-		U ys =    U(y) >> sshift;
-		U xu =    xs ? -x : x;
+		U xs =    x < 0;
+		U ys =    y < 0;
+		U xu =    ~(xs - 1) ^ (x - xs);
+		U yu =    ~(ys - 1) ^ (y - ys);
 		U x0 =    xu       & mask;
 		U x1 =    xu >> qb & mask;
-		U yu =    ys ? -y : y;
 		U y0 =    yu       & mask;
 		U y1 =    yu >> qb & mask;
 		U z0 =    x0 * y0;
@@ -76,10 +75,9 @@ namespace riscv {
 	{
 		const int qb = sizeof(U) << 2;
 		const U   mask = (U(1) << qb) - 1;
-		const int sshift = (sizeof(U) << 3) - 1;
 
-		U xs =    U(x) >> sshift;
-		U xu =    xs ? -x : x;
+		U xs =    x < 0;
+		U xu =    ~(xs - 1) ^ (x - xs);
 		U x0 =    xu       & mask;
 		U x1 =    xu >> qb & mask;
 		U y0 =    y        & mask;
