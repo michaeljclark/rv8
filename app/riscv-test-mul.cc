@@ -27,10 +27,12 @@ struct _u16
 	#else
 		struct { u8 hi;  u8 lo; }   p;
 	#endif
+		u16                         xu;
 	} val;
 
 	inline _u16() : val{ .b = { 0 } } {}
 	inline _u16(const _u16 &o) : val{ .p = o.val.p } {}
+	operator u16() const { return val.xu; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _u16(u8 hi, u8 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -43,6 +45,7 @@ struct _s16
 {
 	typedef u8 utype;
 	typedef s8 stype;
+	typedef _u16 htype;
 
 	union {
 		u8                          b[2];
@@ -51,10 +54,12 @@ struct _s16
 	#else
 		struct { s8 hi;  u8 lo; }   p;
 	#endif
+		s16                         x;
 	} val;
 
 	inline _s16() : val{ .b = { 0 } } {}
 	inline _s16(const _s16 &o) : val{ .p = o.val.p } {}
+	operator s16() const { return val.x; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _s16(s8 hi, u8 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -66,6 +71,7 @@ struct _s16
 struct _u32
 {
 	typedef u16 utype;
+	typedef _u16 htype;
 
 	union {
 		u8                          b[4];
@@ -74,10 +80,12 @@ struct _u32
 	#else
 		struct { u16 hi; u16 lo; }  p;
 	#endif
+		u32                         xu;
 	} val;
 
 	inline _u32() : val{ .b = { 0 } } {}
 	inline _u32(const _u32 &o) : val{ .p = o.val.p } {}
+	operator u32() const { return val.xu; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _u32(u16 hi, u16 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -90,6 +98,7 @@ struct _s32
 {
 	typedef u16 utype;
 	typedef s16 stype;
+	typedef _u16 htype;
 
 	union {
 		u8                          b[4];
@@ -98,10 +107,12 @@ struct _s32
 	#else
 		struct { s16 hi; u16 lo; }  p;
 	#endif
+		s32                         x;
 	} val;
 
 	inline _s32() : val{ .b = { 0 } } {}
 	inline _s32(const _s32 &o) : val{ .p = o.val.p } {}
+	operator s32() const { return val.x; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _s32(s16 hi, u16 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -113,6 +124,7 @@ struct _s32
 struct _u64
 {
 	typedef u32 utype;
+	typedef _u32 htype;
 
 	union {
 		u8                          b[8];
@@ -121,10 +133,12 @@ struct _u64
 	#else
 		struct { u32 hi; u32 lo; }  p;
 	#endif
+		u64                         xu;
 	} val;
 
 	inline _u64() : val{ .b = { 0 } } {}
 	inline _u64(const _u64 &o) : val{ .p = o.val.p } {}
+	operator u64() const { return val.xu; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _u64(u32 hi, u32 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -137,6 +151,7 @@ struct _s64
 {
 	typedef u32 utype;
 	typedef s32 stype;
+	typedef _u32 htype;
 
 	union {
 		u8                          b[8];
@@ -145,10 +160,12 @@ struct _s64
 	#else
 		struct { s32 hi; u32 lo; }  p;
 	#endif
+		s64                         x;
 	} val;
 
 	inline _s64() : val{ .b = { 0 } } {}
 	inline _s64(const _s64 &o) : val{ .p = o.val.p } {}
+	operator s64() const { return val.x; }
 
 	#if _BYTE_ORDER == _LITTLE_ENDIAN
 	inline _s64(s32 hi, u32 lo) : val{ .p = { .lo = lo, .hi = hi } } {}
@@ -160,6 +177,7 @@ struct _s64
 struct _u128
 {
 	typedef u64 utype;
+	typedef _u64 htype;
 
 	union {
 		u8                          b[16];
@@ -184,6 +202,7 @@ struct _s128
 {
 	typedef u64 utype;
 	typedef s64 stype;
+	typedef _u64 htype;
 
 	union {
 		u8                          b[16];
@@ -238,10 +257,10 @@ R mulu(typename R::utype x, typename R::utype y)
 	U x1 =    x >> qb & mask;
 	U y0 =    y       & mask;
 	U y1 =    y >> qb & mask;
-	U z0 =    x0 * y0;
-	U z1 =    x1 * y0;
-	U z2 =    x0 * y1;
-	U z3 =    x1 * y1;
+	U z0 =    mulu<typename R::htype>(x0, y0);
+	U z1 =    mulu<typename R::htype>(x1, y0);
+	U z2 =    mulu<typename R::htype>(x0, y1);
+	U z3 =    mulu<typename R::htype>(x1, y1);
 	U z4 =    z1 + z2;
 	U c1 =    z4 < z1;
 	U lo =    z0 + (z4 << qb);
@@ -269,10 +288,8 @@ _u32 mulu<_u32>(typename _u32::utype x, typename _u32::utype y)
 {
 	u32 r = 0;
 	u32 xx = x;
-	for(size_t i = 0; i < 4; i++)
+	for(size_t i = 0; i < 8; i++)
 	{
-		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
-		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
 		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
 		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
 	}
@@ -298,10 +315,10 @@ R mul(typename R::stype x, typename R::stype y)
 	U x1 =    xu >> qb & mask;
 	U y0 =    yu       & mask;
 	U y1 =    yu >> qb & mask;
-	U z0 =    x0 * y0;
-	U z1 =    x1 * y0;
-	U z2 =    x0 * y1;
-	U z3 =    x1 * y1;
+	U z0 =    mulu<typename R::htype>(x0, y0);
+	U z1 =    mulu<typename R::htype>(x1, y0);
+	U z2 =    mulu<typename R::htype>(x0, y1);
+	U z3 =    mulu<typename R::htype>(x1, y1);
 	U z4 =    z1 + z2;
 	U c1 =    z4 < z1;
 	U l1 =    z0 + (z4 << qb);
@@ -334,10 +351,10 @@ R mulsu(typename R::stype x, typename R::utype y)
 	U x1 =    xu >> qb & mask;
 	U y0 =    y        & mask;
 	U y1 =    y >> qb  & mask;
-	U z0 =    x0 * y0;
-	U z1 =    x1 * y0;
-	U z2 =    x0 * y1;
-	U z3 =    x1 * y1;
+	U z0 =    mulu<typename R::htype>(x0, y0);
+	U z1 =    mulu<typename R::htype>(x1, y0);
+	U z2 =    mulu<typename R::htype>(x0, y1);
+	U z3 =    mulu<typename R::htype>(x1, y1);
 	U z4 =    z1 + z2;
 	U c1 =    z4 < z1;
 	U l1 =    z0 + (z4 << qb);
