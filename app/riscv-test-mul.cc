@@ -8,11 +8,11 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
+#include <random>
 #include <type_traits>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
-#include "riscv-bits.h"
 
 using namespace riscv;
 
@@ -432,6 +432,7 @@ void test_mul(typename R::stype x, typename R::stype y)
 	L xya = (L(xy.val.p.hi) << (sizeof(L) << 2)) | L(xy.val.p.lo);
 	L xyc = L(x) * L(y);
 	bool pass = (xya == xyc);
+	if (pass) return;
 	char fmt[256];
 	const int hw = sizeof(L);
 	snprintf(fmt, sizeof(fmt), "%%s "
@@ -456,6 +457,7 @@ void test_mulu(typename R::utype x, typename R::utype y)
 	L xya = (L(xy.val.p.hi) << (sizeof(L) << 2)) | L(xy.val.p.lo);
 	L xyc = L(x) * L(y);
 	bool pass = (xya == xyc);
+	if (pass) return;
 	char fmt[256];
 	const int hw = sizeof(L);
 	snprintf(fmt, sizeof(fmt), "%%s "
@@ -480,6 +482,7 @@ void test_mulsu(typename R::stype x, typename R::utype y)
 	L xya = (L(xy.val.p.hi) << (sizeof(L) << 2)) | L(xy.val.p.lo);
 	L xyc = L(x) * L(y);
 	bool pass = (xya == xyc);
+	if (pass) return;
 	char fmt[256];
 	const int hw = sizeof(L);
 	snprintf(fmt, sizeof(fmt), "%%s "
@@ -497,6 +500,53 @@ void test_mulsu(typename R::stype x, typename R::utype y)
 		(s64)xyc, (u64)xyc);
 }
 
+
+template <typename L, typename R, void (*T)(typename R::utype, typename R::utype), int N>
+void test_random()
+{
+	std::mt19937 twister;
+	twister.seed(5);
+	std::uniform_int_distribution<typename R::utype> d1(
+		std::numeric_limits<typename R::utype>::min(),
+		std::numeric_limits<typename R::utype>::max()
+	);
+	for (size_t i = 0; i < N; i++) {
+		T(d1(twister), d1(twister));
+	}
+}
+
+
+template <typename L, typename R, void (*T)(typename R::stype, typename R::stype), int N>
+void test_random()
+{
+	std::mt19937 twister;
+	twister.seed(5);
+	std::uniform_int_distribution<typename R::stype> d1(
+		std::numeric_limits<typename R::stype>::min(),
+		std::numeric_limits<typename R::stype>::max()
+	);
+	for (size_t i = 0; i < N; i++) {
+		T(d1(twister), d1(twister));
+	}
+}
+
+template <typename L, typename R, void (*T)(typename R::stype, typename R::utype), int N>
+void test_random()
+{
+	std::mt19937 twister;
+	twister.seed(5);
+	std::uniform_int_distribution<typename R::stype> d1(
+		std::numeric_limits<typename R::stype>::min(),
+		std::numeric_limits<typename R::stype>::max()
+	);
+	std::uniform_int_distribution<typename R::utype> d2(
+		std::numeric_limits<typename R::utype>::min(),
+		std::numeric_limits<typename R::utype>::max()
+	);
+	for (size_t i = 0; i < N; i++) {
+		T(d1(twister), d2(twister));
+	}
+}
 
 /* test program */
 
@@ -532,6 +582,10 @@ int main()
 	test_mul<s64,_s64>(-2147483648, -2147483648);
 	test_mul<signed __int128,_s128>(-9223372036854775807LL,9223372036854775807LL);
 	test_mul<signed __int128,_s128>(9223372036854775807LL,9223372036854775807LL);
+	test_random<s16,_s16,test_mul<s16,_s16>,100000>();
+	test_random<s32,_s32,test_mul<s32,_s32>,100000>();
+	test_random<s64,_s64,test_mul<s64,_s64>,100000>();
+	test_random<signed __int128,_s128,test_mul<signed __int128,_s128>,100000>();
 
 	// test mulsu (signed unsigned)
 	test_mulsu<s16,_s16>(0, 127);
@@ -560,6 +614,10 @@ int main()
 	test_mulsu<s64,_s64>(-2147483648, 4294967295);
 	test_mulsu<signed __int128,_s128>(-9223372036854775807LL,18446744073709551615ULL);
 	test_mulsu<signed __int128,_s128>(9223372036854775807LL,18446744073709551615ULL);
+	test_random<s16,_s16,test_mulsu<s16,_s16>,100000>();
+	test_random<s32,_s32,test_mulsu<s32,_s32>,100000>();
+	test_random<s64,_s64,test_mulsu<s64,_s64>,100000>();
+	test_random<signed __int128,_s128,test_mulsu<signed __int128,_s128>,100000>();
 
 	// test mulu (unsigned unsigned)
 	test_mulu<u16,_u16>(53, 63);
@@ -580,6 +638,10 @@ int main()
 	test_mulu<u64,_u64>(4294967295, 4294967295);
 	test_mulu<unsigned __int128,_u128>(9223372036854775807ULL,18446744073709551615ULL);
 	test_mulu<unsigned __int128,_u128>(18446744073709551615ULL,18446744073709551615ULL);
+	test_random<u16,_s16,test_mulu<u16,_u16>,100000>();
+	test_random<u32,_s32,test_mulu<u32,_u32>,100000>();
+	test_random<u64,_s64,test_mulu<u64,_u64>,100000>();
+	test_random<unsigned __int128,_s128,test_mulu<unsigned __int128,_u128>,100000>();
 
 	// test mulhs (signed signed) high bits
 	assert(mulh(s8(0), s8(127)) == s8(0));
