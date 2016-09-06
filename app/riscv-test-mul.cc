@@ -251,6 +251,34 @@ R mulu(typename R::utype x, typename R::utype y)
 	return R(hi, lo);
 }
 
+template<>
+_u16 mulu<_u16>(typename _u16::utype x, typename _u16::utype y)
+{
+	u16 r = 0;
+	u16 xx = x;
+	for(size_t i = 0; i < 4; i++)
+	{
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+	}
+	return _u16(r >> 8, r & 0xff);
+}
+
+template<>
+_u32 mulu<_u32>(typename _u32::utype x, typename _u32::utype y)
+{
+	u32 r = 0;
+	u32 xx = x;
+	for(size_t i = 0; i < 4; i++)
+	{
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+		r += (xx & ~((y & 0x1) - 1)); xx <<= 1; y >>= 1;
+	}
+	return _u32(r >> 16, r & 0xffff);
+}
+
 
 /* multiply signed signed */
 
