@@ -234,19 +234,16 @@ TEST_ENDIAN_BIN = $(BIN_DIR)/riscv-test-endian
 # test-mmu
 TEST_MMU_SRCS = $(SRC_DIR)/app/riscv-test-mmu.cc
 TEST_MMU_OBJS = $(call src_objs, $(TEST_MMU_SRCS))
-TEST_MMU_ASM = $(call app_src_asm, $(TEST_MMU_SRCS))
 TEST_MMU_BIN = $(BIN_DIR)/riscv-test-mmu
 
 # test-mul
 TEST_MUL_SRCS = $(SRC_DIR)/app/riscv-test-mul.cc
 TEST_MUL_OBJS = $(call src_objs, $(TEST_MUL_SRCS))
-TEST_MUL_ASM = $(call app_src_asm, $(TEST_MUL_SRCS))
 TEST_MUL_BIN = $(BIN_DIR)/riscv-test-mul
 
 # test-rand
 TEST_RAND_SRCS = $(SRC_DIR)/app/riscv-test-rand.cc
 TEST_RAND_OBJS = $(call src_objs, $(TEST_RAND_SRCS))
-TEST_RAND_ASM = $(call app_src_asm, $(TEST_RAND_SRCS))
 TEST_RAND_BIN = $(BIN_DIR)/riscv-test-rand
 
 # source and binaries
