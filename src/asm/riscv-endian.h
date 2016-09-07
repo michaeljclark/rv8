@@ -144,6 +144,16 @@
 #define __BSWAP_DEFINED         1
 #endif
 
+/* Compiler endian macros exist but we could not determine platform */
+#if !defined (__ENDIAN_DEFINED)
+#if defined (__BYTE_ORDER__) && defined (__ORDER_LITTLE_ENDIAN__) && defined (__ORDER_BIG_ENDIAN__)
+#define __ENDIAN_DEFINED        1
+#define _BYTE_ORDER             __BYTE_ORDER__
+#define _LITTLE_ENDIAN          __ORDER_LITTLE_ENDIAN__
+#define _BIG_ENDIAN             __ORDER_BIG_ENDIAN__
+#endif
+#endif
+
 /* Unknown */
 #if !__ENDIAN_DEFINED
 #error Could not determine CPU byte order
