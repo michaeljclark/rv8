@@ -67,6 +67,7 @@ The future goals of the RISC-V Meta project are:
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [A Secure Processor Architecture for Encrypted Computation on Untrusted Programs](https://people.csail.mit.edu/devadas/pubs/ascend-stc12.pdf)
 - [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
+- [SoK: Introspections on Trust and the Semantic Gap](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6956590)
 - [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
 - [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
 - [Geometric Memory Management](http://arxiv.org/pdf/1512.09358.pdf)
