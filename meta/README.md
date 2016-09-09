@@ -7,7 +7,7 @@ This directory contains metadata for the RISC-V Instruction Set
 |`codecs`      |Instruction encodings|
 |`compression` |Compressed instruction metadata|
 |`constraints` |Constraint definitions|
-|`csrs`        |CPU Specific Registers|
+|`csrs`        |Control and status registers|
 |`descriptions`|Instruction long descriptions|
 |`enums`       |Enumerated types|
 |`extensions`  |Instruction set extensions|
