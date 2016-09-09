@@ -247,11 +247,16 @@ TEST_RAND_OBJS = $(call src_objs, $(TEST_RAND_SRCS))
 TEST_RAND_BIN = $(BIN_DIR)/riscv-test-rand
 
 # source and binaries
-ALL_SRCS = $(RV_UTIL_SRCS) \
+ALL_SRCS = $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
-           $(RV_ASM_SRCS) \
-           $(PARSE_META_SRCS) \
+           $(RV_META_SRC) \
+           $(RV_MODEL_SRC) \
+           $(RV_STR_SRC) \
+           $(RV_UTIL_SRCS) \
+           $(COMPRESS_ELF_SRCS) \
+           $(HISTOGRAM_ELF_SRCS) \
            $(PARSE_ELF_SRCS) \
+           $(PARSE_META_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
            $(TEST_EMULATE_SRCS) \
@@ -398,11 +403,11 @@ $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_BITS_BIN): $(TEST_BITS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(TEST_BITS_BIN): $(TEST_BITS_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -414,15 +419,15 @@ $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS) $(RV_ASM_LIB)
+$(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB)
+$(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_MUL_BIN): $(TEST_MUL_OBJS) $(RV_ASM_LIB)
+$(TEST_MUL_BIN): $(TEST_MUL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -442,7 +447,9 @@ $(SRC_DIR)/%.cc : $(SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEBUG_FLAGS) -c $< -o $@)
 $(DEP_DIR)/%.cc.P : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
-	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | sed "s#\(.*\)\.o#$(OBJ_DIR)/\1.o $(DEP_DIR)/\1.P#"  > $@)
+	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | \
+		( SUB_DIR=$(subst $(DEP_DIR),,$(shell dirname $@)); \
+			sed "s#\(.*\)\.o#$(OBJ_DIR)$${SUB_DIR}/\1.o $(DEP_DIR)$${SUB_DIR}/\1.cc.P#"  > $@) )
 
 # make dependencies
 include $(call src_deps,$(ALL_SRCS))
