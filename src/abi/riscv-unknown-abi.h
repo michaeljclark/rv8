@@ -16,7 +16,16 @@ namespace riscv {
 		mmu_proxy() : segments(), heap_begin(0), heap_end(0) {}
 	};
 
-	template <typename P> struct unknown_stat
+	enum abi_syscall
+	{
+		abi_syscall_close = 57,
+		abi_syscall_write = 64,
+		abi_syscall_fstat = 80,
+		abi_syscall_exit = 93,
+		abi_syscall_brk = 214,
+	};
+
+	template <typename P> struct abi_stat
 	{
 		typename P::ulong_t dev;
 		typename P::ulong_t ino;
@@ -41,62 +50,62 @@ namespace riscv {
 	};
 
 	template <typename P>
-	void cvt_unknown_stat(unknown_stat<P> *abi_stat, struct stat *host_stat)
+	void cvt_abi_stat(abi_stat<P> *guest_stat, struct stat *host_stat)
 	{
-		abi_stat->dev        = host_stat->st_dev;
-		abi_stat->ino        = host_stat->st_ino;
-		abi_stat->mode       = host_stat->st_mode;
-		abi_stat->nlink      = host_stat->st_nlink;
-		abi_stat->uid        = host_stat->st_uid;
-		abi_stat->gid        = host_stat->st_gid;
-		abi_stat->rdev       = host_stat->st_rdev;
-		abi_stat->size       = host_stat->st_size;
-		abi_stat->blocks     = host_stat->st_blocks;
-		abi_stat->blksize    = host_stat->st_blksize;
+		guest_stat->dev        = host_stat->st_dev;
+		guest_stat->ino        = host_stat->st_ino;
+		guest_stat->mode       = host_stat->st_mode;
+		guest_stat->nlink      = host_stat->st_nlink;
+		guest_stat->uid        = host_stat->st_uid;
+		guest_stat->gid        = host_stat->st_gid;
+		guest_stat->rdev       = host_stat->st_rdev;
+		guest_stat->size       = host_stat->st_size;
+		guest_stat->blocks     = host_stat->st_blocks;
+		guest_stat->blksize    = host_stat->st_blksize;
 	#if defined (__APPLE__)
-		abi_stat->atime      = host_stat->st_atimespec.tv_sec;
-		abi_stat->atime_nsec = host_stat->st_atimespec.tv_nsec;
-		abi_stat->mtime      = host_stat->st_mtimespec.tv_sec;
-		abi_stat->mtime_nsec = host_stat->st_mtimespec.tv_nsec;
-		abi_stat->ctime      = host_stat->st_ctimespec.tv_sec;
-		abi_stat->ctime_nsec = host_stat->st_ctimespec.tv_nsec;
+		guest_stat->atime      = host_stat->st_atimespec.tv_sec;
+		guest_stat->atime_nsec = host_stat->st_atimespec.tv_nsec;
+		guest_stat->mtime      = host_stat->st_mtimespec.tv_sec;
+		guest_stat->mtime_nsec = host_stat->st_mtimespec.tv_nsec;
+		guest_stat->ctime      = host_stat->st_ctimespec.tv_sec;
+		guest_stat->ctime_nsec = host_stat->st_ctimespec.tv_nsec;
 	#else
-		abi_stat->atime      = host_stat->st_atim.tv_sec;
-		abi_stat->atime_nsec = host_stat->st_atim.tv_nsec;
-		abi_stat->mtime      = host_stat->st_mtim.tv_sec;
-		abi_stat->mtime_nsec = host_stat->st_mtim.tv_nsec;
-		abi_stat->ctime      = host_stat->st_ctim.tv_sec;
-		abi_stat->ctime_nsec = host_stat->st_ctim.tv_nsec;
+		guest_stat->atime      = host_stat->st_atim.tv_sec;
+		guest_stat->atime_nsec = host_stat->st_atim.tv_nsec;
+		guest_stat->mtime      = host_stat->st_mtim.tv_sec;
+		guest_stat->mtime_nsec = host_stat->st_mtim.tv_nsec;
+		guest_stat->ctime      = host_stat->st_ctim.tv_sec;
+		guest_stat->ctime_nsec = host_stat->st_ctim.tv_nsec;
 	#endif
 	}
 
-	template <typename P> void sys_close(P &proc)
+	template <typename P> void abi_sys_close(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = close(proc.ireg[riscv_ireg_a0]);
 	}
 
-	template <typename P> void sys_write(P &proc)
+	template <typename P> void abi_sys_write(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
 			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
 	}
 
-	template <typename P> void sys_fstat(P &proc)
+	template <typename P> void abi_sys_fstat(P &proc)
 	{
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
 		if ((proc.ireg[riscv_ireg_a0] = fstat(proc.ireg[riscv_ireg_a0], &host_stat)) == 0) {
-			unknown_stat<P> *abi_stat = (unknown_stat<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
-			cvt_unknown_stat(abi_stat, &host_stat);
+			abi_stat<P> *guest_stat = (abi_stat<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+			cvt_abi_stat(guest_stat, &host_stat);
 		}
 	}
 
-	template <typename P> void sys_exit(P &proc)
+	template <typename P> void abi_sys_exit(P &proc)
 	{
 		exit(proc.ireg[riscv_ireg_a0]);
 	}
 
-	template <typename P> void sys_brk(P &proc)
+	template <typename P> void abi_sys_brk(P &proc)
 	{
 		// calculate the new heap address rounded up to the nearest page
 		uintptr_t new_addr = proc.ireg[riscv_ireg_a0];
@@ -130,11 +139,11 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case riscv_syscall_close:  sys_close(proc); break;
-			case riscv_syscall_write:  sys_write(proc); break;
-			case riscv_syscall_fstat:  sys_fstat(proc); break;
-			case riscv_syscall_exit:   sys_exit(proc);  break;
-			case riscv_syscall_brk:    sys_brk(proc);   break;
+			case abi_syscall_close:  abi_sys_close(proc); break;
+			case abi_syscall_write:  abi_sys_write(proc); break;
+			case abi_syscall_fstat:  abi_sys_fstat(proc); break;
+			case abi_syscall_exit:   abi_sys_exit(proc);  break;
+			case abi_syscall_brk:    abi_sys_brk(proc);   break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 	}

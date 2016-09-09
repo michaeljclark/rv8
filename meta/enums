@@ -111,10 +111,3 @@ intr    u_external           8       "User external interrupt"
 intr    s_external           9       "Supervisor external interrupt"
 intr    h_external           10      "Hypervisor external interrupt"
 intr    m_external           11      "Machine external interrupt"
-
-# Syscalls
-syscall close                57      "Close file descriptor"
-syscall write                64      "Write to file descriptor"
-syscall fstat                80      "Obtain information on file descriptor"
-syscall exit                 93      "Exit process"
-syscall brk                  214     "Change data segment size"

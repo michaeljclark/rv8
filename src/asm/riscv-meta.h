@@ -148,15 +148,6 @@ enum riscv_intr
 	riscv_intr_m_external = 11,
 };
 
-enum riscv_syscall
-{
-	riscv_syscall_close = 57,
-	riscv_syscall_write = 64,
-	riscv_syscall_fstat = 80,
-	riscv_syscall_exit = 93,
-	riscv_syscall_brk = 214,
-};
-
 enum rvc_constraint
 {
 	rvc_end,
