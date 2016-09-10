@@ -35,6 +35,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emulator \
+                -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/tlsf \
@@ -157,6 +158,21 @@ RV_MODEL_SRC =  $(SRC_DIR)/model/riscv-model.cc
 RV_MODEL_OBJS = $(call src_objs, $(RV_MODEL_SRC))
 RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 
+# libriscv_gen
+RV_GEN_HDR =    $(SRC_DIR)/gen/riscv-gen.h
+RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen.cc \
+                $(SRC_DIR)/gen/riscv-gen-fpu-test.cc \
+                $(SRC_DIR)/gen/riscv-gen-interp.cc \
+                $(SRC_DIR)/gen/riscv-gen-jit.cc \
+                $(SRC_DIR)/gen/riscv-gen-latex.cc \
+                $(SRC_DIR)/gen/riscv-gen-map.cc \
+                $(SRC_DIR)/gen/riscv-gen-meta.cc \
+                $(SRC_DIR)/gen/riscv-gen-operands.cc \
+                $(SRC_DIR)/gen/riscv-gen-strings.cc \
+                $(SRC_DIR)/gen/riscv-gen-switch.cc
+RV_GEN_OBJS =   $(call src_objs, $(RV_GEN_SRCS))
+RV_GEN_LIB =    $(LIB_DIR)/libriscv_gen.a
+
 # libriscv_elf
 RV_ELF_SRCS =   $(SRC_DIR)/elf/riscv-elf.cc \
                 $(SRC_DIR)/elf/riscv-elf-file.cc \
@@ -249,6 +265,7 @@ TEST_RAND_BIN = $(BIN_DIR)/riscv-test-rand
 # source and binaries
 ALL_SRCS = $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
+           $(RV_GEN_SRCS) \
            $(RV_META_SRC) \
            $(RV_MODEL_SRC) \
            $(RV_STR_SRC) \
@@ -383,6 +400,10 @@ $(RV_MODEL_LIB): $(RV_MODEL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
+$(RV_GEN_LIB): $(RV_GEN_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
@@ -405,7 +426,7 @@ $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
+$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_GEN_LIB) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

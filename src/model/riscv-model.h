@@ -332,7 +332,7 @@ struct riscv_pseudo
 
 struct riscv_meta_model
 {
-	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
+	static const ssize_t DEFAULT;
 
 	riscv_operand_list       operands;
 	riscv_operand_map        operands_by_name;
@@ -375,6 +375,8 @@ struct riscv_meta_model
 	static std::vector<std::string> parse_line(std::string line);
 	static std::vector<std::vector<std::string>> read_file(std::string filename);
 
+	std::vector<std::string> get_unique_codecs();
+	std::vector<std::string> get_inst_mnemonics(bool isa_widths, bool isa_extensions);
 	std::vector<std::pair<size_t,std::string>> isa_width_prefixes();
 	riscv_extension_list decode_isa_extensions(std::string isa_spec);
 	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);

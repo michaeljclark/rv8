@@ -232,6 +232,8 @@ std::string riscv_bitspec::to_template()
 	return ss.str();
 }
 
+const ssize_t riscv_meta_model::DEFAULT = std::numeric_limits<ssize_t>::max();
+
 riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=");
@@ -472,6 +474,43 @@ std::vector<std::vector<std::string>> riscv_meta_model::read_file(std::string fi
 	}
 	in.close();
 	return data;
+}
+
+std::vector<std::string> riscv_meta_model::get_unique_codecs()
+{
+	std::vector<std::string> codec_names;
+	for (auto &codec : codecs) {
+		std::string codec_name = format_codec("", codec, "_");
+		if (std::find(codec_names.begin(), codec_names.end(), codec_name) == codec_names.end()) {
+			codec_names.push_back(codec_name);
+		}
+	}
+	return codec_names;
+}
+
+std::vector<std::string> riscv_meta_model::get_inst_mnemonics(bool isa_widths, bool isa_extensions)
+{
+	std::vector<std::string> mnems;
+
+	// create mnemonics for instruction set widths
+	if (isa_widths) {
+		for (auto &ext : extensions) {
+			std::string mnem = ext->prefix + std::to_string(ext->isa_width);
+			if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+				mnems.push_back(mnem);
+		}
+	}
+
+	// create mnemonics for instruction set extensions
+	if (isa_extensions) {
+		for (auto &ext : extensions) {
+			std::string mnem = ext->prefix + ext->alpha_code;
+			if (std::find(mnems.begin(), mnems.end(), mnem) == mnems.end())
+				mnems.push_back(mnem);
+		}
+	}
+
+	return mnems;
 }
 
 std::vector<std::pair<size_t,std::string>> riscv_meta_model::isa_width_prefixes()
