@@ -83,7 +83,7 @@ struct processor_base : P
 		uintptr_t length;
 		uint64_t inst = inst_fetch(pc, &length);
 		switch (length) {
-			case 2:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
+			case 2:  snprintf(buf, sizeof(buf), "    0x%04tx", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
 			case 8:  snprintf(buf, sizeof(buf), "0x%016tx", inst); break;
