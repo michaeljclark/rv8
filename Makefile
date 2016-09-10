@@ -347,44 +347,53 @@ test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
 danger: ; @echo Please do not make danger
 
-# generated targets
+# metadata targets
+
+# Note: the parse_meta make function will generate the source or headers
+# to temporary files and only update the target source or headers if the
+# output differs. This is to prevent spurious rebuilds when the generated
+# source is the same, however due to this check, the prerequisites may be
+# newer than the output files and these targets will get called each time
+# make is run as the timestamps are not updated unless the output differs.
+
+parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(PARSE_META_BIN) $(1) -r $(META_DIR) > $$T; diff $$T $(2) > /dev/null || mv $$T $(2) ; rm -f $$T)
 
 meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
 	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR)
 
 $(RV_OPANDS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -A -r $(META_DIR) > $(RV_OPANDS_HDR)
+	$(call cmd, META $@, $(call parse_meta,-A,$@))
 
 $(RV_CODEC_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -S -r $(META_DIR) > $(RV_CODEC_HDR)
+	$(call cmd, META $@, $(call parse_meta,-S,$@))
 
 $(RV_JIT_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -J -r $(META_DIR) > $(RV_JIT_HDR)
+	$(call cmd, META $@, $(call parse_meta,-J,$@))
 
 $(RV_JIT_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -K -r $(META_DIR) > $(RV_JIT_SRC)
+	$(call cmd, META $@, $(call parse_meta,-K,$@))
 
 $(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -H -r $(META_DIR) > $(RV_META_HDR)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -H,$@))
 
 $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -C -r $(META_DIR) > $(RV_META_SRC)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -C,$@))
 
 $(RV_STR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -SH -r $(META_DIR) > $(RV_STR_HDR)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -SH,$@))
 
 $(RV_STR_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -SC -r $(META_DIR) > $(RV_STR_SRC)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -SC,$@))
 
 $(RV_FPU_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -FH -r $(META_DIR) > $(RV_FPU_HDR)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -FH,$@))
 
 $(RV_FPU_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -N -0 -FC -r $(META_DIR) > $(RV_FPU_SRC)
+	$(call cmd, META $@, $(call parse_meta,-N -0 -FC,$@))
 
 $(RV_INTERP_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(PARSE_META_BIN) -V -r $(META_DIR) > $(RV_INTERP_HDR)
+	$(call cmd, META $@, $(call parse_meta,-V,$@))
 
 # lib targets
 
