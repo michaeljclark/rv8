@@ -16,7 +16,7 @@
 lui        rd imm20                           6..2=0x0D 1..0=3            u     rv32i rv64i
 auipc      rd oimm20                          6..2=0x05 1..0=3            u+o   rv32i rv64i
 jal        rd jimm20                          6..2=0x1b 1..0=3            uj    rv32i rv64i
-jalr       rd rs1 imm12              14..12=0 6..2=0x19 1..0=3            i+o   rv32i rv64i
+jalr       rd rs1 oimm12             14..12=0 6..2=0x19 1..0=3            i+o   rv32i rv64i
 beq        rs1 rs2 sbimm12           14..12=0 6..2=0x18 1..0=3            sb    rv32i rv64i
 bne        rs1 rs2 sbimm12           14..12=1 6..2=0x18 1..0=3            sb    rv32i rv64i
 blt        rs1 rs2 sbimm12           14..12=4 6..2=0x18 1..0=3            sb    rv32i rv64i
