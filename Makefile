@@ -294,7 +294,7 @@ map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
 doc/tex/riscv-instructions.tex: $(PARSE_META_BIN) ; @mkdir -p doc/tex
 	$(PARSE_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
 doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/pdf
-	texi2pdf -o doc/pdf/riscv-instructions.pdf doc/tex/riscv-instructions.tex
+	( cd doc/tex && texi2pdf -o ../pdf/riscv-instructions.pdf riscv-instructions.tex )
 
 # tests
 

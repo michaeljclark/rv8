@@ -1,4 +1,4 @@
 build
-riscv-instructions.tex
-riscv-instructions.log
-riscv-instructions.aux
+doc/tex/riscv-instructions.tex
+doc/tex/riscv-instructions.log
+doc/tex/riscv-instructions.aux
