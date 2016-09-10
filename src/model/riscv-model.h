@@ -141,14 +141,15 @@ struct riscv_operand
 		: name(name), bitspec(bitspec), type(type),
 		  label(label), fg_color(fg_color), bg_color(bg_color) {}
 
-	char char_code() {
-		if (type == "ireg") return 'R';
-		else if (type == "freg") return 'R';
-		else if (type == "creg") return 'R';
-		else if (type == "arg") return 'A';
-		else if (type == "simm") return 'I';
-		else if (type == "uimm") return 'I';
-		else return '?';
+	std::string char_code() {
+		if (type == "ireg") return "R";
+		else if (type == "freg") return "F";
+		else if (type == "creg") return "R";
+		else if (type == "arg") return "A";
+		else if (type == "simm") return "S";
+		else if (type == "uimm") return "U";
+		else if (type == "offset") return "O";
+		else return "?";
 	}
 };
 

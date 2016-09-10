@@ -672,11 +672,11 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 				{
 					riscv_operand_ptr operand = opcode->find_operand(bit);
 					if (operand) {
-						printf("%s%c%s",
+						printf("%s%s%s",
 							enable_colorize ? riscv_colors_to_ansi_escape_sequence(
 								operand->fg_color, operand->bg_color
 							).c_str() : "",
-							operand->char_code(),
+							operand->char_code().c_str(),
 							enable_colorize ? _COLOR_RESET : "");
 					} else {
 						printf("%c", c);
