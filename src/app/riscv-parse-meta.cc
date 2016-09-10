@@ -115,9 +115,13 @@ struct riscv_parse_meta : riscv_meta_model
 	riscv_extension_list     ext_subset;
 	riscv_codec_node         root_node;
 	riscv_opcode_ptr         unknown;
+	std::set<std::string>    opts;
 
 	void generate_map();
-	void generate_codec(bool include_pseudo);
+	void generate_codec();
+
+	bool set_option(std::string o) { opts.insert(o); return true; }
+	bool has_option(std::string o) { return opts.find(o) != opts.end(); }
 
 	std::string colorize_operands(riscv_opcode_ptr opcode);
 	std::vector<std::string> get_unique_codecs();
@@ -126,19 +130,19 @@ struct riscv_parse_meta : riscv_meta_model
 	static std::string latex_utf_substitute(std::string str);
 
 	void print_latex_row(riscv_latex_row &row, std::string ts, bool remove_question_marks);
-	void print_latex(bool remove_question_marks);
-	void print_map(bool print_map_instructions);
+	void print_latex();
+	void print_map();
 	void print_operands_h();
 	void print_interp_h();
 	void print_fpu_h();
 	void print_fpu_c();
 	void print_jit_h();
 	void print_jit_cc();
-	void print_meta_h(bool no_comment = false, bool zero_not_oh = false);
-	void print_meta_cc(bool no_comment = false, bool zero_not_oh = false);
-	void print_strings_h(bool no_comment = false, bool zero_not_oh = false);
-	void print_strings_cc(bool no_comment = false, bool zero_not_oh = false);
-	void print_switch_h(bool no_comment = false, bool zero_not_oh = false);
+	void print_meta_h();
+	void print_meta_cc();
+	void print_strings_h();
+	void print_strings_cc();
+	void print_switch_h();
 
 	void generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list);
 	void print_switch_decoder_node(riscv_codec_node &node, size_t indent);
@@ -177,12 +181,12 @@ void riscv_parse_meta::generate_map()
 	}
 }
 
-void riscv_parse_meta::generate_codec(bool include_pseudo)
+void riscv_parse_meta::generate_codec()
 {
 	// make list of opcodes to include
 	riscv_opcode_list opcodes_copy;
 	for (auto &opcode : opcodes) {
-		if (!include_pseudo && opcode->is_pseudo()) continue;
+		if (opcode->is_pseudo()) continue;
 		opcodes_copy.push_back(opcode);
 	}
 
@@ -512,8 +516,10 @@ void riscv_parse_meta::print_latex_row(riscv_latex_row &row, std::string ts, boo
 	}
 }
 
-void riscv_parse_meta::print_latex(bool remove_question_marks)
+void riscv_parse_meta::print_latex()
 {
+	bool remove_question_marks = has_option("remove_question_marks");
+
 	// paginate opcodes ordered by extension
 	// adding type and extension headings, page breaks and continuations
 	size_t line = 0;
@@ -631,9 +637,11 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 	printf("%s", kLatexDocumentEnd);
 }
 
-void riscv_parse_meta::print_map(bool print_map_instructions)
+void riscv_parse_meta::print_map()
 {
 	bool enable_colorize = enable_color && isatty(fileno(stdout));
+
+	bool map_pseudo_code = has_option("map_pseudo_code");
 
 	int i = 0;
 	for (auto &opcode : opcodes) {
@@ -700,7 +708,7 @@ void riscv_parse_meta::print_map(bool print_map_instructions)
 			enable_colorize ? _COLOR_EXT : "",
 			opcode->extensions.front()->name.c_str(),
 			enable_colorize ? _COLOR_RESET : "",
-			print_map_instructions ? format_string("   %s", opcode->instruction.c_str()).c_str() : "");
+			map_pseudo_code ? format_string("   %s", opcode->instruction.c_str()).c_str() : "");
 	}
 }
 
@@ -1208,7 +1216,7 @@ using namespace riscv;
 	printf("\n");
 }
 
-void riscv_parse_meta::print_meta_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_meta_h()
 {
 	static const char* kMetaHeader =
 
@@ -1256,6 +1264,8 @@ R"C(
 
 #endif
 )C";
+
+	bool no_comment = has_option("no_comment");
 
 	printf(kCHeader, "riscv-meta.h");
 	printf("%s", kMetaHeader);
@@ -1388,7 +1398,7 @@ R"C(
 	printf("%s", kMetaFooter);
 }
 
-void riscv_parse_meta::print_meta_cc(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_meta_cc()
 {
 	static const char* kMetaSource =
 
@@ -1397,6 +1407,9 @@ R"C(#include "riscv-types.h"
 #include "riscv-meta.h"
 
 )C";
+
+	bool no_comment = has_option("no_comment");
+	bool zero_not_oh = has_option("zero_not_oh");
 
 	printf(kCHeader, "riscv-meta.cc");
 	printf("%s", kMetaSource);
@@ -1542,7 +1555,7 @@ R"C(#include "riscv-types.h"
 	}
 }
 
-void riscv_parse_meta::print_strings_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_strings_h()
 {
 	static const char* kStringsHeader =
 
@@ -1571,9 +1584,11 @@ extern const char* riscv_csr_name_sym[];
 	printf("%s", kStringsHeader);
 }
 
-void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_strings_cc()
 {
 	printf(kCHeader, "riscv-strings.cc");
+
+	bool no_comment = has_option("no_comment");
 
 	printf("#include \"riscv-strings.h\"\n");
 	printf("\n");
@@ -1646,7 +1661,7 @@ void riscv_parse_meta::print_strings_cc(bool no_comment, bool zero_not_oh)
 	printf("};\n\n");
 }
 
-void riscv_parse_meta::print_switch_h(bool no_comment, bool zero_not_oh)
+void riscv_parse_meta::print_switch_h()
 {
 	printf(kCHeader, "riscv-switch.h");
 	printf("#ifndef riscv_switch_h\n");
@@ -1878,27 +1893,8 @@ void riscv_parse_meta::print_switch_decoder_node(riscv_codec_node &node, size_t 
 int main(int argc, const char *argv[])
 {
 	riscv_parse_meta inst_set;
-
-	bool print_latex = false;
-	bool print_map = false;
-	bool print_map_instructions = false;
-	bool no_comment = false;
-	bool zero_not_oh = false;
-	bool remove_question_marks = false;
-	bool include_pseudo = false;
-	bool print_operands_h = false;
-	bool print_switch_h = false;
-	bool print_interp_h = false;
-	bool print_fpu_h = false;
-	bool print_fpu_c = false;
-	bool print_jit_h = false;
-	bool print_jit_cc = false;
-	bool print_meta_h = false;
-	bool print_meta_cc = false;
-	bool print_strings_h = false;
-	bool print_strings_cc = false;
-	bool help_or_error = false;
 	std::string isa_spec = "";
+	bool help_or_error = false;
 
 	cmdline_option options[] =
 	{
@@ -1911,60 +1907,57 @@ int main(int argc, const char *argv[])
 		{ "-r", "--read-isa", cmdline_arg_type_string,
 			"Read instruction set metadata from directory",
 			[&](std::string s) { return inst_set.read_metadata(s); } },
-		{ "-l", "--print-latex", cmdline_arg_type_none,
-			"Print LaTeX",
-			[&](std::string s) { return (print_latex = true); } },
 		{ "-?", "--substitute-question-marks", cmdline_arg_type_none,
 			"Substitute question marks for zeros in LaTeX output",
-			[&](std::string s) { return (remove_question_marks = true); } },
-		{ "-m", "--print-map", cmdline_arg_type_none,
-			"Print map",
-			[&](std::string s) { return (print_map = true); } },
-		{ "-x", "--print-map-instructions", cmdline_arg_type_none,
-			"Print map with instructions",
-			[&](std::string s) { return (print_map = print_map_instructions = true); } },
+			[&](std::string s) { return inst_set.set_option("remove_question_marks"); } },
+		{ "-p", "--pseudo-code", cmdline_arg_type_none,
+			"Include pseudo code on map",
+			[&](std::string s) { return inst_set.set_option("map_pseudo_code"); } },
 		{ "-N", "--no-comment", cmdline_arg_type_none,
 			"Don't emit comments in generated source",
-			[&](std::string s) { return (no_comment = true); } },
+			[&](std::string s) { return inst_set.set_option("no_comment"); } },
 		{ "-0", "--numeric-constants", cmdline_arg_type_none,
 			"Use numeric constants in generated source",
-			[&](std::string s) { return (zero_not_oh = true); } },
-		{ "-p", "--include-pseudo", cmdline_arg_type_none,
-			"Include pseudo opcodes in switch decoder",
-			[&](std::string s) { return (include_pseudo = true); } },
+			[&](std::string s) { return inst_set.set_option("zero_not_oh"); } },
+		{ "-l", "--print-latex", cmdline_arg_type_none,
+			"Print LaTeX instruction listing",
+			[&](std::string s) { return inst_set.set_option("print_latex"); } },
+		{ "-m", "--print-map", cmdline_arg_type_none,
+			"Print instruction map",
+			[&](std::string s) { return inst_set.set_option("print_map"); } },
 		{ "-V", "--print-interp-h", cmdline_arg_type_none,
 			"Print interpreter header",
-			[&](std::string s) { return (print_interp_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_interp_h"); } },
 		{ "-H", "--print-meta-h", cmdline_arg_type_none,
 			"Print metadata header",
-			[&](std::string s) { return (print_meta_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_meta_h"); } },
 		{ "-C", "--print-meta-cc", cmdline_arg_type_none,
 			"Print metadata source",
-			[&](std::string s) { return (print_meta_cc = true); } },
+			[&](std::string s) { return inst_set.set_option("print_meta_cc"); } },
 		{ "-SH", "--print-strings-h", cmdline_arg_type_none,
 			"Print strings header",
-			[&](std::string s) { return (print_strings_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_strings_h"); } },
 		{ "-SC", "--print-strings-cc", cmdline_arg_type_none,
 			"Print strings source",
-			[&](std::string s) { return (print_strings_cc = true); } },
+			[&](std::string s) { return inst_set.set_option("print_strings_cc"); } },
 		{ "-A", "--print-operands-h", cmdline_arg_type_none,
 			"Print operands header",
-			[&](std::string s) { return (print_operands_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_operands_h"); } },
 		{ "-S", "--print-switch-h", cmdline_arg_type_none,
 			"Print switch header",
-			[&](std::string s) { return (print_switch_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_switch_h"); } },
 		{ "-FH", "--print-fpu-h", cmdline_arg_type_none,
 			"Print FPU test header",
-			[&](std::string s) { return (print_fpu_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_fpu_h"); } },
 		{ "-FC", "--print-fpu-c", cmdline_arg_type_none,
 			"Print FPU test source",
-			[&](std::string s) { return (print_fpu_c = true); } },
+			[&](std::string s) { return inst_set.set_option("print_fpu_c"); } },
 		{ "-J", "--print-jit-h", cmdline_arg_type_none,
 			"Print jit header",
-			[&](std::string s) { return (print_jit_h = true); } },
+			[&](std::string s) { return inst_set.set_option("print_jit_h"); } },
 		{ "-K", "--print-jit-cc", cmdline_arg_type_none,
 			"Print jit source",
-			[&](std::string s) { return (print_jit_cc = true); } },
+			[&](std::string s) { return inst_set.set_option("print_jit_cc"); } },
 		{ "-h", "--help", cmdline_arg_type_none,
 			"Show help",
 			[&](std::string s) { return (help_or_error = true); } },
@@ -1978,75 +1971,30 @@ int main(int argc, const char *argv[])
 		printf("%s: wrong number of arguments\n", argv[0]);
 		help_or_error = true;
 	}
-
-	if ((help_or_error |= !print_latex && !print_map &&
-		!print_switch_h && !print_operands_h &&
-		!print_jit_h && !print_jit_cc &&
-		!print_meta_h && !print_meta_cc &&
-		!print_strings_h && !print_strings_cc &&
-		!print_fpu_h && !print_fpu_c &&
-		!print_interp_h))
-	{
+	if (help_or_error) {
 		printf("usage: %s [<options>]\n", argv[0]);
 		cmdline_option::print_options(options);
 		return false;
 	}
 
 	inst_set.ext_subset = inst_set.decode_isa_extensions(isa_spec);
-
 	inst_set.generate_map();
 
-	if (print_latex) {
-		inst_set.print_latex(remove_question_marks);
-	}
-
-	if (print_map) {
-		inst_set.print_map(print_map_instructions);
-	}
-
-	if (print_meta_h) {
-		inst_set.print_meta_h(no_comment, zero_not_oh);
-	}
-
-	if (print_meta_cc) {
-		inst_set.print_meta_cc(no_comment, zero_not_oh);
-	}
-
-	if (print_strings_h) {
-		inst_set.print_strings_h(no_comment, zero_not_oh);
-	}
-
-	if (print_strings_cc) {
-		inst_set.print_strings_cc(no_comment, zero_not_oh);
-	}
-
-	if (print_operands_h) {
-		inst_set.print_operands_h();
-	}
-
-	if (print_switch_h) {
-		inst_set.generate_codec(include_pseudo);
-		inst_set.print_switch_h(no_comment, zero_not_oh);
-	}
-
-	if (print_interp_h) {
-		inst_set.print_interp_h();
-	}
-
-	if (print_fpu_h) {
-		inst_set.print_fpu_h();
-	}
-
-	if (print_fpu_c) {
-		inst_set.print_fpu_c();
-	}
-
-	if (print_jit_h) {
-		inst_set.print_jit_h();
-	}
-
-	if (print_jit_cc) {
-		inst_set.print_jit_cc();
+	if (inst_set.has_option("print_latex")) inst_set.print_latex();
+	if (inst_set.has_option("print_map")) inst_set.print_map();
+	if (inst_set.has_option("print_meta_h")) inst_set.print_meta_h();
+	if (inst_set.has_option("print_meta_cc")) inst_set.print_meta_cc();
+	if (inst_set.has_option("print_strings_h")) inst_set.print_strings_h();
+	if (inst_set.has_option("print_strings_cc")) inst_set.print_strings_cc();
+	if (inst_set.has_option("print_operands_h")) inst_set.print_operands_h();
+	if (inst_set.has_option("print_interp_h")) inst_set.print_interp_h();
+	if (inst_set.has_option("print_fpu_h")) inst_set.print_fpu_h();
+	if (inst_set.has_option("print_fpu_c")) inst_set.print_fpu_c();
+	if (inst_set.has_option("print_jit_h")) inst_set.print_jit_h();
+	if (inst_set.has_option("print_jit_cc")) inst_set.print_jit_cc();
+	if (inst_set.has_option("print_switch_h")) {
+		inst_set.generate_codec();
+		inst_set.print_switch_h();
 	}
 
 	exit(0);
