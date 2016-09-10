@@ -34,19 +34,19 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample
 
 ## Screenshots
 
-![ASCII map screenshot](/doc/imagess/screenshot-1.png)
+![ASCII map screenshot](/doc/images/screenshot-1.png)
 
 *Example ASCII map output from make map*
 
-![Histogram screenshot](/doc/imagess/screenshot-2.png)
+![Histogram screenshot](/doc/images/screenshot-2.png)
 
 *Example Instructions Histogram from riscv-histogram-elf*
 
-![Histogram screenshot](/doc/imagess/screenshot-3.png)
+![Histogram screenshot](/doc/images/screenshot-3.png)
 
 *Example Registers Histogram from riscv-histogram-elf*
 
-![RISC-V disassembly screenshot](/doc/imagess/screenshot-4.png)
+![RISC-V disassembly screenshot](/doc/images/screenshot-4.png)
 
 *Example Disassembly output from riscv-parse-elf*
 
