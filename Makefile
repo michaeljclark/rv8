@@ -34,7 +34,7 @@ TOP_DIR =       $(shell pwd)
 INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
                 -I$(TOP_DIR)/src/elf \
-                -I$(TOP_DIR)/src/emulator \
+                -I$(TOP_DIR)/src/emu \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
@@ -189,7 +189,7 @@ RV_META_HDR =   $(SRC_DIR)/asm/riscv-meta.h
 RV_META_SRC =   $(SRC_DIR)/asm/riscv-meta.cc
 RV_STR_HDR =    $(SRC_DIR)/asm/riscv-strings.h
 RV_STR_SRC =    $(SRC_DIR)/asm/riscv-strings.cc
-RV_INTERP_HDR = $(SRC_DIR)/emulator/riscv-interp.h
+RV_INTERP_HDR = $(SRC_DIR)/emu/riscv-interp.h
 RV_FPU_HDR =    $(SRC_DIR)/test/test-fpu-gen.h
 RV_FPU_SRC =    $(SRC_DIR)/test/test-fpu-gen.c
 

@@ -93,7 +93,7 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample
 |`src/app`|Test programs and utilities|
 |`src/asm`|Assembler metadata library|
 |`src/elf`|ELF parser library|
-|`src/emulator`|ISA emulator headers|
+|`src/emu`|ISA emulator headers|
 |`src/model`|ISA metamodel library|
 |`src/util`|Miscellaneous utilities library|
 |`doc/pdf`|Generated documentation|
