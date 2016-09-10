@@ -15,5 +15,6 @@ This directory contains metadata for the RISC-V Instruction Set
 |`instructions`|Instruction pseudo code|
 |`opcodes`     |Opcode encoding information|
 |`operands`    |Bit encodings of operands|
+|`pseudos`     |Pseudo instructions|
 |`registers`   |Registers and their ABI names|
 |`types`       |Instruction types|

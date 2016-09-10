@@ -35,6 +35,12 @@ extern "C" {
 	extern const char* riscv_fmt_rs1_rs2_offset;
 	extern const char* riscv_fmt_aqrl_rd_rs2_rs1;
 	extern const char* riscv_fmt_aqrl_rd_rs1;
+	extern const char* riscv_fmt_rd;
+	extern const char* riscv_fmt_rd_zimm;
+	extern const char* riscv_fmt_rd_rs1;
+	extern const char* riscv_fmt_rd_rs2;
+	extern const char* riscv_fmt_rs1_offset;
+	extern const char* riscv_fmt_rs2_offset;
 }
 
 #endif

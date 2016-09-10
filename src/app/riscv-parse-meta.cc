@@ -182,9 +182,8 @@ void riscv_parse_meta::generate_codec(bool include_pseudo)
 	// make list of opcodes to include
 	riscv_opcode_list opcodes_copy;
 	for (auto &opcode : opcodes) {
-		if (include_pseudo || opcode->key.find("@") == std::string::npos) {
-			opcodes_copy.push_back(opcode);
-		}
+		if (!include_pseudo && opcode->is_pseudo()) continue;
+		opcodes_copy.push_back(opcode);
 	}
 
 	// generate decode
@@ -530,7 +529,7 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 		// check we have opcodes in this section (excluding pseudo opcodes)
 		size_t count = 0;
 		for (auto opcode : ext->opcodes) {
-			count += opcode->name.find("@") == 0 ? 0 : 1;
+			count += opcode->is_pseudo() ? 0 : 1;
 		}
 		if (count == 0) continue;
 
@@ -559,7 +558,7 @@ void riscv_parse_meta::print_latex(bool remove_question_marks)
 		// add opcodes
 		for (auto &opcode : ext->opcodes) {
 			// skip psuedo opcode
-			if (opcode->name.find("@") == 0) continue;
+			if (opcode->is_pseudo()) continue;
 			// add a line to the top of the page if there is a continuation
 			if (line % kLatexTableRows == 0) {
 				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
@@ -1047,7 +1046,7 @@ R"C(
 	for (auto &opcode : opcodes) {
 
 		// skip pseudo opcodes
-		if (opcode->name.find("@") == 0) continue;
+		if (opcode->is_pseudo()) continue;
 
 		// find extension with minimum isa width
 		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
@@ -1124,7 +1123,7 @@ void riscv_parse_meta::print_jit_h()
 	printf("namespace riscv\n{\n");
 	for (auto &opcode : opcodes) {
 		// exclude compressed and psuedo instructions
-		if (opcode->compressed || opcode->key.find("@") == 0) continue;
+		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
 		std::string emit_name = opcode_format("emit_", opcode, "_");
@@ -1166,7 +1165,7 @@ using namespace riscv;
 
 	for (auto &opcode : opcodes) {
 		// exclude compressed and psuedo instructions
-		if (opcode->compressed || opcode->key.find("@") == 0) continue;
+		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
 		std::string emit_name = opcode_format("emit_", opcode, "_");
@@ -1224,8 +1223,7 @@ extern "C" {
 
 	static const char* kMetaDeclarations =
 
-R"C(
-/* Instruction compression data structure */
+R"C(/* Instruction compression data structure */
 struct riscv_comp_data
 {
 	const int op;
@@ -1374,7 +1372,9 @@ R"C(
 			no_comment || opcode->long_name.size() == 0 ? "" :
 				format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
 	}
-	printf("};\n");
+	printf("};\n\n");
+
+	// Array declarations
 	printf("%s", kMetaDeclarations);
 	for (auto isa_width : isa_width_prefixes()) {
 		printf("extern const riscv_comp_data* riscv_inst_comp_%s[];\n",
@@ -1384,6 +1384,7 @@ R"C(
 		printf("extern const int riscv_inst_decomp_%s[];\n",
 			isa_width.second.c_str());
 	}
+
 	printf("%s", kMetaFooter);
 }
 

@@ -215,6 +215,20 @@ namespace riscv
 				case rvc_rd_ne_x0:      if (!(rd != 0)) return false; break;
 				case rvc_rs1_ne_x0:     if (!(rs1 != 0)) return false; break;
 				case rvc_rs2_ne_x0:     if (!(rs2 != 0)) return false; break;
+				case rvc_rs1_eq_rs2:    if (!(rs1 == rs2)) return false; break;
+				case rvc_rs1_eq_ra:     if (!(rs1 == 1)) return false; break;
+				case rvc_imm_z:         if (!(imm == 0)) return false; break;
+				case rvc_imm_n1:        if (!(imm == -1ULL)) return false; break;
+				case rvc_imm_p1:        if (!(imm == 1)) return false; break;
+				case rvc_csr_0x001:     if (!(imm == 0x001)) return false; break;
+				case rvc_csr_0x002:     if (!(imm == 0x002)) return false; break;
+				case rvc_csr_0x003:     if (!(imm == 0x003)) return false; break;
+				case rvc_csr_0xc00:     if (!(imm == 0xc00)) return false; break;
+				case rvc_csr_0xc01:     if (!(imm == 0xc01)) return false; break;
+				case rvc_csr_0xc02:     if (!(imm == 0xc02)) return false; break;
+				case rvc_csr_0xc80:     if (!(imm == 0xc80)) return false; break;
+				case rvc_csr_0xc81:     if (!(imm == 0xc81)) return false; break;
+				case rvc_csr_0xc82:     if (!(imm == 0xc82)) return false; break;
 				case rvc_end:           break;
 			}
 			c++;

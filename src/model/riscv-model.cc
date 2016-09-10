@@ -35,6 +35,7 @@ static const char* CSRS_FILE           = "csrs";
 static const char* OPCODES_FILE        = "opcodes";
 static const char* CONSTRAINTS_FILE    = "constraints";
 static const char* COMPRESSION_FILE    = "compression";
+static const char* PSEUDO_FILE         = "pseudos";
 static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
@@ -781,17 +782,19 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 	}
 
 	// lookup codec by key and log warning if it does not exist
-	std::string codec_key = opcode_codec_key(opcode);
-	auto codec = codecs_by_key[codec_key];
-	if (!codec) {
-		debug("WARNING: codec deduction failure: %-20s  codec_key: %s",
-			opcode->name.c_str(), codec_key.c_str());
-	} else if (codec->codec_key != codec_key) {
-		debug("WARNING: codec deduction mismatch: %-20s  codec_key: %s "
-			"(opcode:%s != deduced:%s)",
-			opcode->name.c_str(), codec_key.c_str(),
-			opcode->codec->name.c_str(),
-			codec->name.c_str());
+	if (!opcode->is_pseudo()) {
+		std::string codec_key = opcode_codec_key(opcode);
+		auto codec = codecs_by_key[codec_key];
+		if (!codec) {
+			debug("WARNING: codec deduction failure: %-20s  codec_key: %s",
+				opcode->name.c_str(), codec_key.c_str());
+		} else if (codec->codec_key != codec_key) {
+			debug("WARNING: codec deduction mismatch: %-20s  codec_key: %s "
+				"(opcode:%s != deduced:%s)",
+				opcode->name.c_str(), codec_key.c_str(),
+				opcode->codec->name.c_str(),
+				codec->name.c_str());
+		}
 	}
 
 	if (!opcode->codec) {
@@ -856,6 +859,44 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 	}
 }
 
+void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
+{
+	if (part.size() < 3) {
+		panic("invalid pseudo file requires at least 3 parameters: %s",
+			join(part, " ").c_str());
+	}
+
+	auto pseudo_name = part[0];
+	auto opcode_list_i  = opcodes_by_name.find(part[1]);
+	if (opcode_list_i == opcodes_by_name.end()) {
+		panic("pseudo %s has unknown opcode: %s",
+			pseudo_name.c_str(), part[1].c_str());
+	}
+	auto format = formats_by_name[part[2]];
+	if (!format) {
+		panic("pseudo %s has unknown format: %s",
+			pseudo_name.c_str(), part[2].c_str());
+	}
+	riscv_constraint_list constraint_list;
+	for (size_t i = 3; i < part.size(); i++) {
+		auto ci = constraints_by_name.find(part[i]);
+		if (ci == constraints_by_name.end()) {
+			panic("psuedo opcode %s references unknown constraint %s",
+				pseudo_name.c_str(), part[i].c_str());
+		}
+		constraint_list.push_back(ci->second);
+	}
+
+	auto pseudo = std::make_shared<riscv_pseudo>(
+		pseudo_name, opcode_list_i->second, format, constraint_list
+	);
+	for (auto opcode : pseudo->opcodes) {
+		opcode->pseudos.push_back(pseudo);
+	}
+	pseudos.push_back(pseudo);
+	pseudos_by_name[pseudo_name] = pseudo;
+}
+
 void riscv_meta_model::parse_instruction(std::vector<std::string> &part)
 {
 	if (part.size() < 2) return;
@@ -891,6 +932,7 @@ bool riscv_meta_model::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
 	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
+	for (auto part : read_file(dirname + std::string("/") + PSEUDO_FILE)) parse_pseudo(part);
 	for (auto part : read_file(dirname + std::string("/") + INSTRUCTIONS_FILE)) parse_instruction(part);
 	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);
 	return true;

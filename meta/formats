@@ -29,3 +29,11 @@ frs2,offset(rs1)
 rs1,rs2,offset
 aqrl,rd,rs2,(rs1)
 aqrl,rd,(rs1)
+
+# pseudo opcode formats
+rd
+rd,zimm
+rd,rs1
+rd,rs2
+rs1,offset
+rs2,offset

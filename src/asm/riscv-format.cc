@@ -18,7 +18,7 @@
 	'4'   frs1
 	'5'   frs2
 	'6'   frs3
-	'7'   rd_imm
+	'7'   rs1_imm
 	'i'   imm
 	'o'   offset
 	'c'   csr
@@ -55,3 +55,9 @@ const char* riscv_fmt_frs2_offset_rs1 =       "O\t5,i(1)";
 const char* riscv_fmt_rs1_rs2_offset =        "O\t1,2,o";
 const char* riscv_fmt_aqrl_rd_rs2_rs1 =       "OAR\t0,2,(1)";
 const char* riscv_fmt_aqrl_rd_rs1 =           "OAR\t0,(1)";
+const char* riscv_fmt_rd =                    "O\t0";
+const char* riscv_fmt_rd_zimm =               "O\t0,7";
+const char* riscv_fmt_rd_rs1 =                "O\t0,1";
+const char* riscv_fmt_rd_rs2 =                "O\t0,2";
+const char* riscv_fmt_rs1_offset =            "O\t1,o";
+const char* riscv_fmt_rs2_offset =            "O\t2,o";

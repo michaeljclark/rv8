@@ -18,6 +18,7 @@ struct riscv_csr;
 struct riscv_opcode;
 struct riscv_constraint;
 struct riscv_compressed;
+struct riscv_pseudo;
 struct riscv_bitrange;
 struct riscv_latex_row;
 
@@ -58,6 +59,9 @@ typedef std::vector<riscv_compressed_ptr> riscv_compressed_list;
 typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
 typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
 typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
+typedef std::shared_ptr<riscv_pseudo> riscv_pseudo_ptr;
+typedef std::map<std::string,riscv_pseudo_ptr> riscv_pseudo_map;
+typedef std::vector<riscv_pseudo_ptr> riscv_pseudo_list;
 
 int64_t riscv_parse_value(const char* valstr);
 
@@ -251,6 +255,7 @@ struct riscv_opcode
 	riscv_extension_list extensions;
 	riscv_compressed_ptr compressed;
 	riscv_compressed_list compressions;
+	riscv_pseudo_list pseudos;
 
 	size_t num;
 	uint64_t mask;
@@ -259,6 +264,8 @@ struct riscv_opcode
 
 	riscv_opcode(std::string key, std::string name)
 		: key(key), name(name), num(0), mask(0), match(0), done(0) {}
+
+	bool is_pseudo() { return name.find("@") == 0; }
 
 	bool match_extension(riscv_extension_list &s) {
 		if (s.size() == 0) return true;
@@ -311,6 +318,17 @@ struct riscv_compressed
 		: comp_opcode(comp_opcode), decomp_opcode(decomp_opcode), constraint_list(constraint_list) {}
 };
 
+struct riscv_pseudo
+{
+	std::string name;
+	riscv_opcode_list opcodes;
+	riscv_format_ptr format;
+	riscv_constraint_list constraint_list;
+
+	riscv_pseudo(std::string name, riscv_opcode_list opcodes, riscv_format_ptr format, riscv_constraint_list constraint_list)
+		: name(name), opcodes(opcodes), format(format), constraint_list(constraint_list) {}
+};
+
 struct riscv_meta_model
 {
 	const ssize_t DEFAULT = std::numeric_limits<ssize_t>::max();
@@ -338,6 +356,8 @@ struct riscv_meta_model
 	riscv_constraint_list    constraints;
 	riscv_constraint_map     constraints_by_name;
 	riscv_compressed_list    compressions;
+	riscv_pseudo_list        pseudos;
+	riscv_pseudo_map         pseudos_by_name;
 
 	static riscv_opcode_mask decode_mask(std::string bit_spec);
 	static std::string opcode_mask(riscv_opcode_ptr opcode);
@@ -377,6 +397,7 @@ struct riscv_meta_model
 	void parse_opcode(std::vector<std::string> &part);
 	void parse_constraint(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
+	void parse_pseudo(std::vector<std::string> &part);
 	void parse_instruction(std::vector<std::string> &part);
 	void parse_description(std::vector<std::string> &part);
 
