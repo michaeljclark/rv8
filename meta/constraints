@@ -1,7 +1,7 @@
 # format of a line in this file:
 # <constraint name> <constraint expression> <hint>
 
-simm_6        "imm >= -32 && imm < 32"
+simm_6        "imm >= -32ULL && imm < 32ULL"
 imm_6         "imm <= 0b111111"
 imm_7         "imm <= 0b1111111"
 imm_8         "imm <= 0b11111111"
@@ -30,7 +30,7 @@ rs2_ne_x0     "rs2 != 0"                            "rs2≠0"
 rs1_eq_rs2    "rs1 == rs2"
 rs1_eq_ra     "rs1 == 1"
 imm_z         "imm == 0"
-imm_n1        "imm == -1"
+imm_n1        "imm == -1ULL"
 imm_p1        "imm == 1"
 csr_0x001     "imm == 0x001"
 csr_0x002     "imm == 0x002"

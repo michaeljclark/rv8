@@ -22,6 +22,13 @@ struct riscv_gen_abstract
 	virtual void generate() = 0;
 };
 
+struct riscv_gen_constraints : riscv_gen_abstract
+{
+	riscv_gen_constraints(riscv_gen *gen) : riscv_gen_abstract(gen) {}
+	std::vector<cmdline_option> get_cmdline_options();
+	void generate();
+};
+
 struct riscv_gen_fpu_test : riscv_gen_abstract
 {
 	riscv_gen_fpu_test(riscv_gen *gen) : riscv_gen_abstract(gen) {}

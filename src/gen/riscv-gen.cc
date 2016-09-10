@@ -39,6 +39,7 @@ void riscv_codec_node::clear()
 
 riscv_gen::riscv_gen()
 {
+	generators.push_back(std::make_shared<riscv_gen_constraints>(this));
 	generators.push_back(std::make_shared<riscv_gen_fpu_test>(this));
 	generators.push_back(std::make_shared<riscv_gen_interp>(this));
 	generators.push_back(std::make_shared<riscv_gen_jit>(this));

@@ -161,6 +161,7 @@ RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 # libriscv_gen
 RV_GEN_HDR =    $(SRC_DIR)/gen/riscv-gen.h
 RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen.cc \
+                $(SRC_DIR)/gen/riscv-gen-constraints.cc \
                 $(SRC_DIR)/gen/riscv-gen-fpu-test.cc \
                 $(SRC_DIR)/gen/riscv-gen-interp.cc \
                 $(SRC_DIR)/gen/riscv-gen-jit.cc \
@@ -182,6 +183,7 @@ RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
 # generated files
 RV_OPANDS_HDR = $(SRC_DIR)/asm/riscv-operands.h
+RV_CONSTR_HDR = $(SRC_DIR)/asm/riscv-constraints.h
 RV_CODEC_HDR =  $(SRC_DIR)/asm/riscv-switch.h
 RV_JIT_HDR =    $(SRC_DIR)/asm/riscv-jit.h
 RV_JIT_SRC =    $(SRC_DIR)/asm/riscv-jit.cc
@@ -360,7 +362,7 @@ parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(PARSE_META_BIN) $(1) -r $(M
 
 meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
-	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR)
+	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR) $(RV_CONSTR_HDR)
 
 $(RV_OPANDS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-A,$@))
@@ -394,6 +396,9 @@ $(RV_FPU_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 
 $(RV_INTERP_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-V,$@))
+
+$(RV_CONSTR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+	$(call cmd, META $@, $(call parse_meta,-XC,$@))
 
 # lib targets
 
