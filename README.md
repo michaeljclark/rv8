@@ -168,8 +168,8 @@ To run the ELF parser and disassembler:
 
 ```
 # Requires RISC-V GNU Compiler Toolchain to build tests
-make test
-./build/darwin_x86_64/bin/riscv-parse-elf -c -a test/hello-world-pcrel
+make test-build-rv64
+./build/darwin_x86_64/bin/riscv-parse-elf -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 ```
 
 ## Parse Meta Utility
