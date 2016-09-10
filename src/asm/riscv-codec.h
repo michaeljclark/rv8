@@ -190,13 +190,13 @@ namespace riscv
 		while (*c != rvc_end) {
 			switch (*c) {
 				case rvc_simm_6:        if (!(imm >= -32ULL && imm < 32ULL)) return false; break;
-				case rvc_imm_6:         if (!(imm <= (imm & 0b111111))) return false; break;
-				case rvc_imm_7:         if (!(imm <= (imm & 0b1111111))) return false; break;
-				case rvc_imm_8:         if (!(imm <= (imm & 0b11111111))) return false; break;
-				case rvc_imm_9:         if (!(imm <= (imm & 0b111111111))) return false; break;
-				case rvc_imm_10:        if (!(imm <= (imm & 0b1111111111))) return false; break;
-				case rvc_imm_12:        if (!(imm <= (imm & 0b111111111111))) return false; break;
-				case rvc_imm_18:        if (!(imm <= (imm & 0b111111111111111111))) return false; break;
+				case rvc_imm_6:         if (!(imm <= 0b111111)) return false; break;
+				case rvc_imm_7:         if (!(imm <= 0b1111111)) return false; break;
+				case rvc_imm_8:         if (!(imm <= 0b11111111)) return false; break;
+				case rvc_imm_9:         if (!(imm <= 0b111111111)) return false; break;
+				case rvc_imm_10:        if (!(imm <= 0b1111111111)) return false; break;
+				case rvc_imm_12:        if (!(imm <= 0b111111111111)) return false; break;
+				case rvc_imm_18:        if (!(imm <= 0b111111111111111111)) return false; break;
 				case rvc_imm_nz:        if (!(imm != 0)) return false; break;
 				case rvc_imm_x2:        if (!((imm & 0b1) == 0)) return false; break;
 				case rvc_imm_x4:        if (!((imm & 0b11) == 0)) return false; break;
