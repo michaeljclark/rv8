@@ -183,7 +183,7 @@ namespace riscv
 	/* Compression Constraints */
 
 	template <typename T>
-	inline bool compress_check(T &dec, const rvc_constraint *c)
+	inline bool constraint_check(T &dec, const rvc_constraint *c)
 	{
 		auto imm = dec.imm;
 		auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
@@ -244,7 +244,7 @@ namespace riscv
 		const riscv_comp_data *comp_data = riscv_inst_comp_rv32[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
-			if (compress_check(dec, comp_data->constraints)) {
+			if (constraint_check(dec, comp_data->constraints)) {
 				dec.op = comp_data->op;
 				dec.codec = riscv_inst_codec[dec.op];
 				return true;
@@ -260,7 +260,7 @@ namespace riscv
 		const riscv_comp_data *comp_data = riscv_inst_comp_rv64[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
-			if (compress_check(dec, comp_data->constraints)) {
+			if (constraint_check(dec, comp_data->constraints)) {
 				dec.op = comp_data->op;
 				dec.codec = riscv_inst_codec[dec.op];
 				return true;
