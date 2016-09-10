@@ -280,15 +280,21 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(TEST_RAND_BIN)
 
 # build rules
+
 all: $(PARSE_META_BIN) meta $(BINARIES)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
-.PHONY: test
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
 
-latex: all ; $(PARSE_META_BIN) -l -? -r $(META_DIR) > riscv-instructions.tex
-pdf: latex ; texi2pdf riscv-instructions.tex
+# docs
+
+latex: doc/tex/riscv-instructions.tex
+pdf: doc/pdf/riscv-instructions.pdf
 map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
+doc/tex/riscv-instructions.tex: $(PARSE_META_BIN) ; @mkdir -p doc/tex
+	$(PARSE_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
+doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/pdf
+	texi2pdf -o doc/pdf/riscv-instructions.pdf doc/tex/riscv-instructions.tex
 
 # tests
 

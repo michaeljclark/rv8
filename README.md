@@ -30,21 +30,23 @@ The future goals of the RISC-V Meta project are:
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
 
+See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample LaTeX output.
+
 ## Screenshots
 
-![ASCII map screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-1.png)
+![ASCII map screenshot](/doc/imagess/screenshot-1.png)
 
 *Example ASCII map output from make map*
 
-![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-2.png)
+![Histogram screenshot](/doc/imagess/screenshot-2.png)
 
 *Example Instructions Histogram from riscv-histogram-elf*
 
-![Histogram screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-3.png)
+![Histogram screenshot](/doc/imagess/screenshot-3.png)
 
 *Example Registers Histogram from riscv-histogram-elf*
 
-![RISC-V disassembly screenshot](https://raw.githubusercontent.com/michaeljclark/riscv-mc/master/screenshot-4.png)
+![RISC-V disassembly screenshot](/doc/imagess/screenshot-4.png)
 
 *Example Disassembly output from riscv-parse-elf*
 
@@ -82,6 +84,20 @@ The future goals of the RISC-V Meta project are:
 - [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
 
+## Project Structure
+
+|Directory|Description|
+|:---|:---------------|
+|`meta`|Instruction set metadata|
+|`src/abi`|Application binary interface|
+|`src/app`|Test programs and utilities|
+|`src/asm`|Assembler metadata library|
+|`src/elf`|ELF parser library|
+|`src/emulator`|ISA emulator headers|
+|`src/model`|ISA metamodel library|
+|`src/util`|Miscellaneous utilities library|
+|`doc/pdf`|Generated documentation|
+
 ## Libraries
 
 The following table shows the RISC-V Meta libraries:
@@ -104,7 +120,6 @@ The following table shows the RISC-V Meta tools:
 |riscv-parse-elf|ELF parser and disassmbler tool|
 |riscv-compress-elf|ELF compressor tool (work in progress)|
 |riscv-histogram-elf|ELF histogram tool|
-|riscv-test-decoder|Decoder Benchmarks|
 |riscv-test-emulate|Emulator Proof of Concept|
 
 ## Dependencies
