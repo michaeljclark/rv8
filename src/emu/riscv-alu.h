@@ -108,6 +108,7 @@ namespace riscv {
 	template <typename S>
 	S div(S x, S y)
 	{
+		// TODO - simplify and test overflow and divide by zero
 		const int sshift = (sizeof(S) << 3) - 1;
 		if (((y & S(-1)) << sshift) < 0) return S(1) << sshift;
 		else if (y == 0) return S(-1);
@@ -123,6 +124,7 @@ namespace riscv {
 	template <typename S>
 	S rem(S x, S y)
 	{
+		// TODO - simplify and test overflow and divide by zero
 		const int sshift = (sizeof(S) << 3) - 1;
 		if (((y & S(-1)) << sshift) < 0) return 0;
 		else if (y == 0) return x;
