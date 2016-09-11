@@ -272,7 +272,7 @@ struct processor_proxy : P
 		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
 		switch (op) {
 			case csr_rw: csr = (u64(value) << 32) | (csr & u32(-1)); break;
-			default: /* set and clear not supported on CSR hi bits */ break;
+			default: /* implementation does not support set and clear on CSR hi bits */ break;
 		}
 	}
 
@@ -371,8 +371,11 @@ struct processor_stepper : P
 			}
 			if (P::log_registers) P::print_int_regeisters();
 			if (P::log_instructions) P::print_disassembly(dec);
-			if (P::inst_exec(dec, inst_len)) continue;
-			if (P::inst_priv(dec, inst_len)) continue;
+			if (P::inst_exec(dec, inst_len) || P::inst_priv(dec, inst_len)) {
+				P::cycle++;
+				P::instret++;
+				continue;
+			}
 			debug("illegal instruciton: pc=0x%tx inst=%s",
 				uintptr_t(P::pc), P::format_inst(P::pc).c_str());
 			return false;
