@@ -99,6 +99,42 @@ namespace riscv {
 		return hi;
 	}
 
+	template <typename S>
+	S mul(S x, S y)
+	{
+		return x * y;
+	}
+
+	template <typename S>
+	S div(S x, S y)
+	{
+		const int sshift = (sizeof(S) << 3) - 1;
+		if (((y & S(-1)) << sshift) < 0) return S(-1) << sshift;
+		else if (y == 0) return S(-1);
+		else return x / y;
+	}
+
+	template <typename U>
+	U divu(U x, U y)
+	{
+		return (y == 0) ? U(-1) : x / y;
+	}
+
+	template <typename S>
+	S rem(S x, S y)
+	{
+		const int sshift = (sizeof(S) << 3) - 1;
+		if (((y & S(-1)) << sshift) < 0) return 0;
+		else if (y == 0) return x;
+		else return x % y;
+	}
+
+	template <typename U>
+	U remu(U x, U y)
+	{
+		return (y == 0) ? x : x % y;
+	}
+
 }
 
 #endif

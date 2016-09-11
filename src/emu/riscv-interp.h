@@ -291,56 +291,56 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_mul: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) * ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mul(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulh: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulhsu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulhu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_div: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) / sx(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::div(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_divu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) / ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::divu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_rem: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) % sx(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::rem(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_remu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) % ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::remu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1160,56 +1160,56 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_mul: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) * ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mul(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulh: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulh(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulhsu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulhsu(sx(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_mulhu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::mulhu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_div: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) / sx(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::div(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_divu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) / ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::divu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_rem: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) % sx(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::rem(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_remu: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) % ux(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = riscv::remu(ux(proc.ireg[dec.rs1]), ux(proc.ireg[dec.rs2]));
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1223,28 +1223,28 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_divw: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.ireg[dec.rs1]) / s32(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(riscv::div(s32(proc.ireg[dec.rs1]), s32(proc.ireg[dec.rs2])));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_divuw: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) / u32(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(riscv::divu(u32(proc.ireg[dec.rs1]), u32(proc.ireg[dec.rs2])));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_remw: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.ireg[dec.rs1]) % s32(proc.ireg[dec.rs2]);
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(riscv::rem(s32(proc.ireg[dec.rs1]), s32(proc.ireg[dec.rs2])));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_remuw: {
 			if (rvm) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s32(u32(proc.ireg[dec.rs1]) % u32(proc.ireg[dec.rs2]));
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(riscv::remu(u32(proc.ireg[dec.rs1]), u32(proc.ireg[dec.rs2])));
 				proc.pc += inst_length;
 				return true;
 			};

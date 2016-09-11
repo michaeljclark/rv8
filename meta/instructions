@@ -60,22 +60,34 @@ sraw       "Shift Right Arithmetic Word"                    "rd = s32(rs1) >> (r
 
 # RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
 
-mul        "Multiply"                                       "rd = ux(rs1) * ux(rs2)"
-mulh       "Multiply High Signed Signed"                    "rd = mulh(sx(rs1), sx(rs2))"   # Split pseudo-code vs interp
-mulhsu     "Multiply High Signed Unsigned"                  "rd = mulhsu(sx(rs1), ux(rs2))" # Split pseudo-code vs interp
-mulhu      "Multiply High Unsigned Unsigned"                "rd = mulhu(ux(rs1), ux(rs2))"  # Split pseudo-code vs interp
-div        "Divide Signed"                                  "rd = sx(rs1) / sx(rs2)"
-divu       "Divide Unsigned"                                "rd = ux(rs1) / ux(rs2)"
-rem        "Remainder Signed"                               "rd = sx(rs1) % sx(rs2)"
-remu       "Remainder Unsigned"                             "rd = ux(rs1) % ux(rs2)"
+mul        "Multiply"                                       "rd = riscv::mul(sx(rs1), sx(rs2))"
+mulh       "Multiply High Signed Signed"                    "rd = riscv::mulh(sx(rs1), sx(rs2))"
+mulhsu     "Multiply High Signed Unsigned"                  "rd = riscv::mulhsu(sx(rs1), ux(rs2))"
+mulhu      "Multiply High Unsigned Unsigned"                "rd = riscv::mulhu(ux(rs1), ux(rs2))"
+div        "Divide Signed"                                  "rd = riscv::div(sx(rs1), sx(rs2))"
+divu       "Divide Unsigned"                                "rd = riscv::divu(ux(rs1), ux(rs2))"
+rem        "Remainder Signed"                               "rd = riscv::rem(sx(rs1), sx(rs2))"
+remu       "Remainder Unsigned"                             "rd = riscv::remu(ux(rs1), ux(rs2))"
+
+#mul        "Multiply"                                       "rd = ux(rs1) * ux(rs2)"
+#div        "Divide Signed"                                  "rd = sx(rs1) / sx(rs2)"           # handle overflow and divide zero
+#divu       "Divide Unsigned"                                "rd = ux(rs1) / ux(rs2)"           # handle divide zero
+#rem        "Remainder Signed"                               "rd = sx(rs1) % sx(rs2)"           # handle overflow and divide zero
+#remu       "Remainder Unsigned"                             "rd = ux(rs1) % ux(rs2)"           # handle divide zero
 
 # RV64M    "RV64M Standard Extension for Integer Multiply and Divide (in addition to RV32M)"
 
-mulw       "Multiple Word"                                  "rd = s32(u32(rs1) * u32(rs2))"
-divw       "Divide Signed Word"                             "rd = s32(rs1) / s32(rs2)"
-divuw      "Divide Unsigned Word"                           "rd = s32(u32(rs1) / u32(rs2))"
-remw       "Remainder Signed Word"                          "rd = s32(rs1) % s32(rs2)"
-remuw      "Remainder Unsigned Word"                        "rd = s32(u32(rs1) % u32(rs2))"
+mulw       "Multiple Word"                                  "rd = s32(riscv::mul(u32(rs1), u32(rs2)))"
+divw       "Divide Signed Word"                             "rd = s32(riscv::div(s32(rs1), s32(rs2)))"
+divuw      "Divide Unsigned Word"                           "rd = s32(riscv::divu(u32(rs1), u32(rs2)))"
+remw       "Remainder Signed Word"                          "rd = s32(riscv::rem(s32(rs1), s32(rs2)))"
+remuw      "Remainder Unsigned Word"                        "rd = s32(riscv::remu(u32(rs1), u32(rs2)))"
+
+#mulw       "Multiply Word"                                  "rd = u32(rs1) * u32(rs2)"
+#divw       "Divide Signed Word"                             "rd = s32(rs1) / s32(rs2)"         # handle overflow and divide zero
+#divuw      "Divide Unsigned Word"                           "rd = s32(u32(rs1) / u32(rs2))"    # handle divide zero
+#remw       "Remainder Signed Word"                          "rd = s32(rs1) % s32(rs2)"         # handle overflow and divide zero
+#remuw      "Remainder Unsigned Word"                        "rd = s32(u32(rs1) % u32(rs2))"    # handle divide zero
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
