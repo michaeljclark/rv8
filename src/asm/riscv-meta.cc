@@ -347,263 +347,263 @@ const rvc_constraint rvcc_c_sdsp[] = {
 
 
 const riscv_comp_data rvcd_rv32_lui[] = {
-	{ 193, rvcc_c_lui },
+	{ 179, rvcc_c_lui },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_jal[] = {
-	{ 190, rvcc_c_jal },
-	{ 203, rvcc_c_j },
+	{ 176, rvcc_c_jal },
+	{ 189, rvcc_c_j },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_jalr[] = {
-	{ 210, rvcc_c_jr },
-	{ 213, rvcc_c_jalr },
+	{ 196, rvcc_c_jr },
+	{ 199, rvcc_c_jalr },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_beq[] = {
-	{ 204, rvcc_c_beqz },
+	{ 190, rvcc_c_beqz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_bne[] = {
-	{ 205, rvcc_c_bnez },
+	{ 191, rvcc_c_bnez },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_lw[] = {
-	{ 183, rvcc_c_lw },
-	{ 208, rvcc_c_lwsp },
+	{ 169, rvcc_c_lw },
+	{ 194, rvcc_c_lwsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_sw[] = {
-	{ 186, rvcc_c_sw },
-	{ 216, rvcc_c_swsp },
+	{ 172, rvcc_c_sw },
+	{ 202, rvcc_c_swsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_addi[] = {
-	{ 181, rvcc_c_addi4spn },
-	{ 188, rvcc_c_nop },
-	{ 189, rvcc_c_addi },
-	{ 191, rvcc_c_li },
-	{ 192, rvcc_c_addi16sp },
+	{ 167, rvcc_c_addi4spn },
+	{ 174, rvcc_c_nop },
+	{ 175, rvcc_c_addi },
+	{ 177, rvcc_c_li },
+	{ 178, rvcc_c_addi16sp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_andi[] = {
-	{ 196, rvcc_c_andi },
+	{ 182, rvcc_c_andi },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_slli_rv32i[] = {
-	{ 206, rvcc_c_slli_rv32c },
+	{ 192, rvcc_c_slli_rv32c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_srli_rv32i[] = {
-	{ 194, rvcc_c_srli_rv32c },
+	{ 180, rvcc_c_srli_rv32c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_srai_rv32i[] = {
-	{ 195, rvcc_c_srai_rv32c },
+	{ 181, rvcc_c_srai_rv32c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_add[] = {
-	{ 211, rvcc_c_mv },
-	{ 214, rvcc_c_add },
+	{ 197, rvcc_c_mv },
+	{ 200, rvcc_c_add },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_sub[] = {
-	{ 197, rvcc_c_sub },
+	{ 183, rvcc_c_sub },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_xor[] = {
-	{ 198, rvcc_c_xor },
+	{ 184, rvcc_c_xor },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_or[] = {
-	{ 199, rvcc_c_or },
+	{ 185, rvcc_c_or },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_and[] = {
-	{ 200, rvcc_c_and },
+	{ 186, rvcc_c_and },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_ebreak[] = {
-	{ 212, rvcc_c_ebreak },
+	{ 198, rvcc_c_ebreak },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_flw[] = {
-	{ 184, rvcc_c_flw },
-	{ 209, rvcc_c_flwsp },
+	{ 170, rvcc_c_flw },
+	{ 195, rvcc_c_flwsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_fsw[] = {
-	{ 187, rvcc_c_fsw },
-	{ 217, rvcc_c_fswsp },
+	{ 173, rvcc_c_fsw },
+	{ 203, rvcc_c_fswsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_fld[] = {
-	{ 182, rvcc_c_fld },
-	{ 207, rvcc_c_fldsp },
+	{ 168, rvcc_c_fld },
+	{ 193, rvcc_c_fldsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv32_fsd[] = {
-	{ 185, rvcc_c_fsd },
-	{ 215, rvcc_c_fsdsp },
+	{ 171, rvcc_c_fsd },
+	{ 201, rvcc_c_fsdsp },
 	{ 0, nullptr }
 };
 
 
 const riscv_comp_data rvcd_rv64_lui[] = {
-	{ 193, rvcc_c_lui },
+	{ 179, rvcc_c_lui },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_jal[] = {
-	{ 203, rvcc_c_j },
+	{ 189, rvcc_c_j },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_jalr[] = {
-	{ 210, rvcc_c_jr },
-	{ 213, rvcc_c_jalr },
+	{ 196, rvcc_c_jr },
+	{ 199, rvcc_c_jalr },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_beq[] = {
-	{ 204, rvcc_c_beqz },
+	{ 190, rvcc_c_beqz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_bne[] = {
-	{ 205, rvcc_c_bnez },
+	{ 191, rvcc_c_bnez },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_lw[] = {
-	{ 183, rvcc_c_lw },
-	{ 208, rvcc_c_lwsp },
+	{ 169, rvcc_c_lw },
+	{ 194, rvcc_c_lwsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_sw[] = {
-	{ 186, rvcc_c_sw },
-	{ 216, rvcc_c_swsp },
+	{ 172, rvcc_c_sw },
+	{ 202, rvcc_c_swsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_addi[] = {
-	{ 181, rvcc_c_addi4spn },
-	{ 188, rvcc_c_nop },
-	{ 189, rvcc_c_addi },
-	{ 191, rvcc_c_li },
-	{ 192, rvcc_c_addi16sp },
+	{ 167, rvcc_c_addi4spn },
+	{ 174, rvcc_c_nop },
+	{ 175, rvcc_c_addi },
+	{ 177, rvcc_c_li },
+	{ 178, rvcc_c_addi16sp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_andi[] = {
-	{ 196, rvcc_c_andi },
+	{ 182, rvcc_c_andi },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_add[] = {
-	{ 211, rvcc_c_mv },
-	{ 214, rvcc_c_add },
+	{ 197, rvcc_c_mv },
+	{ 200, rvcc_c_add },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_sub[] = {
-	{ 197, rvcc_c_sub },
+	{ 183, rvcc_c_sub },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_xor[] = {
-	{ 198, rvcc_c_xor },
+	{ 184, rvcc_c_xor },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_or[] = {
-	{ 199, rvcc_c_or },
+	{ 185, rvcc_c_or },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_and[] = {
-	{ 200, rvcc_c_and },
+	{ 186, rvcc_c_and },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_ld[] = {
-	{ 218, rvcc_c_ld },
-	{ 224, rvcc_c_ldsp },
+	{ 204, rvcc_c_ld },
+	{ 210, rvcc_c_ldsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_sd[] = {
-	{ 219, rvcc_c_sd },
-	{ 225, rvcc_c_sdsp },
+	{ 205, rvcc_c_sd },
+	{ 211, rvcc_c_sdsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_slli_rv64i[] = {
-	{ 223, rvcc_c_slli_rv64c },
+	{ 209, rvcc_c_slli_rv64c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_srli_rv64i[] = {
-	{ 221, rvcc_c_srli_rv64c },
+	{ 207, rvcc_c_srli_rv64c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_srai_rv64i[] = {
-	{ 222, rvcc_c_srai_rv64c },
+	{ 208, rvcc_c_srai_rv64c },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_addiw[] = {
-	{ 220, rvcc_c_addiw },
+	{ 206, rvcc_c_addiw },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_addw[] = {
-	{ 202, rvcc_c_addw },
+	{ 188, rvcc_c_addw },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_subw[] = {
-	{ 201, rvcc_c_subw },
+	{ 187, rvcc_c_subw },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_ebreak[] = {
-	{ 212, rvcc_c_ebreak },
+	{ 198, rvcc_c_ebreak },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_fld[] = {
-	{ 182, rvcc_c_fld },
-	{ 207, rvcc_c_fldsp },
+	{ 168, rvcc_c_fld },
+	{ 193, rvcc_c_fldsp },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcd_rv64_fsd[] = {
-	{ 185, rvcc_c_fsd },
-	{ 215, rvcc_c_fsdsp },
+	{ 171, rvcc_c_fsd },
+	{ 201, rvcc_c_fsdsp },
 	{ 0, nullptr }
 };
 
@@ -1127,12 +1127,6 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_i,
 	riscv_codec_i,
 	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
 	riscv_codec_s,
 	riscv_codec_r4_m,
 	riscv_codec_r4_m,
@@ -1194,14 +1188,6 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_r_m,
 	riscv_codec_r_m,
 	riscv_codec_r,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
-	riscv_codec_i,
 	riscv_codec_ciw_4spn,
 	riscv_codec_cl_ld,
 	riscv_codec_cl_lw,
@@ -1270,6 +1256,20 @@ const riscv_codec riscv_inst_codec[] = {
 	riscv_codec_sb,
 	riscv_codec_sb,
 	riscv_codec_uj,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
+	riscv_codec_i,
 	riscv_codec_i,
 	riscv_codec_i,
 };
@@ -1374,12 +1374,6 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_none,
 	riscv_fmt_rs1,
 	riscv_fmt_none,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
 	riscv_fmt_rd_csr_rs1,
 	riscv_fmt_rd_csr_rs1,
 	riscv_fmt_rd_csr_rs1,
@@ -1448,14 +1442,6 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_rm_frd_rs1,
 	riscv_fmt_rm_frd_rs1,
 	riscv_fmt_frd_rs1,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd,
-	riscv_fmt_rd_rs1,
-	riscv_fmt_rd_rs1,
-	riscv_fmt_rd_rs1,
-	riscv_fmt_rd_zimm,
-	riscv_fmt_rd_zimm,
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_frd_offset_rs1,
 	riscv_fmt_rd_offset_rs1,
@@ -1526,6 +1512,20 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_offset,
 	riscv_fmt_none,
 	riscv_fmt_rs1,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_zimm,
+	riscv_fmt_rd_zimm,
 };
 
 const riscv_operand_data* riscv_inst_operand_data[] = {
@@ -1631,12 +1631,6 @@ const riscv_operand_data* riscv_inst_operand_data[] = {
 	riscv_codec_i_csr_operands,
 	riscv_codec_i_csr_operands,
 	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
 	riscv_codec_i_csri_operands,
 	riscv_codec_i_csri_operands,
 	riscv_codec_i_csri_operands,
@@ -1702,14 +1696,6 @@ const riscv_operand_data* riscv_inst_operand_data[] = {
 	riscv_codec_r_m_fr_operands,
 	riscv_codec_r_m_fr_operands,
 	riscv_codec_r_fr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csr_operands,
-	riscv_codec_i_csri_operands,
-	riscv_codec_i_csri_operands,
 	riscv_codec_ciw_4spn_operands,
 	riscv_codec_cl_ld_f_operands,
 	riscv_codec_cl_lw_operands,
@@ -1780,6 +1766,20 @@ const riscv_operand_data* riscv_inst_operand_data[] = {
 	riscv_codec_uj_operands,
 	riscv_codec_i_o_operands,
 	riscv_codec_i_o_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csr_operands,
+	riscv_codec_i_csri_operands,
+	riscv_codec_i_csri_operands,
 };
 
 const uint64_t riscv_inst_match[] = {
@@ -1882,12 +1882,6 @@ const uint64_t riscv_inst_match[] = {
 	0x000000007b200073,
 	0x0000000010400073,
 	0x0000000010500073,
-	0xffffffffc0002073,
-	0xffffffffc0102073,
-	0xffffffffc0202073,
-	0xffffffffc8002073,
-	0xffffffffc8102073,
-	0xffffffffc8202073,
 	0x0000000000001073,
 	0x0000000000002073,
 	0x0000000000003073,
@@ -1956,14 +1950,6 @@ const uint64_t riscv_inst_match[] = {
 	0xffffffffd2200053,
 	0xffffffffd2300053,
 	0xfffffffff2000053,
-	0x0000000000302073,
-	0x0000000000202073,
-	0x0000000000102073,
-	0x0000000000301073,
-	0x0000000000201073,
-	0x0000000000101073,
-	0x0000000000205073,
-	0x0000000000105073,
 	0x0000000000000000,
 	0x0000000000002000,
 	0x0000000000004000,
@@ -2009,6 +1995,20 @@ const uint64_t riscv_inst_match[] = {
 	0x0000000000000002,
 	0x0000000000006002,
 	0x000000000000e002,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
 	0x0000000000000000,
 	0x0000000000000000,
 	0x0000000000000000,
@@ -2136,12 +2136,6 @@ const uint64_t riscv_inst_mask[] = {
 	0xffffffffffffffff,
 	0xfffffffffff07fff,
 	0xffffffffffffffff,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
 	0x000000000000707f,
 	0x000000000000707f,
 	0x000000000000707f,
@@ -2209,14 +2203,6 @@ const uint64_t riscv_inst_mask[] = {
 	0xfffffffffff0707f,
 	0xfffffffffff0007f,
 	0xfffffffffff0007f,
-	0xfffffffffff0707f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffffff07f,
-	0xfffffffffff0707f,
-	0xfffffffffff0707f,
-	0xfffffffffff0707f,
-	0xfffffffffff0707f,
 	0xfffffffffff0707f,
 	0x000000000000e003,
 	0x000000000000e003,
@@ -2288,6 +2274,20 @@ const uint64_t riscv_inst_mask[] = {
 	0x0000000000000000,
 	0x0000000000000000,
 	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
+	0x0000000000000000,
 };
 
 const rvc_constraint rvcc_jal[] = {
@@ -2298,85 +2298,6 @@ const rvc_constraint rvcc_jal[] = {
 const rvc_constraint rvcc_jalr[] = {
 	rvc_rd_eq_ra,
 	rvc_imm_z,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdcycle[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc00,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdtime[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc01,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdinstret[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc02,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdcycleh[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc80,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdtimeh[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc81,
-	rvc_end
-};
-
-const rvc_constraint rvcc_rdinstreth[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0xc80,
-	rvc_end
-};
-
-const rvc_constraint rvcc_frcsr[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0x003,
-	rvc_end
-};
-
-const rvc_constraint rvcc_frrm[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0x002,
-	rvc_end
-};
-
-const rvc_constraint rvcc_frflags[] = {
-	rvc_rs1_eq_x0,
-	rvc_csr_0x001,
-	rvc_end
-};
-
-const rvc_constraint rvcc_fscsr[] = {
-	rvc_csr_0x003,
-	rvc_end
-};
-
-const rvc_constraint rvcc_fsrm[] = {
-	rvc_csr_0x002,
-	rvc_end
-};
-
-const rvc_constraint rvcc_fsflags[] = {
-	rvc_csr_0x001,
-	rvc_end
-};
-
-const rvc_constraint rvcc_fsrmi[] = {
-	rvc_csr_0x002,
-	rvc_end
-};
-
-const rvc_constraint rvcc_fsflagsi[] = {
-	rvc_csr_0x001,
 	rvc_end
 };
 
@@ -2509,133 +2430,216 @@ const rvc_constraint rvcc_jr[] = {
 	rvc_end
 };
 
+const rvc_constraint rvcc_rdcycle[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc00,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdtime[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc01,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdinstret[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc02,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdcycleh[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc80,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdtimeh[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc81,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdinstreth[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc80,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frcsr[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x003,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frrm[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frflags[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x001,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fscsr[] = {
+	rvc_csr_0x003,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsrm[] = {
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsflags[] = {
+	rvc_csr_0x001,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsrmi[] = {
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsflagsi[] = {
+	rvc_csr_0x001,
+	rvc_end
+};
+
 
 const riscv_comp_data rvcp_jal[] = {
-	{ 248, rvcc_j },
+	{ 234, rvcc_j },
 	{ 3, rvcc_jal },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_jalr[] = {
-	{ 249, rvcc_ret },
-	{ 250, rvcc_jr },
+	{ 235, rvcc_ret },
+	{ 236, rvcc_jr },
 	{ 4, rvcc_jalr },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_beq[] = {
-	{ 242, rvcc_beqz },
+	{ 228, rvcc_beqz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_bne[] = {
-	{ 243, rvcc_bnez },
+	{ 229, rvcc_bnez },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_blt[] = {
-	{ 246, rvcc_bltz },
-	{ 247, rvcc_bgtz },
+	{ 232, rvcc_bltz },
+	{ 233, rvcc_bgtz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_bge[] = {
-	{ 244, rvcc_blez },
-	{ 245, rvcc_bgez },
+	{ 230, rvcc_blez },
+	{ 231, rvcc_bgez },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_addi[] = {
-	{ 226, rvcc_nop },
-	{ 227, rvcc_mv },
+	{ 212, rvcc_nop },
+	{ 213, rvcc_mv },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_sltiu[] = {
-	{ 232, rvcc_seqz },
+	{ 218, rvcc_seqz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_xori[] = {
-	{ 228, rvcc_not },
+	{ 214, rvcc_not },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_sub[] = {
-	{ 229, rvcc_neg },
+	{ 215, rvcc_neg },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_slt[] = {
-	{ 234, rvcc_sltz },
-	{ 235, rvcc_sgtz },
+	{ 220, rvcc_sltz },
+	{ 221, rvcc_sgtz },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_sltu[] = {
-	{ 233, rvcc_snez },
+	{ 219, rvcc_snez },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_addiw[] = {
-	{ 231, rvcc_sext_w },
+	{ 217, rvcc_sext_w },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_subw[] = {
-	{ 230, rvcc_negw },
+	{ 216, rvcc_negw },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_csrrw[] = {
+	{ 246, rvcc_fscsr },
+	{ 247, rvcc_fsrm },
+	{ 248, rvcc_fsflags },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_csrrs[] = {
-	{ 99, rvcc_rdcycle },
-	{ 100, rvcc_rdtime },
-	{ 101, rvcc_rdinstret },
-	{ 102, rvcc_rdcycleh },
-	{ 103, rvcc_rdtimeh },
-	{ 104, rvcc_rdinstreth },
-	{ 173, rvcc_frcsr },
-	{ 174, rvcc_frrm },
-	{ 175, rvcc_frflags },
-	{ 176, rvcc_fscsr },
-	{ 177, rvcc_fsrm },
-	{ 178, rvcc_fsflags },
+	{ 237, rvcc_rdcycle },
+	{ 238, rvcc_rdtime },
+	{ 239, rvcc_rdinstret },
+	{ 240, rvcc_rdcycleh },
+	{ 241, rvcc_rdtimeh },
+	{ 242, rvcc_rdinstreth },
+	{ 243, rvcc_frcsr },
+	{ 244, rvcc_frrm },
+	{ 245, rvcc_frflags },
 	{ 0, nullptr }
 };
 
-const riscv_comp_data rvcp_csrrsi[] = {
-	{ 179, rvcc_fsrmi },
-	{ 180, rvcc_fsflagsi },
+const riscv_comp_data rvcp_csrrwi[] = {
+	{ 249, rvcc_fsrmi },
+	{ 250, rvcc_fsflagsi },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnj_s[] = {
-	{ 236, rvcc_fmv_s },
+	{ 222, rvcc_fmv_s },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnjn_s[] = {
-	{ 238, rvcc_fneg_s },
+	{ 224, rvcc_fneg_s },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnjx_s[] = {
-	{ 237, rvcc_fabs_s },
+	{ 223, rvcc_fabs_s },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnj_d[] = {
-	{ 239, rvcc_fmv_d },
+	{ 225, rvcc_fmv_d },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnjn_d[] = {
-	{ 241, rvcc_fneg_d },
+	{ 227, rvcc_fneg_d },
 	{ 0, nullptr }
 };
 
 const riscv_comp_data rvcp_fsgnjx_d[] = {
-	{ 240, rvcc_fabs_d },
+	{ 226, rvcc_fabs_d },
 	{ 0, nullptr }
 };
 
@@ -2740,17 +2744,11 @@ const riscv_comp_data* riscv_inst_pseudo[] = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
+	rvcp_csrrw,
 	rvcp_csrrs,
 	nullptr,
+	rvcp_csrrwi,
 	nullptr,
-	rvcp_csrrsi,
 	nullptr,
 	nullptr,
 	nullptr,
@@ -2795,6 +2793,12 @@ const riscv_comp_data* riscv_inst_pseudo[] = {
 	rvcp_fsgnj_d,
 	rvcp_fsgnjn_d,
 	rvcp_fsgnjx_d,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 	nullptr,
 	nullptr,
 	nullptr,
@@ -3000,12 +3004,6 @@ const riscv_comp_data* riscv_inst_comp_rv32[] = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 	rvcd_rv32_flw,
 	rvcd_rv32_fsw,
 	nullptr,
@@ -3038,6 +3036,12 @@ const riscv_comp_data* riscv_inst_comp_rv32[] = {
 	nullptr,
 	rvcd_rv32_fld,
 	rvcd_rv32_fsd,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 	nullptr,
 	nullptr,
 	nullptr,
@@ -3284,14 +3288,14 @@ const riscv_comp_data* riscv_inst_comp_rv64[] = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 	rvcd_rv64_fld,
 	rvcd_rv64_fsd,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 	nullptr,
 	nullptr,
 	nullptr,
@@ -3570,27 +3574,13 @@ const int riscv_inst_decomp_rv32[] = {
 	0,
 	0,
 	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
 	19,
-	141,
+	135,
 	13,
-	111,
-	142,
+	105,
+	136,
 	18,
-	112,
+	106,
 	19,
 	19,
 	3,
@@ -3610,17 +3600,31 @@ const int riscv_inst_decomp_rv32[] = {
 	5,
 	6,
 	25,
-	141,
+	135,
 	13,
-	111,
+	105,
 	4,
 	28,
 	91,
 	4,
 	28,
-	142,
+	136,
 	18,
-	112,
+	106,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	0,
 	0,
 	0,
@@ -3824,25 +3828,11 @@ const int riscv_inst_decomp_rv64[] = {
 	0,
 	0,
 	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
 	19,
-	141,
+	135,
 	13,
 	0,
-	142,
+	136,
 	18,
 	0,
 	19,
@@ -3864,7 +3854,7 @@ const int riscv_inst_decomp_rv64[] = {
 	5,
 	6,
 	0,
-	141,
+	135,
 	13,
 	0,
 	4,
@@ -3872,7 +3862,7 @@ const int riscv_inst_decomp_rv64[] = {
 	91,
 	4,
 	28,
-	142,
+	136,
 	18,
 	0,
 	41,
@@ -3883,6 +3873,20 @@ const int riscv_inst_decomp_rv64[] = {
 	43,
 	41,
 	42,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	0,
 	0,
 	0,
