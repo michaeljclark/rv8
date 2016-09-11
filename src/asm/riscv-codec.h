@@ -78,8 +78,8 @@ namespace riscv
 		uint32_t  rs1   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
 		uint32_t  rs2   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
 		uint32_t  rs3   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  op    : 8;  /* : 8  (219 entries) can grow */
-		uint32_t  codec : 8;  /* : 8  (39 entries)  can grow */
+		uint32_t  op    : 8;  /* : 8  (~251 entries) nearly full */
+		uint32_t  codec : 8;  /* : 8  (~42 entries) can grow */
 		uint32_t  rm    : 3;  /* less frequently used - round mode for some FPU ops */
 		uint32_t  aq    : 1;  /* less frequently used - acquire for atomic ops */
 		uint32_t  rl    : 1;  /* less frequently used - release for atomic ops */
