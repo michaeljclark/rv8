@@ -937,7 +937,6 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		if (!pseudo_opcode) {
 			std::string pseudo_opcode_name = "@" + pseudo_name;
 			pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
-			pseudo_opcode->codec = codecs_by_name["none"];
 		}
 		// always use the format from the meta/pseudo definition
 		pseudo_opcode->format = format;
@@ -952,6 +951,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	pseudos.push_back(pseudo);
 	pseudos_by_name[pseudo_name] = pseudo;
 	pseudo_opcode->pseudo = pseudo;
+	pseudo_opcode->codec = real_opcode->codec;
 }
 
 void riscv_meta_model::parse_instruction(std::vector<std::string> &part)
