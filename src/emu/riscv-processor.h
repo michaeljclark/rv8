@@ -153,10 +153,7 @@ namespace riscv {
 		size_t hart_id;
 		u64 flags;
 		UX pc;
-
-		struct {
-			SX lr;
-		} state;
+		SX lr;
 
 		IREG ireg[ireg_count];
 		FREG freg[freg_count];
@@ -170,7 +167,7 @@ namespace riscv {
 		UX           fflags;          /* Floating-Point Accrued Exceptions */
 		UX           frm;             /* Floating-Point Dynamic Rounding Mode */
 
-		processor() : node_id(0), hart_id(0), flags(0), pc(0), ireg(), freg(),
+		processor() : node_id(0), hart_id(0), flags(0), pc(0), lr(-1), ireg(), freg(),
 			time(0), cycle(0), instret(0), fcsr(0), fflags(0), frm(0) {}
 	};
 

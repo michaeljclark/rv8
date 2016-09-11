@@ -60,8 +60,8 @@ static void print_interp_h(riscv_gen *gen)
 			printf("\t\tcase %s: {\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
 			inst = replace(inst, "pc", "proc.pc");
+			inst = replace(inst, "lr", "proc.lr");
 			inst = replace(inst, "length(inst)", "inst_length");
-			inst = replace(inst, "state", "proc.state");
 			inst = replace(inst, "f32(frd)", "frd.r.s.val");
 			inst = replace(inst, "f32(frs1)", "frs1.r.s.val");
 			inst = replace(inst, "f32(frs2)", "frs2.r.s.val");

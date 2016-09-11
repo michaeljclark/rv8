@@ -347,15 +347,15 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_lr_w: {
 			if (rva) {
-				proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
+				proc.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sc_w: {
 			if (rva) {
-				if (proc.state.lr == proc.ireg[dec.rs1]) *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]);
-				else proc.pc += inst_length;
+				ux res; if (proc.lr == proc.ireg[dec.rs1]) { *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]); res = 0; } else { res = 1; }; if (dec.rd != 0) proc.ireg[dec.rd] = res;;
+				proc.pc += inst_length;
 				return true;
 			};
 		};
@@ -1251,15 +1251,15 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_lr_w: {
 			if (rva) {
-				proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
+				proc.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s32*)proc.ireg[dec.rs1]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sc_w: {
 			if (rva) {
-				if (proc.state.lr == proc.ireg[dec.rs1]) *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]);
-				else proc.pc += inst_length;
+				ux res; if (proc.lr == proc.ireg[dec.rs1]) { *((s32*)proc.ireg[dec.rs1]) = s32(proc.ireg[dec.rs2]); res = 0; } else { res = 1; }; if (dec.rd != 0) proc.ireg[dec.rd] = res;;
+				proc.pc += inst_length;
 				return true;
 			};
 		};
@@ -1328,15 +1328,15 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_lr_d: {
 			if (rva) {
-				proc.state.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s64*)proc.ireg[dec.rs1]));
+				proc.lr = proc.ireg[dec.rs1]; if (dec.rd != 0) proc.ireg[dec.rd] = sx(*((s64*)proc.ireg[dec.rs1]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sc_d: {
 			if (rva) {
-				if (proc.state.lr == proc.ireg[dec.rs1]) *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]);
-				else proc.pc += inst_length;
+				ux res; if (proc.lr == proc.ireg[dec.rs1]) { *((s64*)proc.ireg[dec.rs1]) = s64(proc.ireg[dec.rs2]); res = 0; } else { res = 1; }; if (dec.rd != 0) proc.ireg[dec.rd] = res;;
+				proc.pc += inst_length;
 				return true;
 			};
 		};
