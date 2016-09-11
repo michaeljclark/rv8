@@ -926,26 +926,32 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		constraint_list.push_back(ci->second);
 	}
 
-	// create pseudo
-	auto pseudo = std::make_shared<riscv_pseudo>(
-		pseudo_name, opcode_list_i->second, format, constraint_list
-	);
-	for (auto opcode : pseudo->opcodes) {
-		opcode->pseudos.push_back(pseudo);
+	// create opcode (if needed)
+	std::string pseudo_opcode_name = "@" + pseudo_name;
+	riscv_opcode_ptr existing_opcode = lookup_opcode_by_key(pseudo_name);
+	riscv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_name);
+	if (existing_opcode) {
+		pseudo_opcode = existing_opcode;
+	} else {
+		// the pseudo opcode could be defined in meta/opcodes
+		if (!pseudo_opcode) {
+			std::string pseudo_opcode_name = "@" + pseudo_name;
+			pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
+			pseudo_opcode->codec = codecs_by_name["none"];
+		}
+		// always use the format from the meta/pseudo definition
+		pseudo_opcode->format = format;
 	}
+
+	// create pseudo
+	auto real_opcode = opcode_list_i->second.front();
+	auto pseudo = std::make_shared<riscv_pseudo>(
+		pseudo_name, pseudo_opcode, real_opcode, format, constraint_list
+	);
+	real_opcode->pseudos.push_back(pseudo);
 	pseudos.push_back(pseudo);
 	pseudos_by_name[pseudo_name] = pseudo;
-
-	// create opcode
-	std::string pseudo_opcode_key = "@" + pseudo_name;
-	riscv_opcode_ptr opcode = lookup_opcode_by_key(pseudo_name);
-	riscv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_key);
-	if (!opcode && !pseudo_opcode) {
-		riscv_extension_list extensions;
-		pseudo_opcode = create_opcode(pseudo_opcode_key, "pseudo");
-		pseudo_opcode->codec = codecs_by_name["none"];
-		pseudo_opcode->format = formats_by_name["none"];
-	}
+	pseudo_opcode->pseudo = pseudo;
 }
 
 void riscv_meta_model::parse_instruction(std::vector<std::string> &part)

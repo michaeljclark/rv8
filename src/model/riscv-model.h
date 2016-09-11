@@ -256,6 +256,7 @@ struct riscv_opcode
 	riscv_extension_list extensions;
 	riscv_compressed_ptr compressed;
 	riscv_compressed_list compressions;
+	riscv_pseudo_ptr pseudo;
 	riscv_pseudo_list pseudos;
 
 	size_t num;
@@ -322,12 +323,13 @@ struct riscv_compressed
 struct riscv_pseudo
 {
 	std::string name;
-	riscv_opcode_list opcodes;
+	riscv_opcode_ptr pseudo_opcode;
+	riscv_opcode_ptr real_opcode;
 	riscv_format_ptr format;
 	riscv_constraint_list constraint_list;
 
-	riscv_pseudo(std::string name, riscv_opcode_list opcodes, riscv_format_ptr format, riscv_constraint_list constraint_list)
-		: name(name), opcodes(opcodes), format(format), constraint_list(constraint_list) {}
+	riscv_pseudo(std::string name, riscv_opcode_ptr pseudo_opcode, riscv_opcode_ptr real_opcode, riscv_format_ptr format, riscv_constraint_list constraint_list)
+		: name(name), pseudo_opcode(pseudo_opcode), real_opcode(real_opcode), format(format), constraint_list(constraint_list) {}
 };
 
 struct riscv_meta_model

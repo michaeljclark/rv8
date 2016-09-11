@@ -80,6 +80,7 @@ extern const char* riscv_inst_format[];
 extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
+extern const riscv_comp_data* riscv_inst_pseudo[];
 )C";
 
 	static const char* kMetaFooter =
@@ -242,7 +243,7 @@ R"C(#include "riscv-types.h"
 	printf(kCHeader, "riscv-meta.cc");
 	printf("%s", kMetaSource);
 
-	// Compression constraints
+	// RVC Compression constraints
 	for (auto &opcode : gen->opcodes) {
 		if (!opcode->compressed) continue;
 		printf("const rvc_constraint %s[] = {\n",
@@ -254,7 +255,7 @@ R"C(#include "riscv-types.h"
 	}
 	printf("\n");
 
-	// Compression data
+	// RVC Compression opcode constraint data (per isa width)
 	std::set<std::string> rvcd_set;
 	for (auto isa_width : gen->isa_width_prefixes()) {
 		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
@@ -349,6 +350,52 @@ R"C(#include "riscv-types.h"
 	}
 	printf("};\n\n");
 
+	// Pseudoinstruction constraints
+	for (auto &opcode : gen->opcodes) {
+		if (!opcode->pseudo) continue;
+		printf("const rvc_constraint %s[] = {\n",
+			riscv_meta_model::opcode_format("rvcc_", opcode, "_").c_str());
+		for (auto &constraint : opcode->pseudo->constraint_list) {
+			printf("\trvc_%s,\n", constraint->name.c_str());
+		}
+		printf("\trvc_end\n};\n\n");
+	}
+	printf("\n");
+
+	// Pseudoinstruction opcode constraint data
+	std::set<std::string> rvcp_set;
+	for (auto &opcode : gen->opcodes) {
+		if (opcode->pseudos.size() == 0) continue;
+		std::string rvcp_name = riscv_meta_model::opcode_format("rvcp_", opcode, "_");
+		rvcp_set.insert(rvcp_name);
+		printf("const riscv_comp_data %s[] = {\n", rvcp_name.c_str());
+		for (auto &pseudo : opcode->pseudos) {
+			printf("\t{ %s, %s },\n",
+				(zero_not_oh ?
+					format_string("%lu", pseudo->pseudo_opcode->num).c_str() :
+					riscv_meta_model::opcode_format("riscv_op_", pseudo->pseudo_opcode, "_").c_str()),
+					riscv_meta_model::opcode_format("rvcc_", pseudo->pseudo_opcode, "_").c_str());
+		}
+		printf("\t{ %s, nullptr }\n};\n\n",
+			(zero_not_oh ?
+					"0" :
+					"riscv_op_illegal"));
+	}
+	printf("\n");
+
+	// Pseudoinstruction table
+	printf("const riscv_comp_data* riscv_inst_pseudo[] = {\n");
+	print_array_illegal_enum("nullptr", no_comment);
+	for (auto &opcode : gen->opcodes) {
+		std::string opcode_key = riscv_meta_model::opcode_format("", opcode, ".");
+		std::string rvcp_name = riscv_meta_model::opcode_format("rvcp_", opcode, "_");
+		bool include_isa = rvcp_set.find(rvcp_name) != rvcp_set.end();
+		printf("\t%s%s,\n",
+			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
+			include_isa && opcode->pseudos.size() > 0 ? rvcp_name.c_str() : "nullptr");
+	}
+	printf("};\n\n");
+
 	// RVC compression table (per isa width)
 	for (auto isa_width : gen->isa_width_prefixes()) {
 		printf("const riscv_comp_data* riscv_inst_comp_%s[] = {\n", isa_width.second.c_str());
@@ -365,7 +412,7 @@ R"C(#include "riscv-types.h"
 		printf("};\n\n");
 	}
 
-	// RVC decompression table
+	// RVC decompression table (per isa width)
 	for (auto isa_width : gen->isa_width_prefixes()) {
 		printf("const int riscv_inst_decomp_%s[] = {\n", isa_width.second.c_str());
 		if (zero_not_oh) print_array_illegal_enum("0", no_comment);

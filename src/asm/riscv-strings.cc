@@ -326,8 +326,8 @@ const char* riscv_inst_name_sym[] = {
 	"bltz",
 	"bgtz",
 	"j",
-	"jr",
 	"ret",
+	"jr",
 };
 
 const char* riscv_operand_name_sym[] = {

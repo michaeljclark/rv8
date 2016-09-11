@@ -26,9 +26,9 @@ bltz        blt       rs1,offset  rs2_eq_x0
 bgtz        blt       rs2,offset  rs1_eq_x0
 j           jal       offset      rd_eq_x0
 jal         jal       offset      rd_eq_ra
+ret         jalr      none        rd_eq_x0 rs1_eq_ra
 jr          jalr      rs1         rd_eq_x0 imm_z
 jalr        jalr      rs1         rd_eq_ra imm_z
-ret         jalr      none        rd_eq_x0 rs1_eq_ra
 rdcycle     csrrs     rd          rs1_eq_x0 csr_0xc00
 rdtime      csrrs     rd          rs1_eq_x0 csr_0xc01
 rdinstret   csrrs     rd          rs1_eq_x0 csr_0xc02

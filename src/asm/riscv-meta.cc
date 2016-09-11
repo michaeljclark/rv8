@@ -1374,12 +1374,12 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_none,
 	riscv_fmt_rs1,
 	riscv_fmt_none,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
 	riscv_fmt_rd_csr_rs1,
 	riscv_fmt_rd_csr_rs1,
 	riscv_fmt_rd_csr_rs1,
@@ -1448,14 +1448,14 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_rm_frd_rs1,
 	riscv_fmt_rm_frd_rs1,
 	riscv_fmt_frd_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_rs1,
-	riscv_fmt_rd_csr_zimm,
-	riscv_fmt_rd_csr_zimm,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_zimm,
+	riscv_fmt_rd_zimm,
 	riscv_fmt_rd_rs1_imm,
 	riscv_fmt_frd_offset_rs1,
 	riscv_fmt_rd_offset_rs1,
@@ -1502,30 +1502,30 @@ const char* riscv_inst_format[] = {
 	riscv_fmt_rd_offset_rs1,
 	riscv_fmt_rs2_offset_rs1,
 	riscv_fmt_none,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs2,
+	riscv_fmt_rd_rs2,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs2,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs2,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rd_rs1,
+	riscv_fmt_rs1_offset,
+	riscv_fmt_rs1_offset,
+	riscv_fmt_rs2_offset,
+	riscv_fmt_rs1_offset,
+	riscv_fmt_rs1_offset,
+	riscv_fmt_rs2_offset,
+	riscv_fmt_offset,
 	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
-	riscv_fmt_none,
+	riscv_fmt_rs1,
 };
 
 const riscv_operand_data* riscv_inst_operand_data[] = {
@@ -2288,6 +2288,610 @@ const uint64_t riscv_inst_mask[] = {
 	0x0000000000000000,
 	0x0000000000000000,
 	0x0000000000000000,
+};
+
+const rvc_constraint rvcc_jal[] = {
+	rvc_rd_eq_ra,
+	rvc_end
+};
+
+const rvc_constraint rvcc_jalr[] = {
+	rvc_rd_eq_ra,
+	rvc_imm_z,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdcycle[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc00,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdtime[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc01,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdinstret[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc02,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdcycleh[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc80,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdtimeh[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc81,
+	rvc_end
+};
+
+const rvc_constraint rvcc_rdinstreth[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0xc80,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frcsr[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x003,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frrm[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_frflags[] = {
+	rvc_rs1_eq_x0,
+	rvc_csr_0x001,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fscsr[] = {
+	rvc_csr_0x003,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsrm[] = {
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsflags[] = {
+	rvc_csr_0x001,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsrmi[] = {
+	rvc_csr_0x002,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fsflagsi[] = {
+	rvc_csr_0x001,
+	rvc_end
+};
+
+const rvc_constraint rvcc_nop[] = {
+	rvc_rd_eq_x0,
+	rvc_rs1_eq_x0,
+	rvc_imm_z,
+	rvc_end
+};
+
+const rvc_constraint rvcc_mv[] = {
+	rvc_imm_z,
+	rvc_end
+};
+
+const rvc_constraint rvcc_not[] = {
+	rvc_imm_n1,
+	rvc_end
+};
+
+const rvc_constraint rvcc_neg[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_negw[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_sext_w[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_seqz[] = {
+	rvc_imm_p1,
+	rvc_end
+};
+
+const rvc_constraint rvcc_snez[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_sltz[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_sgtz[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fmv_s[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fabs_s[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fneg_s[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fmv_d[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fabs_d[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fneg_d[] = {
+	rvc_rs1_eq_rs2,
+	rvc_end
+};
+
+const rvc_constraint rvcc_beqz[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_bnez[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_blez[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_bgez[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_bltz[] = {
+	rvc_rs2_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_bgtz[] = {
+	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_j[] = {
+	rvc_rd_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_ret[] = {
+	rvc_rd_eq_x0,
+	rvc_rs1_eq_ra,
+	rvc_end
+};
+
+const rvc_constraint rvcc_jr[] = {
+	rvc_rd_eq_x0,
+	rvc_imm_z,
+	rvc_end
+};
+
+
+const riscv_comp_data rvcp_jal[] = {
+	{ 248, rvcc_j },
+	{ 3, rvcc_jal },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_jalr[] = {
+	{ 249, rvcc_ret },
+	{ 250, rvcc_jr },
+	{ 4, rvcc_jalr },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_beq[] = {
+	{ 242, rvcc_beqz },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_bne[] = {
+	{ 243, rvcc_bnez },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_blt[] = {
+	{ 246, rvcc_bltz },
+	{ 247, rvcc_bgtz },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_bge[] = {
+	{ 244, rvcc_blez },
+	{ 245, rvcc_bgez },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_addi[] = {
+	{ 226, rvcc_nop },
+	{ 227, rvcc_mv },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_sltiu[] = {
+	{ 232, rvcc_seqz },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_xori[] = {
+	{ 228, rvcc_not },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_sub[] = {
+	{ 229, rvcc_neg },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_slt[] = {
+	{ 234, rvcc_sltz },
+	{ 235, rvcc_sgtz },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_sltu[] = {
+	{ 233, rvcc_snez },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_addiw[] = {
+	{ 231, rvcc_sext_w },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_subw[] = {
+	{ 230, rvcc_negw },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_csrrs[] = {
+	{ 99, rvcc_rdcycle },
+	{ 100, rvcc_rdtime },
+	{ 101, rvcc_rdinstret },
+	{ 102, rvcc_rdcycleh },
+	{ 103, rvcc_rdtimeh },
+	{ 104, rvcc_rdinstreth },
+	{ 173, rvcc_frcsr },
+	{ 174, rvcc_frrm },
+	{ 175, rvcc_frflags },
+	{ 176, rvcc_fscsr },
+	{ 177, rvcc_fsrm },
+	{ 178, rvcc_fsflags },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_csrrsi[] = {
+	{ 179, rvcc_fsrmi },
+	{ 180, rvcc_fsflagsi },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnj_s[] = {
+	{ 236, rvcc_fmv_s },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnjn_s[] = {
+	{ 238, rvcc_fneg_s },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnjx_s[] = {
+	{ 237, rvcc_fabs_s },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnj_d[] = {
+	{ 239, rvcc_fmv_d },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnjn_d[] = {
+	{ 241, rvcc_fneg_d },
+	{ 0, nullptr }
+};
+
+const riscv_comp_data rvcp_fsgnjx_d[] = {
+	{ 240, rvcc_fabs_d },
+	{ 0, nullptr }
+};
+
+
+const riscv_comp_data* riscv_inst_pseudo[] = {
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_jal,
+	rvcp_jalr,
+	rvcp_beq,
+	rvcp_bne,
+	rvcp_blt,
+	rvcp_bge,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_addi,
+	nullptr,
+	rvcp_sltiu,
+	rvcp_xori,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_sub,
+	nullptr,
+	rvcp_slt,
+	rvcp_sltu,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_addiw,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_subw,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_csrrs,
+	nullptr,
+	nullptr,
+	rvcp_csrrsi,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_fsgnj_s,
+	rvcp_fsgnjn_s,
+	rvcp_fsgnjx_s,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	rvcp_fsgnj_d,
+	rvcp_fsgnjn_d,
+	rvcp_fsgnjx_d,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 };
 
 const riscv_comp_data* riscv_inst_comp_rv32[] = {

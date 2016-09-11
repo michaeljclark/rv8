@@ -822,8 +822,8 @@ enum riscv_op
 	riscv_op_bltz = 246,
 	riscv_op_bgtz = 247,
 	riscv_op_j = 248,
-	riscv_op_jr = 249,
-	riscv_op_ret = 250,
+	riscv_op_ret = 249,
+	riscv_op_jr = 250,
 };
 
 /* Instruction compression data structure */
@@ -848,6 +848,7 @@ extern const char* riscv_inst_format[];
 extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
+extern const riscv_comp_data* riscv_inst_pseudo[];
 extern const riscv_comp_data* riscv_inst_comp_rv32[];
 extern const riscv_comp_data* riscv_inst_comp_rv64[];
 extern const int riscv_inst_decomp_rv32[];

@@ -182,6 +182,25 @@ namespace riscv
 	}
 
 
+	/* Decode Pseudoinstruction */
+
+	template <typename T>
+	inline bool decode_pseudo_inst(T &dec)
+	{
+		const riscv_comp_data *comp_data = riscv_inst_pseudo[dec.op];
+		if (!comp_data) return false;
+		while (comp_data->constraints) {
+			if (constraint_check(dec, comp_data->constraints)) {
+				dec.op = comp_data->op;
+				dec.codec = riscv_inst_codec[dec.op];
+				return true;
+			}
+			comp_data++;
+		}
+		return false;
+	}
+
+
 	/* Compress Instruction */
 
 	template <typename T>

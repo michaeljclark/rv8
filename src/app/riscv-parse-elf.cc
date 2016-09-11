@@ -51,6 +51,7 @@ struct riscv_parse_elf
 	bool program_headers = false;
 	bool symbol_table = false;
 	bool disassebly = false;
+	bool decode_pseudo = false;
 	bool help_or_error = false;
 
 	const char* colorize(const char *type)
@@ -154,6 +155,7 @@ struct riscv_parse_elf
 			dec.pc = pc;
 			dec.inst = inst_fetch(pc, &inst_length);
 			decode_inst_rv64(dec, dec.inst);
+			if (decode_pseudo) decode_pseudo_inst(dec);
 			disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
@@ -199,6 +201,9 @@ struct riscv_parse_elf
 			{ "-d", "--print-disassembly", cmdline_arg_type_none,
 				"Print Disassembly",
 				[&](std::string s) { return (disassebly = true); } },
+			{ "-x", "--decode-pseudo", cmdline_arg_type_none,
+				"Decode Pseudoinstructions",
+				[&](std::string s) { return (decode_pseudo = true); } },
 			{ "-a", "--print-all", cmdline_arg_type_none,
 				"Print All",
 				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = disassebly = true); } },

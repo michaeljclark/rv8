@@ -30,6 +30,7 @@
 
 const char* riscv_fmt_none =                  "O\t";
 const char* riscv_fmt_rs1 =                   "O\t1";
+const char* riscv_fmt_offset =                "O\to";
 const char* riscv_fmt_pred_succ =             "O\tp,s";
 const char* riscv_fmt_rs1_rs2 =               "O\t1,2";
 const char* riscv_fmt_rd_imm =                "O\t0,i";
