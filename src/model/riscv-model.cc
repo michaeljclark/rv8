@@ -926,6 +926,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		constraint_list.push_back(ci->second);
 	}
 
+	// create pseudo
 	auto pseudo = std::make_shared<riscv_pseudo>(
 		pseudo_name, opcode_list_i->second, format, constraint_list
 	);
@@ -934,6 +935,17 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	}
 	pseudos.push_back(pseudo);
 	pseudos_by_name[pseudo_name] = pseudo;
+
+	// create opcode
+	std::string pseudo_opcode_key = "@" + pseudo_name;
+	riscv_opcode_ptr opcode = lookup_opcode_by_key(pseudo_name);
+	riscv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_key);
+	if (!opcode && !pseudo_opcode) {
+		riscv_extension_list extensions;
+		pseudo_opcode = create_opcode(pseudo_opcode_key, "pseudo");
+		pseudo_opcode->codec = codecs_by_name["none"];
+		pseudo_opcode->format = formats_by_name["none"];
+	}
 }
 
 void riscv_meta_model::parse_instruction(std::vector<std::string> &part)
