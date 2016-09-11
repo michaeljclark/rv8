@@ -109,7 +109,7 @@ namespace riscv {
 	S div(S x, S y)
 	{
 		const int sshift = (sizeof(S) << 3) - 1;
-		if (((y & S(-1)) << sshift) < 0) return S(-1) << sshift;
+		if (((y & S(-1)) << sshift) < 0) return S(1) << sshift;
 		else if (y == 0) return S(-1);
 		else return x / y;
 	}
