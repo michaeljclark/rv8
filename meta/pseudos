@@ -38,8 +38,8 @@ rdinstreth  csrrs     rd          rs1_eq_x0 csr_0xc80
 frcsr       csrrs     rd          rs1_eq_x0 csr_0x003
 frrm        csrrs     rd          rs1_eq_x0 csr_0x002
 frflags     csrrs     rd          rs1_eq_x0 csr_0x001
-fscsr       csrrs     rd,rs1      csr_0x003
-fsrm        csrrs     rd,rs1      csr_0x002
-fsflags     csrrs     rd,rs1      csr_0x001
-fsrmi       csrrsi    rd,zimm     csr_0x002
-fsflagsi    csrrsi    rd,zimm     csr_0x001
+fscsr       csrrw     rd,rs1      csr_0x003
+fsrm        csrrw     rd,rs1      csr_0x002
+fsflags     csrrw     rd,rs1      csr_0x001
+fsrmi       csrrwi    rd,zimm     csr_0x002
+fsflagsi    csrrwi    rd,zimm     csr_0x001
