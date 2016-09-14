@@ -60,6 +60,9 @@ enum {
 	reg_log_int = 1,
 	reg_log_f32 = 2,
 	reg_log_f64 = 4,
+	reg_log_op = 8,
+	reg_log_op_f32 = 16,
+	reg_log_op_f64 = 32,
 };
 
 /*
@@ -73,14 +76,12 @@ struct processor_base : P
 	typedef P processor_type;
 	typedef M mmu_type;
 
-	int log_registers;
-	bool log_instructions;
+	int log_flags;
 	mmu_type mmu;
 
 	processor_base() :
 		P(),
-		log_registers(0),
-		log_instructions(false)
+		log_flags(0)
 	{}
 
 	std::string format_inst(uintptr_t pc)
@@ -98,21 +99,54 @@ struct processor_base : P
 		return buf;
 	}
 
-	void print_disassembly(T &dec)
+	std::string format_op_args(T &dec, int fpreg)
 	{
-		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s\n";
-		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s\n";
-		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s\n";
-		std::string args = disasm_inst_simple(dec);
-		printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
-			P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str());
+		std::vector<std::string> ops;
+		const char *fmt = riscv_inst_format[dec.op];
+		while (*fmt) {
+			switch (*fmt) {
+				case '0': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
+					riscv_ireg_name_sym[dec.rd], P::ireg[dec.rd].r.xu.val)); break;
+				case '1': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
+					riscv_ireg_name_sym[dec.rs1], P::ireg[dec.rs1].r.xu.val)); break;
+				case '2': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
+					riscv_ireg_name_sym[dec.rs2], P::ireg[dec.rs2].r.xu.val)); break;
+				case '3': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rd],
+					(fpreg == reg_log_f64) ? P::freg[dec.rd].r.d.val : P::freg[dec.rd].r.s.val)); break;
+				case '4': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs1],
+					(fpreg == reg_log_f64) ? P::freg[dec.rs1].r.d.val : P::freg[dec.rs1].r.s.val)); break;
+				case '5': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs2],
+					(fpreg == reg_log_f64) ? P::freg[dec.rs2].r.d.val : P::freg[dec.rs2].r.s.val)); break;
+				case '6': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs3],
+					(fpreg == reg_log_f64) ? P::freg[dec.rs3].r.d.val : P::freg[dec.rs3].r.s.val)); break;
+			}
+			fmt++;
+		}
+        std::stringstream ss;
+        ss << "(";
+        for (auto i = ops.begin(); i != ops.end(); i++) {
+                ss << (i != ops.begin() ? ", " : "") << *i;
+        }
+        ss << ")";
+        return ss.str();
 	}
 
-	void print_registers()
+	void print_log(T &dec)
 	{
-		if (log_registers & reg_log_int) print_int_registers();
-		if (log_registers & reg_log_f32) print_f32_registers();
-		if (log_registers & reg_log_f64) print_f64_registers();
+		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s %s\n";
+		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s %s\n";
+		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s %s\n";
+		if (log_flags & reg_log_op) {
+			std::string op_args;
+			std::string args = disasm_inst_simple(dec);
+			if (log_flags & reg_log_op_f32) op_args = format_op_args(dec, reg_log_f32);
+			if (log_flags & reg_log_op_f64) op_args = format_op_args(dec, reg_log_f64);
+			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
+				P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str(), op_args.c_str());
+		}
+		if (log_flags & reg_log_int) print_int_registers();
+		if (log_flags & reg_log_f32) print_f32_registers();
+		if (log_flags & reg_log_f64) print_f64_registers();
 	}
 
 	void print_int_registers()
@@ -383,11 +417,10 @@ struct processor_stepper : P
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (P::log_registers) P::print_registers();
-			if (P::log_instructions) P::print_disassembly(dec);
 			if (P::inst_exec(dec, inst_len) || P::inst_priv(dec, inst_len)) {
 				P::cycle++;
 				P::instret++;
+				if (P::log_flags) P::print_log(dec);
 				continue;
 			}
 			debug("illegal instruciton: pc=0x%tx inst=%s",
@@ -446,11 +479,10 @@ struct riscv_emulator
 	std::string filename;
 	std::vector<uint32_t> entropy;
 
-	int log_registers = 0;
+	int log_flags = 0;
 	bool priv_mode = false;
 	bool memory_debug = false;
 	bool emulator_debug = false;
-	bool log_instructions = false;
 	bool help_or_error = false;
 
 	enum rv_isa {
@@ -579,16 +611,22 @@ struct riscv_emulator
 				[&](std::string s) { return (priv_mode = true); } },
 			{ "-r", "--log-int-registers", cmdline_arg_type_none,
 				"Log Integer Registers",
-				[&](std::string s) { return (log_registers |= reg_log_int); } },
+				[&](std::string s) { return (log_flags |= reg_log_int); } },
 			{ "-F", "--log-float-registers", cmdline_arg_type_none,
 				"Log SP Float Registers",
-				[&](std::string s) { return (log_registers |= reg_log_f32); } },
+				[&](std::string s) { return (log_flags |= reg_log_f32); } },
 			{ "-D", "--log-double-registers", cmdline_arg_type_none,
 				"Log DP Float Registers",
-				[&](std::string s) { return (log_registers |= reg_log_f64); } },
+				[&](std::string s) { return (log_flags |= reg_log_f64); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
-				[&](std::string s) { return (log_instructions = true); } },
+				[&](std::string s) { return (log_flags |= reg_log_op); } },
+			{ "-op-f32", "--log-operands-f32", cmdline_arg_type_none,
+				"Log Float Operands (f32)",
+				[&](std::string s) { return (log_flags |= reg_log_op_f32); } },
+			{ "-op-f64", "--log-operands-f64", cmdline_arg_type_none,
+				"Log Float Operands (f64)",
+				[&](std::string s) { return (log_flags |= reg_log_op_f64); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
 				[&](std::string s) { entropy.push_back(strtoull(s.c_str(), nullptr, 10)); return true; } },
@@ -674,8 +712,7 @@ struct riscv_emulator
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
-		proc.log_registers = log_registers;
-		proc.log_instructions = log_instructions;
+		proc.log_flags = log_flags;
 		proc.pc = elf.ehdr.e_entry;
 
 		/* randomise integer register state with 512 bits of entropy */
@@ -708,8 +745,7 @@ struct riscv_emulator
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
-		proc.log_registers = log_registers;
-		proc.log_instructions = log_instructions;
+		proc.log_flags = log_flags;
 		proc.pc = elf.ehdr.e_entry;
 
 		/* randomise integer register state with 512 bits of entropy */
