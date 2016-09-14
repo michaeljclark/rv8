@@ -56,6 +56,12 @@
 
 using namespace riscv;
 
+enum {
+	reg_log_int = 1,
+	reg_log_f32 = 2,
+	reg_log_f64 = 4,
+};
+
 /*
  * Processor base template
  */
@@ -67,13 +73,13 @@ struct processor_base : P
 	typedef P processor_type;
 	typedef M mmu_type;
 
-	bool log_registers;
+	int log_registers;
 	bool log_instructions;
 	mmu_type mmu;
 
 	processor_base() :
 		P(),
-		log_registers(false),
+		log_registers(0),
 		log_instructions(false)
 	{}
 
@@ -102,7 +108,14 @@ struct processor_base : P
 			P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str());
 	}
 
-	void print_int_regeisters()
+	void print_registers()
+	{
+		if (log_registers & reg_log_int) print_int_registers();
+		if (log_registers & reg_log_f32) print_f32_registers();
+		if (log_registers & reg_log_f64) print_f64_registers();
+	}
+
+	void print_int_registers()
 	{
 		for (size_t i = riscv_ireg_x0; i < P::ireg_count; i++) {
 			char fmt[32];
@@ -113,7 +126,7 @@ struct processor_base : P
 		}
 	}
 
-	void print_f32_regeisters()
+	void print_f32_registers()
 	{
 		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
@@ -121,7 +134,7 @@ struct processor_base : P
 		}
 	}
 
-	void print_f64_regeisters()
+	void print_f64_registers()
 	{
 		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
@@ -370,7 +383,7 @@ struct processor_stepper : P
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (P::log_registers) P::print_int_regeisters();
+			if (P::log_registers) P::print_registers();
 			if (P::log_instructions) P::print_disassembly(dec);
 			if (P::inst_exec(dec, inst_len) || P::inst_priv(dec, inst_len)) {
 				P::cycle++;
@@ -433,10 +446,10 @@ struct riscv_emulator
 	std::string filename;
 	std::vector<uint32_t> entropy;
 
+	int log_registers = 0;
 	bool priv_mode = false;
 	bool memory_debug = false;
 	bool emulator_debug = false;
-	bool log_registers = false;
 	bool log_instructions = false;
 	bool help_or_error = false;
 
@@ -564,9 +577,15 @@ struct riscv_emulator
 			{ "-p", "--privileged", cmdline_arg_type_none,
 				"Privileged ISA Emulation",
 				[&](std::string s) { return (priv_mode = true); } },
-			{ "-r", "--log-registers", cmdline_arg_type_none,
-				"Log Registers",
-				[&](std::string s) { return (log_registers = true); } },
+			{ "-r", "--log-int-registers", cmdline_arg_type_none,
+				"Log Integer Registers",
+				[&](std::string s) { return (log_registers |= reg_log_int); } },
+			{ "-F", "--log-float-registers", cmdline_arg_type_none,
+				"Log SP Float Registers",
+				[&](std::string s) { return (log_registers |= reg_log_f32); } },
+			{ "-D", "--log-double-registers", cmdline_arg_type_none,
+				"Log DP Float Registers",
+				[&](std::string s) { return (log_registers |= reg_log_f64); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (log_instructions = true); } },
