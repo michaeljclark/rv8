@@ -330,38 +330,42 @@ struct processor_proxy : P
 
 	template <typename T>
 	void update_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value,
-		size_t shift = 0, typename P::ux mask = ~(typename P::ux(0)))
+		size_t msb, size_t lsb)
 	{
+		const size_t shift = lsb, mask = (1 << (msb - lsb + 1)) - 1;
 		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = (csr >> shift) & mask;
 		switch (op) {
 			case csr_rw: csr = value; break;
-			case csr_rs: if (value) csr |= ((value << shift) & mask); break;
-			case csr_rc: if (value) csr &= ~((value << shift) & mask); break;
+			case csr_rs: if (value) csr |= ((value & mask) << shift); break;
+			case csr_rc: if (value) csr &= ~((value & mask) << shift); break;
 		}
 	}
 
 	template <typename T>
-	void update_csr_hi(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
+	void read_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
+	{
+		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = csr;
+	}
+
+	template <typename T>
+	void read_csr_hi(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
 	{
 		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
-		switch (op) {
-			case csr_rw: csr = (u64(value) << 32) | (csr & u32(-1)); break;
-			default: /* implementation does not support set and clear on CSR hi bits */ break;
-		}
 	}
 
 	bool inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, size_t inst_len)
 	{
 		switch (csr) {
-			case riscv_csr_fflags:   update_csr(dec, op, P::fcsr, value, 0, 0x1f); break;
-			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 5, 0x07); break;
-			case riscv_csr_fcsr:     update_csr(dec, op, P::fcsr, value, 0, 0xff); break;
-			case riscv_csr_cycle:    update_csr(dec, op, P::cycle, value);         break;
-			case riscv_csr_time:     update_csr(dec, op, P::time, value);          break;
-			case riscv_csr_instret:  update_csr(dec, op, P::instret, value);       break;
-			case riscv_csr_cycleh:   update_csr_hi(dec, op, P::cycle, value);      break;
-			case riscv_csr_timeh:    update_csr_hi(dec, op, P::time, value);       break;
-			case riscv_csr_instreth: update_csr_hi(dec, op, P::instret, value);    break;
+			case riscv_csr_fflags:   update_csr(dec, op, P::fcsr, value, 4, 0);  break;
+			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 7, 5);  break;
+			case riscv_csr_fcsr:     update_csr(dec, op, P::fcsr, value, 7, 0);  break;
+			case riscv_csr_cycle:    P::cycle = cpu_cycle_clock();
+			                         read_csr(dec, op, P::cycle, value);         break;
+			case riscv_csr_time:     read_csr(dec, op, P::time, value);          break;
+			case riscv_csr_instret:  read_csr(dec, op, P::instret, value);       break;
+			case riscv_csr_cycleh:   read_csr_hi(dec, op, P::cycle, value);      break;
+			case riscv_csr_timeh:    read_csr_hi(dec, op, P::time, value);       break;
+			case riscv_csr_instreth: read_csr_hi(dec, op, P::instret, value);    break;
 			default: break;
 		}
 		P::pc += inst_len;
