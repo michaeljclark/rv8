@@ -600,7 +600,7 @@ enum riscv_op
 	riscv_op_jalr = 4,                 	/* Jump and Link Register */
 	riscv_op_beq = 5,                  	/* Branch Equal */
 	riscv_op_bne = 6,                  	/* Branch Not Equal */
-	riscv_op_blt = 7,                  	/* Branch Less Than  */
+	riscv_op_blt = 7,                  	/* Branch Less Than */
 	riscv_op_bge = 8,                  	/* Branch Greater than Equal */
 	riscv_op_bltu = 9,                 	/* Branch Less Than Unsigned */
 	riscv_op_bgeu = 10,                	/* Branch Greater than Equal Unsigned */

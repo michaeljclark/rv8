@@ -36,6 +36,12 @@ std::vector<cmdline_option> riscv_gen_map::get_cmdline_options()
 		{ "-m", "--print-map", cmdline_arg_type_none,
 			"Print instruction map",
 			[&](std::string s) { return gen->set_option("print_map"); } },
+		{ "-mc", "--print-map-pseudocode-c", cmdline_arg_type_none,
+			"Print instruction map with C pseudocode",
+			[&](std::string s) { return gen->set_option("print_map") && gen->set_option("map_pseudo_code_c"); } },
+		{ "-ma", "--print-map-pseudocode-alt", cmdline_arg_type_none,
+			"Print instruction map with alternate pseudocode",
+			[&](std::string s) { return gen->set_option("print_map") && gen->set_option("map_pseudo_code_alt"); } },
 	};
 }
 
@@ -80,7 +86,8 @@ static std::string colorize_operands(riscv_gen *gen, riscv_opcode_ptr opcode)
 static void print_map(riscv_gen *gen)
 {
 	bool enable_colorize = gen->has_option("enable_color") && isatty(fileno(stdout));
-	bool map_pseudo_code = gen->has_option("map_pseudo_code");
+	bool map_pseudo_code_c = gen->has_option("map_pseudo_code_c");
+	bool map_pseudo_code_alt = gen->has_option("map_pseudo_code_alt");
 
 	int i = 0;
 	for (auto &opcode : gen->opcodes) {
@@ -99,6 +106,7 @@ static void print_map(riscv_gen *gen)
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
 		}
 		if (!opcode->match_extension(gen->ext_subset)) continue;
+		if (opcode->extensions.size() == 0) continue;
 		i++;
 		printf("// ");
 		ssize_t bit_width = opcode->extensions[0]->inst_width;
@@ -147,7 +155,8 @@ static void print_map(riscv_gen *gen)
 			enable_colorize ? _COLOR_EXT : "",
 			opcode->extensions.front()->name.c_str(),
 			enable_colorize ? _COLOR_RESET : "",
-			map_pseudo_code ? format_string("   %s", opcode->instruction.c_str()).c_str() : "");
+			map_pseudo_code_c ? format_string("   %s", opcode->pseudocode_c.c_str()).c_str() :
+			map_pseudo_code_alt ? format_string("   %s", opcode->pseudocode_alt.c_str()).c_str() : "");
 	}
 }
 

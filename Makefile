@@ -125,12 +125,14 @@ RV_META_DATA =  $(META_DIR$)/codecs \
                 $(META_DIR$)/compression \
                 $(META_DIR$)/constraints \
                 $(META_DIR$)/csrs \
-                $(META_DIR$)/descriptions \
                 $(META_DIR$)/enums \
                 $(META_DIR$)/extensions \
-                $(META_DIR$)/instructions \
                 $(META_DIR$)/formats \
                 $(META_DIR$)/opcodes \
+                $(META_DIR$)/opcode-descriptions \
+                $(META_DIR$)/opcode-fullnames \
+                $(META_DIR$)/opcode-pseudocode-alt \
+                $(META_DIR$)/opcode-pseudocode-c \
                 $(META_DIR$)/operands \
                 $(META_DIR$)/registers \
                 $(META_DIR$)/types

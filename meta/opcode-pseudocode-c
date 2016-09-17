@@ -1,0 +1,215 @@
+# format of a line in this file:
+# <instruction name> "<instruction pseudo code>"
+
+# RV32I    "RV32I Base Integer Instruction Set"
+
+lui        "rd = imm"
+auipc      "rd = pc + imm"
+jal        "rd = pc + length(inst); pc = pc + imm"
+jalr       "rd = pc + length(inst); pc = rs1 + imm"
+beq        "if (sx(rs1) == sx(rs2)) pc = pc + imm"
+bne        "if (sx(rs1) != sx(rs2)) pc = pc + imm"
+blt        "if (sx(rs1) < sx(rs2)) pc = pc + imm"
+bge        "if (sx(rs1) >= sx(rs2)) pc = pc + imm"
+bltu       "if (ux(rs1) < ux(rs2)) pc = pc + imm"
+bgeu       "if (ux(rs1) >= ux(rs2)) pc = pc + imm"
+lb         "rd = sx(*(s8*)(rs1 + imm))"
+lh         "rd = sx(*(s16*)(rs1 + imm))"
+lw         "rd = sx(*(s32*)(rs1 + imm))"
+lbu        "rd = ux(*(u8*)(rs1 + imm))"
+lhu        "rd = ux(*(u16*)(rs1 + imm))"
+lwu        "rd = ux(*(u32*)(rs1 + imm))"
+sb         "*((u8*)(rs1 + imm)) = rs2"
+sh         "*((u16*)(rs1 + imm)) = rs2"
+sw         "*((u32*)(rs1 + imm)) = rs2"
+addi       "rd = sx(rs1) + sx(imm)"
+slti       "rd = sx(rs1) < sx(imm) ? 1 : 0"
+sltiu      "rd = ux(rs1) < ux(imm) ? 1 : 0"
+xori       "rd = ux(rs1) ^ ux(imm)"
+ori        "rd = ux(rs1) | ux(imm)"
+andi       "rd = ux(rs1) & ux(imm)"
+slli       "rd = ux(rs1) << imm"
+srli       "rd = ux(rs1) >> imm"
+srai       "rd = sx(rs1) >> imm"
+add        "rd = sx(rs1) + sx(rs2)"
+sub        "rd = sx(rs1) - sx(rs2)"
+sll        "rd = ux(rs1) << (rs2 & 0b111111)"
+slt        "rd = sx(rs1) < sx(rs2) ? 1 : 0"
+sltu       "rd = ux(rs1) < ux(rs2) ? 1 : 0"
+xor        "rd = ux(rs1) ^ ux(rs2)"
+srl        "rd = ux(rs1) >> (rs2 & 0b111111)"
+sra        "rd = sx(rs1) >> (rs2 & 0b111111)"
+or         "rd = ux(rs1) | ux(rs2)"
+and        "rd = ux(rs1) & ux(rs2)"
+fence      ";"
+fence.i    ";"
+
+# RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
+
+ld         "rd = sx(*(s64*)(rs1 + imm))"
+sd         "*(u64*)(rs1 + imm) = rs2"
+addiw      "rd = s32(rs1) + s32(imm)"
+slliw      "rd = s32(u32(rs1) << imm)"
+srliw      "rd = s32(u32(rs1) >> imm)"
+sraiw      "rd = s32(rs1) >> imm"
+addw       "rd = s32(rs1) + s32(rs2)"
+subw       "rd = s32(rs1) - s32(rs2)"
+sllw       "rd = s32(u32(rs1) << (rs2 & 0b111111))"
+srlw       "rd = s32(u32(rs1) >> (rs2 & 0b111111))"
+sraw       "rd = s32(rs1) >> (rs2 & 0b111111)"
+
+# RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
+
+mul        "rd = riscv::mul(sx(rs1), sx(rs2))"
+mulh       "rd = riscv::mulh(sx(rs1), sx(rs2))"
+mulhsu     "rd = riscv::mulhsu(sx(rs1), ux(rs2))"
+mulhu      "rd = riscv::mulhu(ux(rs1), ux(rs2))"
+div        "rd = riscv::div(sx(rs1), sx(rs2))"
+divu       "rd = riscv::divu(ux(rs1), ux(rs2))"
+rem        "rd = riscv::rem(sx(rs1), sx(rs2))"
+remu       "rd = riscv::remu(ux(rs1), ux(rs2))"
+
+# RV64M    "RV64M Standard Extension for Integer Multiply and Divide (in addition to RV32M)"
+
+mulw       "rd = s32(riscv::mul(u32(rs1), u32(rs2)))"
+divw       "rd = s32(riscv::div(s32(rs1), s32(rs2)))"
+divuw      "rd = s32(riscv::divu(u32(rs1), u32(rs2)))"
+remw       "rd = s32(riscv::rem(s32(rs1), s32(rs2)))"
+remuw      "rd = s32(riscv::remu(u32(rs1), u32(rs2)))"
+
+# RV32A    "RV32A Standard Extension for Atomic Instructions"
+
+lr.w       "lr = rs1; rd = sx(*((s32*)rs1))"
+sc.w       "ux res; if (lr == rs1) { *((s32*)rs1) = s32(rs2); res = 0; } else { res = 1; }; rd = res;"
+amoswap.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2); rd = t"
+amoadd.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) + t; rd = t"
+amoxor.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) ^ t; rd = t"
+amoor.w    "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) | t; rd = t"
+amoand.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) & t; rd = t"
+amomin.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) < t ? s32(rs2) : t; rd = t"
+amomax.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) > t ? s32(rs2) : t; rd = t"
+amominu.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = u32(rs2) < u32(t) ? s32(rs2) : t; rd = t"
+amomaxu.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = u32(rs2) > u32(t) ? s32(rs2) : t; rd = t"
+
+# RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
+
+lr.d       "lr = rs1; rd = sx(*((s64*)rs1))"
+sc.d       "ux res; if (lr == rs1) { *((s64*)rs1) = s64(rs2); res = 0; } else { res = 1; }; rd = res;"
+amoswap.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2); rd = t"
+amoadd.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) + t; rd = t"
+amoxor.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) ^ t; rd = t"
+amoor.d    "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) | t; rd = t"
+amoand.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) & t; rd = t"
+amomin.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) < t ? s64(rs2) : t; rd = t"
+amomax.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) > t ? s64(rs2) : t; rd = t"
+amominu.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = u64(rs2) < u64(t) ? s64(rs2) : t; rd = t"
+amomaxu.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = u64(rs2) > u64(t) ? s64(rs2) : t; rd = t"
+
+# RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
+
+ecall
+ebreak
+uret
+sret
+hret
+mret
+dret
+sfence.vm
+wfi
+rdcycle
+rdtime
+rdinstret
+rdcycleh
+rdtimeh
+rdinstreth
+csrrw
+csrrs
+csrrc
+csrrwi
+csrrsi
+csrrci
+
+# RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
+
+flw        "f32(frd) = *(f32*)(rs1 + imm)"
+fsw        "*(f32*)(rs1 + imm) = f32(frs2)"
+fmadd.s    "f32(frd) = f32(frs1) * f32(frs2) + f32(frs3)"
+fmsub.s    "f32(frd) = f32(frs1) * f32(frs2) - f32(frs3)"
+fnmadd.s   "f32(frd) = -(f32(frs1) * f32(frs2) + f32(frs3))"
+fnmsub.s   "f32(frd) = -(f32(frs1) * f32(frs2) - f32(frs3))"
+fadd.s     "f32(frd) = f32(frs1) + f32(frs2)"
+fsub.s     "f32(frd) = f32(frs1) - f32(frs2)"
+fmul.s     "f32(frd) = f32(frs1) * f32(frs2)"
+fdiv.s     "f32(frd) = f32(frs1) / f32(frs2)"
+fsgnj.s    "u32(frd) = (u32(frs1) & u32(~(1U<<31))) | (u32(frs2) & u32(1U<<31))"
+fsgnjn.s   "u32(frd) = (u32(frs1) & u32(~(1U<<31))) | (~u32(frs2) & u32(1U<<31))"
+fsgnjx.s   "u32(frd) = u32(frs1) ^ (u32(frs2) & u32(1U<<31))"
+fmin.s     "f32(frd) = f32(frs1) < f32(frs2) ? f32(frs1) : f32(frs2)"
+fmax.s     "f32(frd) = f32(frs1) > f32(frs2) ? f32(frs1) : f32(frs2)"
+fsqrt.s    "f32(frd) = f32_sqrt(f32(frs1))"
+fle.s      "rd = f32(frs1) <= f32(frs2) ? 1 : 0"
+flt.s      "rd = f32(frs1) < f32(frs2) ? 1 : 0"
+feq.s      "rd = f32(frs1) == f32(frs2) ? 1 : 0"
+fcvt.w.s   "rd = s32(f32(frs1))"
+fcvt.wu.s  "rd = u32(f32(frs1) > 0 ? f32(frs1) : 0)"
+fcvt.s.w   "f32(frd) = f32(s32(rs1))"
+fcvt.s.wu  "f32(frd) = f32(u32(rs1))"
+fmv.x.s    "rd = s32(frs1)"
+fclass.s   "rd = f32_classify(f32(frs1))"
+fmv.s.x    "u32(frd) = u32(rs1)"
+
+# RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
+
+fcvt.l.s   "rd = s64(f32(frs1))"
+fcvt.lu.s  "rd = u64(f32(frs1) > 0 ? f32(frs1) : 0)"
+fcvt.s.l   "f32(frd) = f32(s64(rs1))"
+fcvt.s.lu  "f32(frd) = f32(u64(rs1))"
+
+# RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
+
+fld        "f64(frd) = *(f64*)(rs1 + imm)"
+fsd        "*(f64*)(rs1 + imm) = f64(frs2)"
+fmadd.d    "f64(frd) = f64(frs1) * f64(frs2) + f64(frs3)"
+fmsub.d    "f64(frd) = f64(frs1) * f64(frs2) - f64(frs3)"
+fnmadd.d   "f64(frd) = -(f64(frs1) * f64(frs2) + f64(frs3))"
+fnmsub.d   "f64(frd) = -(f64(frs1) * f64(frs2) - f64(frs3))"
+fadd.d     "f64(frd) = f64(frs1) + f64(frs2)"
+fsub.d     "f64(frd) = f64(frs1) - f64(frs2)"
+fmul.d     "f64(frd) = f64(frs1) * f64(frs2)"
+fdiv.d     "f64(frd) = f64(frs1) / f64(frs2)"
+fsgnj.d    "u64(frd) = (u64(frs1) & u64(~(1ULL<<63))) | (u64(frs2) & u64(1ULL<<63))"
+fsgnjn.d   "u64(frd) = (u64(frs1) & u64(~(1ULL<<63))) | (~u64(frs2) & u64(1ULL<<63))"
+fsgnjx.d   "u64(frd) = u64(frs1) ^ (u64(frs2) & u64(1ULL<<63))"
+fmin.d     "f64(frd) = f64(frs1) < f64(frs2) ? f64(frs1) : f64(frs2)"
+fmax.d     "f64(frd) = f64(frs1) > f64(frs2) ? f64(frs1) : f64(frs2)"
+fcvt.s.d   "f32(frd) = f32(f64(frs1))"
+fcvt.d.s   "f64(frd) = f64(f32(frs1))"
+fsqrt.d    "f64(frd) = f64_sqrt(f64(frs1))"
+fle.d      "rd = f64(frs1) <= f64(frs2) ? 1 : 0"
+flt.d      "rd = f64(frs1) < f64(frs2) ? 1 : 0"
+feq.d      "rd = f64(frs1) == f64(frs2) ? 1 : 0"
+fcvt.w.d   "rd = s32(f64(frs1))"
+fcvt.wu.d  "rd = u32(f64(frs1) > 0 ? f64(frs1) : 0)"
+fcvt.d.w   "f64(frd) = f64(s32(rs1))"
+fcvt.d.wu  "f64(frd) = f64(u32(rs1))"
+fclass.d   "rd = f64_classify(f64(frs1))"
+
+# RV64D    "RV64D Standard Extension for Double-Precision Floating-Point (in addition to RV32F)"
+
+fcvt.l.d   "rd = s64(f64(frs1))
+fcvt.lu.d  "rd = u64(f64(frs1) > 0 ? f64(frs1) : 0)"
+fmv.x.d    "rd = s64(frs1)"
+fcvt.d.l   "f64(frd) = f64(s64(rs1))"
+fcvt.d.lu  "f64(frd) = f64(u64(rs1))"
+fmv.d.x    "u64(frd) = u64(rs1)"
+
+# RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
+
+frcsr
+frrm
+frflags
+fscsr
+fsrm
+fsflags
+fsrmi
+fsflagsi

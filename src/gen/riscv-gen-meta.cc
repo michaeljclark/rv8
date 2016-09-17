@@ -240,8 +240,8 @@ R"C(
 			format_string("%s = %lu,",
 			riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str(),
 			opcode->num).c_str(),
-			no_comment || opcode->long_name.size() == 0 ? "" :
-			format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
+			no_comment || opcode->fullname.size() == 0 ? "" :
+			format_string("\t/* %s */", opcode->fullname.c_str()).c_str());
 	}
 	printf("};\n\n");
 

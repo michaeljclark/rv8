@@ -24,20 +24,22 @@
 #include "riscv-util.h"
 #include "riscv-model.h"
 
-static const char* OPERANDS_FILE       = "operands";
-static const char* ENUMS_FILE          = "enums";
-static const char* TYPES_FILE          = "types";
-static const char* FORMATS_FILE        = "formats";
-static const char* CODECS_FILE         = "codecs";
-static const char* EXTENSIONS_FILE     = "extensions";
-static const char* REGISTERS_FILE      = "registers";
-static const char* CSRS_FILE           = "csrs";
-static const char* OPCODES_FILE        = "opcodes";
-static const char* CONSTRAINTS_FILE    = "constraints";
-static const char* COMPRESSION_FILE    = "compression";
-static const char* PSEUDO_FILE         = "pseudos";
-static const char* INSTRUCTIONS_FILE   = "instructions";
-static const char* DESCRIPTIONS_FILE   = "descriptions";
+static const char* OPERANDS_FILE              = "operands";
+static const char* ENUMS_FILE                 = "enums";
+static const char* TYPES_FILE                 = "types";
+static const char* FORMATS_FILE               = "formats";
+static const char* CODECS_FILE                = "codecs";
+static const char* EXTENSIONS_FILE            = "extensions";
+static const char* REGISTERS_FILE             = "registers";
+static const char* CSRS_FILE                  = "csrs";
+static const char* OPCODES_FILE               = "opcodes";
+static const char* CONSTRAINTS_FILE           = "constraints";
+static const char* COMPRESSION_FILE           = "compression";
+static const char* PSEUDO_FILE                = "pseudos";
+static const char* OPCODE_FULLNAMES_FILE      = "opcode-fullnames";
+static const char* OPCODE_DESCRIPTIONS_FILE   = "opcode-descriptions";
+static const char* OPCODE_PSEUDOCODE_C_FILE   = "opcode-pseudocode-c";
+static const char* OPCODE_PSEUDOCODE_ALT_FILE = "opcode-pseudocode-alt";
 
 const riscv_primitive_type riscv_primitive_type_table[] = {
 	{ rvs_ext, rvt_sx,   "x",      "sx",   "r", "%ld",   "l",     "signed long" },       /* LP64 and ILP32, not LLP64 */
@@ -1006,23 +1008,20 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	pseudo_opcode->codec = real_opcode->codec;
 }
 
-void riscv_meta_model::parse_instruction(std::vector<std::string> &part)
+void riscv_meta_model::parse_opcode_fullname(std::vector<std::string> &part)
 {
-	if (part.size() < 2) return;
+	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
-	std::string opcode_long_name = part[1];
-	std::string opcode_instruction = part.size() > 2 ? part[2] : "";
+	std::string opcode_fullname = part.size() > 1 ? part[1] : "";
 	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
-		opcode->long_name = opcode_long_name;
-		opcode->instruction = opcode_instruction;
+		opcode->fullname = opcode_fullname;
 	}
 	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
-		opcode->long_name = opcode_long_name;
-		opcode->instruction = opcode_instruction;
+		opcode->fullname = opcode_fullname;
 	}
 }
 
-void riscv_meta_model::parse_description(std::vector<std::string> &part)
+void riscv_meta_model::parse_opcode_description(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
@@ -1032,6 +1031,32 @@ void riscv_meta_model::parse_description(std::vector<std::string> &part)
 	}
 	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
 		opcode->description = opcode_description;
+	}
+}
+
+void riscv_meta_model::parse_opcode_pseudocode_c(std::vector<std::string> &part)
+{
+	if (part.size() < 1) return;
+	std::string opcode_name = part[0];
+	std::string opcode_pseudocode_c = part.size() > 1 ? part[1] : "";
+	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
+		opcode->pseudocode_c = opcode_pseudocode_c;
+	}
+	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
+		opcode->pseudocode_c = opcode_pseudocode_c;
+	}
+}
+
+void riscv_meta_model::parse_opcode_pseudocode_alt(std::vector<std::string> &part)
+{
+	if (part.size() < 1) return;
+	std::string opcode_name = part[0];
+	std::string opcode_pseudocode_alt = part.size() > 1 ? part[1] : "";
+	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
+		opcode->pseudocode_alt = opcode_pseudocode_alt;
+	}
+	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
+		opcode->pseudocode_alt = opcode_pseudocode_alt;
 	}
 }
 
@@ -1049,7 +1074,9 @@ bool riscv_meta_model::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
 	for (auto part : read_file(dirname + std::string("/") + PSEUDO_FILE)) parse_pseudo(part);
-	for (auto part : read_file(dirname + std::string("/") + INSTRUCTIONS_FILE)) parse_instruction(part);
-	for (auto part : read_file(dirname + std::string("/") + DESCRIPTIONS_FILE)) parse_description(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_FULLNAMES_FILE)) parse_opcode_fullname(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_DESCRIPTIONS_FILE)) parse_opcode_description(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_PSEUDOCODE_C_FILE)) parse_opcode_pseudocode_c(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_PSEUDOCODE_ALT_FILE)) parse_opcode_pseudocode_alt(part);
 	return true;
 }

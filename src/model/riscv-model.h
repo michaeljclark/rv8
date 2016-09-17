@@ -255,9 +255,10 @@ struct riscv_opcode
 {
 	std::string key;
 	std::string name;
-	std::string long_name;
-	std::string instruction;
+	std::string fullname;
 	std::string description;
+	std::string pseudocode_c;
+	std::string pseudocode_alt;
 	riscv_operand_list operands;
 	riscv_opcode_mask_list masks;
 	riscv_codec_ptr codec;
@@ -414,8 +415,10 @@ struct riscv_meta_model
 	void parse_constraint(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
 	void parse_pseudo(std::vector<std::string> &part);
-	void parse_instruction(std::vector<std::string> &part);
-	void parse_description(std::vector<std::string> &part);
+	void parse_opcode_fullname(std::vector<std::string> &part);
+	void parse_opcode_description(std::vector<std::string> &part);
+	void parse_opcode_pseudocode_c(std::vector<std::string> &part);
+	void parse_opcode_pseudocode_alt(std::vector<std::string> &part);
 
 	bool read_metadata(std::string dirname);
 };

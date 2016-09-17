@@ -51,7 +51,7 @@ static void print_interp_h(riscv_gen *gen)
 		printf("\n");
 		printf("\tswitch (dec.op) {\n");
 		for (auto &opcode : gen->opcodes) {
-			std::string inst = opcode->instruction;
+			std::string inst = opcode->pseudocode_c;
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
 			bool branch_or_jump = (inst.find("pc = ") != std::string::npos);
