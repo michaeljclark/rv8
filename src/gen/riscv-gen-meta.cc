@@ -58,7 +58,15 @@ extern "C" {
 
 	static const char* kMetaDeclarations =
 
-R"C(/* Instruction compression data structure */
+R"C(/* Primitive data structure */
+
+struct riscv_primitive_data
+{
+	const char* name;
+	const char* format;
+};
+
+/* Instruction compression data structure */
 struct riscv_comp_data
 {
 	const int op;
@@ -70,11 +78,13 @@ struct riscv_operand_data
 {
 	const riscv_operand_name operand_name;
 	const riscv_operand_type operand_type;
+	const riscv_primitive primitive;
 	const riscv_type type;
 	const unsigned int width;
 };
 
 /* Opcode metadata tables */
+extern const riscv_primitive_data riscv_type_primitives[];
 extern const riscv_codec riscv_inst_codec[];
 extern const char* riscv_inst_format[];
 extern const riscv_operand_data* riscv_inst_operand_data[];
@@ -98,6 +108,17 @@ R"C(
 	printf(kCHeader, "riscv-meta.h");
 	printf("%s", kMetaHeader);
 
+	// Primitives
+	printf("enum riscv_primitive\n{\n");
+	printf("\triscv_primitive_none,\n");
+	for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++) {
+		printf("\t%-35s%s\n",
+			format_string("riscv_primitive_%s,", ent->meta_type).c_str(),
+			no_comment ? "" :
+			format_string(" /* %s */", ent->c_type).c_str());
+	}
+	printf("};\n\n");
+
 	// Enums
 	std::string last_group;
 	for (auto &enumv : gen->enums) {
@@ -105,10 +126,11 @@ R"C(
 			if (last_group.size() != 0) printf("};\n\n");
 			printf("enum riscv_%s\n{\n", enumv->group.c_str());
 		}
-		printf("\triscv_%s_%s = %" PRId64 ",%s\n",
-			enumv->group.c_str(), enumv->name.c_str(), enumv->value,
+		printf("\t%-35s%s\n",
+			format_string("riscv_%s_%s = %" PRId64 ",",
+			enumv->group.c_str(), enumv->name.c_str(), enumv->value).c_str(),
 			no_comment || enumv->description.size() == 0 ? "" :
-				format_string("\t/* %s */", enumv->description.c_str()).c_str());
+			format_string(" /* %s */", enumv->description.c_str()).c_str());
 		last_group = enumv->group;
 	}
 	if (last_group.size() != 0) printf("};\n\n");
@@ -117,17 +139,21 @@ R"C(
 	printf("enum rvc_constraint\n{\n");
 	printf("\trvc_end,\n");
 	for (auto &constraint : gen->constraints) {
-		printf("\trvc_%s,%s\n", constraint->name.c_str(),
-			no_comment ? "" : format_string("\t/* %s */", constraint->expression.c_str()).c_str());
+		printf("\t%-35s%s\n",
+			format_string("rvc_%s,", constraint->name.c_str()).c_str(),
+			no_comment ? "" :
+			format_string(" /* %s */", constraint->expression.c_str()).c_str());
 	}
 	printf("};\n\n");
 
 	// CSR enum
 	printf("enum riscv_csr\n{\n");
 	for (auto &csr : gen->csrs) {
-		printf("\triscv_csr_%s = %s,%s\n", csr->name.c_str(), csr->number.c_str(),
+		printf("\t%-35s%s\n",
+			format_string("riscv_csr_%s = %s,", csr->name.c_str(),
+			csr->number.c_str()).c_str(),
 			no_comment || csr->description.size() == 0 ? "" :
-				format_string("\t/* %s */", csr->description.c_str()).c_str());
+			format_string(" /* %s */", csr->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -135,9 +161,10 @@ R"C(
 	printf("enum riscv_ireg_num\n{\n");
 	for (auto &reg : gen->registers) {
 		if (reg->type != "ireg") continue;
-		printf("\triscv_ireg_%s,%s\n", reg->name.c_str(),
+		printf("\t%-35s%s\n",
+			format_string("riscv_ireg_%s,", reg->name.c_str()).c_str(),
 			no_comment || reg->description.size() == 0 ? "" :
-				format_string("\t/* %s */", reg->description.c_str()).c_str());
+			format_string(" /* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -145,9 +172,10 @@ R"C(
 	printf("enum riscv_ireg_name\n{\n");
 	for (auto &reg : gen->registers) {
 		if (reg->type != "ireg") continue;
-		printf("\triscv_ireg_%s,%s\n", reg->alias.c_str(),
+		printf("\t%-35s%s\n",
+			format_string("riscv_ireg_%s,", reg->alias.c_str()).c_str(),
 			no_comment || reg->description.size() == 0 ? "" :
-				format_string("\t/* %s */", reg->description.c_str()).c_str());
+			format_string(" /* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -155,9 +183,10 @@ R"C(
 	printf("enum riscv_freg_num\n{\n");
 	for (auto &reg : gen->registers) {
 		if (reg->type != "freg") continue;
-		printf("\triscv_freg_%s,%s\n", reg->name.c_str(),
+		printf("\t%-35s%s\n",
+			format_string("riscv_freg_%s,", reg->name.c_str()).c_str(),
 			no_comment || reg->description.size() == 0 ? "" :
-				format_string("\t/* %s */", reg->description.c_str()).c_str());
+			format_string(" /* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -165,9 +194,10 @@ R"C(
 	printf("enum riscv_freg_name\n{\n");
 	for (auto &reg : gen->registers) {
 		if (reg->type != "freg") continue;
-		printf("\triscv_freg_%s,%s\n", reg->alias.c_str(),
+		printf("\t%-35s%s\n",
+			format_string("riscv_freg_%s,", reg->alias.c_str()).c_str(),
 			no_comment || reg->description.size() == 0 ? "" :
-				format_string("\t/* %s */", reg->description.c_str()).c_str());
+			format_string(" /* %s */", reg->description.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -206,10 +236,12 @@ R"C(
 	printf("enum riscv_op\n{\n");
 	printf("\triscv_op_illegal = 0,\n");
 	for (auto &opcode : gen->opcodes) {
-		printf("\t%s = %lu,%s\n",
+		printf("\t%-35s%s\n",
+			format_string("%s = %lu,",
 			riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str(),
-			opcode->num, no_comment || opcode->long_name.size() == 0 ? "" :
-				format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
+			opcode->num).c_str(),
+			no_comment || opcode->long_name.size() == 0 ? "" :
+			format_string("\t/* %s */", opcode->long_name.c_str()).c_str());
 	}
 	printf("};\n\n");
 
@@ -242,6 +274,14 @@ R"C(#include "riscv-types.h"
 
 	printf(kCHeader, "riscv-meta.cc");
 	printf("%s", kMetaSource);
+
+	// Primitives
+	printf("const riscv_primitive_data riscv_type_primitives[] = {\n");
+	printf("\t{ \"none\", \"none\" },\n");
+	for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++) {
+		printf("\t{ \"%s\", \"%s\" },\n", ent->meta_type, ent->c_fmt ? ent->c_fmt : "none");
+	}
+	printf("};\n\n");
 
 	// RVC Compression constraints
 	for (auto &opcode : gen->opcodes) {
@@ -285,20 +325,89 @@ R"C(#include "riscv-types.h"
 		printf("\n");
 	}
 
-	// Codec operand data
-	for (auto &codec : gen->codecs) {
-		printf("const riscv_operand_data riscv_codec_%s_operands[] = {\n",
-			riscv_meta_model::format_codec("", codec, "_", false).c_str());
-		for (auto &operand : codec->operands) {
+	/*
+		Find distinct set of operand type combinations
+
+		Note: Typed operands is broader than the set of codecs as codecs do not
+		contain operand type information. For example the 3 fcvt codecs:
+
+			r·m+rf, r·m+fr, r·m+ff
+
+		Have 18 distinct operand type combinations:
+
+			fcvt.w.s   rd:s32  frs1:f32  r·m+rf
+			fcvt.wu.s  rd:u32  frs1:f32  r·m+rf
+			fcvt.s.w   frd:f32 rs1:s32   r·m+fr
+			fcvt.s.wu  frd:f32 rs1:u32   r·m+fr
+			fcvt.l.s   rd:s64  frs1:f32  r·m+rf
+			fcvt.lu.s  rd:u64  frs1:f32  r·m+rf
+			fcvt.s.l   frd:f32 rs1:s36   r·m+fr
+			fcvt.s.lu  frd:f32 rs1:u64   r·m+fr
+			fcvt.s.d   frd:f32 frs1:f32  r·m+ff
+			fcvt.d.s   frd:f64 frs1:f32  r·m+ff
+			fcvt.w.d   rd:s32  frs1:f64  r·m+rf
+			fcvt.wu.d  rd:u32  frs1:f64  r·m+rf
+			fcvt.d.w   frd:f64 rs1:s32   r·m+fr
+			fcvt.d.wu  frd:f64 rs1:u32   r·m+fr
+			fcvt.l.d   rd:s64  frs1:f64  r·m+rf
+			fcvt.lu.d  rd:u64  frs1:f64  r·m+rf
+			fcvt.d.l   frd:f64 rs1:s64   r·m+fr
+			fcvt.d.lu  frd:f64 rs1:u64   r·m+fr
+	*/
+
+	std::map<riscv_opcode_ptr,std::string> opcode_operand_map;
+	std::map<std::string,std::vector<std::pair<const riscv_primitive_type*,riscv_operand_ptr>>> operand_data_map;
+	for (auto &opcode : gen->opcodes) {
+
+		// find extension with minimum isa width
+		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
+			[](auto &a, auto &b){ return a->isa_width < b->isa_width; });
+		if (ext_min_width_i == opcode->extensions.end()) ext_min_width_i = gen->extensions.begin();
+		auto ext = *ext_min_width_i;
+
+		// create set of primitives for each operand of the opcode
+		std::vector<std::pair<const riscv_primitive_type*,riscv_operand_ptr>> operand_list;
+		std::vector<std::string> operand_key_list;
+		// NOTE: we use the opcode operands, not the codec operands
+		for (size_t i = 0; i < opcode->operands.size(); i++) {
+			auto operand = opcode->operands[i];
+			// we infer primitive type for register operands
+			const riscv_primitive_type *primitive = nullptr;
+			std::string operand_key;
+			if (operand->type == "ireg" || operand->type == "freg") {
+				primitive = riscv_meta_model::infer_operand_primitive(opcode, ext, operand, i);
+				operand_key = std::string(primitive->meta_type) + "_" + operand->name;
+			} else {
+				operand_key = "T_" + operand->name;
+			}
+			operand_list.push_back(std::pair<const riscv_primitive_type*,riscv_operand_ptr>(primitive, operand));
+			operand_key_list.push_back(operand_key);
+		}
+		std::string operand_list_key = join(operand_key_list, "_");
+		if (operand_list_key.size() == 0) operand_list_key = "none";
+		operand_data_map[operand_list_key] = operand_list;
+		opcode_operand_map[opcode] = operand_list_key;
+	}
+
+	// Output operand data
+	for (auto &ent : operand_data_map) {
+		auto &operand_list_key = ent.first;
+		auto &operand_list = ent.second;
+		printf("const riscv_operand_data riscv_operands_%s[] = {\n",
+			operand_list_key.c_str());
+		for (auto &operand_list_ent : operand_list) {
+			auto &primitive = operand_list_ent.first;
+			auto &operand = operand_list_ent.second;
 			size_t width = operand->bitspec.decoded_msb() > 0 ?
 				operand->bitspec.decoded_msb() + 1 :
 				operand->bitspec.segments.front().first.msb - operand->bitspec.segments.back().first.lsb + 1;
-			printf("\t{ riscv_operand_name_%s, riscv_operand_type_%s, riscv_type_%s, %lu },\n",
+			printf("\t{ riscv_operand_name_%s, riscv_operand_type_%s, riscv_primitive_%s, riscv_type_%s, %lu },\n",
 				operand->name.c_str(),
 				riscv_meta_model::format_type(operand).c_str(),
+				primitive ? primitive->meta_type : "none",
 				operand->type.c_str(), width);
 		}
-		printf("\t{ riscv_operand_name_none, riscv_operand_type_none, riscv_type_none, 0 }\n};\n\n");
+		printf("\t{ riscv_operand_name_none, riscv_operand_type_none, riscv_primitive_none, riscv_type_none, 0 }\n};\n\n");
 	}
 
 	// Instruction codecs
@@ -323,11 +432,11 @@ R"C(#include "riscv-types.h"
 
 	// Instruction codecs operand data table
 	printf("const riscv_operand_data* riscv_inst_operand_data[] = {\n");
-	printf("\triscv_codec_none_operands,\n");
+	print_array_illegal_enum("riscv_operands_none", no_comment);
 	for (auto &opcode : gen->opcodes) {
-		printf("\t%sriscv_codec_%s_operands,\n",
+		printf("\t%sriscv_operands_%s,\n",
 			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
-			riscv_meta_model::format_codec("", opcode->codec, "_", false).c_str());
+			opcode_operand_map[opcode].c_str());
 	}
 	printf("};\n\n");
 

@@ -377,10 +377,10 @@ $(RV_JIT_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-K,$@))
 
 $(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(call cmd, META $@, $(call parse_meta,-N -0 -H,$@))
+	$(call cmd, META $@, $(call parse_meta,-H,$@))
 
 $(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
-	$(call cmd, META $@, $(call parse_meta,-N -0 -C,$@))
+	$(call cmd, META $@, $(call parse_meta,-C,$@))
 
 $(RV_STR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -SH,$@))

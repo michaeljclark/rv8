@@ -54,7 +54,7 @@ const riscv_primitive_type riscv_primitive_type_table[] = {
 	{ rvs_ext, rvt_u128, "cu",/*?*/"u128", "r", nullptr, nullptr, "unsigned __int128" }, /* Clang/GCC type */
 	{ rvs_std, rvt_f32,  "s",      "f32",  "f", "%.9e",  "f",     "float" },
 	{ rvs_std, rvt_f64,  "d",      "f64",  "f", "%.17e", "",      "double" },
-	{ rvs_ext, rvt_f128, "q",      "f128", "f", "%.33e", "q",     "__float128" },        /* Clang/GCC type */
+	{ rvs_ext, rvt_f128, "q",      "f128", "f", nullptr, nullptr, "__float128" },        /* Clang/GCC type */
 	{ rvs_ext, rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
 };
 
@@ -397,9 +397,11 @@ std::string riscv_meta_model::codec_type_name(riscv_codec_ptr codec)
 
 const riscv_primitive_type* riscv_meta_model::infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
 {
-	// infer operand primitive type
-	// NOTE:- currently works for RISC-V FPU opcode naming convention
-	std::vector<std::string> opcode_parts = split(opcode->name, ".");
+	// infer operand primitive type using heuristics based on RISC-V opcode names
+	// NOTE:- heuristic is designed for RISC-V FPU opcode naming convention
+	std::string opcode_name = opcode->name;
+	if (opcode_name.find("c.") == 0) opcode_name = replace(opcode_name, "c.", "c_");
+	std::vector<std::string> opcode_parts = split(opcode_name, ".");
 	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
 	if (operand->type == "ireg") {
 		if (i == 0 && opcode_parts.size() > 2) {
@@ -421,6 +423,8 @@ const riscv_primitive_type* riscv_meta_model::infer_operand_primitive(riscv_opco
 				primitive = &riscv_primitive_type_table[rvt_f64];
 			} else if (ext->alpha_code == 'q') {
 				primitive = &riscv_primitive_type_table[rvt_f128];
+			} else /* if (ext->alpha_code == 'c') */ {
+				primitive = &riscv_primitive_type_table[rvt_f32];
 			}
 		}
 	}
@@ -973,8 +977,21 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 			std::string pseudo_opcode_name = "@" + pseudo_name;
 			pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
 		}
-		// always use the format from the meta/pseudo definition
+		// se the format from the meta/pseudo definition
 		pseudo_opcode->format = format;
+		// derive operands from the format
+		std::vector<std::string> operand_names = split(format->operands, ",");
+		for (auto operand_name : operand_names) {
+			// TODO - abstract this inference hack
+			if (operand_name == "none") continue;
+			if (operand_name == "offset") operand_name = "oimm20";
+			riscv_operand_ptr operand = operands_by_name[operand_name];
+			if (!operand) {
+				panic("psuedo opcode %s references unknown operand %s",
+					pseudo_name.c_str(), operand_name.c_str());
+			}
+			pseudo_opcode->operands.push_back(operand);
+		}
 	}
 
 	// create pseudo
@@ -999,6 +1016,10 @@ void riscv_meta_model::parse_instruction(std::vector<std::string> &part)
 		opcode->long_name = opcode_long_name;
 		opcode->instruction = opcode_instruction;
 	}
+	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
+		opcode->long_name = opcode_long_name;
+		opcode->instruction = opcode_instruction;
+	}
 }
 
 void riscv_meta_model::parse_description(std::vector<std::string> &part)
@@ -1007,6 +1028,9 @@ void riscv_meta_model::parse_description(std::vector<std::string> &part)
 	std::string opcode_name = part[0];
 	std::string opcode_description = part.size() > 1 ? part[1] : "";
 	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
+		opcode->description = opcode_description;
+	}
+	for (auto opcode : lookup_opcode_by_name(std::string("@") + opcode_name)) {
 		opcode->description = opcode_description;
 	}
 }
