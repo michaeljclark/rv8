@@ -179,26 +179,29 @@ Parse Meta usage command line options:
 
 ```
 usage: riscv-parse-meta [<options>]
-                       --color, -c            Enable Color
+                        --help, -h            Show help
                   --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
                     --read-isa, -r <string>   Read instruction set metadata from directory
-                 --print-latex, -l            Print LaTeX
-   --substitute-question-marks, -?            Substitute question marks for zeros in LaTeX output
-                   --print-map, -m            Print map
-      --print-map-instructions, -x            Print map with instructions
                   --no-comment, -N            Don't emit comments in generated source
            --numeric-constants, -0            Use numeric constants in generated source
-              --include-pseudo, -p            Include pseudo opcodes in switch decoder
+         --print-constraints-h, -XC           Print constraints header
+            --print-fpu-test-h, -FH           Print FPU test header
+            --print-fpu-test-c, -FC           Print FPU test source
               --print-interp-h, -V            Print interpreter header
-                --print-meta-h, -H            Print metadata header
-               --print-meta-cc, -C            Print metadata source
-             --print-strings-h, -SH           Print strings header
-            --print-strings-cc, -SC           Print strings source
-                --print-args-h, -A            Print args header
-              --print-switch-h, -S            Print switch header
                  --print-jit-h, -J            Print jit header
                 --print-jit-cc, -K            Print jit source
-                        --help, -h            Show help
+   --substitute-question-marks, -?            Substitute question marks for zeros in LaTeX output
+                 --print-latex, -l            Print LaTeX instruction listing
+                       --color, -c            Enable ANSI color map
+                   --print-map, -m            Print instruction map
+      --print-map-pseudocode-c, -mc           Print instruction map with C pseudocode
+    --print-map-pseudocode-alt, -ma           Print instruction map with alternate pseudocode
+                --print-meta-h, -H            Print metadata header
+               --print-meta-cc, -C            Print metadata source
+            --print-operands-h, -A            Print operands header
+             --print-strings-h, -SH           Print strings header
+            --print-strings-cc, -SC           Print strings source
+              --print-switch-h, -S            Print switch header
 ```
 
 To print a colour opcode map for the RV32IMA ISA subset:
