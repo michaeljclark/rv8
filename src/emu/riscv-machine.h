@@ -217,8 +217,6 @@ namespace riscv {
 		processor_priv() : processor_type() {}
 	};
 
-	using processor_priv_rv32ima = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,0>;
-	using processor_priv_rv64ima = processor_priv<s64,u64,ireg_rv64,32,freg_fp64,0>;
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
 	using processor_priv_rv64imafd = processor_priv<s64,u64,ireg_rv64,32,freg_fp64,32>;
 

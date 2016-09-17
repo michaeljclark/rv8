@@ -169,8 +169,6 @@ namespace riscv {
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 
-	using processor_rv32ima = processor<s32,u32,ireg_rv32,32,freg_fp64,0>;
-	using processor_rv64ima = processor<s64,u64,ireg_rv64,32,freg_fp64,0>;
 	using processor_rv32imafd = processor<s32,u32,ireg_rv32,32,freg_fp64,32>;
 	using processor_rv64imafd = processor<s64,u64,ireg_rv64,32,freg_fp64,32>;
 

@@ -459,24 +459,24 @@ struct processor_stepper : P
 
 /* Parameterized ABI proxy processor models */
 
-using proxy_emulator_rv32ima = processor_stepper<processor_proxy<processor_rv32ima_unit<decode,processor_rv32ima,mmu_proxy>>>;
-using proxy_emulator_rv32imac = processor_stepper<processor_proxy<processor_rv32imac_unit<decode,processor_rv32ima,mmu_proxy>>>;
+using proxy_emulator_rv32ima = processor_stepper<processor_proxy<processor_rv32ima_unit<decode,processor_rv32imafd,mmu_proxy>>>;
+using proxy_emulator_rv32imac = processor_stepper<processor_proxy<processor_rv32imac_unit<decode,processor_rv32imafd,mmu_proxy>>>;
 using proxy_emulator_rv32imafd = processor_stepper<processor_proxy<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_proxy>>>;
 using proxy_emulator_rv32imafdc = processor_stepper<processor_proxy<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_proxy>>>;
-using proxy_emulator_rv64ima = processor_stepper<processor_proxy<processor_rv64ima_unit<decode,processor_rv64ima,mmu_proxy>>>;
-using proxy_emulator_rv64imac = processor_stepper<processor_proxy<processor_rv64imac_unit<decode,processor_rv64ima,mmu_proxy>>>;
+using proxy_emulator_rv64ima = processor_stepper<processor_proxy<processor_rv64ima_unit<decode,processor_rv64imafd,mmu_proxy>>>;
+using proxy_emulator_rv64imac = processor_stepper<processor_proxy<processor_rv64imac_unit<decode,processor_rv64imafd,mmu_proxy>>>;
 using proxy_emulator_rv64imafd = processor_stepper<processor_proxy<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_proxy>>>;
 using proxy_emulator_rv64imafdc = processor_stepper<processor_proxy<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_proxy>>>;
 
 
 /* Parameterized privileged soft-mmu processor models */
 
-using priv_emulator_rv32ima = processor_stepper<processor_privileged<processor_rv32ima_unit<decode,processor_priv_rv32ima,mmu_rv32>>>;
-using priv_emulator_rv32imac = processor_stepper<processor_privileged<processor_rv32imac_unit<decode,processor_priv_rv32ima,mmu_rv32>>>;
+using priv_emulator_rv32ima = processor_stepper<processor_privileged<processor_rv32ima_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
+using priv_emulator_rv32imac = processor_stepper<processor_privileged<processor_rv32imac_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
 using priv_emulator_rv32imafd = processor_stepper<processor_privileged<processor_rv32imafd_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
 using priv_emulator_rv32imafdc = processor_stepper<processor_privileged<processor_rv32imafdc_unit<decode,processor_priv_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv64ima = processor_stepper<processor_privileged<processor_rv64ima_unit<decode,processor_priv_rv64ima,mmu_rv64>>>;
-using priv_emulator_rv64imac = processor_stepper<processor_privileged<processor_rv64imac_unit<decode,processor_priv_rv64ima,mmu_rv64>>>;
+using priv_emulator_rv64ima = processor_stepper<processor_privileged<processor_rv64ima_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
+using priv_emulator_rv64imac = processor_stepper<processor_privileged<processor_rv64imac_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
 using priv_emulator_rv64imafd = processor_stepper<processor_privileged<processor_rv64imafd_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
 using priv_emulator_rv64imafdc = processor_stepper<processor_privileged<processor_rv64imafdc_unit<decode,processor_priv_rv64imafd,mmu_rv64>>>;
 
