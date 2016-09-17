@@ -70,11 +70,11 @@ enum riscv_fence
 
 enum riscv_fcsr
 {
-	riscv_fcsr_NV = 1,                  /* Invalid Operation */
-	riscv_fcsr_DZ = 2,                  /* Divide by Zero */
+	riscv_fcsr_NX = 1,                  /* Inexact */
+	riscv_fcsr_UF = 2,                  /* Underflow */
 	riscv_fcsr_OF = 4,                  /* Overflow */
-	riscv_fcsr_UF = 8,                  /* Underflow */
-	riscv_fcsr_NX = 16,                 /* Inexact */
+	riscv_fcsr_DZ = 8,                  /* Divide by Zero */
+	riscv_fcsr_NV = 16,                 /* Invalid Operation */
 };
 
 enum riscv_fclass

@@ -31,11 +31,11 @@ fence   r                    2       "Read"
 fence   w                    1       "Write"
 
 # Floating Point Exception Register (fcsr)
-fcsr    NV                   1       "Invalid Operation"
-fcsr    DZ                   2       "Divide by Zero"
+fcsr    NX                   1       "Inexact"
+fcsr    UF                   2       "Underflow"
 fcsr    OF                   4       "Overflow"
-fcsr    UF                   8       "Underflow"
-fcsr    NX                   16      "Inexact"
+fcsr    DZ                   8       "Divide by Zero"
+fcsr    NV                   16      "Invalid Operation"
 
 # Floating Point types returned by fclass
 fclass  neg_inf              1       "negative infinity"
