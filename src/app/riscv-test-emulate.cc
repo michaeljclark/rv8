@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"

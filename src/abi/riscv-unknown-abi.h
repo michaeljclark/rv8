@@ -19,10 +19,25 @@ namespace riscv {
 	enum abi_syscall
 	{
 		abi_syscall_close = 57,
+		abi_syscall_lseek = 62,
+		abi_syscall_read = 63,
 		abi_syscall_write = 64,
+		abi_syscall_pread = 67,
+		abi_syscall_pwrite = 68,
 		abi_syscall_fstat = 80,
 		abi_syscall_exit = 93,
+		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
+	};
+
+	template <typename P> struct abi_timeval {
+		typename P::long_t tv_sec;
+		typename P::long_t tv_usec;
+	};
+
+	template <typename P> struct abi_timezone {
+		typename P::int_t tz_minuteswest;
+		typename P::int_t tz_dsttime;
 	};
 
 	template <typename P> struct abi_stat
@@ -84,10 +99,36 @@ namespace riscv {
 		proc.ireg[riscv_ireg_a0] = close(proc.ireg[riscv_ireg_a0]);
 	}
 
+	template <typename P> void abi_sys_lseek(P &proc)
+	{
+		proc.ireg[riscv_ireg_a0] = lseek(proc.ireg[riscv_ireg_a0],
+			proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+	}
+
+	template <typename P> void abi_sys_read(P &proc)
+	{
+		proc.ireg[riscv_ireg_a0] = read(proc.ireg[riscv_ireg_a0],
+			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+	}
+
 	template <typename P> void abi_sys_write(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
 			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+	}
+
+	template <typename P> void abi_sys_pread(P &proc)
+	{
+		proc.ireg[riscv_ireg_a0] = pread(proc.ireg[riscv_ireg_a0],
+			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
+			proc.ireg[riscv_ireg_a3]);
+	}
+
+	template <typename P> void abi_sys_pwrite(P &proc)
+	{
+		proc.ireg[riscv_ireg_a0] = pwrite(proc.ireg[riscv_ireg_a0],
+			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
+			proc.ireg[riscv_ireg_a3]);
 	}
 
 	template <typename P> void abi_sys_fstat(P &proc)
@@ -103,6 +144,26 @@ namespace riscv {
 	template <typename P> void abi_sys_exit(P &proc)
 	{
 		exit(proc.ireg[riscv_ireg_a0]);
+	}
+
+	template <typename P> void abi_sys_gettimeofday(P &proc)
+	{
+		struct timeval host_tp;
+		struct timezone host_tzp;
+		memset(&host_tp, 0, sizeof(host_tp));
+		memset(&host_tzp, 0, sizeof(host_tzp));
+		if ((proc.ireg[riscv_ireg_a0] = gettimeofday(&host_tp, &host_tzp)) == 0) {
+			if (proc.ireg[riscv_ireg_a0].r.xu.val != 0) {
+				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(uintptr_t)proc.ireg[riscv_ireg_a0].r.xu.val;
+				guest_tp->tv_sec = host_tp.tv_sec;
+				guest_tp->tv_usec = host_tp.tv_usec;
+			}
+			if (proc.ireg[riscv_ireg_a1].r.xu.val != 0) {
+				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+				guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
+				guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
+			}
+		}
 	}
 
 	template <typename P> void abi_sys_brk(P &proc)
@@ -139,11 +200,16 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[riscv_ireg_a7]) {
-			case abi_syscall_close:  abi_sys_close(proc); break;
-			case abi_syscall_write:  abi_sys_write(proc); break;
-			case abi_syscall_fstat:  abi_sys_fstat(proc); break;
-			case abi_syscall_exit:   abi_sys_exit(proc);  break;
-			case abi_syscall_brk:    abi_sys_brk(proc);   break;
+			case abi_syscall_close:         abi_sys_close(proc); break;
+			case abi_syscall_lseek:         abi_sys_lseek(proc); break;
+			case abi_syscall_read:          abi_sys_read(proc);  break;
+			case abi_syscall_write:         abi_sys_write(proc); break;
+			case abi_syscall_pread:         abi_sys_pread(proc); break;
+			case abi_syscall_pwrite:        abi_sys_pwrite(proc); break;
+			case abi_syscall_fstat:         abi_sys_fstat(proc); break;
+			case abi_syscall_exit:          abi_sys_exit(proc); break;
+			case abi_syscall_gettimeofday:  abi_sys_gettimeofday(proc);break;
+			case abi_syscall_brk:           abi_sys_brk(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
 		}
 	}
