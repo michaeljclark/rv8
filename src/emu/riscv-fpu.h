@@ -16,6 +16,7 @@ namespace riscv {
 		if (flags & FE_INVALID) fcsr |= riscv_fcsr_NV;
 		if (flags & FE_OVERFLOW) fcsr |= riscv_fcsr_OF;
 		if (flags & FE_UNDERFLOW) fcsr |= riscv_fcsr_UF;
+		feclearexcept(FE_ALL_EXCEPT);
 	}
 
 	inline void fenv_setrm(int rm)
