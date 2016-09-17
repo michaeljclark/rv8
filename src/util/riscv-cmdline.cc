@@ -62,7 +62,7 @@ void cmdline_option::print_options(cmdline_option *options)
 {
 	cmdline_option *o = options;
 	while (o->short_option) {
-		fprintf(stderr, "%30s, %2s %-10s %s\n",
+		fprintf(stderr, "%30s, %-3s%-10s %s\n",
 				o->long_option, o->short_option, arg_types[o->arg_type], o->help_text);
 		o++;
 	}
