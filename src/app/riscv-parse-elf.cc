@@ -51,7 +51,7 @@ struct riscv_parse_elf
 	bool program_headers = false;
 	bool symbol_table = false;
 	bool disassebly = false;
-	bool decode_pseudo = false;
+	bool decode_pseudo = true;
 	bool help_or_error = false;
 
 	const char* colorize(const char *type)
@@ -201,9 +201,9 @@ struct riscv_parse_elf
 			{ "-d", "--print-disassembly", cmdline_arg_type_none,
 				"Print Disassembly",
 				[&](std::string s) { return (disassebly = true); } },
-			{ "-x", "--decode-pseudo", cmdline_arg_type_none,
-				"Decode Pseudoinstructions",
-				[&](std::string s) { return (decode_pseudo = true); } },
+			{ "-x", "--no-pseudo", cmdline_arg_type_none,
+				"Disable Pseudoinstructions",
+				[&](std::string s) { return !(decode_pseudo = false); } },
 			{ "-a", "--print-all", cmdline_arg_type_none,
 				"Print All",
 				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = disassebly = true); } },

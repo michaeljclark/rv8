@@ -160,6 +160,7 @@ usage: riscv-parse-elf [<options>] <elf_file>
        --print-program-headers, -p            Print Program headers
           --print-symbol-table, -t            Print Symbol Table
            --print-disassembly, -d            Print Disassembly
+                   --no-pseudo, -x            Disable Pseudoinstructions
                    --print-all, -a            Print All
                         --help, -h            Show help
 ```
