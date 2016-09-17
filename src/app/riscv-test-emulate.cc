@@ -60,9 +60,8 @@ enum {
 	reg_log_int = 1,
 	reg_log_f32 = 2,
 	reg_log_f64 = 4,
-	reg_log_op = 8,
-	reg_log_op_f32 = 16,
-	reg_log_op_f64 = 32,
+	reg_log_inst = 8,
+	reg_log_operands = 16,
 };
 
 /*
@@ -99,29 +98,54 @@ struct processor_base : P
 		return buf;
 	}
 
-	std::string format_op_args(T &dec, int fpreg)
+	size_t reg_value(T &dec, riscv_operand_name operand_name)
 	{
-		std::vector<std::string> ops;
-		const char *fmt = riscv_inst_format[dec.op];
-		while (*fmt) {
-			switch (*fmt) {
-				case '0': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
-					riscv_ireg_name_sym[dec.rd], P::ireg[dec.rd].r.xu.val)); break;
-				case '1': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
-					riscv_ireg_name_sym[dec.rs1], P::ireg[dec.rs1].r.xu.val)); break;
-				case '2': ops.push_back(format_string(P::xlen == 64 ? "%s=%lld" : "%s=%d",
-					riscv_ireg_name_sym[dec.rs2], P::ireg[dec.rs2].r.xu.val)); break;
-				case '3': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rd],
-					(fpreg == reg_log_f64) ? P::freg[dec.rd].r.d.val : P::freg[dec.rd].r.s.val)); break;
-				case '4': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs1],
-					(fpreg == reg_log_f64) ? P::freg[dec.rs1].r.d.val : P::freg[dec.rs1].r.s.val)); break;
-				case '5': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs2],
-					(fpreg == reg_log_f64) ? P::freg[dec.rs2].r.d.val : P::freg[dec.rs2].r.s.val)); break;
-				case '6': ops.push_back(format_string("%s=%f", riscv_freg_name_sym[dec.rs3],
-					(fpreg == reg_log_f64) ? P::freg[dec.rs3].r.d.val : P::freg[dec.rs3].r.s.val)); break;
-			}
-			fmt++;
+		switch (operand_name) {
+			case riscv_operand_name_rd: return dec.rd;
+			case riscv_operand_name_rs1: return dec.rs1;
+			case riscv_operand_name_rs2: return dec.rs2;
+			case riscv_operand_name_frd: return dec.rd;
+			case riscv_operand_name_frs1: return dec.rs1;
+			case riscv_operand_name_frs2: return dec.rs2;
+			case riscv_operand_name_frs3: return dec.rs3;
+			default: return 0;
 		}
+	}
+
+	std::string format_operands(T &dec)
+	{
+		size_t reg;
+		char buf[256];
+		std::vector<std::string> ops;
+		const riscv_operand_data *operand_data = riscv_inst_operand_data[dec.op];
+		while (operand_data->type != riscv_type_none) {
+			std::string op;
+			switch (operand_data->type) {
+				case riscv_type_ireg:
+					reg = reg_value(dec, operand_data->operand_name);
+					op += riscv_ireg_name_sym[reg];
+					op += "=";
+					snprintf(buf, sizeof(buf), riscv_type_primitives[operand_data->primitive].format,
+						P::ireg[reg].r.xu.val);
+					op += buf;
+					ops.push_back(op);
+					break;
+				case riscv_type_freg:
+					reg = reg_value(dec, operand_data->operand_name);
+					op += riscv_freg_name_sym[reg];
+					op += "=";
+					snprintf(buf, sizeof(buf),
+						operand_data->primitive == riscv_primitive_f64 ? "%.17g" : "%.9g",
+						operand_data->primitive == riscv_primitive_f64 ?
+						P::freg[reg].r.d.val : P::freg[reg].r.s.val);
+					op += buf;
+					ops.push_back(op);
+					break;
+				default: break;
+			}
+			operand_data++;
+		}
+
         std::stringstream ss;
         ss << "(";
         for (auto i = ops.begin(); i != ops.end(); i++) {
@@ -136,11 +160,12 @@ struct processor_base : P
 		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s %s\n";
 		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s %s\n";
 		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s %s\n";
-		if (log_flags & reg_log_op) {
+		if (log_flags & reg_log_inst) {
 			std::string op_args;
 			std::string args = disasm_inst_simple(dec);
-			if (log_flags & reg_log_op_f32) op_args = format_op_args(dec, reg_log_f32);
-			if (log_flags & reg_log_op_f64) op_args = format_op_args(dec, reg_log_f64);
+			if (log_flags & reg_log_operands) {
+				op_args = format_operands(dec);
+			}
 			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 				P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str(), op_args.c_str());
 		}
@@ -620,13 +645,10 @@ struct riscv_emulator
 				[&](std::string s) { return (log_flags |= reg_log_f64); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
-				[&](std::string s) { return (log_flags |= reg_log_op); } },
-			{ "-op-f32", "--log-operands-f32", cmdline_arg_type_none,
-				"Log Float Operands (f32)",
-				[&](std::string s) { return (log_flags |= reg_log_op_f32); } },
-			{ "-op-f64", "--log-operands-f64", cmdline_arg_type_none,
-				"Log Float Operands (f64)",
-				[&](std::string s) { return (log_flags |= reg_log_op_f64); } },
+				[&](std::string s) { return (log_flags |= reg_log_inst); } },
+			{ "-o", "--log-operands", cmdline_arg_type_none,
+				"Log Instructions and operands",
+				[&](std::string s) { return (log_flags |= (reg_log_inst | reg_log_operands)); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
 				[&](std::string s) { entropy.push_back(strtoull(s.c_str(), nullptr, 10)); return true; } },
