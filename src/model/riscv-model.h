@@ -77,13 +77,23 @@ enum rvt
 	rvt_u32,
 	rvt_s64,
 	rvt_u64,
+	rvt_s128,
+	rvt_u128,
 	rvt_f32,
 	rvt_f64,
+	rvt_f128,
 	rvt_none,
+};
+
+enum rvs
+{
+	rvs_std,
+	rvs_ext,
 };
 
 struct riscv_primitive_type
 {
+	rvs std_type;
 	rvt enum_type;
 	const char* spec_type;
 	const char* meta_type;
@@ -374,6 +384,7 @@ struct riscv_meta_model
 	static std::string codec_type_name(riscv_codec_ptr codec);
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
+	static const riscv_primitive_type* infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i);
 	static std::vector<std::string> parse_line(std::string line);
 	static std::vector<std::vector<std::string>> read_file(std::string filename);
 

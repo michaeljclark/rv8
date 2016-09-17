@@ -40,19 +40,22 @@ static const char* INSTRUCTIONS_FILE   = "instructions";
 static const char* DESCRIPTIONS_FILE   = "descriptions";
 
 const riscv_primitive_type riscv_primitive_type_table[] = {
-	{ rvt_sx,  "x",  "sx",  "r", "%ld",  "l",   "signed long" },
-	{ rvt_ux,  "xu", "ux",  "r", "%lu",  "ul",  "unsigned long" },
-	{ rvt_s8,  "b",  "s8",  "r", "%hhd", "",    "signed char" },
-	{ rvt_u8,  "bu", "u8",  "r", "%hhu", "",    "unsigned char" },
-	{ rvt_s16, "h",  "s16", "r", "%hd",  "",    "signed short" },
-	{ rvt_u16, "hu", "u16", "r", "%hu",  "",    "unsigned short" },
-	{ rvt_s32, "w",  "s32", "r", "%d",   "",    "signed int" },
-	{ rvt_u32, "wu", "u32", "r", "%u",   "u",   "unsigned int" },
-	{ rvt_s64, "l",  "s64", "r", "%lld", "ll",  "signed long long" },
-	{ rvt_u64, "lu", "u64", "r", "%llu", "ull", "unsigned long long" },
-	{ rvt_f32, "s",  "f32", "f", "%.9e", "f",   "float" },
-	{ rvt_f64, "d",  "f64", "f", "%.17e", "",   "double" },
-	{ rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
+	{ rvs_ext, rvt_sx,   "x",      "sx",   "r", "%ld",   "l",     "signed long" },       /* LP64 and ILP32, not LLP64 */
+	{ rvs_ext, rvt_ux,   "xu",     "ux",   "r", "%lu",   "ul",    "unsigned long" },     /* LP64 and ILP32, not LLP64 */
+	{ rvs_std, rvt_s8,   "b",      "s8",   "r", "%hhd",  "",      "signed char" },
+	{ rvs_std, rvt_u8,   "bu",     "u8",   "r", "%hhu",  "",      "unsigned char" },
+	{ rvs_std, rvt_s16,  "h",      "s16",  "r", "%hd",   "",      "signed short" },
+	{ rvs_std, rvt_u16,  "hu",     "u16",  "r", "%hu",   "",      "unsigned short" },
+	{ rvs_std, rvt_s32,  "w",      "s32",  "r", "%d",    "",      "signed int" },
+	{ rvs_std, rvt_u32,  "wu",     "u32",  "r", "%u",    "u",     "unsigned int" },
+	{ rvs_std, rvt_s64,  "l",      "s64",  "r", "%lld",  "ll",    "signed long long" },
+	{ rvs_std, rvt_u64,  "lu",     "u64",  "r", "%llu",  "ull",   "unsigned long long" },
+	{ rvs_ext, rvt_s128, "c", /*?*/"s128", "r", nullptr, nullptr, "signed __int128" },   /* Clang/GCC type */
+	{ rvs_ext, rvt_u128, "cu",/*?*/"u128", "r", nullptr, nullptr, "unsigned __int128" }, /* Clang/GCC type */
+	{ rvs_std, rvt_f32,  "s",      "f32",  "f", "%.9e",  "f",     "float" },
+	{ rvs_std, rvt_f64,  "d",      "f64",  "f", "%.17e", "",      "double" },
+	{ rvs_ext, rvt_f128, "q",      "f128", "f", "%.33e", "q",     "__float128" },        /* Clang/GCC type */
+	{ rvs_ext, rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
 };
 
 const riscv_primitive_type* riscv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type)
@@ -390,6 +393,38 @@ std::string riscv_meta_model::codec_type_name(riscv_codec_ptr codec)
 	if (o == std::string::npos) o = codec->name.find("+");
 	if (o == std::string::npos) return codec->name;
 	return codec->name.substr(0, o);
+}
+
+const riscv_primitive_type* riscv_meta_model::infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
+{
+	// infer operand primitive type
+	// NOTE:- currently works for RISC-V FPU opcode naming convention
+	std::vector<std::string> opcode_parts = split(opcode->name, ".");
+	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
+	if (operand->type == "ireg") {
+		if (i == 0 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
+		} else if (i == 1 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
+		}
+	} else if (operand->type == "freg") {
+		if (opcode_parts.size() == 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+		} else if (i == 0 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+		} else if (i == 1 && opcode_parts.size() > 2) {
+			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2]);
+		} else {
+			if (ext->alpha_code == 's') {
+				primitive = &riscv_primitive_type_table[rvt_f32];
+			} else if (ext->alpha_code == 'd') {
+				primitive = &riscv_primitive_type_table[rvt_f64];
+			} else if (ext->alpha_code == 'q') {
+				primitive = &riscv_primitive_type_table[rvt_f128];
+			}
+		}
+	}
+	return primitive;
 }
 
 std::vector<std::string> riscv_meta_model::parse_line(std::string line)

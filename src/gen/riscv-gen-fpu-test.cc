@@ -34,31 +34,6 @@ typedef std::pair<const riscv_primitive_type*,std::string> riscv_operand_desc;
 
 static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
 {
-	// infer operand c type
-	std::vector<std::string> opcode_parts = split(opcode->name, ".");
-	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
-	if (operand->type == "ireg") {
-		if (i == 0 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
-		} else if (i == 1 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
-		}
-	} else if (operand->type == "freg") {
-		if (opcode_parts.size() == 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
-		} else if (i == 0 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
-		} else if (i == 1 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2]);
-		} else {
-			if (ext->alpha_code == 's') {
-				primitive = &riscv_primitive_type_table[rvt_f32];
-			} else if (ext->alpha_code == 'd') {
-				primitive = &riscv_primitive_type_table[rvt_f64];
-			}
-		}
-	}
-
 	// create operand name
 	std::string operand_name = operand->name;
 	operand_name = replace(operand_name, "frd", "d");
@@ -66,7 +41,7 @@ static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv
 	operand_name = replace(operand_name, "frs", "s");
 	operand_name = replace(operand_name, "rs", "s");
 
-	return riscv_operand_desc(primitive,operand_name);
+	return riscv_operand_desc(riscv_meta_model::infer_operand_primitive(opcode, ext, operand, i), operand_name);
 }
 
 template <typename T> void typed_value_set(std::set<std::string> &values, const riscv_primitive_type *primitive)
