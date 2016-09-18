@@ -7,10 +7,10 @@ s16,h       "Signed 16-bit Word"
 u16,hu      "Unsigned 16-bit Half Word"
 s32,w       "Signed 32-bit Word"
 u32,wu      "Unsigned 32-bit Word"
-s64,l,d     "Signed 64-bit Word"     # d is used in ld and sd
+s64,l,d     "Signed 64-bit Word"
 u64,lu      "Unsigned 64-bit Word"
-s128,c      "Signed 128-bit Word"    # c placeholder for signed 128-bit
-u128,cu     "Unsigned 128-bit Word"  # cu placeholder for unsigned 128-bit
+s128,c,q    "Signed 128-bit Word"   # c,cu are placeholders for fcvt
+u128,cu     "Unsigned 128-bit Word"
 sx          "Signed Full Width Word (32, 64 or 128-bit)"
 ux          "Unsigned Full width Word (32, 64 or 128-bit)"
 
