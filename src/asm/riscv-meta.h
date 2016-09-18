@@ -50,6 +50,7 @@ enum riscv_rm
 	riscv_rm_rdn = 2,                   /* Round Down (towards -∞) */
 	riscv_rm_rup = 3,                   /* Round Up (towards +∞) */
 	riscv_rm_rmm = 4,                   /* Round to Nearest, ties to Max Magnitude */
+	riscv_rm_dyn = 7,                   /* Dynamic Rounding Mode */
 };
 
 enum riscv_aqrl

@@ -61,7 +61,7 @@ struct riscv_histogram_elf
 		else hi->second++;
 	}
 
-	size_t reg_value(decode &dec, riscv_operand_name operand_name)
+	size_t regnum(decode &dec, riscv_operand_name operand_name)
 	{
 		switch (operand_name) {
 			case riscv_operand_name_rd: return dec.rd;
@@ -84,8 +84,8 @@ struct riscv_histogram_elf
 				case riscv_type_ireg:
 				case riscv_type_freg:
 					key = std::string(operand_data->type == riscv_type_ireg ?
-						riscv_ireg_name_sym[reg_value(dec, operand_data->operand_name)] :
-						riscv_freg_name_sym[reg_value(dec, operand_data->operand_name)]) +
+						riscv_ireg_name_sym[regnum(dec, operand_data->operand_name)] :
+						riscv_freg_name_sym[regnum(dec, operand_data->operand_name)]) +
 						(regs_position ? "-" : "") +
 						(regs_position ? riscv_operand_name_sym[operand_data->operand_name] : "");
 					histogram_add(hist, key);

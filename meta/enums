@@ -17,6 +17,7 @@ rm      rtz                  0b001   "Round towards Zero"
 rm      rdn                  0b010   "Round Down (towards -∞)"
 rm      rup                  0b011   "Round Up (towards +∞)"
 rm      rmm                  0b100   "Round to Nearest, ties to Max Magnitude"
+rm      dyn                  0b111   "Dynamic Rounding Mode"
 
 # Memory order (AMO aqrl argument)
 aqrl    relaxed              0       "Atomicity - no explicit synchronisation or ordering"

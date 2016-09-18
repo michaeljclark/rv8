@@ -100,7 +100,7 @@ struct processor_base : P
 		return buf;
 	}
 
-	size_t reg_value(T &dec, riscv_operand_name operand_name)
+	size_t regnum(T &dec, riscv_operand_name operand_name)
 	{
 		switch (operand_name) {
 			case riscv_operand_name_rd: return dec.rd;
@@ -124,7 +124,7 @@ struct processor_base : P
 			std::string op;
 			switch (operand_data->type) {
 				case riscv_type_ireg:
-					reg = reg_value(dec, operand_data->operand_name);
+					reg = regnum(dec, operand_data->operand_name);
 					op += riscv_ireg_name_sym[reg];
 					op += "=";
 					snprintf(buf, sizeof(buf), riscv_type_primitives[operand_data->primitive].format,
@@ -133,13 +133,28 @@ struct processor_base : P
 					ops.push_back(op);
 					break;
 				case riscv_type_freg:
-					reg = reg_value(dec, operand_data->operand_name);
+					reg = regnum(dec, operand_data->operand_name);
 					op += riscv_freg_name_sym[reg];
 					op += "=";
-					snprintf(buf, sizeof(buf),
-						operand_data->primitive == riscv_primitive_f64 ? "%.17g" : "%.9g",
-						operand_data->primitive == riscv_primitive_f64 ?
-						P::freg[reg].r.d.val : P::freg[reg].r.s.val);
+					// show hex value for +/-{inf|subnorm|nan}
+					if (operand_data->primitive == riscv_primitive_f64 ?
+						(f64_classify(P::freg[reg].r.d.val) & 0b1110100101) :
+						(f32_classify(P::freg[reg].r.s.val) & 0b1110100101))
+					{
+						snprintf(buf, sizeof(buf),
+							operand_data->primitive == riscv_primitive_f64 ?
+							"%.17g[0x%016llx]" : "%.9g[0x%08llx]",
+							operand_data->primitive == riscv_primitive_f64 ?
+							P::freg[reg].r.d.val : P::freg[reg].r.s.val,
+							operand_data->primitive == riscv_primitive_f64 ?
+							P::freg[reg].r.lu.val : P::freg[reg].r.wu.val);
+					} else {
+						snprintf(buf, sizeof(buf),
+							operand_data->primitive == riscv_primitive_f64 ?
+							"%.17g" : "%.9g",
+							operand_data->primitive == riscv_primitive_f64 ?
+							P::freg[reg].r.d.val : P::freg[reg].r.s.val);
+					}
 					op += buf;
 					ops.push_back(op);
 					break;

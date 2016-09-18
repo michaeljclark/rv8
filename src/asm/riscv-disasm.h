@@ -169,7 +169,8 @@ namespace riscv {
 						case riscv_rm_rdn: args += "rdn"; break;
 						case riscv_rm_rup: args += "rup"; break;
 						case riscv_rm_rmm: args += "rmm"; break;
-						default:           args += "unk"; break;
+						case riscv_rm_dyn: args += "dyn"; break;
+						default:           args += "inv"; break;
 					}
 					break;
 				case 'p':

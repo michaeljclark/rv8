@@ -44,7 +44,7 @@ namespace riscv {
 	inline float f32_sqrt(float a) { return std::sqrt(a); }
 	inline double f64_sqrt(double a) { return std::sqrt(a); }
 
-	inline float f32_classify(float a)
+	inline int f32_classify(float a)
 	{
 		union { uint32_t wu; float f; } v = { .f = a };
 		uint32_t neg = v.wu >> 31, exp = (v.wu >> 23) & ((1<<8)-1), man = v.wu & ((1<<23)-1);
@@ -61,7 +61,7 @@ namespace riscv {
 		}
 	}
 
-	inline double f64_classify(double a)
+	inline int f64_classify(double a)
 	{
 		union { uint64_t lu; double d; } v = { .d = a };
 		uint64_t neg = v.lu >> 63, exp = (v.lu >> 52) & ((1ULL<<11)-1), man = v.lu & ((1ULL<<52)-1);

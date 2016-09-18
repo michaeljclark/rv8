@@ -154,7 +154,8 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 					case riscv_rm_rdn: print_add(offset, "rdn"); break;
 					case riscv_rm_rup: print_add(offset, "rup"); break;
 					case riscv_rm_rmm: print_add(offset, "rmm"); break;
-					default:           print_add(offset, "unk"); break;
+					case riscv_rm_dyn: print_add(offset, "dyn"); break;
+					default:           print_add(offset, "inv"); break;
 				}
 				break;
 			case 'p':
