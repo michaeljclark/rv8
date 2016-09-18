@@ -207,13 +207,13 @@ usage: riscv-parse-meta [<options>]
 To print a colour opcode map for the RV32IMA ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV32IMA -m -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV32IMA -m -c -r meta
 ```
 
 To print a colour opcode map for the RV64IMAFDS ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV64IMAFDS -m -r meta
+./build/darwin_x86_64/bin/riscv-parse-meta -I RV64IMAFDS -m -c -r meta
 ```
 
 To output LaTeX for the RV32C ISA subset:
