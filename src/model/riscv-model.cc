@@ -979,7 +979,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 			std::string pseudo_opcode_name = "@" + pseudo_name;
 			pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
 		}
-		// se the format from the meta/pseudo definition
+		// use the format from the meta/pseudo definition
 		pseudo_opcode->format = format;
 		// derive operands from the format
 		std::vector<std::string> operand_names = split(format->operands, ",");
