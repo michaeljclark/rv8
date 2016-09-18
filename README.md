@@ -228,6 +228,32 @@ To output LaTeX for the RV64G ISA subset:
 ./build/darwin_x86_64/bin/riscv-parse-meta -I RV64G -l -r meta
 ```
 
+## RISC-V Test Emulator
+
+Emulator command line options:
+
+```
+usage: riscv-test-emulate [<options>] <elf_file>
+                --memory-debug, -m            Memory debug
+              --emulator-debug, -d            Emulator debug
+                         --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
+                  --privileged, -p            Privileged ISA Emulation
+           --log-int-registers, -r            Log Integer Registers
+         --log-float-registers, -F            Log SP Float Registers
+        --log-double-registers, -D            Log DP Float Registers
+            --log-instructions, -l            Log Instructions
+                   --no-pseudo, -x            Disable Pseudoinstructions
+                --log-operands, -o            Log Instructions and operands
+                        --seed, -s <string>   Random seed
+                        --help, -h            Show help
+```
+
+To run the simple Hello World program:
+
+```
+build/darwin_x86_64/bin/riscv-test-emulate build/riscv64-unknown-elf/bin/hello-world-libc
+```
+
 ## RISC-V ELF Histogram Utility
 
 ELF Histogram usage command line options:
