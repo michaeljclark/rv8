@@ -63,6 +63,7 @@ enum {
 	reg_log_f64 = 4,
 	reg_log_inst = 8,
 	reg_log_operands = 16,
+	reg_log_no_pseudo = 32,
 };
 
 /*
@@ -163,6 +164,7 @@ struct processor_base : P
 		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s %s\n";
 		if (log_flags & reg_log_inst) {
 			std::string op_args;
+			if (!(log_flags & reg_log_no_pseudo)) decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
 			if (log_flags & reg_log_operands) {
 				op_args = format_operands(dec);
@@ -651,6 +653,9 @@ struct riscv_emulator
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (log_flags |= reg_log_inst); } },
+			{ "-x", "--no-pseudo", cmdline_arg_type_none,
+				"Disable Pseudoinstructions",
+				[&](std::string s) { return (log_flags |= reg_log_no_pseudo); } },
 			{ "-o", "--log-operands", cmdline_arg_type_none,
 				"Log Instructions and operands",
 				[&](std::string s) { return (log_flags |= (reg_log_inst | reg_log_operands)); } },
