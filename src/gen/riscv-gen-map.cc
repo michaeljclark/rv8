@@ -91,6 +91,8 @@ static void print_map(riscv_gen *gen)
 
 	int i = 0;
 	for (auto &opcode : gen->opcodes) {
+		if (!opcode->match_extension(gen->ext_subset)) continue;
+		if (opcode->extensions.size() == 0) continue;
 		if (i % 22 == 0) {
 			printf("// %s", enable_colorize ? _COLOR_LEGEND : "");
 			for (ssize_t bit = kMaxInstructionWidth-1; bit >= 0; bit--) {
@@ -105,8 +107,6 @@ static void print_map(riscv_gen *gen)
 			}
 			printf("%s\n", enable_colorize ? _COLOR_RESET : "");
 		}
-		if (!opcode->match_extension(gen->ext_subset)) continue;
-		if (opcode->extensions.size() == 0) continue;
 		i++;
 		printf("// ");
 		ssize_t bit_width = opcode->extensions[0]->inst_width;
