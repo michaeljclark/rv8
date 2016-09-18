@@ -358,9 +358,18 @@ struct processor_proxy : P
 	bool inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, size_t inst_len)
 	{
 		switch (csr) {
-			case riscv_csr_fflags:   update_csr(dec, op, P::fcsr, value, 4, 0);  break;
-			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 7, 5);  break;
-			case riscv_csr_fcsr:     update_csr(dec, op, P::fcsr, value, 7, 0);  break;
+			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
+			                         update_csr(dec, op, P::fcsr, value, 4, 0);
+			                         fenv_clearflags(P::fcsr);
+			                         break;
+			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 7, 5);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
+			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
+			                         update_csr(dec, op, P::fcsr, value, 7, 0);
+			                         fenv_clearflags(P::fcsr);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
 			case riscv_csr_cycle:    P::cycle = cpu_cycle_clock();
 			                         read_csr(dec, op, P::cycle, value);         break;
 			case riscv_csr_time:     read_csr(dec, op, P::time, value);          break;

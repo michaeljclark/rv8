@@ -8,7 +8,7 @@
 namespace riscv {
 
 	template <typename T>
-	inline void fenv_setflags(T &fcsr)
+	inline void fenv_getflags(T &fcsr)
 	{
 		int flags = fetestexcept(FE_ALL_EXCEPT);
 		if (flags & FE_DIVBYZERO) fcsr |= riscv_fcsr_DZ;
@@ -16,11 +16,22 @@ namespace riscv {
 		if (flags & FE_INVALID) fcsr |= riscv_fcsr_NV;
 		if (flags & FE_OVERFLOW) fcsr |= riscv_fcsr_OF;
 		if (flags & FE_UNDERFLOW) fcsr |= riscv_fcsr_UF;
-		feclearexcept(FE_ALL_EXCEPT);
+	}
+	template <typename T>
+	inline void fenv_clearflags(T &fcsr)
+	{
+		int flags = 0;
+		if (!(fcsr & riscv_fcsr_DZ)) flags |= FE_DIVBYZERO;
+		if (!(fcsr & riscv_fcsr_NX)) flags |= FE_INEXACT;
+		if (!(fcsr & riscv_fcsr_NV)) flags |= FE_INVALID;
+		if (!(fcsr & riscv_fcsr_OF)) flags |= FE_OVERFLOW;
+		if (!(fcsr & riscv_fcsr_UF)) flags |= FE_UNDERFLOW;
+		feclearexcept(flags);
 	}
 
 	inline void fenv_setrm(int rm)
 	{
+		if (rm == 0b111) return;
 		switch (rm) {
 			case riscv_rm_rne: fesetround(FE_TONEAREST); /* ties to Even */ break;
 			case riscv_rm_rtz: fesetround(FE_TOWARDZERO); break;
