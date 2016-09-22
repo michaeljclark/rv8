@@ -1,6 +1,14 @@
-# RISC-V Meta
+RISC-V Meta
+===========
 
 [![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
+
+Date    : January 17, 2020
+
+Version : (under version control)
+
+About
+-------------
 
 RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
 Set Architecture) Metadata. The RISC-V Meta suite of tools can generate
@@ -32,7 +40,8 @@ The future goals of the RISC-V Meta project are:
 
 See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample LaTeX output.
 
-## Screenshots
+Screenshots
+----------------
 
 ![ASCII map screenshot](/doc/images/screenshot-1.png)
 
@@ -50,7 +59,8 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample
 
 *Example Disassembly output from riscv-parse-elf*
 
-## References
+References
+----------------
 
 - [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
 - [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
@@ -84,7 +94,8 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample
 - [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
 
-## Project Structure
+Project Structure
+-----------------------
 
 |Directory|Description|
 |:---|:---------------|
@@ -98,7 +109,8 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample
 |`src/util`|Miscellaneous utilities library|
 |`doc/pdf`|Generated documentation|
 
-## Libraries
+Libraries
+-----------------
 
 The following table shows the RISC-V Meta libraries:
 
@@ -110,7 +122,8 @@ The following table shows the RISC-V Meta libraries:
 |libriscv_model.a|instruction set metamodel|macro|
 |libriscv_util.a|utility functions for tools|mini|
 
-## Tools
+Tools
+-----------------
 
 The following table shows the RISC-V Meta tools:
 
@@ -122,7 +135,8 @@ The following table shows the RISC-V Meta tools:
 |riscv-histogram-elf|ELF histogram tool|
 |riscv-test-emulate|Emulator Proof of Concept|
 
-## Dependencies
+Dependencies
+-----------------
 
 - gmake
 - gcc-5.4 or clang-3.4
@@ -130,13 +144,16 @@ The following table shows the RISC-V Meta tools:
 - riscv-gnu-toolchain (required for `make test-emulate`)
 - Note: Set RISCV environment variable to point to toolchain
 
-## Supported Platforms
+Supported Platforms
+-----------------------------
 
 - Linux
 - macOS
 - FreeBSD
+- Windows Services for Linux
 
-## Build Instructions
+Build Instructions
+-----------------------------
 
 The meta compiler has been tested on Linux, Darwin and FreeBSD.
 
@@ -148,7 +165,8 @@ To output a LaTeX opcode pdf: ```make pdf```
 
 To run the proof of concept emulator: ```make test-emulate```
 
-## Parse ELF Utility
+Parse ELF Utility
+-----------------------------
 
 Parse ELF usage command line options:
 
@@ -173,7 +191,8 @@ make test-build-rv64
 ./build/darwin_x86_64/bin/riscv-parse-elf -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 ```
 
-## Parse Meta Utility
+Parse Meta Utility
+-----------------------------
 
 Parse Meta usage command line options:
 
@@ -228,7 +247,8 @@ To output LaTeX for the RV64G ISA subset:
 ./build/darwin_x86_64/bin/riscv-parse-meta -I RV64G -l -r meta
 ```
 
-## RISC-V Test Emulator
+RISC-V Test Emulator
+-----------------------------
 
 Emulator command line options:
 
@@ -254,7 +274,8 @@ To run the simple Hello World program:
 build/darwin_x86_64/bin/riscv-test-emulate build/riscv64-unknown-elf/bin/hello-world-libc
 ```
 
-## RISC-V ELF Histogram Utility
+RISC-V ELF Histogram Utility
+-------------------------------------
 
 ELF Histogram usage command line options:
 
