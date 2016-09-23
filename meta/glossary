@@ -27,6 +27,34 @@ rs[n]       "Integer Register Source [n]"
 frd         "Floating-point Register Destination"
 frs[n]      "Floating-point Register Source [n]"
 
+hart        "hardware thread"
 pc          "Program Counter"
 imm         "Immediate Value encoded in Instruction"
 offset      "Immediate Value decoded as a relative offset"
+
+SP          "Single Precision"
+DP          "Double Precision"
+QP          "Quadruple Precision"
+
+M           "Machine"
+U           "User"
+S           "Supervisor"
+H           "Hypervisor"
+
+ABI         "Application Binary Interface"
+AEE         "Application Execution Environment"
+SBI         "Supervisor Binary Interface"
+SEE         "Supervisor Execution Environment"
+HBI         "Hypervisor Binary Interface"
+HEE         "Hypervisor Execution Environment"
+
+CSR         "Control and Status Register"
+
+PA          "Physical Address"
+VA          "Virtual Address"
+PPN         "Physical Page Number"
+
+ASID        "Address Space Identifier"
+PDID        "Protection Domain Identifier"
+PMA         "Physical Memory Attribute"
+PMP         "Physical Memory Protection"
