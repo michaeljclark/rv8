@@ -49,7 +49,6 @@ typedef _elf_u64 Elf64_Xword;
 typedef _elf_s64 Elf64_Sxword;
 typedef _elf_u8  Elf64_Byte;
 
-
 // ELF Auxilliary table
 
 /*
@@ -148,7 +147,8 @@ enum {
 enum {
 	ELFCLASSNONE = 0,
 	ELFCLASS32 = 1,                  /* e_ident[EI_CLASS] - 32-bit objects */
-	ELFCLASS64 = 2                   /* e_ident[EI_CLASS] - 64-bit objects */
+	ELFCLASS64 = 2,                  /* e_ident[EI_CLASS] - 64-bit objects */
+	ELFCLASS128 = 3                  /* e_ident[EI_CLASS] - 128-bit objects */
 };
 
 // EI_DATA

@@ -23,6 +23,7 @@ const char* elf_ei_class_name(int v)
 	switch (v) {
 		case ELFCLASS32: return "ELF32";
 		case ELFCLASS64: return "ELF64";
+		case ELFCLASS128: return "ELF128";
 		default: return "unknown";
 	};
 }
