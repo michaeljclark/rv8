@@ -19,6 +19,7 @@
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-bits.h"
+#include "riscv-meta.h"
 #include "riscv-util.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
