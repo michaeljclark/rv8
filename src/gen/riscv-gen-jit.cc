@@ -109,11 +109,17 @@ using namespace riscv;
 			if (operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") {
 				printf("\tdec.imm = %s;\n", operand->name.c_str());
 			} else if (operand->type == "ireg") {
-				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+				printf("\tdec.rv.r.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
 			} else if (operand->type == "freg") {
-				printf("\tdec.%s = %s;\n", operand->name.substr(1).c_str(), operand->name.c_str());
+				printf("\tdec.rv.r.%s = %s;\n", operand->name.substr(1).c_str(), operand->name.c_str());
 			} else if (operand->type == "arg") {
-				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+				if (operand->name == "aq" || operand->name == "rl") {
+					printf("\tdec.rv.amo.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+				} else if (operand->name == "pred" || operand->name == "succ") {
+					printf("\tdec.rv.fence.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+				} else {
+					printf("\tdec.rv.r.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+				}
 			} else {
 				printf("/* dec.? = %s unhandled */\n", operand->name.c_str());
 			}

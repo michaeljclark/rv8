@@ -10,9 +10,8 @@ namespace riscv {
 	struct disasm : decode
 	{
 		uintptr_t pc;
-		uint64_t  inst;
 
-		disasm() : decode(), pc(0), inst(0) {}
+		disasm() : decode(), pc(0) {}
 	};
 
 	enum rva {
@@ -76,8 +75,8 @@ namespace riscv {
 		while(rvxi->addr != rva_none) {
 			if (rvxi->op2 == dec.op) {
 				for (auto li = dec_hist.rbegin(); li != dec_hist.rend(); li++) {
-					if (rvxi->op1 != li->op && dec.rs1 == li->rd) break; // break: another primitive encountered
-					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue; // continue: not the right pair
+					if (rvxi->op1 != li->op && dec.rv.r.rs1 == li->rv.r.rd) break; // break: another primitive encountered
+					if (rvxi->op1 != li->op || dec.rv.r.rs1 != li->rv.r.rd) continue; // continue: not the right pair
 					switch (rvxi->addr) {
 						case rva_abs:
 							addr = li->imm + dec.imm;
@@ -101,7 +100,7 @@ namespace riscv {
 	template <typename T>
 	bool deocde_gprel(T &dec, uint64_t &addr, uintptr_t gp)
 	{
-		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
+		if (!gp || dec.rv.r.rs1 != riscv_ireg_gp) return false;
 		switch (dec.op) {
 			case riscv_op_addi:
 			case riscv_op_lb:
@@ -144,14 +143,14 @@ namespace riscv {
 				case '(': args += "("; break;
 				case ',': args += ", "; break;
 				case ')': args += ")"; break;
-				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
-				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
-				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
-				case '3': args += riscv_freg_name_sym[dec.rd]; break;
-				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
-				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
-				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
-				case '7': args += format_string("%d", dec.rs1); break;
+				case '0': args += riscv_ireg_name_sym[dec.rv.r.rd]; break;
+				case '1': args += riscv_ireg_name_sym[dec.rv.r.rs1]; break;
+				case '2': args += riscv_ireg_name_sym[dec.rv.r.rs2]; break;
+				case '3': args += riscv_freg_name_sym[dec.rv.r.rd]; break;
+				case '4': args += riscv_freg_name_sym[dec.rv.r.rs1]; break;
+				case '5': args += riscv_freg_name_sym[dec.rv.r.rs2]; break;
+				case '6': args += riscv_freg_name_sym[dec.rv.r.rs3]; break;
+				case '7': args += format_string("%d", dec.rv.r.rs1); break;
 				case 'i': args += format_string("%d", dec.imm); break;
 				case 'o': args += format_string("pc %c %td",
 					intptr_t(dec.imm) < 0 ? '-' : '+',
@@ -163,7 +162,7 @@ namespace riscv {
 					break;
 				}
 				case 'r':
-					switch(dec.rm) {
+					switch(dec.rv.r.rm) {
 						case riscv_rm_rne: args += "rne"; break;
 						case riscv_rm_rtz: args += "rtz"; break;
 						case riscv_rm_rdn: args += "rdn"; break;
@@ -174,20 +173,20 @@ namespace riscv {
 					}
 					break;
 				case 'p':
-					if (dec.pred & riscv_fence_i) args += "i";
-					if (dec.pred & riscv_fence_o) args += "o";
-					if (dec.pred & riscv_fence_r) args += "r";
-					if (dec.pred & riscv_fence_w) args += "w";
+					if (dec.rv.fence.pred & riscv_fence_i) args += "i";
+					if (dec.rv.fence.pred & riscv_fence_o) args += "o";
+					if (dec.rv.fence.pred & riscv_fence_r) args += "r";
+					if (dec.rv.fence.pred & riscv_fence_w) args += "w";
 					break;
 				case 's':
-					if (dec.succ & riscv_fence_i) args += "i";
-					if (dec.succ & riscv_fence_o) args += "o";
-					if (dec.succ & riscv_fence_r) args += "r";
-					if (dec.succ & riscv_fence_w) args += "w";
+					if (dec.rv.fence.succ & riscv_fence_i) args += "i";
+					if (dec.rv.fence.succ & riscv_fence_o) args += "o";
+					if (dec.rv.fence.succ & riscv_fence_r) args += "r";
+					if (dec.rv.fence.succ & riscv_fence_w) args += "w";
 					break;
 				case '\t': while (args.length() < 12) args += " "; break;
-				case 'A': if (dec.aq) args += ".aq"; break;
-				case 'R': if (dec.rl) args += ".rl"; break;
+				case 'A': if (dec.rv.amo.aq) args += ".aq"; break;
+				case 'R': if (dec.rv.amo.rl) args += ".rl"; break;
 				default:
 					break;
 			}

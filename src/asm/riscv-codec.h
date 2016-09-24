@@ -65,30 +65,51 @@
 namespace riscv
 {
 
+	struct decode
+	{
+		int32_t   imm;
+
+		union {
+			uint32_t inst;
+			struct {
+				uint32_t opcode : 7;
+				uint32_t rd     : 5;
+				uint32_t rm     : 3;
+				uint32_t rs1    : 5;
+				uint32_t rs2    : 5;
+				uint32_t _pad1  : 2;
+				uint32_t rs3    : 5;
+			} r;
+			struct {
+				uint32_t _pad1  : 25;
+				uint32_t rl     : 1;
+				uint32_t aq     : 1;
+				uint32_t _pad2  : 5;
+			} amo;
+			struct {
+				uint32_t _pad1  : 20;
+				uint32_t succ   : 4;
+				uint32_t pred   : 4;
+				uint32_t _pad2  : 4;
+			} fence;
+		} rv;
+
+		union {
+			uint16_t inst;
+		} rvc;
+
+		uint8_t  op;
+		uint8_t  codec;
+
+
+		decode() : imm(0), rv{ .inst = 0 }, rvc{ .inst = 0 }, op(0), codec(0) {}
+	};
+
 	#include "riscv-operands.h"
 	#include "riscv-decode.h"
 	#include "riscv-encode.h"
 	#include "riscv-switch.h"
 	#include "riscv-constraints.h"
-
-	struct decode
-	{
-		int32_t   imm;        /* : 20 (44 variable redundant bits) pre-shifted */
-		uint32_t  rd    : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs1   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs2   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs3   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  op    : 8;  /* : 8  (~251 entries) nearly full */
-		uint32_t  codec : 8;  /* : 8  (~42 entries) can grow */
-		uint32_t  rm    : 3;  /* less frequently used - round mode for some FPU ops */
-		uint32_t  aq    : 1;  /* less frequently used - acquire for atomic ops */
-		uint32_t  rl    : 1;  /* less frequently used - release for atomic ops */
-		uint32_t  pred  : 4;  /* less frequently used - pred for fence */
-		uint32_t  succ  : 4;  /* less frequently used - succ for fence */
-
-		decode()
-			: imm(0), rd(0), rs1(0), rs2(0), rs3(0), op(0), codec(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
-	};
 
 
 	/* Instruction Length */
@@ -163,6 +184,7 @@ namespace riscv
 	template <typename T, bool rv32, bool rv64, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
 	inline void decode_inst(T &dec, uint64_t inst)
 	{
+		dec.rv.inst = u32(inst);
 		dec.op = decode_inst_op<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(inst);
 		decode_inst_type<T>(dec, inst);
 	}

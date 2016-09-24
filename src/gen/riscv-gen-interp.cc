@@ -98,24 +98,24 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "s64(frs1)", "frs1.r.l.val");
 			inst = replace(inst, "s64(frs2)", "frs2.r.l.val");
 			if (inst.find("frd") != std::string::npos) {
-				inst = replace(inst, "frd", "proc.freg[dec.rd]");
+				inst = replace(inst, "frd", "proc.freg[dec.rv.r.rd]");
 			} else {
-				inst = replace(inst, "rd", "if (dec.rd != 0) proc.ireg[dec.rd]");
+				inst = replace(inst, "rd", "if (dec.rv.r.rd != 0) proc.ireg[dec.rv.r.rd]");
 			}
 			if (inst.find("frs1") != std::string::npos) {
-				inst = replace(inst, "frs1", "proc.freg[dec.rs1]");
+				inst = replace(inst, "frs1", "proc.freg[dec.rv.r.rs1]");
 			} else {
-				inst = replace(inst, "rs1", "proc.ireg[dec.rs1]");
+				inst = replace(inst, "rs1", "proc.ireg[dec.rv.r.rs1]");
 			}
 			if (inst.find("frs2") != std::string::npos) {
-				inst = replace(inst, "frs2", "proc.freg[dec.rs2]");
+				inst = replace(inst, "frs2", "proc.freg[dec.rv.r.rs2]");
 			} else {
-				inst = replace(inst, "rs2", "proc.ireg[dec.rs2]");
+				inst = replace(inst, "rs2", "proc.ireg[dec.rv.r.rs2]");
 			}
 			if (inst.find("frs3") != std::string::npos) {
-				inst = replace(inst, "frs3", "proc.freg[dec.rs3]");
+				inst = replace(inst, "frs3", "proc.freg[dec.rv.r.rs3]");
 			} else {
-				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
+				inst = replace(inst, "rs3", "proc.ireg[dec.rv.r.rs3]");
 			}
 			printf("\t\t\tif (rv%c) {\n", opcode->extensions.front()->alpha_code);
 			printf("\t\t\t\t%s;\n",  inst.c_str());

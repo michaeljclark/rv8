@@ -117,8 +117,8 @@ struct riscv_parse_elf
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &inst_length);
-			decode_inst_rv64(dec, dec.inst);
+			dec.rv.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.rv.inst);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
@@ -153,8 +153,8 @@ struct riscv_parse_elf
 		uintptr_t pc = start, inst_length;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &inst_length);
-			decode_inst_rv64(dec, dec.inst);
+			dec.rv.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.rv.inst);
 			if (decode_pseudo) decode_pseudo_inst(dec);
 			disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),

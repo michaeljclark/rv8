@@ -114,11 +114,11 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 	print_pad(offset, 24);
 
 	// print instruction bytes
-	switch (inst_length(dec.inst)) {
-		case 2: print_fmt(offset, "%04llx", dec.inst); break;
-		case 4: print_fmt(offset, "%08llx", dec.inst); break;
-		case 6: print_fmt(offset, "%012llx", dec.inst); break;
-		case 8: print_fmt(offset, "%016llx", dec.inst); break;
+	switch (inst_length(dec.rv.inst)) {
+		case 2: print_fmt(offset, "%04llx", dec.rv.inst); break;
+		case 4: print_fmt(offset, "%08llx", dec.rv.inst); break;
+		case 6: print_fmt(offset, "%012llx", dec.rv.inst); break;
+		case 8: print_fmt(offset, "%016llx", dec.rv.inst); break;
 	}
 	print_pad(offset, 45);
 
@@ -128,14 +128,14 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 			case '(': print_add(offset, "("); break;
 			case ',': print_add(offset, ", "); break;
 			case ')': print_add(offset, ")"); break;
-			case '0': print_add(offset, riscv_ireg_name_sym[dec.rd]); break;
-			case '1': print_add(offset, riscv_ireg_name_sym[dec.rs1]); break;
-			case '2': print_add(offset, riscv_ireg_name_sym[dec.rs2]); break;
-			case '3': print_add(offset, riscv_freg_name_sym[dec.rd]); break;
-			case '4': print_add(offset, riscv_freg_name_sym[dec.rs1]); break;
-			case '5': print_add(offset, riscv_freg_name_sym[dec.rs2]); break;
-			case '6': print_add(offset, riscv_freg_name_sym[dec.rs3]); break;
-			case '7': print_fmt(offset, "%d", dec.rs1); break;
+			case '0': print_add(offset, riscv_ireg_name_sym[dec.rv.r.rd]); break;
+			case '1': print_add(offset, riscv_ireg_name_sym[dec.rv.r.rs1]); break;
+			case '2': print_add(offset, riscv_ireg_name_sym[dec.rv.r.rs2]); break;
+			case '3': print_add(offset, riscv_freg_name_sym[dec.rv.r.rd]); break;
+			case '4': print_add(offset, riscv_freg_name_sym[dec.rv.r.rs1]); break;
+			case '5': print_add(offset, riscv_freg_name_sym[dec.rv.r.rs2]); break;
+			case '6': print_add(offset, riscv_freg_name_sym[dec.rv.r.rs3]); break;
+			case '7': print_fmt(offset, "%d", dec.rv.r.rs1); break;
 			case 'i': print_fmt(offset, "%d", dec.imm); break;
 			case 'o':
 				print_fmt(offset, "pc %c %td",
@@ -148,7 +148,7 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 				else print_fmt(offset, "0x%03x", dec.imm & 0xfff);
 				break;
 			case 'r':
-				switch(dec.rm) {
+				switch(dec.rv.r.rm) {
 					case riscv_rm_rne: print_add(offset, "rne"); break;
 					case riscv_rm_rtz: print_add(offset, "rtz"); break;
 					case riscv_rm_rdn: print_add(offset, "rdn"); break;
@@ -159,16 +159,16 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 				}
 				break;
 			case 'p':
-				if (dec.pred & riscv_fence_i) print_add(offset, "i");
-				if (dec.pred & riscv_fence_o) print_add(offset, "o");
-				if (dec.pred & riscv_fence_r) print_add(offset, "r");
-				if (dec.pred & riscv_fence_w) print_add(offset, "w");
+				if (dec.rv.fence.pred & riscv_fence_i) print_add(offset, "i");
+				if (dec.rv.fence.pred & riscv_fence_o) print_add(offset, "o");
+				if (dec.rv.fence.pred & riscv_fence_r) print_add(offset, "r");
+				if (dec.rv.fence.pred & riscv_fence_w) print_add(offset, "w");
 				break;
 			case 's':
-				if (dec.succ & riscv_fence_i) print_add(offset, "i");
-				if (dec.succ & riscv_fence_o) print_add(offset, "o");
-				if (dec.succ & riscv_fence_r) print_add(offset, "r");
-				if (dec.succ & riscv_fence_w) print_add(offset, "w");
+				if (dec.rv.fence.succ & riscv_fence_i) print_add(offset, "i");
+				if (dec.rv.fence.succ & riscv_fence_o) print_add(offset, "o");
+				if (dec.rv.fence.succ & riscv_fence_r) print_add(offset, "r");
+				if (dec.rv.fence.succ & riscv_fence_w) print_add(offset, "w");
 				break;
 			case 'O':
 				printf("%s", colorize("opcode"));
@@ -179,10 +179,10 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 				printf("%s", colorize("reset"));
  				break;
 			case 'A':
-				if (dec.aq) print_add(offset, ".aq");
+				if (dec.rv.amo.aq) print_add(offset, ".aq");
 				break;
 			case 'R':
-				if (dec.rl) print_add(offset, ".rl");
+				if (dec.rv.amo.rl) print_add(offset, ".rl");
 				break;
 			default:
 				break;

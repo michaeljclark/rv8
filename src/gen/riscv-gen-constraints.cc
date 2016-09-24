@@ -39,7 +39,7 @@ template <typename T>
 inline bool constraint_check(T &dec, const rvc_constraint *c)
 {
 	auto imm = dec.imm;
-	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
+	auto rd = dec.rv.r.rd, rs1 = dec.rv.r.rs1, rs2 = dec.rv.r.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
 )C";

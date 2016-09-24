@@ -64,13 +64,13 @@ struct riscv_histogram_elf
 	size_t regnum(decode &dec, riscv_operand_name operand_name)
 	{
 		switch (operand_name) {
-			case riscv_operand_name_rd: return dec.rd;
-			case riscv_operand_name_rs1: return dec.rs1;
-			case riscv_operand_name_rs2: return dec.rs2;
-			case riscv_operand_name_frd: return dec.rd;
-			case riscv_operand_name_frs1: return dec.rs1;
-			case riscv_operand_name_frs2: return dec.rs2;
-			case riscv_operand_name_frs3: return dec.rs3;
+			case riscv_operand_name_rd: return dec.rv.r.rd;
+			case riscv_operand_name_rs1: return dec.rv.r.rs1;
+			case riscv_operand_name_rs2: return dec.rv.r.rs2;
+			case riscv_operand_name_frd: return dec.rv.r.rd;
+			case riscv_operand_name_frs1: return dec.rv.r.rs1;
+			case riscv_operand_name_frs2: return dec.rv.r.rs2;
+			case riscv_operand_name_frs3: return dec.rv.r.rs3;
 			default: return 0;
 		}
 	}

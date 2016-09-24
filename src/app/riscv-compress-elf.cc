@@ -165,10 +165,10 @@ struct riscv_compress_elf
 				for (auto li = dec_hist.rbegin(); li != dec_hist.rend(); li++) {
 
 					// break if another primitive encountered on the register
-					if (rvxi->op1 != li->op && dec.rs1 == li->rd) break;
+					if (rvxi->op1 != li->op && dec.rv.r.rs1 == li->rv.r.rd) break;
 
 					// continue if until reaching the paired instruction
-					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue;
+					if (rvxi->op1 != li->op || dec.rv.r.rs1 != li->rv.r.rd) continue;
 
 					switch (rvxi->addr) {
 						case rva_abs:
@@ -264,7 +264,7 @@ struct riscv_compress_elf
 	template <typename T>
 	bool deocde_gprel(T &dec, uintptr_t gp)
 	{
-		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
+		if (!gp || dec.rv.r.rs1 != riscv_ireg_gp) return false;
 		switch (dec.op) {
 			case riscv_op_addi:
 			case riscv_op_lb:
@@ -299,8 +299,8 @@ struct riscv_compress_elf
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
 			dec.pc = pc - pc_offset;
-			dec.inst = inst_fetch(pc, &inst_length);
-			decode_inst_rv64(dec, dec.inst);
+			dec.rv.inst = inst_fetch(pc, &inst_length);
+			decode_inst_rv64(dec, dec.rv.inst);
 			decompress_inst_rv64(dec);
 			pc += inst_length;
 		}
@@ -353,7 +353,7 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (bi != bin.begin()) {
-				uintptr_t new_pc = (bi-1)->pc + inst_length((bi-1)->inst);
+				uintptr_t new_pc = (bi-1)->pc + inst_length((bi-1)->rv.inst);
 				elf.update_sym_addr(dec.pc, new_pc);
 				relocations[dec.pc] = new_pc;
 				auto ci = continuations.find(dec.pc);
@@ -363,8 +363,8 @@ struct riscv_compress_elf
 					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
 				}
 			}
-			if (inst_length(dec.inst) == 4 && compress_inst_rv64(dec)) {
-				dec.inst = encode_inst(dec);
+			if (inst_length(dec.rv.inst) == 4 && compress_inst_rv64(dec)) {
+				dec.rv.inst = encode_inst(dec);
 				bytes += 2;
 				saving += 2;
 			} else {
@@ -395,13 +395,13 @@ struct riscv_compress_elf
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
 				} else {
-					dec.inst = encode_inst(dec);
-					rbi->inst = encode_inst(*rbi);
+					dec.rv.inst = encode_inst(dec);
+					rbi->rv.inst = encode_inst(*rbi);
 				}
 			} else if (dec.label_branch) {
 				dec.imm = label_addr[dec.label_branch] - intptr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
-				dec.inst = encode_inst(dec);
+				dec.rv.inst = encode_inst(dec);
 			}
 		}
 	}
@@ -410,14 +410,14 @@ struct riscv_compress_elf
 	{
 		while (size > 0) {
 			spasm dec;
-			dec.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
-			decode_inst_rv64(dec, dec.inst);
-			dec.pc = bin.back().pc + inst_length(bin.back().inst);
+			dec.rv.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
+			decode_inst_rv64(dec, dec.rv.inst);
+			dec.pc = bin.back().pc + inst_length(bin.back().rv.inst);
 			if (size == 2) {
 				compress_inst_rv64(dec);
-				dec.inst = encode_inst(dec);
+				dec.rv.inst = encode_inst(dec);
 			}
-			size -= inst_length(dec.inst);
+			size -= inst_length(dec.rv.inst);
 			bin.push_back(dec);
 		}
 	}
@@ -430,10 +430,10 @@ struct riscv_compress_elf
 			if (pc < start || pc > end) {
 				panic("pc outside of section range");
 			}
-			size_t inst_len = inst_length(dec.inst);
+			size_t inst_len = inst_length(dec.rv.inst);
 			switch (inst_len) {
-				case 2: *((uint16_t*)pc) = htole16(dec.inst); break;
-				case 4: *((uint32_t*)pc) = htole32(dec.inst); break;
+				case 2: *((uint16_t*)pc) = htole16(dec.rv.inst); break;
+				case 4: *((uint32_t*)pc) = htole32(dec.rv.inst); break;
 				default: panic("can only handle 2 or 4 byte insts");
 			}
 			pc += inst_len;

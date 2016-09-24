@@ -26,15 +26,29 @@ namespace riscv {
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool load(P &proc, UX va, T &val)
+		template <typename P, typename T, bool aligned> bool load(P &proc, UX va, T &val)
 		{
 			return false; // TODO
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool store(P &proc, UX va, T val)
+		template <typename P, typename T, bool aligned> bool store(P &proc, UX va, T val)
 		{
 			return false; // TODO
+		}
+
+		// T is one of u64, u32, u16, u8
+		template <typename P> uintptr_t get_addr(P &proc, UX va)
+		{
+			switch (proc.mstatus.vm) {
+				case riscv_vm_mbare: break;
+				case riscv_vm_mbb: break;
+				case riscv_vm_mbid: break;
+				case riscv_vm_sv32: break;
+				case riscv_vm_sv39: break;
+				case riscv_vm_sv48: break;
+			}
+			return -1;
 		}
 
 		// PTM is one of sv32, sv39, sv48

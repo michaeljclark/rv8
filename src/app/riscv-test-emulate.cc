@@ -103,13 +103,13 @@ struct processor_base : P
 	size_t regnum(T &dec, riscv_operand_name operand_name)
 	{
 		switch (operand_name) {
-			case riscv_operand_name_rd: return dec.rd;
-			case riscv_operand_name_rs1: return dec.rs1;
-			case riscv_operand_name_rs2: return dec.rs2;
-			case riscv_operand_name_frd: return dec.rd;
-			case riscv_operand_name_frs1: return dec.rs1;
-			case riscv_operand_name_frs2: return dec.rs2;
-			case riscv_operand_name_frs3: return dec.rs3;
+			case riscv_operand_name_rd: return dec.rv.r.rd;
+			case riscv_operand_name_rs1: return dec.rv.r.rs1;
+			case riscv_operand_name_rs2: return dec.rv.r.rs2;
+			case riscv_operand_name_frd: return dec.rv.r.rd;
+			case riscv_operand_name_frs1: return dec.rv.r.rs1;
+			case riscv_operand_name_frs2: return dec.rv.r.rs2;
+			case riscv_operand_name_frs3: return dec.rv.r.rs3;
 			default: return 0;
 		}
 	}
@@ -251,7 +251,7 @@ struct processor_rv32imac_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
-		decompress_inst_rv32<T>(dec);
+		//decompress_inst_rv32<T>(dec);
 	}
 
 	bool inst_exec(T &dec, size_t inst_len) {
@@ -276,7 +276,7 @@ struct processor_rv32imafdc_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
-		decompress_inst_rv32<T>(dec);
+		//decompress_inst_rv32<T>(dec);
 	}
 
 	bool inst_exec(T &dec, size_t inst_len) {
@@ -304,7 +304,7 @@ struct processor_rv64imac_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
-		decompress_inst_rv64<T>(dec);
+		//decompress_inst_rv64<T>(dec);
 	}
 
 	bool inst_exec(T &dec, size_t inst_len) {
@@ -329,7 +329,7 @@ struct processor_rv64imafdc_unit : B
 {
 	void inst_decode(T &dec, uint64_t inst) {
 		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
-		decompress_inst_rv64<T>(dec);
+		//decompress_inst_rv64<T>(dec);
 	}
 
 	bool inst_exec(T &dec, size_t inst_len) {
@@ -350,7 +350,7 @@ struct processor_proxy : P
 		size_t msb, size_t lsb)
 	{
 		const size_t shift = lsb, mask = (1 << (msb - lsb + 1)) - 1;
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = (csr >> shift) & mask;
+		if (dec.rv.r.rd != riscv_ireg_x0) P::ireg[dec.rv.r.rd] = (csr >> shift) & mask;
 		switch (op) {
 			case csr_rw: csr = value; break;
 			case csr_rs: if (value) csr |= ((value & mask) << shift); break;
@@ -361,13 +361,13 @@ struct processor_proxy : P
 	template <typename T>
 	void read_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
 	{
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = csr;
+		if (dec.rv.r.rd != riscv_ireg_x0) P::ireg[dec.rv.r.rd] = csr;
 	}
 
 	template <typename T>
 	void read_csr_hi(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
 	{
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
+		if (dec.rv.r.rd != riscv_ireg_x0) P::ireg[dec.rv.r.rd] = s32(u32(csr >> 32));
 	}
 
 	bool inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, size_t inst_len)
@@ -401,12 +401,12 @@ struct processor_proxy : P
 	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
 		switch (dec.op) {
 			case riscv_op_ecall:  proxy_syscall(*this); P::pc += inst_len; return true;
-			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, inst_len);
-			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, inst_len);
-			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, inst_len);
+			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rv.r.rs1], inst_len);
+			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rv.r.rs1], inst_len);
+			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rv.r.rs1], inst_len);
+			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rv.r.rs1, inst_len);
+			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rv.r.rs1, inst_len);
+			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rv.r.rs1, inst_len);
 			default: break;
 		}
 		return false;
@@ -452,7 +452,6 @@ struct processor_stepper : P
 
 	struct riscv_inst_cache_ent
 	{
-		uint64_t inst;
 		typename P::decode_type dec;
 	};
 
@@ -466,11 +465,10 @@ struct processor_stepper : P
 		while (i < count) {
 			inst = inst_fetch(P::pc, &inst_len); // TODO - MMU
 			uint64_t inst_cache_key = inst % inst_cache_size;
-			if (inst_cache[inst_cache_key].inst == inst) {
+			if (inst_cache[inst_cache_key].dec.rv.inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
 			} else {
 				P::inst_decode(dec, inst);
-				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
 			if (P::inst_exec(dec, inst_len) || P::inst_priv(dec, inst_len)) {
