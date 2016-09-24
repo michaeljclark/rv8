@@ -455,7 +455,8 @@ R"C(#include "riscv-types.h"
 	print_array_illegal_uint64(0ULL, no_comment);
 	for (auto &opcode : gen->opcodes) {
 		printf("\t%s0x%016" PRIx64 ",\n",
-			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(), opcode->mask);
+			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
+			opcode->mask);
 	}
 	printf("};\n\n");
 
