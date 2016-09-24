@@ -136,7 +136,7 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 			case '5': print_add(offset, riscv_freg_name_sym[dec.rs2]); break;
 			case '6': print_add(offset, riscv_freg_name_sym[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
-			case 'i': print_fmt(offset, "%lld", dec.imm); break;
+			case 'i': print_fmt(offset, "%d", dec.imm); break;
 			case 'o':
 				print_fmt(offset, "pc %c %td",
 					intptr_t(dec.imm) < 0 ? '-' : '+',

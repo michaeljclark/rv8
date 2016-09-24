@@ -152,7 +152,7 @@ namespace riscv {
 				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
 				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
 				case '7': args += format_string("%d", dec.rs1); break;
-				case 'i': args += format_string("%lld", dec.imm); break;
+				case 'i': args += format_string("%d", dec.imm); break;
 				case 'o': args += format_string("pc %c %td",
 					intptr_t(dec.imm) < 0 ? '-' : '+',
 					intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm)); break;
