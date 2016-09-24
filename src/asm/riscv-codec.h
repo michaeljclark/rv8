@@ -73,18 +73,18 @@ namespace riscv
 
 	struct decode
 	{
-		int32_t   imm;        /* : 20 (44 variable redundant bits) pre-shifted */
-		uint32_t  rd    : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs1   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs2   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  rs3   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
-		uint32_t  op    : 8;  /* : 8  (~251 entries) nearly full */
-		uint32_t  codec : 8;  /* : 8  (~42 entries) can grow */
-		uint32_t  rm    : 3;  /* less frequently used - round mode for some FPU ops */
-		uint32_t  aq    : 1;  /* less frequently used - acquire for atomic ops */
-		uint32_t  rl    : 1;  /* less frequently used - release for atomic ops */
-		uint32_t  pred  : 4;  /* less frequently used - pred for fence */
-		uint32_t  succ  : 4;  /* less frequently used - succ for fence */
+		int32_t   imm;        /* decoded immediate */
+		uint32_t  rd    : 8;  /* (5 bits) byte aligned for performance */
+		uint32_t  rs1   : 8;  /* (5 bits) byte aligned for performance */
+		uint32_t  rs2   : 8;  /* (5 bits) byte aligned for performance */
+		uint32_t  rs3   : 8;  /* (5 bits) byte aligned for performance */
+		uint32_t  op    : 8;  /* (~251 entries) nearly full */
+		uint32_t  codec : 8;  /* (~42 entries) can grow */
+		uint32_t  rm    : 3;  /* round mode for some FPU ops */
+		uint32_t  aq    : 1;  /* acquire for atomic ops */
+		uint32_t  rl    : 1;  /* release for atomic ops */
+		uint32_t  pred  : 4;  /* pred for fence */
+		uint32_t  succ  : 4;  /* succ for fence */
 
 		decode()
 			: imm(0), rd(0), rs1(0), rs2(0), rs3(0), op(0), codec(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
