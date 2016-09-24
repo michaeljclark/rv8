@@ -14,7 +14,7 @@ inline bool constraint_check(T &dec, const rvc_constraint *c)
 	auto rd = dec.rd, rs1 = dec.rs1, rs2 = dec.rs2;
 	while (*c != rvc_end) {
 		switch (*c) {
-			case rvc_simm_6:         if (!(imm >= -32ULL && imm < 32ULL)) return false; break;
+			case rvc_simm_6:         if (!(imm >= -32 && imm < 32)) return false; break;
 			case rvc_imm_6:          if (!(imm <= 0b111111)) return false; break;
 			case rvc_imm_7:          if (!(imm <= 0b1111111)) return false; break;
 			case rvc_imm_8:          if (!(imm <= 0b11111111)) return false; break;
@@ -43,7 +43,7 @@ inline bool constraint_check(T &dec, const rvc_constraint *c)
 			case rvc_rs1_eq_rs2:     if (!(rs1 == rs2)) return false; break;
 			case rvc_rs1_eq_ra:      if (!(rs1 == 1)) return false; break;
 			case rvc_imm_z:          if (!(imm == 0)) return false; break;
-			case rvc_imm_n1:         if (!(imm == -1ULL)) return false; break;
+			case rvc_imm_n1:         if (!(imm == -1)) return false; break;
 			case rvc_imm_p1:         if (!(imm == 1)) return false; break;
 			case rvc_csr_0x001:      if (!(imm == 0x001)) return false; break;
 			case rvc_csr_0x002:      if (!(imm == 0x002)) return false; break;

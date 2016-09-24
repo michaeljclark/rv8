@@ -73,7 +73,7 @@ namespace riscv
 
 	struct decode
 	{
-		uint64_t  imm;        /* : 20 (44 variable redundant bits) pre-shifted */
+		int32_t   imm;        /* : 20 (44 variable redundant bits) pre-shifted */
 		uint32_t  rd    : 8;  /* : 5  (3 redundant bits) sized for rw perf */
 		uint32_t  rs1   : 8;  /* : 5  (3 redundant bits) sized for rw perf */
 		uint32_t  rs2   : 8;  /* : 5  (3 redundant bits) sized for rw perf */

@@ -59,6 +59,7 @@ static void print_interp_h(riscv_gen *gen)
 			bool jump = branch_or_jump && !branch;
 			printf("\t\tcase %s: {\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
+			inst = replace(inst, "ptr", "uintptr_t");
 			inst = replace(inst, "fenv_setrm(rm)", "fenv_setrm((proc.fcsr >> 5) & 0b111)");
 			inst = replace(inst, "fenv_setflags(fcsr)", "fenv_setflags(proc.fcsr)");
 			inst = replace(inst, "pc", "proc.pc");

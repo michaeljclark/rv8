@@ -172,7 +172,7 @@ enum riscv_intr
 enum rvc_constraint
 {
 	rvc_end,
-	rvc_simm_6,                         /* imm >= -32ULL && imm < 32ULL */
+	rvc_simm_6,                         /* imm >= -32 && imm < 32 */
 	rvc_imm_6,                          /* imm <= 0b111111 */
 	rvc_imm_7,                          /* imm <= 0b1111111 */
 	rvc_imm_8,                          /* imm <= 0b11111111 */
@@ -201,7 +201,7 @@ enum rvc_constraint
 	rvc_rs1_eq_rs2,                     /* rs1 == rs2 */
 	rvc_rs1_eq_ra,                      /* rs1 == 1 */
 	rvc_imm_z,                          /* imm == 0 */
-	rvc_imm_n1,                         /* imm == -1ULL */
+	rvc_imm_n1,                         /* imm == -1 */
 	rvc_imm_p1,                         /* imm == 1 */
 	rvc_csr_0x001,                      /* imm == 0x001 */
 	rvc_csr_0x002,                      /* imm == 0x002 */
