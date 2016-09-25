@@ -52,11 +52,19 @@ namespace riscv {
 		#else
 			struct { s64 hi;  u64 lo; }      d;
 		#endif
+		#if defined (__SIZEOF_INT128__)
 			signed __int128                  q;
+		#endif
 		} r;
 
 		__s128() : r{ .b = { {0} } } {}
 		__s128(const __s128 &o) : r{ .b = o.r.b } {}
+
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+		__s128(s64 hi, u64 lo) : r{ .d = { .lo = lo, .hi = hi } } {}
+		#else
+		__s128(s64 hi, u64 lo) : r{ .d = { .hi = hi, .lo = lo } } {}
+		#endif
 	};
 
 	struct __u128
@@ -68,11 +76,19 @@ namespace riscv {
 		#else
 			struct { u64 hi;  u64 lo; }      d;
 		#endif
+		#if defined (__SIZEOF_INT128__)
 			unsigned __int128                q;
+		#endif
 		} r;
 
 		__u128() : r{ .b = { {0} } } {}
 		__u128(const __u128 &o) : r{ .b = o.r.b } {}
+
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+		__u128(u64 hi, u64 lo) : r{ .d = { .lo = lo, .hi = hi } } {}
+		#else
+		__u128(u64 hi, u64 lo) : r{ .d = { .hi = hi, .lo = lo } } {}
+		#endif
 	};
 
 	typedef __s128             s128;

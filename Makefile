@@ -261,6 +261,11 @@ TEST_MUL_SRCS = $(SRC_DIR)/app/riscv-test-mul.cc
 TEST_MUL_OBJS = $(call src_objs, $(TEST_MUL_SRCS))
 TEST_MUL_BIN = $(BIN_DIR)/riscv-test-mul
 
+# test-operators
+TEST_OPERATORS_SRCS = $(SRC_DIR)/app/riscv-test-operators.cc
+TEST_OPERATORS_OBJS = $(call src_objs, $(TEST_OPERATORS_SRCS))
+TEST_OPERATORS_BIN = $(BIN_DIR)/riscv-test-operators
+
 # test-rand
 TEST_RAND_SRCS = $(SRC_DIR)/app/riscv-test-rand.cc
 TEST_RAND_OBJS = $(call src_objs, $(TEST_RAND_SRCS))
@@ -285,6 +290,7 @@ ALL_SRCS = $(RV_ASM_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_MMU_SRCS) \
            $(TEST_MUL_SRCS) \
+           $(TEST_OPERATORS_SRCS) \
            $(TEST_RAND_SRCS)
 
 BINARIES = $(COMPRESS_ELF_BIN) \
@@ -298,6 +304,7 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(TEST_ENDIAN_BIN) \
            $(TEST_MMU_BIN) \
            $(TEST_MUL_BIN) \
+           $(TEST_OPERATORS_BIN) \
            $(TEST_RAND_BIN)
 
 # build rules
@@ -475,6 +482,10 @@ $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_MUL_BIN): $(TEST_MUL_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_OPERATORS_BIN): $(TEST_OPERATORS_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
