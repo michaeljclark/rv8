@@ -26,9 +26,19 @@ namespace riscv
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo < y.r.d.lo));
 	}
 
+	inline bool operator>(const u128 &x, const u128 &y)
+	{
+		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo > y.r.d.lo));
+	}
+
 	inline bool operator>=(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo >= y.r.d.lo));
+	}
+
+	inline bool operator<=(const u128 &x, const u128 &y)
+	{
+		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo <= y.r.d.lo));
 	}
 
 	inline u128 operator&(const u128 &x, const u128 &y)
@@ -44,6 +54,21 @@ namespace riscv
 	inline u128 operator^(const u128 &x, const u128 &y)
 	{
 		return u128(x.r.d.hi ^ y.r.d.hi, x.r.d.lo ^ y.r.d.lo);
+	}
+
+	inline u128 operator&(const u128 &x, s32 y)
+	{
+		return u128(x.r.d.hi, x.r.d.lo & y);
+	}
+
+	inline u128 operator|(const u128 &x, s32 y)
+	{
+		return u128(x.r.d.hi, x.r.d.lo | y);
+	}
+
+	inline u128 operator^(const u128 &x, s32 y)
+	{
+		return u128(x.r.d.hi, x.r.d.lo ^ y);
 	}
 
 	inline u128 operator<<(const u128 &x, int shift)
@@ -93,9 +118,19 @@ namespace riscv
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo < y.r.d.lo));
 	}
 
+	inline bool operator>(const s128 &x, const s128 &y)
+	{
+		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo > y.r.d.lo));
+	}
+
 	inline bool operator>=(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo >= y.r.d.lo));
+	}
+
+	inline bool operator<=(const s128 &x, const s128 &y)
+	{
+		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo <= y.r.d.lo));
 	}
 
 	inline s128 operator&(const s128 &x, const s128 &y)
@@ -111,6 +146,21 @@ namespace riscv
 	inline s128 operator^(const s128 &x, const s128 &y)
 	{
 		return s128(x.r.d.hi ^ y.r.d.hi, x.r.d.lo ^ y.r.d.lo);
+	}
+
+	inline s128 operator&(const s128 &x, s32 y)
+	{
+		return s128(x.r.d.hi, x.r.d.lo & y);
+	}
+
+	inline s128 operator|(const s128 &x, s32 y)
+	{
+		return s128(x.r.d.hi, x.r.d.lo | y);
+	}
+
+	inline s128 operator^(const s128 &x, s32 y)
+	{
+		return s128(x.r.d.hi, x.r.d.lo ^ y);
 	}
 
 	inline s128 operator>>(const s128 &x, int shift)
