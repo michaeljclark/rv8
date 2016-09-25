@@ -1097,7 +1097,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_addiw: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.ireg[dec.rs1]) + s32(dec.imm);
+				if (dec.rd != 0) proc.ireg[dec.rd] = s32(s32(proc.ireg[dec.rs1]) + sx(dec.imm));
 				proc.pc += inst_length;
 				return true;
 			};
