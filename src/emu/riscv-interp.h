@@ -151,14 +151,14 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_slti: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(dec.imm) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sltiu: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(dec.imm) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -228,14 +228,14 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_slt: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(proc.ireg[dec.rs2]) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(proc.ireg[dec.rs2]);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sltu: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(proc.ireg[dec.rs2]) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(proc.ireg[dec.rs2]);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -536,21 +536,21 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fle_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_flt_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_feq_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -732,21 +732,21 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fle_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_flt_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_feq_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -936,14 +936,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_slti: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(dec.imm) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sltiu: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(dec.imm) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(dec.imm);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -992,14 +992,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_slt: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(proc.ireg[dec.rs2]) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) < sx(proc.ireg[dec.rs2]);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_sltu: {
 			if (rvi) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(proc.ireg[dec.rs2]) ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = ux(proc.ireg[dec.rs1]) < ux(proc.ireg[dec.rs2]);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1517,21 +1517,21 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fle_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val <= proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_flt_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_feq_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.s.val == proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1741,21 +1741,21 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fle_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val <= proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_flt_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_feq_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val ? 1 : 0;
+				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.d.val == proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
