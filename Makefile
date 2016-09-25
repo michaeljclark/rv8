@@ -325,6 +325,10 @@ TEST_RV64C =    ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf
 TEST_RV32 =     ARCH=RV32IMAFD TARGET=riscv32-unknown-elf
 TEST_RV32C =    ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
 
+qemu-tests:
+	( cd riscv-qemu-tests && make )
+	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(BIN_DIR)/riscv-test-emulate run )
+
 test-run: test-run-rv64
 test-emulate: test-emulate-rv64
 

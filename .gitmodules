@@ -1,0 +1,3 @@
+[submodule "riscv-qemu-tests"]
+	path = riscv-qemu-tests
+	url = https://github.com/arsv/riscv-qemu-tests.git
