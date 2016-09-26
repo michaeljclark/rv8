@@ -35,7 +35,11 @@ static void print_constraints_h(riscv_gen *gen)
 R"C(#ifndef riscv_constraints_h
 #define riscv_constraints_h
 
-template <typename T>
+)C";
+
+	static const char* kConstraintsCheckHeader =
+
+R"C(template <typename T>
 inline bool constraint_check(T &dec, const rvc_constraint *c)
 {
 	auto imm = dec.imm;
@@ -44,25 +48,64 @@ inline bool constraint_check(T &dec, const rvc_constraint *c)
 		switch (*c) {
 )C";
 
-static const char* kConstraintsFooter =
+static const char* kConstraintsCheckFooter =
 
-R"C(			case rvc_end:           break;
+R"C(			default:                 break;
 		}
 		c++;
 	}
 	return true;
 }
 
-#endif
+)C";
+
+	static const char* kConstraintsSetHeader =
+
+R"C(template <typename T>
+inline void constraint_set(T &dec, const rvc_constraint *c)
+{
+	auto &imm = dec.imm;
+	auto &rd = dec.rd, &rs1 = dec.rs1, &rs2 = dec.rs2;
+	while (*c != rvc_end) {
+		switch (*c) {
+)C";
+
+static const char* kConstraintsSetFooter =
+
+R"C(			default:                 break;
+		}
+		c++;
+	}
+}
+
+)C";
+
+static const char* kConstraintsFooter =
+
+R"C(#endif
 )C";
 
 	printf(kCHeader, "riscv-constraints.h");
 	printf("%s", kConstraintsHeader);
+
+	printf("%s", kConstraintsCheckHeader);
 	for (auto &constraint : gen->constraints) {
 		printf("\t\t\tcase rvc_%-16sif (!(%s)) return false; break;\n",
 			format_string("%s:", constraint->name.c_str()).c_str(),
 			constraint->expression.c_str());
 	}
+	printf("%s", kConstraintsCheckFooter);
+
+	printf("%s", kConstraintsSetHeader);
+	for (auto &constraint : gen->constraints) {
+		if (constraint->name.find("_eq_") == std::string::npos) continue;
+		std::string constraint_set = replace(constraint->expression, "==", "=");
+		printf("\t\t\tcase rvc_%-16s%s; break;\n",
+			format_string("%s:", constraint->name.c_str()).c_str(),
+			constraint_set.c_str());
+	}
+	printf("%s", kConstraintsSetFooter);
+
 	printf("%s", kConstraintsFooter);
 }
 

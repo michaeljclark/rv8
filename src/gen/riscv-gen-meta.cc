@@ -91,6 +91,7 @@ extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
 extern const riscv_comp_data* riscv_inst_pseudo[];
+extern const riscv_comp_data riscv_inst_depseudo[];
 )C";
 
 	static const char* kMetaFooter =
@@ -503,6 +504,28 @@ R"C(#include "riscv-types.h"
 		printf("\t%s%s,\n",
 			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
 			include_isa && opcode->pseudos.size() > 0 ? rvcp_name.c_str() : "nullptr");
+	}
+	printf("};\n\n");
+
+	// Depseudoinstruction table (per isa width)
+	printf("const riscv_comp_data riscv_inst_depseudo[] = {\n");
+	printf("\t%s{ %s, nullptr },\n",
+		no_comment ? "" : unknown_op_comment,
+		zero_not_oh ? "0" : "riscv_op_illegal");
+	for (auto &opcode : gen->opcodes) {
+		std::string opcode_key = riscv_meta_model::opcode_format("", opcode, ".");
+		printf("\t%s{ %s, %s },\n",
+			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
+			opcode->pseudo ?
+				(zero_not_oh ?
+					format_string("%lu", opcode->pseudo->real_opcode->num).c_str() :
+					riscv_meta_model::opcode_format("riscv_op_", opcode->pseudo->real_opcode, "_").c_str()) :
+				(zero_not_oh ?
+					"0" :
+					"riscv_op_illegal"),
+			opcode->pseudo ?
+				riscv_meta_model::opcode_format("rvcc_", opcode, "_").c_str() :
+				"nullptr");
 	}
 	printf("};\n\n");
 

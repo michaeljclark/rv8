@@ -793,4 +793,82 @@ inline f64 test_fmv_d_x(sx s1)
 }
 #endif
 
+#define fmt_res_fmv_s "%.9ef"
+#define fmt_arg_fmv_s "%.9ef, %.9ef"
+inline f32 test_fmv_s(f32 s1, f32 s2)
+{
+	f32 d;
+	asm("fmv.s %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
+#define fmt_res_fabs_s "%.9ef"
+#define fmt_arg_fabs_s "%.9ef, %.9ef"
+inline f32 test_fabs_s(f32 s1, f32 s2)
+{
+	f32 d;
+	asm("fabs.s %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
+#define fmt_res_fneg_s "%.9ef"
+#define fmt_arg_fneg_s "%.9ef, %.9ef"
+inline f32 test_fneg_s(f32 s1, f32 s2)
+{
+	f32 d;
+	asm("fneg.s %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
+#define fmt_res_fmv_d "%.17e"
+#define fmt_arg_fmv_d "%.17e, %.17e"
+inline f64 test_fmv_d(f64 s1, f64 s2)
+{
+	f64 d;
+	asm("fmv.d %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
+#define fmt_res_fabs_d "%.17e"
+#define fmt_arg_fabs_d "%.17e, %.17e"
+inline f64 test_fabs_d(f64 s1, f64 s2)
+{
+	f64 d;
+	asm("fabs.d %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
+#define fmt_res_fneg_d "%.17e"
+#define fmt_arg_fneg_d "%.17e, %.17e"
+inline f64 test_fneg_d(f64 s1, f64 s2)
+{
+	f64 d;
+	asm("fneg.d %[d], %[s1], %[s2]\n"
+		: [d]"=f" (d)
+		: [s1]"f" (s1), [s2]"f" (s2)
+		:
+	);
+	return d;
+}
+
 #endif

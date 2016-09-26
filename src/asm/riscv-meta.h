@@ -198,20 +198,20 @@ enum rvc_constraint
 	rvc_rd_ne_x0,                       /* rd != 0 */
 	rvc_rs1_ne_x0,                      /* rs1 != 0 */
 	rvc_rs2_ne_x0,                      /* rs2 != 0 */
-	rvc_rs1_eq_rs2,                     /* rs1 == rs2 */
+	rvc_rs2_eq_rs1,                     /* rs2 == rs1 */
 	rvc_rs1_eq_ra,                      /* rs1 == 1 */
-	rvc_imm_z,                          /* imm == 0 */
-	rvc_imm_n1,                         /* imm == -1 */
-	rvc_imm_p1,                         /* imm == 1 */
-	rvc_csr_0x001,                      /* imm == 0x001 */
-	rvc_csr_0x002,                      /* imm == 0x002 */
-	rvc_csr_0x003,                      /* imm == 0x003 */
-	rvc_csr_0xc00,                      /* imm == 0xc00 */
-	rvc_csr_0xc01,                      /* imm == 0xc01 */
-	rvc_csr_0xc02,                      /* imm == 0xc02 */
-	rvc_csr_0xc80,                      /* imm == 0xc80 */
-	rvc_csr_0xc81,                      /* imm == 0xc81 */
-	rvc_csr_0xc82,                      /* imm == 0xc82 */
+	rvc_imm_eq_zero,                    /* imm == 0 */
+	rvc_imm_eq_n1,                      /* imm == -1 */
+	rvc_imm_eq_p1,                      /* imm == 1 */
+	rvc_csr_eq_0x001,                   /* imm == 0x001 */
+	rvc_csr_eq_0x002,                   /* imm == 0x002 */
+	rvc_csr_eq_0x003,                   /* imm == 0x003 */
+	rvc_csr_eq_0xc00,                   /* imm == 0xc00 */
+	rvc_csr_eq_0xc01,                   /* imm == 0xc01 */
+	rvc_csr_eq_0xc02,                   /* imm == 0xc02 */
+	rvc_csr_eq_0xc80,                   /* imm == 0xc80 */
+	rvc_csr_eq_0xc81,                   /* imm == 0xc81 */
+	rvc_csr_eq_0xc82,                   /* imm == 0xc82 */
 };
 
 enum riscv_csr
@@ -880,6 +880,7 @@ extern const riscv_operand_data* riscv_inst_operand_data[];
 extern const uint64_t riscv_inst_match[];
 extern const uint64_t riscv_inst_mask[];
 extern const riscv_comp_data* riscv_inst_pseudo[];
+extern const riscv_comp_data riscv_inst_depseudo[];
 extern const riscv_comp_data* riscv_inst_comp_rv32[];
 extern const riscv_comp_data* riscv_inst_comp_rv64[];
 extern const int riscv_inst_decomp_rv32[];

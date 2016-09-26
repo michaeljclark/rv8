@@ -952,6 +952,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		panic("pseudo %s has unknown opcode: %s",
 			pseudo_name.c_str(), part[1].c_str());
 	}
+	auto real_opcode = opcode_list_i->second.front();
 	auto format = formats_by_name[part[2]];
 	if (!format) {
 		panic("pseudo %s has unknown format: %s",
@@ -994,10 +995,11 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 			}
 			pseudo_opcode->operands.push_back(operand);
 		}
+		// use the real opcode extensions
+		pseudo_opcode->extensions = real_opcode->extensions;
 	}
 
 	// create pseudo
-	auto real_opcode = opcode_list_i->second.front();
 	auto pseudo = std::make_shared<riscv_pseudo>(
 		pseudo_name, pseudo_opcode, real_opcode, format, constraint_list
 	);

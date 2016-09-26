@@ -235,6 +235,20 @@ namespace riscv
 		return false;
 	}
 
+
+	/* Encode Pseudoinstruction */
+
+	template <typename T>
+	inline bool encode_pseudo(T &dec)
+	{
+		const riscv_comp_data *comp_data = &riscv_inst_depseudo[dec.op];
+		if (!comp_data->constraints) return false;
+		dec.op = comp_data->op;
+		dec.codec = riscv_inst_codec[dec.op];
+		constraint_set(dec, comp_data->constraints);
+		return true;
+	}
+
 }
 
 #endif

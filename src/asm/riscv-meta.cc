@@ -2510,24 +2510,24 @@ const rvc_constraint rvcc_jal[] = {
 
 const rvc_constraint rvcc_jalr[] = {
 	rvc_rd_eq_ra,
-	rvc_imm_z,
+	rvc_imm_eq_zero,
 	rvc_end
 };
 
 const rvc_constraint rvcc_nop[] = {
 	rvc_rd_eq_x0,
 	rvc_rs1_eq_x0,
-	rvc_imm_z,
+	rvc_imm_eq_zero,
 	rvc_end
 };
 
 const rvc_constraint rvcc_mv[] = {
-	rvc_imm_z,
+	rvc_imm_eq_zero,
 	rvc_end
 };
 
 const rvc_constraint rvcc_not[] = {
-	rvc_imm_n1,
+	rvc_imm_eq_n1,
 	rvc_end
 };
 
@@ -2547,7 +2547,7 @@ const rvc_constraint rvcc_sext_w[] = {
 };
 
 const rvc_constraint rvcc_seqz[] = {
-	rvc_imm_p1,
+	rvc_imm_eq_p1,
 	rvc_end
 };
 
@@ -2567,32 +2567,32 @@ const rvc_constraint rvcc_sgtz[] = {
 };
 
 const rvc_constraint rvcc_fmv_s[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fabs_s[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fneg_s[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fmv_d[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fabs_d[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fneg_d[] = {
-	rvc_rs1_eq_rs2,
+	rvc_rs2_eq_rs1,
 	rvc_end
 };
 
@@ -2639,86 +2639,86 @@ const rvc_constraint rvcc_ret[] = {
 
 const rvc_constraint rvcc_jr[] = {
 	rvc_rd_eq_x0,
-	rvc_imm_z,
+	rvc_imm_eq_zero,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdcycle[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc00,
+	rvc_csr_eq_0xc00,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdtime[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc01,
+	rvc_csr_eq_0xc01,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdinstret[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc02,
+	rvc_csr_eq_0xc02,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdcycleh[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc80,
+	rvc_csr_eq_0xc80,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdtimeh[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc81,
+	rvc_csr_eq_0xc81,
 	rvc_end
 };
 
 const rvc_constraint rvcc_rdinstreth[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0xc80,
+	rvc_csr_eq_0xc80,
 	rvc_end
 };
 
 const rvc_constraint rvcc_frcsr[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0x003,
+	rvc_csr_eq_0x003,
 	rvc_end
 };
 
 const rvc_constraint rvcc_frrm[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0x002,
+	rvc_csr_eq_0x002,
 	rvc_end
 };
 
 const rvc_constraint rvcc_frflags[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_0x001,
+	rvc_csr_eq_0x001,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fscsr[] = {
-	rvc_csr_0x003,
+	rvc_csr_eq_0x003,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fsrm[] = {
-	rvc_csr_0x002,
+	rvc_csr_eq_0x002,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fsflags[] = {
-	rvc_csr_0x001,
+	rvc_csr_eq_0x001,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fsrmi[] = {
-	rvc_csr_0x002,
+	rvc_csr_eq_0x002,
 	rvc_end
 };
 
 const rvc_constraint rvcc_fsflagsi[] = {
-	rvc_csr_0x001,
+	rvc_csr_eq_0x001,
 	rvc_end
 };
 
@@ -3109,6 +3109,260 @@ const riscv_comp_data* riscv_inst_pseudo[] = {
 	/*              fsflags */ nullptr,
 	/*                fsrmi */ nullptr,
 	/*             fsflagsi */ nullptr,
+};
+
+const riscv_comp_data riscv_inst_depseudo[] = {
+	/*              unknown */ { riscv_op_illegal, nullptr },
+	/*                  lui */ { riscv_op_illegal, nullptr },
+	/*                auipc */ { riscv_op_illegal, nullptr },
+	/*                  jal */ { riscv_op_jal, rvcc_jal },
+	/*                 jalr */ { riscv_op_jalr, rvcc_jalr },
+	/*                  beq */ { riscv_op_illegal, nullptr },
+	/*                  bne */ { riscv_op_illegal, nullptr },
+	/*                  blt */ { riscv_op_illegal, nullptr },
+	/*                  bge */ { riscv_op_illegal, nullptr },
+	/*                 bltu */ { riscv_op_illegal, nullptr },
+	/*                 bgeu */ { riscv_op_illegal, nullptr },
+	/*                   lb */ { riscv_op_illegal, nullptr },
+	/*                   lh */ { riscv_op_illegal, nullptr },
+	/*                   lw */ { riscv_op_illegal, nullptr },
+	/*                  lbu */ { riscv_op_illegal, nullptr },
+	/*                  lhu */ { riscv_op_illegal, nullptr },
+	/*                   sb */ { riscv_op_illegal, nullptr },
+	/*                   sh */ { riscv_op_illegal, nullptr },
+	/*                   sw */ { riscv_op_illegal, nullptr },
+	/*                 addi */ { riscv_op_illegal, nullptr },
+	/*                 slti */ { riscv_op_illegal, nullptr },
+	/*                sltiu */ { riscv_op_illegal, nullptr },
+	/*                 xori */ { riscv_op_illegal, nullptr },
+	/*                  ori */ { riscv_op_illegal, nullptr },
+	/*                 andi */ { riscv_op_illegal, nullptr },
+	/*           slli.rv32i */ { riscv_op_illegal, nullptr },
+	/*           srli.rv32i */ { riscv_op_illegal, nullptr },
+	/*           srai.rv32i */ { riscv_op_illegal, nullptr },
+	/*                  add */ { riscv_op_illegal, nullptr },
+	/*                  sub */ { riscv_op_illegal, nullptr },
+	/*                  sll */ { riscv_op_illegal, nullptr },
+	/*                  slt */ { riscv_op_illegal, nullptr },
+	/*                 sltu */ { riscv_op_illegal, nullptr },
+	/*                  xor */ { riscv_op_illegal, nullptr },
+	/*                  srl */ { riscv_op_illegal, nullptr },
+	/*                  sra */ { riscv_op_illegal, nullptr },
+	/*                   or */ { riscv_op_illegal, nullptr },
+	/*                  and */ { riscv_op_illegal, nullptr },
+	/*                fence */ { riscv_op_illegal, nullptr },
+	/*              fence.i */ { riscv_op_illegal, nullptr },
+	/*                  lwu */ { riscv_op_illegal, nullptr },
+	/*                   ld */ { riscv_op_illegal, nullptr },
+	/*                   sd */ { riscv_op_illegal, nullptr },
+	/*           slli.rv64i */ { riscv_op_illegal, nullptr },
+	/*           srli.rv64i */ { riscv_op_illegal, nullptr },
+	/*           srai.rv64i */ { riscv_op_illegal, nullptr },
+	/*                addiw */ { riscv_op_illegal, nullptr },
+	/*                slliw */ { riscv_op_illegal, nullptr },
+	/*                srliw */ { riscv_op_illegal, nullptr },
+	/*                sraiw */ { riscv_op_illegal, nullptr },
+	/*                 addw */ { riscv_op_illegal, nullptr },
+	/*                 subw */ { riscv_op_illegal, nullptr },
+	/*                 sllw */ { riscv_op_illegal, nullptr },
+	/*                 srlw */ { riscv_op_illegal, nullptr },
+	/*                 sraw */ { riscv_op_illegal, nullptr },
+	/*                  mul */ { riscv_op_illegal, nullptr },
+	/*                 mulh */ { riscv_op_illegal, nullptr },
+	/*               mulhsu */ { riscv_op_illegal, nullptr },
+	/*                mulhu */ { riscv_op_illegal, nullptr },
+	/*                  div */ { riscv_op_illegal, nullptr },
+	/*                 divu */ { riscv_op_illegal, nullptr },
+	/*                  rem */ { riscv_op_illegal, nullptr },
+	/*                 remu */ { riscv_op_illegal, nullptr },
+	/*                 mulw */ { riscv_op_illegal, nullptr },
+	/*                 divw */ { riscv_op_illegal, nullptr },
+	/*                divuw */ { riscv_op_illegal, nullptr },
+	/*                 remw */ { riscv_op_illegal, nullptr },
+	/*                remuw */ { riscv_op_illegal, nullptr },
+	/*                 lr.w */ { riscv_op_illegal, nullptr },
+	/*                 sc.w */ { riscv_op_illegal, nullptr },
+	/*            amoswap.w */ { riscv_op_illegal, nullptr },
+	/*             amoadd.w */ { riscv_op_illegal, nullptr },
+	/*             amoxor.w */ { riscv_op_illegal, nullptr },
+	/*              amoor.w */ { riscv_op_illegal, nullptr },
+	/*             amoand.w */ { riscv_op_illegal, nullptr },
+	/*             amomin.w */ { riscv_op_illegal, nullptr },
+	/*             amomax.w */ { riscv_op_illegal, nullptr },
+	/*            amominu.w */ { riscv_op_illegal, nullptr },
+	/*            amomaxu.w */ { riscv_op_illegal, nullptr },
+	/*                 lr.d */ { riscv_op_illegal, nullptr },
+	/*                 sc.d */ { riscv_op_illegal, nullptr },
+	/*            amoswap.d */ { riscv_op_illegal, nullptr },
+	/*             amoadd.d */ { riscv_op_illegal, nullptr },
+	/*             amoxor.d */ { riscv_op_illegal, nullptr },
+	/*              amoor.d */ { riscv_op_illegal, nullptr },
+	/*             amoand.d */ { riscv_op_illegal, nullptr },
+	/*             amomin.d */ { riscv_op_illegal, nullptr },
+	/*             amomax.d */ { riscv_op_illegal, nullptr },
+	/*            amominu.d */ { riscv_op_illegal, nullptr },
+	/*            amomaxu.d */ { riscv_op_illegal, nullptr },
+	/*                ecall */ { riscv_op_illegal, nullptr },
+	/*               ebreak */ { riscv_op_illegal, nullptr },
+	/*                 uret */ { riscv_op_illegal, nullptr },
+	/*                 sret */ { riscv_op_illegal, nullptr },
+	/*                 hret */ { riscv_op_illegal, nullptr },
+	/*                 mret */ { riscv_op_illegal, nullptr },
+	/*                 dret */ { riscv_op_illegal, nullptr },
+	/*            sfence.vm */ { riscv_op_illegal, nullptr },
+	/*                  wfi */ { riscv_op_illegal, nullptr },
+	/*                csrrw */ { riscv_op_illegal, nullptr },
+	/*                csrrs */ { riscv_op_illegal, nullptr },
+	/*                csrrc */ { riscv_op_illegal, nullptr },
+	/*               csrrwi */ { riscv_op_illegal, nullptr },
+	/*               csrrsi */ { riscv_op_illegal, nullptr },
+	/*               csrrci */ { riscv_op_illegal, nullptr },
+	/*                  flw */ { riscv_op_illegal, nullptr },
+	/*                  fsw */ { riscv_op_illegal, nullptr },
+	/*              fmadd.s */ { riscv_op_illegal, nullptr },
+	/*              fmsub.s */ { riscv_op_illegal, nullptr },
+	/*             fnmsub.s */ { riscv_op_illegal, nullptr },
+	/*             fnmadd.s */ { riscv_op_illegal, nullptr },
+	/*               fadd.s */ { riscv_op_illegal, nullptr },
+	/*               fsub.s */ { riscv_op_illegal, nullptr },
+	/*               fmul.s */ { riscv_op_illegal, nullptr },
+	/*               fdiv.s */ { riscv_op_illegal, nullptr },
+	/*              fsgnj.s */ { riscv_op_illegal, nullptr },
+	/*             fsgnjn.s */ { riscv_op_illegal, nullptr },
+	/*             fsgnjx.s */ { riscv_op_illegal, nullptr },
+	/*               fmin.s */ { riscv_op_illegal, nullptr },
+	/*               fmax.s */ { riscv_op_illegal, nullptr },
+	/*              fsqrt.s */ { riscv_op_illegal, nullptr },
+	/*                fle.s */ { riscv_op_illegal, nullptr },
+	/*                flt.s */ { riscv_op_illegal, nullptr },
+	/*                feq.s */ { riscv_op_illegal, nullptr },
+	/*             fcvt.w.s */ { riscv_op_illegal, nullptr },
+	/*            fcvt.wu.s */ { riscv_op_illegal, nullptr },
+	/*             fcvt.s.w */ { riscv_op_illegal, nullptr },
+	/*            fcvt.s.wu */ { riscv_op_illegal, nullptr },
+	/*              fmv.x.s */ { riscv_op_illegal, nullptr },
+	/*             fclass.s */ { riscv_op_illegal, nullptr },
+	/*              fmv.s.x */ { riscv_op_illegal, nullptr },
+	/*             fcvt.l.s */ { riscv_op_illegal, nullptr },
+	/*            fcvt.lu.s */ { riscv_op_illegal, nullptr },
+	/*             fcvt.s.l */ { riscv_op_illegal, nullptr },
+	/*            fcvt.s.lu */ { riscv_op_illegal, nullptr },
+	/*                  fld */ { riscv_op_illegal, nullptr },
+	/*                  fsd */ { riscv_op_illegal, nullptr },
+	/*              fmadd.d */ { riscv_op_illegal, nullptr },
+	/*              fmsub.d */ { riscv_op_illegal, nullptr },
+	/*             fnmsub.d */ { riscv_op_illegal, nullptr },
+	/*             fnmadd.d */ { riscv_op_illegal, nullptr },
+	/*               fadd.d */ { riscv_op_illegal, nullptr },
+	/*               fsub.d */ { riscv_op_illegal, nullptr },
+	/*               fmul.d */ { riscv_op_illegal, nullptr },
+	/*               fdiv.d */ { riscv_op_illegal, nullptr },
+	/*              fsgnj.d */ { riscv_op_illegal, nullptr },
+	/*             fsgnjn.d */ { riscv_op_illegal, nullptr },
+	/*             fsgnjx.d */ { riscv_op_illegal, nullptr },
+	/*               fmin.d */ { riscv_op_illegal, nullptr },
+	/*               fmax.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.s.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.d.s */ { riscv_op_illegal, nullptr },
+	/*              fsqrt.d */ { riscv_op_illegal, nullptr },
+	/*                fle.d */ { riscv_op_illegal, nullptr },
+	/*                flt.d */ { riscv_op_illegal, nullptr },
+	/*                feq.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.w.d */ { riscv_op_illegal, nullptr },
+	/*            fcvt.wu.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.d.w */ { riscv_op_illegal, nullptr },
+	/*            fcvt.d.wu */ { riscv_op_illegal, nullptr },
+	/*             fclass.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.l.d */ { riscv_op_illegal, nullptr },
+	/*            fcvt.lu.d */ { riscv_op_illegal, nullptr },
+	/*              fmv.x.d */ { riscv_op_illegal, nullptr },
+	/*             fcvt.d.l */ { riscv_op_illegal, nullptr },
+	/*            fcvt.d.lu */ { riscv_op_illegal, nullptr },
+	/*              fmv.d.x */ { riscv_op_illegal, nullptr },
+	/*           c.addi4spn */ { riscv_op_illegal, nullptr },
+	/*                c.fld */ { riscv_op_illegal, nullptr },
+	/*                 c.lw */ { riscv_op_illegal, nullptr },
+	/*                c.flw */ { riscv_op_illegal, nullptr },
+	/*                c.fsd */ { riscv_op_illegal, nullptr },
+	/*                 c.sw */ { riscv_op_illegal, nullptr },
+	/*                c.fsw */ { riscv_op_illegal, nullptr },
+	/*                c.nop */ { riscv_op_illegal, nullptr },
+	/*               c.addi */ { riscv_op_illegal, nullptr },
+	/*                c.jal */ { riscv_op_illegal, nullptr },
+	/*                 c.li */ { riscv_op_illegal, nullptr },
+	/*           c.addi16sp */ { riscv_op_illegal, nullptr },
+	/*                c.lui */ { riscv_op_illegal, nullptr },
+	/*         c.srli.rv32c */ { riscv_op_illegal, nullptr },
+	/*         c.srai.rv32c */ { riscv_op_illegal, nullptr },
+	/*               c.andi */ { riscv_op_illegal, nullptr },
+	/*                c.sub */ { riscv_op_illegal, nullptr },
+	/*                c.xor */ { riscv_op_illegal, nullptr },
+	/*                 c.or */ { riscv_op_illegal, nullptr },
+	/*                c.and */ { riscv_op_illegal, nullptr },
+	/*               c.subw */ { riscv_op_illegal, nullptr },
+	/*               c.addw */ { riscv_op_illegal, nullptr },
+	/*                  c.j */ { riscv_op_illegal, nullptr },
+	/*               c.beqz */ { riscv_op_illegal, nullptr },
+	/*               c.bnez */ { riscv_op_illegal, nullptr },
+	/*         c.slli.rv32c */ { riscv_op_illegal, nullptr },
+	/*              c.fldsp */ { riscv_op_illegal, nullptr },
+	/*               c.lwsp */ { riscv_op_illegal, nullptr },
+	/*              c.flwsp */ { riscv_op_illegal, nullptr },
+	/*                 c.jr */ { riscv_op_illegal, nullptr },
+	/*                 c.mv */ { riscv_op_illegal, nullptr },
+	/*             c.ebreak */ { riscv_op_illegal, nullptr },
+	/*               c.jalr */ { riscv_op_illegal, nullptr },
+	/*                c.add */ { riscv_op_illegal, nullptr },
+	/*              c.fsdsp */ { riscv_op_illegal, nullptr },
+	/*               c.swsp */ { riscv_op_illegal, nullptr },
+	/*              c.fswsp */ { riscv_op_illegal, nullptr },
+	/*                 c.ld */ { riscv_op_illegal, nullptr },
+	/*                 c.sd */ { riscv_op_illegal, nullptr },
+	/*              c.addiw */ { riscv_op_illegal, nullptr },
+	/*         c.srli.rv64c */ { riscv_op_illegal, nullptr },
+	/*         c.srai.rv64c */ { riscv_op_illegal, nullptr },
+	/*         c.slli.rv64c */ { riscv_op_illegal, nullptr },
+	/*               c.ldsp */ { riscv_op_illegal, nullptr },
+	/*               c.sdsp */ { riscv_op_illegal, nullptr },
+	/*                  nop */ { riscv_op_addi, rvcc_nop },
+	/*                   mv */ { riscv_op_addi, rvcc_mv },
+	/*                  not */ { riscv_op_xori, rvcc_not },
+	/*                  neg */ { riscv_op_sub, rvcc_neg },
+	/*                 negw */ { riscv_op_subw, rvcc_negw },
+	/*               sext.w */ { riscv_op_addiw, rvcc_sext_w },
+	/*                 seqz */ { riscv_op_sltiu, rvcc_seqz },
+	/*                 snez */ { riscv_op_sltu, rvcc_snez },
+	/*                 sltz */ { riscv_op_slt, rvcc_sltz },
+	/*                 sgtz */ { riscv_op_slt, rvcc_sgtz },
+	/*                fmv.s */ { riscv_op_fsgnj_s, rvcc_fmv_s },
+	/*               fabs.s */ { riscv_op_fsgnjx_s, rvcc_fabs_s },
+	/*               fneg.s */ { riscv_op_fsgnjn_s, rvcc_fneg_s },
+	/*                fmv.d */ { riscv_op_fsgnj_d, rvcc_fmv_d },
+	/*               fabs.d */ { riscv_op_fsgnjx_d, rvcc_fabs_d },
+	/*               fneg.d */ { riscv_op_fsgnjn_d, rvcc_fneg_d },
+	/*                 beqz */ { riscv_op_beq, rvcc_beqz },
+	/*                 bnez */ { riscv_op_bne, rvcc_bnez },
+	/*                 blez */ { riscv_op_bge, rvcc_blez },
+	/*                 bgez */ { riscv_op_bge, rvcc_bgez },
+	/*                 bltz */ { riscv_op_blt, rvcc_bltz },
+	/*                 bgtz */ { riscv_op_blt, rvcc_bgtz },
+	/*                    j */ { riscv_op_jal, rvcc_j },
+	/*                  ret */ { riscv_op_jalr, rvcc_ret },
+	/*                   jr */ { riscv_op_jalr, rvcc_jr },
+	/*              rdcycle */ { riscv_op_csrrs, rvcc_rdcycle },
+	/*               rdtime */ { riscv_op_csrrs, rvcc_rdtime },
+	/*            rdinstret */ { riscv_op_csrrs, rvcc_rdinstret },
+	/*             rdcycleh */ { riscv_op_csrrs, rvcc_rdcycleh },
+	/*              rdtimeh */ { riscv_op_csrrs, rvcc_rdtimeh },
+	/*           rdinstreth */ { riscv_op_csrrs, rvcc_rdinstreth },
+	/*                frcsr */ { riscv_op_csrrs, rvcc_frcsr },
+	/*                 frrm */ { riscv_op_csrrs, rvcc_frrm },
+	/*              frflags */ { riscv_op_csrrs, rvcc_frflags },
+	/*                fscsr */ { riscv_op_csrrw, rvcc_fscsr },
+	/*                 fsrm */ { riscv_op_csrrw, rvcc_fsrm },
+	/*              fsflags */ { riscv_op_csrrw, rvcc_fsflags },
+	/*                fsrmi */ { riscv_op_csrrwi, rvcc_fsrmi },
+	/*             fsflagsi */ { riscv_op_csrrwi, rvcc_fsflagsi },
 };
 
 const riscv_comp_data* riscv_inst_comp_rv32[] = {
