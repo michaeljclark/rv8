@@ -61,8 +61,10 @@ namespace riscv {
 		__s128(const __s128 &o) : r{ .b = o.r.b } {}
 
 		#if _BYTE_ORDER == _LITTLE_ENDIAN
+		__s128(u64 lo) : r{ .d = { .lo = lo, .hi = 0 } } {}
 		__s128(s64 hi, u64 lo) : r{ .d = { .lo = lo, .hi = hi } } {}
 		#else
+		__s128(u64 lo) : r{ .d = { .hi = 0, .lo = lo } } {}
 		__s128(s64 hi, u64 lo) : r{ .d = { .hi = hi, .lo = lo } } {}
 		#endif
 	};
@@ -85,8 +87,10 @@ namespace riscv {
 		__u128(const __u128 &o) : r{ .b = o.r.b } {}
 
 		#if _BYTE_ORDER == _LITTLE_ENDIAN
+		__u128(u64 lo) : r{ .d = { .lo = lo, .hi = 0 } } {}
 		__u128(u64 hi, u64 lo) : r{ .d = { .lo = lo, .hi = hi } } {}
 		#else
+		__s128(u64 lo) : r{ .d = { .hi = 0, .lo = lo } } {}
 		__u128(u64 hi, u64 lo) : r{ .d = { .hi = hi, .lo = lo } } {}
 		#endif
 	};
