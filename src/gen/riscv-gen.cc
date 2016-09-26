@@ -111,8 +111,8 @@ void riscv_gen::generate_map()
 			ssize_t lsb = mask.first.lsb;
 			ssize_t val = mask.second;
 			for (ssize_t bit = msb; bit >= lsb; bit--) {
-				opcode->mask |= (1 << bit);
-				opcode->match |= (val >> (bit - lsb)) & 1 ? (1 << bit) : 0;
+				opcode->mask |= (1ULL << bit);
+				opcode->match |= ((uint64_t(val) >> (bit - lsb)) & 1) << bit;
 			}
 		}
 	}
