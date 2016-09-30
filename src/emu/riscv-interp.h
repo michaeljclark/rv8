@@ -585,7 +585,7 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.wu.val == 0xffc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & u32(-1)<<22) == u32(-1)<<22 ? s32(proc.freg[dec.rs1].r.wu.val & u32(-1)>>1) : proc.freg[dec.rs1].r.w.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1566,7 +1566,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.wu.val == 0xffc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & u32(-1)<<22) == u32(-1)<<22 ? s32(proc.freg[dec.rs1].r.wu.val & u32(-1)>>1) : proc.freg[dec.rs1].r.w.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1811,7 +1811,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = proc.freg[dec.rs1].r.lu.val == 0xfff8000000000000ULL ? s64(0x7ff8000000000000ULL) : proc.freg[dec.rs1].r.l.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.lu.val & u64(-1)<<51) == u64(-1)<<51 ? s64(proc.freg[dec.rs1].r.lu.val & u64(-1)>>1) : proc.freg[dec.rs1].r.l.val;
 				proc.pc += inst_length;
 				return true;
 			};
