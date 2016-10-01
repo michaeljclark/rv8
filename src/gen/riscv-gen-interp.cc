@@ -55,7 +55,6 @@ static void print_interp_h(riscv_gen *gen)
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
 			printf("\t\tcase %s:\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
-			// TODO - replace this with a state machine parser/matcher that reads meta/notation-pseudocode-c
 			inst = replace(inst, "imm", "dec.imm");
 			inst = replace(inst, "ptr", "uintptr_t");
 			inst = replace(inst, "fcsr", "proc.fcsr");
