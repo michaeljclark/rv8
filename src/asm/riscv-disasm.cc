@@ -86,11 +86,11 @@ static const void print_addr(size_t &offset, uint64_t addr,
 }
 
 void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
-	uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
+	uintptr_t pc, uintptr_t pc_bias, uintptr_t gp,
 	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
-	uint64_t addr = pc - pc_offset;
+	uint64_t addr = pc - pc_bias;
 	const char *fmt = riscv_inst_format[dec.op];
 	const char *symbol_name = symlookup((uintptr_t)addr, false);
 	const char* csr_name = nullptr;
@@ -193,8 +193,8 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 	// decode address
 	addr = 0;
 	bool decoded_address = false;
-	if (!decoded_address) decoded_address = decode_pcrel(dec, addr, pc, pc_offset);
-	if (!decoded_address) decoded_address = decode_pairs(dec, addr, dec_hist, pc_offset);
+	if (!decoded_address) decoded_address = decode_pcrel(dec, addr, pc, pc_bias);
+	if (!decoded_address) decoded_address = decode_pairs(dec, addr, dec_hist, pc_bias);
 	if (!decoded_address) decoded_address = deocde_gprel(dec, addr, gp);
 
 	// print address if present

@@ -41,7 +41,7 @@ static void print_interp_h(riscv_gen *gen)
 			printf("bool %s, ", mi->c_str());
 		}
 		printf("typename T, typename P>\n");
-		printf("bool exec_inst_%s(T &dec, P &proc, uintptr_t inst_length)\n",
+		printf("intptr_t exec_inst_%s(T &dec, P &proc, intptr_t pc_offset)\n",
 			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
@@ -54,16 +54,16 @@ static void print_interp_h(riscv_gen *gen)
 			std::string inst = opcode->pseudocode_c;
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
-			bool branch_or_jump = (inst.find("pc = ") != std::string::npos);
-			bool branch = (inst.find("if") == 0);
-			bool jump = branch_or_jump && !branch;
-			printf("\t\tcase %s: {\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+			printf("\t\tcase %s:\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+			// TODO - replace this with a state machine parser/matcher that reads meta/notation-pseudocode-c
 			inst = replace(inst, "imm", "dec.imm");
 			inst = replace(inst, "ptr", "uintptr_t");
-			inst = replace(inst, "fenv_setrm(rm)", "fenv_setrm((proc.fcsr >> 5) & 0b111)");
-			inst = replace(inst, "fenv_setflags(fcsr)", "fenv_setflags(proc.fcsr)");
-			inst = replace(inst, "pc", "proc.pc");
+			inst = replace(inst, "fcsr", "proc.fcsr");
 			inst = replace(inst, "lr", "proc.lr");
+			inst = replace(inst, "pc_offset", "PC_OFFSET");
+			inst = replace(inst, "pc", "proc.pc");
+			inst = replace(inst, "PC_OFFSET", "pc_offset");
+			inst = replace(inst, "length(inst)", "pc_offset");
 			inst = replace(inst, "u32(f32(NAN))", "0x7fc00000");
 			inst = replace(inst, "u64(f64(NAN))", "0x7ff8000000000000ULL");
 			inst = replace(inst, "sx(INT_MIN)", "std::numeric_limits<sx>::min()");
@@ -78,7 +78,6 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "ux(INT_MAX)", "std::numeric_limits<ux>::max()");
 			inst = replace(inst, "u32(INT_MAX)", "std::numeric_limits<u32>::max()");
 			inst = replace(inst, "u64(INT_MAX)", "std::numeric_limits<u64>::max()");
-			inst = replace(inst, "length(inst)", "inst_length");
 			inst = replace(inst, "f32(frd)", "frd.r.s.val");
 			inst = replace(inst, "f32(frs1)", "frs1.r.s.val");
 			inst = replace(inst, "f32(frs2)", "frs2.r.s.val");
@@ -99,38 +98,28 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "s64(frd)", "frd.r.l.val");
 			inst = replace(inst, "s64(frs1)", "frs1.r.l.val");
 			inst = replace(inst, "s64(frs2)", "frs2.r.l.val");
-			if (inst.find("frd") != std::string::npos) {
-				inst = replace(inst, "frd", "proc.freg[dec.rd]");
-			} else {
-				inst = replace(inst, "rd", "if (dec.rd != 0) proc.ireg[dec.rd]");
-			}
-			if (inst.find("frs1") != std::string::npos) {
-				inst = replace(inst, "frs1", "proc.freg[dec.rs1]");
-			} else {
-				inst = replace(inst, "rs1", "proc.ireg[dec.rs1]");
-			}
-			if (inst.find("frs2") != std::string::npos) {
-				inst = replace(inst, "frs2", "proc.freg[dec.rs2]");
-			} else {
-				inst = replace(inst, "rs2", "proc.ireg[dec.rs2]");
-			}
-			if (inst.find("frs3") != std::string::npos) {
-				inst = replace(inst, "frs3", "proc.freg[dec.rs3]");
-			} else {
-				inst = replace(inst, "rs3", "proc.ireg[dec.rs3]");
-			}
+			inst = replace(inst, "frd", "FRD");
+			inst = replace(inst, "frs1", "FRS1");
+			inst = replace(inst, "frs2", "FRS2");
+			inst = replace(inst, "rd", "if (dec.rd > 0) proc.ireg[dec.rd]");
+			inst = replace(inst, "rs1", "proc.ireg[dec.rs1]");
+			inst = replace(inst, "rs2", "proc.ireg[dec.rs2]");
+			inst = replace(inst, "FRD", "frd");
+			inst = replace(inst, "FRS1", "frs1");
+			inst = replace(inst, "FRS2", "frs2");
+			inst = replace(inst, "frd", "proc.freg[dec.rd]");
+			inst = replace(inst, "frs1", "proc.freg[dec.rs1]");
+			inst = replace(inst, "frs2", "proc.freg[dec.rs2]");
+			inst = replace(inst, "frs3", "proc.freg[dec.rs3]");
+			inst = replace(inst, "fenv_setrm(rm)", "fenv_setrm((proc.fcsr >> 5) & 0b111)");
 			printf("\t\t\tif (rv%c) {\n", opcode->extensions.front()->alpha_code);
 			printf("\t\t\t\t%s;\n",  inst.c_str());
-			if (branch) printf("\t\t\t\telse proc.pc += inst_length;\n");
-			else if (!jump) printf("\t\t\t\tproc.pc += inst_length;\n");
-			printf("\t\t\t\treturn true;\n");
 			printf("\t\t\t};\n");
-			printf("\t\t};\n");
+			printf("\t\t\tbreak;\n");
 		}
-		printf("\t\tdefault:\n");
-		printf("\t\t\tbreak;\n");
+		printf("\t\tdefault: return 0; /* illegal instruction */\n");
 		printf("\t}\n");
-		printf("\treturn false; /* illegal instruction */\n");
+		printf("\treturn pc_offset;\n");
 		printf("}\n\n");
 	}
 	printf("#endif\n");

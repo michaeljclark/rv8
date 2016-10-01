@@ -17,7 +17,7 @@
  * =================
  * Returns the instruction and its length
  *
- *   inline size_t riscv::inst_fetch(uintptr_t addr, uintptr_t *inst_length)
+ *   inline size_t riscv::inst_fetch(uintptr_t addr, intptr_t *pc_offset)
  *
  * Decoding instructions
  * =====================
@@ -112,7 +112,7 @@ namespace riscv
 
 	/* Fetch Instruction */
 
-	inline uint64_t inst_fetch(uintptr_t addr, size_t *inst_length)
+	inline uint64_t inst_fetch(uintptr_t addr, intptr_t *pc_offset)
 	{
 		// NOTE: currently supports maximum instruction size of 64-bits
 
@@ -120,18 +120,17 @@ namespace riscv
 		uint64_t inst = htole32(*(uint32_t*)addr);
 		if ((inst & 0b11) != 0b11) {
 			inst &= 0xffff; // mask to 16-bits
-			*inst_length = 2;
+			*pc_offset = 2;
 		} else if ((inst & 0b11100) != 0b11100) {
-			*inst_length = 4;
+			*pc_offset = 4;
 		} else if ((inst & 0b111111) == 0b011111) {
 			inst |= uint64_t(htole16(*(uint16_t*)(addr + 4))) << 32;
-			*inst_length = 6;
+			*pc_offset = 6;
 		} else if ((inst & 0b1111111) == 0b0111111) {
 			inst |= uint64_t(htole32(*(uint32_t*)(addr + 4))) << 32;
-			*inst_length = 8;
+			*pc_offset = 8;
 		} else {
-			inst = 0; /* illegal instruction */
-			*inst_length = 8;
+			*pc_offset = inst = 0; /* illegal instruction */
 		}
 		return inst;
 	}

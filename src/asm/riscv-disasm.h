@@ -55,12 +55,12 @@ namespace riscv {
 
 	// decode pc relative address
 	template <typename T>
-	bool decode_pcrel(T &dec, uint64_t &addr, uintptr_t pc, uintptr_t pc_offset)
+	bool decode_pcrel(T &dec, uint64_t &addr, uintptr_t pc, uintptr_t pc_bias)
 	{
 		switch (dec.codec) {
 			case riscv_codec_uj:
 			case riscv_codec_sb:
-				addr = pc - pc_offset + dec.imm;
+				addr = pc - pc_bias + dec.imm;
 				return true;
 			default:
 				return false;
@@ -70,7 +70,7 @@ namespace riscv {
 
 	// decode address using instruction pair constraints
 	template <typename T>
-	bool decode_pairs(T &dec, uint64_t &addr, std::deque<T> &dec_hist, uintptr_t pc_offset)
+	bool decode_pairs(T &dec, uint64_t &addr, std::deque<T> &dec_hist, uintptr_t pc_bias)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -83,7 +83,7 @@ namespace riscv {
 							addr = li->imm + dec.imm;
 							return true;
 						case rva_pcrel:
-							addr = li->pc - pc_offset + li->imm + dec.imm;
+							addr = li->pc - pc_bias + li->imm + dec.imm;
 							return true;
 						case rva_none:
 						default:
@@ -197,7 +197,7 @@ namespace riscv {
 	}
 
 	void disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
-		uintptr_t pc, uintptr_t pc_offset, uintptr_t gp,
+		uintptr_t pc, uintptr_t pc_bias, uintptr_t gp,
 		symbol_name_fn symlookup = null_symbol_lookup,
 		symbol_colorize_fn colorize = null_symbol_colorize);
 

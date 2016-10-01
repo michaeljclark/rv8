@@ -1,0 +1,51 @@
+# format of a line in this file:
+# <symbol> <substitution>
+
+imm             dec.imm
+ptr             uintptr_t
+fcsr            proc.fcsr
+lr              proc.lr
+pc              proc.pc
+length(inst)    pc_offset
+u32(f32(NAN))   0x7fc00000
+u64(f64(NAN))   0x7ff8000000000000ULL
+sx(INT_MIN)     std::numeric_limits<sx>::min()
+s32(INT_MIN)    std::numeric_limits<s32>::min()
+s64(INT_MIN)    std::numeric_limits<s64>::min()
+ux(INT_MIN)     std::numeric_limits<ux>::min()
+u32(INT_MIN)    std::numeric_limits<u32>::min()
+u64(INT_MIN)    std::numeric_limits<u64>::min()
+sx(INT_MAX)     std::numeric_limits<sx>::max()
+s32(INT_MAX)    std::numeric_limits<s32>::max()
+s64(INT_MAX)    std::numeric_limits<s64>::max()
+ux(INT_MAX)     std::numeric_limits<ux>::max()
+u32(INT_MAX)    std::numeric_limits<u32>::max()
+u64(INT_MAX)    std::numeric_limits<u64>::max()
+f32(frd)        frd.r.s.val
+f32(frs1)       frs1.r.s.val
+f32(frs2)       frs2.r.s.val
+f32(frs3)       frs3.r.s.val
+f64(frd)        frd.r.d.val
+f64(frs1)       frs1.r.d.val
+f64(frs2)       frs2.r.d.val
+f64(frs3)       frs3.r.d.val
+u32(frd)        frd.r.wu.val
+u32(frs1)       frs1.r.wu.val
+u32(frs2)       frs2.r.wu.val
+u64(frd)        frd.r.lu.val
+u64(frs1)       frs1.r.lu.val
+u64(frs2)       frs2.r.lu.val
+s32(frd)        frd.r.w.val
+s32(frs1)       frs1.r.w.val
+s32(frs2)       frs2.r.w.val
+s64(frd)        frd.r.l.val
+s64(frs1)       frs1.r.l.val
+s64(frs2)       frs2.r.l.val
+rd              if (dec.rd > 0) proc.ireg[dec.rd]
+rs1             proc.ireg[dec.rs1]
+rs2             proc.ireg[dec.rs2]
+frd             proc.freg[dec.rd]
+frs1            proc.freg[dec.rs1]
+frs2            proc.freg[dec.rs2]
+frs3            proc.freg[dec.rs3]
+fenv_setrm(rm)  fenv_setrm((proc.fcsr >> 5) & 0b111)

@@ -109,21 +109,21 @@ struct riscv_parse_elf
 		return nullptr;
 	}
 
-	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_bias)
 	{
 		disasm dec;
-		size_t inst_length;
 		uintptr_t pc = start;
+		intptr_t pc_offset;
 		uint64_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &inst_length);
+			dec.inst = inst_fetch(pc, &pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			switch (dec.op) {
 				case riscv_op_jal:
 				case riscv_op_jalr:
-					if (pc + inst_length < end) {
-						addr = pc - pc_offset + inst_length;
+					if (pc + pc_offset < end) {
+						addr = pc - pc_bias + pc_offset;
 						if (continuations.find(addr) == continuations.end()) {
 							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
 						}
@@ -134,7 +134,7 @@ struct riscv_parse_elf
 			}
 			switch (dec.codec) {
 				case riscv_codec_sb:
-					addr = pc - pc_offset + dec.imm;
+					addr = pc - pc_bias + dec.imm;
 					if (continuations.find(addr) == continuations.end()) {
 						continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
 					}
@@ -142,24 +142,25 @@ struct riscv_parse_elf
 				default:
 					break;
 			}
-			pc += inst_length;
+			pc += pc_offset;
 		}
 	}
 
-	void print_disassembly(uintptr_t start, uintptr_t end, uintptr_t pc_offset, uintptr_t gp)
+	void print_disassembly(uintptr_t start, uintptr_t end, uintptr_t pc_bias, uintptr_t gp)
 	{
 		disasm dec;
 		std::deque<disasm> dec_hist;
-		uintptr_t pc = start, inst_length;
+		uintptr_t pc = start;
+		intptr_t pc_offset;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &inst_length);
+			dec.inst = inst_fetch(pc, &pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			if (decode_pseudo) decode_pseudo_inst(dec);
-			disasm_inst_print(dec, dec_hist, pc, pc_offset, gp,
+			disasm_inst_print(dec, dec_hist, pc, pc_bias, gp,
 				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
 				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
-			pc += inst_length;
+			pc += pc_offset;
 		}
 	}
 

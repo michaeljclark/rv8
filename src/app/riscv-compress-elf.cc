@@ -291,18 +291,18 @@ struct riscv_compress_elf
 		return false;
 	}
 
-	void disassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void disassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
 	{
-		size_t inst_length;
+		intptr_t pc_offset;
 		uintptr_t pc = start;
 		while (pc < end) {
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
-			dec.pc = pc - pc_offset;
-			dec.inst = inst_fetch(pc, &inst_length);
+			dec.pc = pc - pc_bias;
+			dec.inst = inst_fetch(pc, &pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			decompress_inst_rv64(dec);
-			pc += inst_length;
+			pc += pc_offset;
 		}
 	}
 
@@ -422,11 +422,11 @@ struct riscv_compress_elf
 		}
 	}
 
-	void reassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void reassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			uintptr_t pc = dec.pc + pc_offset;
+			uintptr_t pc = dec.pc + pc_bias;
 			if (pc < start || pc > end) {
 				panic("pc outside of section range");
 			}
@@ -440,13 +440,13 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_external(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_offset)
+	void print_external(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
 	{
 		std::map<uint32_t,intptr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if ((dec.is_pcrel || dec.is_abs || dec.is_gprel) &&
-				(dec.addr < (start - pc_offset) || dec.addr >= (end - pc_offset))) {
+				(dec.addr < (start - pc_bias) || dec.addr >= (end - pc_bias))) {
 				print_continuation_disassembly(dec);
 			}
 		}

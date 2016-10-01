@@ -98,6 +98,7 @@ struct riscv_latex_page
 
 static std::string latex_utf_substitute(std::string str)
 {
+	// TODO - replace this with a state machine parser/matcher that reads meta/notation
 	str = replace(str, "∞", "\\infty");
 	str = replace(str, "{", "\\left\\{");
 	str = replace(str, "}", "\\right\\}");

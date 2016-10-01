@@ -88,9 +88,9 @@ struct processor_base : P
 	std::string format_inst(uintptr_t pc)
 	{
 		char buf[20];
-		uintptr_t length;
-		uint64_t inst = inst_fetch(pc, &length);
-		switch (length) {
+		intptr_t pc_offset;
+		uint64_t inst = inst_fetch(pc, &pc_offset);
+		switch (pc_offset) {
 			case 2:  snprintf(buf, sizeof(buf), "    0x%04tx", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
@@ -241,8 +241,8 @@ struct processor_rv32ima_unit : B
 		decode_inst<T,RV_32,RV_IMA>(dec, inst);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv32<RV_IMA>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv32<RV_IMA>(dec, *this, pc_offset);
 	}
 };
 
@@ -254,8 +254,8 @@ struct processor_rv32imac_unit : B
 		decompress_inst_rv32<T>(dec);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv32<RV_IMAC>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv32<RV_IMAC>(dec, *this, pc_offset);
 	}
 };
 
@@ -266,8 +266,8 @@ struct processor_rv32imafd_unit : B
 		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv32<RV_IMAFD>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv32<RV_IMAFD>(dec, *this, pc_offset);
 	}
 };
 
@@ -279,8 +279,8 @@ struct processor_rv32imafdc_unit : B
 		decompress_inst_rv32<T>(dec);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv32<RV_IMAFDC>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv32<RV_IMAFDC>(dec, *this, pc_offset);
 	}
 };
 
@@ -294,8 +294,8 @@ struct processor_rv64ima_unit : B
 		decode_inst<T,RV_64,RV_IMA>(dec, inst);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv64<RV_IMA>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv64<RV_IMA>(dec, *this, pc_offset);
 	}
 };
 
@@ -307,8 +307,8 @@ struct processor_rv64imac_unit : B
 		decompress_inst_rv64<T>(dec);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv64<RV_IMAC>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv64<RV_IMAC>(dec, *this, pc_offset);
 	}
 };
 
@@ -319,8 +319,8 @@ struct processor_rv64imafd_unit : B
 		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv64<RV_IMAFD>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv64<RV_IMAFD>(dec, *this, pc_offset);
 	}
 };
 
@@ -332,8 +332,8 @@ struct processor_rv64imafdc_unit : B
 		decompress_inst_rv64<T>(dec);
 	}
 
-	bool inst_exec(T &dec, size_t inst_len) {
-		return exec_inst_rv64<RV_IMAFDC>(dec, *this, inst_len);
+	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+		return exec_inst_rv64<RV_IMAFDC>(dec, *this, pc_offset);
 	}
 };
 
@@ -370,46 +370,42 @@ struct processor_proxy : P
 		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
 	}
 
-	bool inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, size_t inst_len)
+	intptr_t inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, intptr_t pc_offset)
 	{
 		switch (csr) {
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 			                         update_csr(dec, op, P::fcsr, value, 4, 0);
-			                         fenv_clearflags(P::fcsr);
-			                         break;
+			                         fenv_clearflags(P::fcsr);                  break;
 			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 7, 5);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);          break;
 			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
 			                         update_csr(dec, op, P::fcsr, value, 7, 0);
 			                         fenv_clearflags(P::fcsr);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);          break;
 			case riscv_csr_cycle:    P::cycle = cpu_cycle_clock();
-			                         read_csr(dec, op, P::cycle, value);         break;
-			case riscv_csr_time:     read_csr(dec, op, P::time, value);          break;
-			case riscv_csr_instret:  read_csr(dec, op, P::instret, value);       break;
-			case riscv_csr_cycleh:   read_csr_hi(dec, op, P::cycle, value);      break;
-			case riscv_csr_timeh:    read_csr_hi(dec, op, P::time, value);       break;
-			case riscv_csr_instreth: read_csr_hi(dec, op, P::instret, value);    break;
-			default: break;
+			                         read_csr(dec, op, P::cycle, value);     	break;
+			case riscv_csr_time:     read_csr(dec, op, P::time, value);         break;
+			case riscv_csr_instret:  read_csr(dec, op, P::instret, value);      break;
+			case riscv_csr_cycleh:   read_csr_hi(dec, op, P::cycle, value);     break;
+			case riscv_csr_timeh:    read_csr_hi(dec, op, P::time, value);      break;
+			case riscv_csr_instreth: read_csr_hi(dec, op, P::instret, value);   break;
+			default: return 0; /* illegal instruction */
 		}
-		P::pc += inst_len;
-		return true;
+		return pc_offset;
 	}
 
-	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
+	intptr_t inst_priv(typename P::decode_type &dec, intptr_t pc_offset) {
 		switch (dec.op) {
-			case riscv_op_ecall:  proxy_syscall(*this); P::pc += inst_len; return true;
-			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], inst_len);
-			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, inst_len);
-			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, inst_len);
-			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, inst_len);
+			case riscv_op_ecall:  proxy_syscall(*this); return pc_offset;
+			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 			default: break;
 		}
-		return false;
+		return 0; /* illegal instruction */
 	}
 };
 
@@ -419,26 +415,26 @@ struct processor_proxy : P
 template <typename P>
 struct processor_privileged : P
 {
-	bool inst_priv(typename P::decode_type &dec, size_t inst_len) {
+	intptr_t inst_priv(typename P::decode_type &dec, intptr_t pc_offset) {
 		// TODO - emulate privileged instructions
 		switch (dec.op) {
-			case riscv_op_ecall:     /* TODO */ return false; break;
-			case riscv_op_ebreak:    /* TODO */ return false; break;
-			case riscv_op_uret:      /* TODO */ return false; break;
-			case riscv_op_sret:      /* TODO */ return false; break;
-			case riscv_op_hret:      /* TODO */ return false; break;
-			case riscv_op_mret:      /* TODO */ return false; break;
-			case riscv_op_sfence_vm: /* TODO */ return false; break;
-			case riscv_op_wfi:       /* TODO */ return false; break;
-			case riscv_op_csrrw:     /* TODO */ return false; break;
-			case riscv_op_csrrs:     /* TODO */ return false; break;
-			case riscv_op_csrrc:     /* TODO */ return false; break;
-			case riscv_op_csrrwi:    /* TODO */ return false; break;
-			case riscv_op_csrrsi:    /* TODO */ return false; break;
-			case riscv_op_csrrci:    /* TODO */ return false; break;
+			case riscv_op_ecall:     /* TODO */ return 0; break;
+			case riscv_op_ebreak:    /* TODO */ return 0; break;
+			case riscv_op_uret:      /* TODO */ return 0; break;
+			case riscv_op_sret:      /* TODO */ return 0; break;
+			case riscv_op_hret:      /* TODO */ return 0; break;
+			case riscv_op_mret:      /* TODO */ return 0; break;
+			case riscv_op_sfence_vm: /* TODO */ return 0; break;
+			case riscv_op_wfi:       /* TODO */ return 0; break;
+			case riscv_op_csrrw:     /* TODO */ return 0; break;
+			case riscv_op_csrrs:     /* TODO */ return 0; break;
+			case riscv_op_csrrc:     /* TODO */ return 0; break;
+			case riscv_op_csrrwi:    /* TODO */ return 0; break;
+			case riscv_op_csrrsi:    /* TODO */ return 0; break;
+			case riscv_op_csrrci:    /* TODO */ return 0; break;
 			default: break;
 		}
-		return false;
+		return 0;
 	}
 };
 
@@ -461,10 +457,11 @@ struct processor_stepper : P
 	bool step(size_t count)
 	{
 		typename P::decode_type dec;
-		size_t i = 0, inst_len;
+		size_t i = 0;
 		uint64_t inst;
+		intptr_t pc_offset, new_offset;
 		while (i < count) {
-			inst = inst_fetch(P::pc, &inst_len); // TODO - MMU
+			inst = inst_fetch(P::pc, &pc_offset); // TODO - MMU
 			uint64_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -473,7 +470,10 @@ struct processor_stepper : P
 				inst_cache[inst_cache_key].inst = inst;
 				inst_cache[inst_cache_key].dec = dec;
 			}
-			if (P::inst_exec(dec, inst_len) || P::inst_priv(dec, inst_len)) {
+			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
+				(new_offset = P::inst_priv(dec, pc_offset)))
+			{
+				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 				if (P::log_flags) P::print_log(dec);
