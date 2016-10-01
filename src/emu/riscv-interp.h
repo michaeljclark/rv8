@@ -515,14 +515,14 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmin_s: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fmax_s: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -585,7 +585,7 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & u32(-1)<<22) == u32(-1)<<22 ? s32(proc.freg[dec.rs1].r.wu.val & u32(-1)>>1) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & 0x7fc00000) == 0x7fc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -697,14 +697,14 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmin_d: {
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fmax_d: {
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1496,14 +1496,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmin_s: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fmax_s: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1566,7 +1566,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & u32(-1)<<22) == u32(-1)<<22 ? s32(proc.freg[dec.rs1].r.wu.val & u32(-1)>>1) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & 0x7fc00000) == 0x7fc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1706,14 +1706,14 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmin_d: {
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fmax_d: {
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1811,7 +1811,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fmv_x_d: {
 			if (rvd) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.lu.val & u64(-1)<<51) == u64(-1)<<51 ? s64(proc.freg[dec.rs1].r.lu.val & u64(-1)>>1) : proc.freg[dec.rs1].r.l.val;
+				if (dec.rd != 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL ? s64(0x7ff8000000000000ULL) : proc.freg[dec.rs1].r.l.val;
 				proc.pc += inst_length;
 				return true;
 			};
