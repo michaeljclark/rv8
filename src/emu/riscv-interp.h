@@ -557,7 +557,7 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_w_s: {
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.wu.val >> 31) & (s32(proc.freg[dec.rs1].r.s.val) < 0) ? std::numeric_limits<s32>::max() : s32(proc.freg[dec.rs1].r.s.val);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -753,7 +753,7 @@ bool exec_inst_rv32(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_w_d: {
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.lu.val >> 63) & (s32(proc.freg[dec.rs1].r.d.val) < 0) ? std::numeric_limits<s32>::max() : s32(proc.freg[dec.rs1].r.d.val);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1538,7 +1538,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_w_s: {
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.wu.val >> 31) & (s32(proc.freg[dec.rs1].r.s.val) < 0) ? std::numeric_limits<s32>::max() : s32(proc.freg[dec.rs1].r.s.val);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1587,28 +1587,28 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_l_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = s64(proc.freg[dec.rs1].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.wu.val >> 31) & (s64(proc.freg[dec.rs1].r.s.val) < 0) ? std::numeric_limits<s64>::max() : s64(proc.freg[dec.rs1].r.s.val);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fcvt_lu_s: {
 			if (rvf) {
-				if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1].r.s.val > 0 ? proc.freg[dec.rs1].r.s.val : 0);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = u64(proc.freg[dec.rs1].r.s.val > 0 ? proc.freg[dec.rs1].r.s.val : 0);
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fcvt_s_l: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = f32(s64(proc.ireg[dec.rs1]));
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = f32(s64(proc.ireg[dec.rs1]));
 				proc.pc += inst_length;
 				return true;
 			};
 		};
 		case riscv_op_fcvt_s_lu: {
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = f32(u64(proc.ireg[dec.rs1]));
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = f32(u64(proc.ireg[dec.rs1]));
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1762,7 +1762,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_w_d: {
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = s32(proc.freg[dec.rs1].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.lu.val >> 63) & (s32(proc.freg[dec.rs1].r.d.val) < 0) ? std::numeric_limits<s32>::max() : s32(proc.freg[dec.rs1].r.d.val);
 				proc.pc += inst_length;
 				return true;
 			};
@@ -1797,7 +1797,7 @@ bool exec_inst_rv64(T &dec, P &proc, uintptr_t inst_length)
 		};
 		case riscv_op_fcvt_l_d: {
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = s64(proc.freg[dec.rs1].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); if (dec.rd != 0) proc.ireg[dec.rd] = (~proc.freg[dec.rs1].r.lu.val >> 63) & (s64(proc.freg[dec.rs1].r.d.val) < 0) ? std::numeric_limits<s64>::max() : s64(proc.freg[dec.rs1].r.d.val);
 				proc.pc += inst_length;
 				return true;
 			};

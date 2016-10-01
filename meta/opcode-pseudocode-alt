@@ -153,10 +153,10 @@ fmv.s.x    "frd ← s32(rs1)"
 
 # RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.s   "rd ← s64(f32(frs1))"
-fcvt.lu.s  "rd ← u64(f32(frs1))"
-fcvt.s.l   "frd ← f32(s64(rs1))"
-fcvt.s.lu  "frd ← f32(u64(rs1))"
+fcvt.l.s   "frm ← rm ; rd ← s64(f32(frs1))"
+fcvt.lu.s  "frm ← rm ; rd ← u64(f32(frs1))"
+fcvt.s.l   "frm ← rm ; frd ← f32(s64(rs1))"
+fcvt.s.lu  "frm ← rm ; frd ← f32(u64(rs1))"
 
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 
