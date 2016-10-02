@@ -229,7 +229,7 @@ namespace riscv
 	inline s128 operator>>(const s128 &x, int shift)
 	{
 		// todo - use predicate logic instead of ternary operator - violates constant time property
-		s64 hi = (shift < 64) ? (x.r.d.hi >> shift) : (x.r.d.hi >> 63) >> 1; // moron
+		s64 hi = (shift < 64) ? (x.r.d.hi >> shift) : -(u64(x.r.d.hi) >> 63);
 		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo >> shift) | (x.r.d.hi << (64 - shift)) : x.r.d.hi >> (shift - 64);
 		return s128(hi, lo);
 	}
