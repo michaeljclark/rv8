@@ -80,14 +80,14 @@ namespace riscv
 	{
 		// todo - use predicate logic instead of ternary operator - violates constant time property
 		u64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi << shift) | (x.r.d.lo >> (64 - shift)) : x.r.d.lo << (shift - 64);
-		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo << shift) : 0;
+		u64 lo = (shift < 64) ? (x.r.d.lo << shift) : 0;
 		return u128(hi, lo);
 	}
 
 	inline u128 operator>>(const u128 &x, int shift)
 	{
 		// todo - use predicate logic instead of ternary operator - violates constant time property
-		u64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi >> shift) : 0;
+		u64 hi = (shift < 64) ? (x.r.d.hi >> shift) : 0;
 		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo >> shift) | (x.r.d.hi << (64 - shift)) : x.r.d.hi >> (shift - 64);
 		return u128(hi, lo);
 	}
@@ -222,14 +222,14 @@ namespace riscv
 	{
 		// todo - use predicate logic instead of ternary operator - violates constant time property
 		u64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi << shift) | (x.r.d.lo >> (64 - shift)) : x.r.d.lo << (shift - 64);
-		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo << shift) : 0;
+		u64 lo = (shift < 64) ? (x.r.d.lo << shift) : 0;
 		return s128(hi, lo);
 	}
 
 	inline s128 operator>>(const s128 &x, int shift)
 	{
 		// todo - use predicate logic instead of ternary operator - violates constant time property
-		s64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi >> shift) : (x.r.d.hi >> 63) >> 1; // moron
+		s64 hi = (shift < 64) ? (x.r.d.hi >> shift) : (x.r.d.hi >> 63) >> 1; // moron
 		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo >> shift) | (x.r.d.hi << (64 - shift)) : x.r.d.hi >> (shift - 64);
 		return s128(hi, lo);
 	}
