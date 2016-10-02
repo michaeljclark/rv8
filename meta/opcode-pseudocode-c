@@ -154,7 +154,7 @@ fcvt.w.s   "fenv_setrm(rm); rd = (~u32(frs1) >> 31) & (s32(f32(frs1)) < 0) ? s32
 fcvt.wu.s  "fenv_setrm(rm); rd = u32(f32(frs1) > 0 ? f32(frs1) : 0)"                                          # f32(frs1)
 fcvt.s.w   "fenv_setrm(rm); f32(frd) = f32(s32(rs1))"
 fcvt.s.wu  "fenv_setrm(rm); f32(frd) = f32(u32(rs1))"
-fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"
+fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"               # s32(frs1)
 fclass.s   "rd = f32_classify(f32(frs1))"
 fmv.s.x    "u32(frd) = u32(rs1)"
 
