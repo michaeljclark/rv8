@@ -50,7 +50,7 @@ namespace riscv {
 	template <typename T, typename F>
 	inline s32 fcvt_wu(T &fcsr, F f)
 	{
-		return f >= 0 ? s32(u32(f)) : std::isnan(f) ? std::numeric_limits<u32>::max() : (f > -1 ? (fcsr |= riscv_fcsr_NX, s32(0)) : (fcsr |= riscv_fcsr_NV, s32(0)));
+		return (std::isnan(f) | ((f >= 0) & std::isinf(f))) ? std::numeric_limits<u32>::max() : f >= 0 ? s32(u32(f)) : (f > -1 ? (fcsr |= riscv_fcsr_NX, s32(0)) : (fcsr |= riscv_fcsr_NV, s32(0)));
 	}
 
 	template <typename T, typename F>
@@ -62,7 +62,7 @@ namespace riscv {
 	template <typename T, typename F>
 	inline s64 fcvt_lu(T &fcsr, F f)
 	{
-		return f >= 0 ? s64(u64(f)) : std::isnan(f) ? std::numeric_limits<u64>::max() : (f > -1 ? (fcsr |= riscv_fcsr_NX, s64(0)) : (fcsr |= riscv_fcsr_NV, s64(0)));
+		return (std::isnan(f) | ((f >= 0) & std::isinf(f))) ? std::numeric_limits<u64>::max() : f >= 0 ? s64(u64(f)) :(f > -1 ? (fcsr |= riscv_fcsr_NX, s64(0)) : (fcsr |= riscv_fcsr_NV, s64(0)));
 	}
 
 	inline float f32_sqrt(float a) { return std::sqrt(a); }
