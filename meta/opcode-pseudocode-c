@@ -150,18 +150,18 @@ fsqrt.s    "fenv_setrm(rm); f32(frd) = f32_sqrt(f32(frs1))"
 fle.s      "rd = f32(frs1) <= f32(frs2)"
 flt.s      "rd = f32(frs1) < f32(frs2)"
 feq.s      "rd = f32(frs1) == f32(frs2)"
-fcvt.w.s   "fenv_setrm(rm); rd = (~u32(frs1) >> 31) & (s32(f32(frs1)) < 0) ? s32(INT_MAX) : s32(f32(frs1))"   # s32(f32(frs1))
-fcvt.wu.s  "fenv_setrm(rm); rd = u32(f32(frs1) > 0 ? f32(frs1) : 0)"                                          # f32(frs1)
+fcvt.w.s   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f32(frs1))"                                   # s32(f32(frs1))
+fcvt.wu.s  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f32(frs1))"                                  # s32(u32(f32(frs1)))
 fcvt.s.w   "fenv_setrm(rm); f32(frd) = f32(s32(rs1))"
 fcvt.s.wu  "fenv_setrm(rm); f32(frd) = f32(u32(rs1))"
-fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"               # s32(frs1)
+fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"    # s32(frs1)
 fclass.s   "rd = f32_classify(f32(frs1))"
 fmv.s.x    "u32(frd) = u32(rs1)"
 
 # RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.s   "fenv_setrm(rm); rd = (~u32(frs1) >> 31) & (s64(f32(frs1)) < 0) ? s64(INT_MAX) : s64(f32(frs1))"   # s64(f32(frs1))
-fcvt.lu.s  "fenv_setrm(rm); rd = u64(f32(frs1) > 0 ? f32(frs1) : 0)"                                          # f32(frs1)
+fcvt.l.s   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f32(frs1))"                                   # s64(f32(frs1))
+fcvt.lu.s  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f32(frs1))"                                  # s64(u32(f32(frs1)))
 fcvt.s.l   "fenv_setrm(rm); f32(frd) = f32(s64(rs1))"
 fcvt.s.lu  "fenv_setrm(rm); f32(frd) = f32(u64(rs1))"
 
@@ -188,17 +188,17 @@ fsqrt.d    "fenv_setrm(rm); f64(frd) = f64_sqrt(f64(frs1))"
 fle.d      "rd = f64(frs1) <= f64(frs2)"
 flt.d      "rd = f64(frs1) < f64(frs2)"
 feq.d      "rd = f64(frs1) == f64(frs2)"
-fcvt.w.d   "fenv_setrm(rm); rd = (~u64(frs1) >> 63) & (s32(f64(frs1)) < 0) ? s32(INT_MAX) : s32(f64(frs1))"   # s32(f64(frs1))
-fcvt.wu.d  "fenv_setrm(rm); rd = u32(f64(frs1) > 0 ? f64(frs1) : 0)"                                          # f64(frs1)
+fcvt.w.d   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f64(frs1))"                                   # s32(f64(frs1))
+fcvt.wu.d  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f64(frs1))"                                  # s32(u32(f64(frs1)))
 fcvt.d.w   "fenv_setrm(rm); f64(frd) = f64(s32(rs1))"
 fcvt.d.wu  "fenv_setrm(rm); f64(frd) = f64(u32(rs1))"
 fclass.d   "rd = f64_classify(f64(frs1))"
 
 # RV64D    "RV64D Standard Extension for Double-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.d   "fenv_setrm(rm); rd = (~u64(frs1) >> 63) & (s64(f64(frs1)) < 0) ? s64(INT_MAX) : s64(f64(frs1))"   # s64(f64(frs1))
-fcvt.lu.d  "fenv_setrm(rm); rd = u64(f64(frs1) > 0 ? f64(frs1) : 0)"                                          # f64(frs1)
-fmv.x.d    "rd = (u64(frs1) & u64(f64(NAN))) == u64(f64(NAN)) ? s64(u64(f64(NAN))) : s64(frs1)"               # s64(frs1)
+fcvt.l.d   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f64(frs1))"                                   # s64(f64(frs1))
+fcvt.lu.d  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f64(frs1))"                                  # s64(u64(f64(frs1)))
+fmv.x.d    "rd = (u64(frs1) & u64(f64(NAN))) == u64(f64(NAN)) ? s64(u64(f64(NAN))) : s64(frs1)"    # s64(frs1)
 fcvt.d.l   "fenv_setrm(rm); f64(frd) = f64(s64(rs1))"
 fcvt.d.lu  "fenv_setrm(rm); f64(frd) = f64(u64(rs1))"
 fmv.d.x    "u64(frd) = u64(rs1)"
