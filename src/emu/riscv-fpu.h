@@ -44,7 +44,7 @@ namespace riscv {
 	template <typename T, typename F>
 	inline s32 fcvt_w(T &fcsr, F f)
 	{
-		return (f > std::numeric_limits<s32>::max()) & (s32(f) < 0) || std::isnan(f) ? std::numeric_limits<s32>::max() : s32(f);
+		return (((f > std::numeric_limits<s32>::max()) & (s32(f) < 0)) | std::isnan(f)) ? std::numeric_limits<s32>::max() : s32(f);
 	}
 
 	template <typename T, typename F>
@@ -56,7 +56,7 @@ namespace riscv {
 	template <typename T, typename F>
 	inline s64 fcvt_l(T &fcsr, F f)
 	{
-		return (f > std::numeric_limits<s64>::max()) & (s64(f) < 0) || std::isnan(f) ? std::numeric_limits<s64>::max() : s64(f);
+		return (((f > std::numeric_limits<s64>::max()) & (s64(f) < 0)) | std::isnan(f)) ? std::numeric_limits<s64>::max() : s64(f);
 	}
 
 	template <typename T, typename F>
