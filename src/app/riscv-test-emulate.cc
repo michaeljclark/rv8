@@ -765,6 +765,9 @@ struct riscv_emulator
 	template <typename P>
 	void start_priv()
 	{
+		/* clear floating point exceptions */
+		feclearexcept(FE_ALL_EXCEPT);
+
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
@@ -793,7 +796,7 @@ struct riscv_emulator
 	template <typename P>
 	void start_proxy()
 	{
-		/* disable floating point exceptions */
+		/* clear floating point exceptions */
 		feclearexcept(FE_ALL_EXCEPT);
 
 		/* instantiate processor, set log options and program counter to entry address */
