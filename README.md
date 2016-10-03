@@ -3,7 +3,7 @@ RISC-V Meta
 
 [![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
 
-Date    : January 17, 2020
+Date    : January 15, 2020
 
 Version : (under version control)
 
