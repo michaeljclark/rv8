@@ -796,8 +796,6 @@ struct riscv_emulator
 		/* disable floating point exceptions */
 		feclearexcept(FE_ALL_EXCEPT);
 
-		/* TODO support round mode */
-
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
