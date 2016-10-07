@@ -3,6 +3,7 @@
 //
 
 #undef NDEBUG
+#define PREDICATED_SHIFT
 
 #include <cstdio>
 #include <cstdint>

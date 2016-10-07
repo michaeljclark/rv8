@@ -5,94 +5,139 @@
 #ifndef riscv_operators_h
 #define riscv_operators_h
 
+#ifdef NO_INLINE
+#define MAYBE_INLINE
+#else
+#if __GNUC__ >= 5
+#define MAYBE_INLINE __attribute__((gnu_inline)) inline
+#else
+#define MAYBE_INLINE inline
+#endif
+#endif
 
 namespace riscv
 {
 
 	/* u128 - bitwise operators cause the compiler to generate constant time code */
 
-	inline bool operator==(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator==(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.lo == y.r.d.lo) & (x.r.d.hi == y.r.d.hi);
 	}
 
-	inline bool operator!=(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator!=(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.lo != y.r.d.lo) | (x.r.d.hi != y.r.d.hi);
 	}
 
-	inline bool operator<(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator<(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo < y.r.d.lo));
 	}
 
-	inline bool operator>(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator>(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo > y.r.d.lo));
 	}
 
-	inline bool operator>=(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator>=(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo >= y.r.d.lo));
 	}
 
-	inline bool operator<=(const u128 &x, const u128 &y)
+	MAYBE_INLINE bool operator<=(const u128 &x, const u128 &y)
 	{
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo <= y.r.d.lo));
 	}
 
-	inline u128 operator&(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator&(const u128 &x, const u128 &y)
 	{
 		return u128(x.r.d.hi & y.r.d.hi, x.r.d.lo & y.r.d.lo);
 	}
 
-	inline u128 operator|(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator|(const u128 &x, const u128 &y)
 	{
 		return u128(x.r.d.hi | y.r.d.hi, x.r.d.lo | y.r.d.lo);
 	}
 
-	inline u128 operator^(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator^(const u128 &x, const u128 &y)
 	{
 		return u128(x.r.d.hi ^ y.r.d.hi, x.r.d.lo ^ y.r.d.lo);
 	}
 
-	inline u128 operator~(const u128 &x)
+	MAYBE_INLINE u128 operator~(const u128 &x)
 	{
 		return u128(~x.r.d.hi, ~x.r.d.lo);
 	}
 
-	inline u128 operator&(const u128 &x, s32 y)
+	MAYBE_INLINE u128 operator&(const u128 &x, s32 y)
 	{
 		return u128(x.r.d.hi, x.r.d.lo & y);
 	}
 
-	inline u128 operator|(const u128 &x, s32 y)
+	MAYBE_INLINE u128 operator|(const u128 &x, s32 y)
 	{
 		return u128(x.r.d.hi, x.r.d.lo | y);
 	}
 
-	inline u128 operator^(const u128 &x, s32 y)
+	MAYBE_INLINE u128 operator^(const u128 &x, s32 y)
 	{
 		return u128(x.r.d.hi, x.r.d.lo ^ y);
 	}
 
-	inline u128 operator<<(const u128 &x, int shift)
+	MAYBE_INLINE u128 operator<<(const u128 &x, int shamt)
 	{
-		// todo - use predicate logic instead of ternary operator - violates constant time property
-		u64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi << shift) | (x.r.d.lo >> (64 - shift)) : x.r.d.lo << (shift - 64);
-		u64 lo = (shift < 64) ? (x.r.d.lo << shift) : 0;
+#if defined PREDICATED_SHIFT
+		u64 s = shamt & 127;
+		u64 sg0 = s > 0, sl64 = s < 64, sge64 = s >= 64;
+		u64 hi0 = -sl64 & (x.r.d.hi << s);
+		u64 hi1 = -(sg0 & sl64) & ((x.r.d.lo >> (64 - s)));
+		u64 hi2 = -sge64 & (x.r.d.lo << (s - 64));
+		u64 hi = hi0 | hi1 | hi2;
+		u64 lo = -sl64 & (x.r.d.lo << s);
 		return u128(hi, lo);
+#else
+		u64 s = shamt & 127;
+		if (s == 0) {
+			return x;
+		} else if (s < 64) {
+			u64 hi = (x.r.d.hi << s) | (x.r.d.lo >> (64 - s));
+			u64 lo = x.r.d.lo << s;
+			return u128(hi, lo);
+		} else {
+			u64 hi = x.r.d.lo << (s - 64);
+			return u128(hi, 0);
+		}
+#endif
 	}
 
-	inline u128 operator>>(const u128 &x, int shift)
+	MAYBE_INLINE u128 operator>>(const u128 &x, int shamt)
 	{
-		// todo - use predicate logic instead of ternary operator - violates constant time property
-		u64 hi = (shift < 64) ? (x.r.d.hi >> shift) : 0;
-		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo >> shift) | (x.r.d.hi << (64 - shift)) : x.r.d.hi >> (shift - 64);
+#if defined PREDICATED_SHIFT
+		u64 s = shamt & 127;
+		u64 sg0 = s > 0, sl64 = s < 64, sge64 = s >= 64;
+		u64 hi = -sl64 & (x.r.d.hi >> s);
+		u64 lo0 = -sl64 & (x.r.d.lo >> s);
+		u64 lo1 = -(sg0 & sl64) & (x.r.d.hi << (64 - s));
+		u64 lo2 = -sge64 & (x.r.d.hi >> (s - 64));
+		u64 lo = lo0 | lo1 | lo2;
 		return u128(hi, lo);
+#else
+		u64 s = shamt & 127;
+		if (s == 0) {
+			return x;
+		} else if (s < 64) {
+			u64 hi = x.r.d.hi >> s;
+			u64 lo = (x.r.d.lo >> s) | (x.r.d.hi << (64 - s));
+			return u128(hi, lo);
+		} else {
+			u64 lo = x.r.d.hi >> (s - 64);
+			return u128(0, lo);
+		}
+#endif
 	}
 
-	inline u128 operator+(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator+(const u128 &x, const u128 &y)
 	{
 		u64 lo = x.r.d.lo + y.r.d.lo;
 		u64 c = lo < x.r.d.lo;
@@ -100,7 +145,7 @@ namespace riscv
 		return u128(hi, lo);
 	}
 
-	inline u128 operator-(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator-(const u128 &x, const u128 &y)
 	{
 		u64 lo = x.r.d.lo - y.r.d.lo;
 		u64 b = lo > x.r.d.lo;
@@ -108,12 +153,12 @@ namespace riscv
 		return u128(hi, lo);
 	}
 
-	inline u128 operator-(const u128 &x)
+	MAYBE_INLINE u128 operator-(const u128 &x)
 	{
 		return ~x + 1;
 	}
 
-	inline u128 operator*(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator*(const u128 &x, const u128 &y)
 	{
 		u128 z0 = x.r.d.lo * y.r.d.lo;
 		u128 z1 = x.r.d.hi * y.r.d.lo;
@@ -123,7 +168,7 @@ namespace riscv
 		return ((z4 + c1) << 64) + z0;
 	}
 
-	inline u128 operator/(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator/(const u128 &x, const u128 &y)
 	{
 		if (y == 0) return u128(-1,-1);
 		u128 q = 0, r = 0;
@@ -137,7 +182,7 @@ namespace riscv
 		return q;
 	}
 
-	inline u128 operator%(const u128 &x, const u128 &y)
+	MAYBE_INLINE u128 operator%(const u128 &x, const u128 &y)
 	{
 		if (y == 0) return x;
 		u128 q = 0, r = 0;
@@ -153,88 +198,127 @@ namespace riscv
 
 	/* s128 - bitwise operators cause the compiler to generate constant time code */
 
-	inline bool operator==(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator==(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.lo == y.r.d.lo) & (x.r.d.hi == y.r.d.hi);
 	}
 
-	inline bool operator!=(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator!=(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.lo != y.r.d.lo) | (x.r.d.hi != y.r.d.hi);
 	}
 
-	inline bool operator<(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator<(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo < y.r.d.lo));
 	}
 
-	inline bool operator>(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator>(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo > y.r.d.lo));
 	}
 
-	inline bool operator>=(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator>=(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.hi > y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo >= y.r.d.lo));
 	}
 
-	inline bool operator<=(const s128 &x, const s128 &y)
+	MAYBE_INLINE bool operator<=(const s128 &x, const s128 &y)
 	{
 		return (x.r.d.hi < y.r.d.hi) | ((x.r.d.hi == y.r.d.hi) & (x.r.d.lo <= y.r.d.lo));
 	}
 
-	inline s128 operator&(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator&(const s128 &x, const s128 &y)
 	{
 		return s128(x.r.d.hi & y.r.d.hi, x.r.d.lo & y.r.d.lo);
 	}
 
-	inline s128 operator|(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator|(const s128 &x, const s128 &y)
 	{
 		return s128(x.r.d.hi | y.r.d.hi, x.r.d.lo | y.r.d.lo);
 	}
 
-	inline s128 operator^(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator^(const s128 &x, const s128 &y)
 	{
 		return s128(x.r.d.hi ^ y.r.d.hi, x.r.d.lo ^ y.r.d.lo);
 	}
 
-	inline s128 operator~(const s128 &x)
+	MAYBE_INLINE s128 operator~(const s128 &x)
 	{
 		return s128(~x.r.d.hi, ~x.r.d.lo);
 	}
 
-	inline s128 operator&(const s128 &x, s32 y)
+	MAYBE_INLINE s128 operator&(const s128 &x, s32 y)
 	{
 		return s128(x.r.d.hi, x.r.d.lo & y);
 	}
 
-	inline s128 operator|(const s128 &x, s32 y)
+	MAYBE_INLINE s128 operator|(const s128 &x, s32 y)
 	{
 		return s128(x.r.d.hi, x.r.d.lo | y);
 	}
 
-	inline s128 operator^(const s128 &x, s32 y)
+	MAYBE_INLINE s128 operator^(const s128 &x, s32 y)
 	{
 		return s128(x.r.d.hi, x.r.d.lo ^ y);
 	}
 
-	inline s128 operator<<(const s128 &x, int shift)
+	MAYBE_INLINE s128 operator<<(const s128 &x, int shamt)
 	{
-		// todo - use predicate logic instead of ternary operator - violates constant time property
-		u64 hi = (shift == 0) ? x.r.d.hi : (shift < 64) ? (x.r.d.hi << shift) | (x.r.d.lo >> (64 - shift)) : x.r.d.lo << (shift - 64);
-		u64 lo = (shift < 64) ? (x.r.d.lo << shift) : 0;
+#if defined PREDICATED_SHIFT
+		u64 s = shamt & 127;
+		u64 sg0 = s > 0, sl64 = s < 64, sge64 = s >= 64;
+		u64 hi0 = -sl64 & (x.r.d.hi << s);
+		u64 hi1 = -(sg0 & sl64) & ((x.r.d.lo >> (64 - s)));
+		u64 hi2 = -sge64 & (x.r.d.lo << (s - 64));
+		u64 hi = hi0 | hi1 | hi2;
+		u64 lo = -sl64 & (x.r.d.lo << s);
 		return s128(hi, lo);
+#else
+		u64 s = shamt & 127;
+		if (s == 0) {
+			return x;
+		} else if (s < 64) {
+			u64 hi = (x.r.d.hi << s) | (x.r.d.lo >> (64 - s));
+			u64 lo = x.r.d.lo << s;
+			return s128(hi, lo);
+		} else {
+			u64 hi = x.r.d.lo << (s - 64);
+			return s128(hi, 0);
+		}
+#endif
 	}
 
-	inline s128 operator>>(const s128 &x, int shift)
+	MAYBE_INLINE s128 operator>>(const s128 &x, int shamt)
 	{
-		// todo - use predicate logic instead of ternary operator - violates constant time property
-		s64 hi = (shift < 64) ? (x.r.d.hi >> shift) : -(u64(x.r.d.hi) >> 63);
-		u64 lo = (shift == 0) ? x.r.d.lo : (shift < 64) ? (x.r.d.lo >> shift) | (x.r.d.hi << (64 - shift)) : x.r.d.hi >> (shift - 64);
+#if defined PREDICATED_SHIFT
+		u64 s = shamt & 127;
+		u64 sg0 = s > 0, sl64 = s < 64, sge64 = s >= 64;
+		u64 hi0 = -sl64 & (x.r.d.hi >> s);
+		u64 hi1 = -!sl64 & -(u64(x.r.d.hi) >> 63);
+		u64 hi = hi0 | hi1;
+		u64 lo0 = -sl64 & (x.r.d.lo >> s);
+		u64 lo1 = -(sg0 & sl64) & (x.r.d.hi << (64 - s));
+		u64 lo2 = -sge64 & (x.r.d.hi >> (s - 64));
+		u64 lo = lo0 | lo1 | lo2;
 		return s128(hi, lo);
+#else
+		u64 s = shamt & 127;
+		if (s == 0) {
+			return x;
+		} else if (s < 64) {
+			u64 hi = x.r.d.hi >> s;
+			u64 lo = (x.r.d.lo >> s) | (x.r.d.hi << (64 - s));
+			return s128(hi, lo);
+		} else {
+			u64 hi = -(u64(x.r.d.hi) >> 63);
+			u64 lo = x.r.d.hi >> (s - 64);
+			return s128(hi, lo);
+		}
+#endif
 	}
 
-	inline s128 operator+(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator+(const s128 &x, const s128 &y)
 	{
 		u64 lo = x.r.d.lo + y.r.d.lo;
 		u64 c = lo < x.r.d.lo;
@@ -242,7 +326,7 @@ namespace riscv
 		return s128(hi, lo);
 	}
 
-	inline s128 operator-(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator-(const s128 &x, const s128 &y)
 	{
 		u64 lo = x.r.d.lo - y.r.d.lo;
 		u64 b = lo > x.r.d.lo;
@@ -250,12 +334,12 @@ namespace riscv
 		return s128(hi, lo);
 	}
 
-	inline s128 operator-(const s128 &x)
+	MAYBE_INLINE s128 operator-(const s128 &x)
 	{
 		return ~x + 1;
 	}
 
-	inline s128 operator*(const s128 &x, const s128 &y)
+	MAYBE_INLINE s128 operator*(const s128 &x, const s128 &y)
 	{
 		s128 z0 = x.r.d.lo * y.r.d.lo;
 		s128 z1 = x.r.d.hi * y.r.d.lo;
