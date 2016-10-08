@@ -7,17 +7,19 @@
 
 namespace riscv {
 
-	template <typename UX, typename TLB, typename CACHE, typename MEMORY = user_memory<UX>>
+	template <typename UX, typename TLB, typename CACHE, typename PMAS, typename MEMORY = user_memory<UX>>
 	struct mmu
 	{
 		typedef TLB tlb_type;
 		typedef CACHE cache_type;
+		typedef PMAS pma_type;
 		typedef MEMORY memory_type;
 
 		tlb_type     l1_dtlb;
 		tlb_type     l1_itlb;
 		cache_type   l1_dcache;
 		cache_type   l1_icache;
+		pma_type     pmas;
 		memory_type  mem;
 
 		template <typename P> inst_t fetch_inst(P &proc, UX pc)
@@ -50,8 +52,11 @@ namespace riscv {
 	typedef as_tagged_cache_rv64<65536,8,64> cache_type_rv64;
 	typedef as_tagged_tlb_rv64<128> tlb_type_rv64;
 
-	using mmu_rv32 = mmu<u32,tlb_type_rv32,cache_type_rv32>;
-	using mmu_rv64 = mmu<u64,tlb_type_rv32,cache_type_rv64>;
+	typedef pma_table<u32,8> pma_table_rv32;
+	typedef pma_table<u64,8> pma_table_rv64;
+
+	using mmu_rv32 = mmu<u32,tlb_type_rv32,cache_type_rv32,pma_table_rv32>;
+	using mmu_rv64 = mmu<u64,tlb_type_rv32,cache_type_rv64,pma_table_rv64>;
 
 }
 

@@ -66,6 +66,40 @@ namespace riscv {
 	using as_tagged_va_ppn_rv64 = as_tagged_va_ppn<u64,26,38>;
 
 
+	/* physical memory attribute table */
+
+	template <typename UX>
+	struct pma_entry
+	{
+		UX  pa;
+		UX  mask;
+		pma attrs;
+	};
+
+	template <typename UX, const size_t pma_table_size>
+	struct pma_table
+	{
+	    typedef pma_entry<UX> pma_entry_t;
+
+		enum : UX {
+			size = pma_table_size
+		};
+
+		pma_entry_t table[size];
+
+		void insert(UX pa, UX mask, pma attrs)
+		{
+			// TODO
+		}
+
+		pma_entry_t* lookup(UX pa)
+		{
+			// TODO
+			return nullptr;
+		}
+	};
+
+
 	/* address space tagged tlb */
 
 	template <const size_t tlb_size, typename UX, typename AST_PT_VA>
@@ -116,12 +150,12 @@ namespace riscv {
 		}
 
 		// insert TLB entry for the given vaddr+asid <- X:12[PPN],11:0[PTE.flags]
-		void insert(UX vaddr, UX asid, UX ppnf)
+		void insert(UX vaddr, UX asid, UX ppn)
 		{
 			UX va = vaddr & page_mask;
 			size_t i = (vaddr >> page_shift) & mask;
 			// pte flags are stored in bits 11:0 of the PPN
-			tlb[i] = as_tagged_va_ppn_type((va & page_mask) | (ppnf & ~page_mask), asid, ppnf >> page_shift);
+			tlb[i] = as_tagged_va_ppn_type((va & page_mask) | (ppn & ~page_mask), asid, ppn >> page_shift);
 			// we are implicitly evicting an entry by overwriting it
 		}
 	};
