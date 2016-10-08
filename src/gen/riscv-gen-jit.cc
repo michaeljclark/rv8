@@ -50,7 +50,7 @@ static void print_jit_h(riscv_gen *gen)
 		}
 
 		// output emit interface
-		printf("\tuint64_t %s(%s);\n",
+		printf("\tinst_t %s(%s);\n",
 			emit_name.c_str(), join(operand_list, ", ").c_str());
 	}
 	printf("}\n");
@@ -92,7 +92,7 @@ using namespace riscv;
 		}
 
 		// output emit interface
-		printf("uint64_t riscv::%s(%s)\n{\n",
+		printf("inst_t riscv::%s(%s)\n{\n",
 			emit_name.c_str(), join(operand_list, ", ").c_str());
 		printf("\tdecode dec;\n");
 		if (opcode->codec->operands.size() > 0) {

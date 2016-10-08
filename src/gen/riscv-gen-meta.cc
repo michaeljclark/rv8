@@ -88,8 +88,8 @@ extern const riscv_primitive_data riscv_type_primitives[];
 extern const riscv_codec riscv_inst_codec[];
 extern const char* riscv_inst_format[];
 extern const riscv_operand_data* riscv_inst_operand_data[];
-extern const uint64_t riscv_inst_match[];
-extern const uint64_t riscv_inst_mask[];
+extern const riscv::inst_t riscv_inst_match[];
+extern const riscv::inst_t riscv_inst_mask[];
 extern const riscv_comp_data* riscv_inst_pseudo[];
 extern const riscv_comp_data riscv_inst_depseudo[];
 )C";
@@ -442,20 +442,20 @@ R"C(#include "riscv-types.h"
 	printf("};\n\n");
 
 	// Instruction match bits
-	printf("const uint64_t riscv_inst_match[] = {\n");
+	printf("const riscv::inst_t riscv_inst_match[] = {\n");
 	print_array_illegal_uint64(0ULL, no_comment);
 	for (auto &opcode : gen->opcodes) {
-		printf("\t%s0x%016" PRIx64 ",\n",
+		printf("\t%s0x%016llx,\n",
 			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
 			opcode->match);
 	}
 	printf("};\n\n");
 
 	// Instruction mask bits
-	printf("const uint64_t riscv_inst_mask[] = {\n");
+	printf("const riscv::inst_t riscv_inst_mask[] = {\n");
 	print_array_illegal_uint64(0ULL, no_comment);
 	for (auto &opcode : gen->opcodes) {
-		printf("\t%s0x%016" PRIx64 ",\n",
+		printf("\t%s0x%016llx,\n",
 			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
 			opcode->mask);
 	}

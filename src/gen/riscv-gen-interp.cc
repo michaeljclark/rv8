@@ -41,7 +41,7 @@ static void print_interp_h(riscv_gen *gen)
 			printf("bool %s, ", mi->c_str());
 		}
 		printf("typename T, typename P>\n");
-		printf("intptr_t exec_inst_%s(T &dec, P &proc, intptr_t pc_offset)\n",
+		printf("riscv::addr_t exec_inst_%s(T &dec, P &proc, riscv::addr_t pc_offset)\n",
 			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
@@ -56,7 +56,7 @@ static void print_interp_h(riscv_gen *gen)
 			if (!opcode->include_isa(isa_width.first)) continue;
 			printf("\t\tcase %s:\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
-			inst = replace(inst, "ptr", "uintptr_t");
+			inst = replace(inst, "ptr", "addr_t");
 			inst = replace(inst, "fcsr", "proc.fcsr");
 			inst = replace(inst, "lr", "proc.lr");
 			inst = replace(inst, "pc_offset", "PC_OFFSET");

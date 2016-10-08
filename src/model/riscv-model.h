@@ -22,6 +22,8 @@ struct riscv_pseudo;
 struct riscv_bitrange;
 struct riscv_latex_row;
 
+typedef unsigned long long inst_t;
+
 typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
 typedef std::shared_ptr<riscv_operand> riscv_operand_ptr;
 typedef std::vector<riscv_operand_ptr> riscv_operand_list;
@@ -271,9 +273,9 @@ struct riscv_opcode
 	riscv_pseudo_list pseudos;
 
 	size_t num;
-	uint64_t mask;
-	uint64_t match;
-	uint64_t done;
+	inst_t mask;
+	inst_t match;
+	inst_t done;
 
 	riscv_opcode(std::string key, std::string name)
 		: key(key), name(name), num(0), mask(0), match(0), done(0) {}

@@ -41,14 +41,14 @@ using namespace riscv;
 
 struct spasm : disasm
 {
-	uint64_t  addr;              /* decoded address if present */
-	uint32_t  label_target;      /* label target for this instruction */
-	uint32_t  label_pair;        /* target of first instruction in pair */
-	uint32_t  label_branch;      /* target of jump, jump and link or branch  */
-	uint32_t  label_cont;        /* target of continuation following jumps */
-	uint32_t  is_abs       : 1;  /* absolute address present */
-	uint32_t  is_pcrel     : 1;  /* pc relative address present */
-	uint32_t  is_gprel     : 1;  /* gp relative address present */
+	addr_t  addr;              /* decoded address if present */
+	u32     label_target;      /* label target for this instruction */
+	u32     label_pair;        /* target of first instruction in pair */
+	u32     label_branch;      /* target of jump, jump and link or branch  */
+	u32     label_cont;        /* target of continuation following jumps */
+	u32     is_abs       : 1;  /* absolute address present */
+	u32     is_pcrel     : 1;  /* pc relative address present */
+	u32     is_gprel     : 1;  /* gp relative address present */
 
 	spasm() : disasm(),
 		label_target(0), label_pair(0), label_branch(0), label_cont(0),
@@ -60,8 +60,8 @@ struct riscv_compress_elf
 	elf_file elf;
 	std::string filename;
 	std::string output_filename;
-	std::map<uintptr_t,uint32_t> continuations;
-	std::map<uintptr_t,uintptr_t> relocations;
+	std::map<addr_t,label_t> continuations;
+	std::map<addr_t,addr_t> relocations;
 	ssize_t continuation_num = 1;
 
 	bool do_print_disassembly = false;
@@ -77,7 +77,7 @@ struct riscv_compress_elf
 		return "";
 	}
 
-	const char* symlookup(uintptr_t addr, bool nearest)
+	const char* symlookup(addr_t addr, bool nearest)
 	{
 		static char symbol_tmpname[256];
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
@@ -128,14 +128,14 @@ struct riscv_compress_elf
 	void print_continuation_disassembly(T &dec)
 	{
 		std::string args = disasm_inst_simple(dec);
-		debug("0x%016tx %-7s%-7s%-7s%-7s%-35s%-18s %s%s%s",
+		debug("0x%016llx %-7s%-7s%-7s%-7s%-35s%-18s %s%s%s",
 			dec.pc,
 			dec.label_target ? format_string("%u", dec.label_target).c_str() : "",
 			dec.label_pair ? format_string("%u", dec.label_pair).c_str() : "",
 			dec.label_cont ? format_string("%u", dec.label_cont).c_str() : "",
 			dec.label_branch ? format_string("%u", dec.label_branch).c_str() : "",
 			args.c_str(),
-			(dec.is_abs || dec.is_pcrel || dec.is_gprel) ? format_string("0x%016tx", dec.addr).c_str() : "",
+			(dec.is_abs || dec.is_pcrel || dec.is_gprel) ? format_string("0x%016llx", dec.addr).c_str() : "",
 			dec.is_abs ? "abs" : "",
 			dec.is_pcrel ? "pc" : "",
 			dec.is_gprel ? "gp" : ""
@@ -143,18 +143,18 @@ struct riscv_compress_elf
 	}
 
 	// helper for creating continiation address entries
-	std::map<uintptr_t,uint32_t>::iterator get_continuation(uintptr_t addr)
+	std::map<addr_t,label_t>::iterator get_continuation(addr_t addr)
 	{
 		auto ci = continuations.find(addr);
 		if (ci == continuations.end()) {
-			ci = continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++)).first;
+			ci = continuations.insert(std::pair<addr_t,label_t>(addr, continuation_num++)).first;
 		}
 		return ci;
 	}
 
 	// decode address using instruction pair constraints and label continuations for jump and link register
 	template <typename T>
-	bool decode_pairs(T &dec, uintptr_t start, uintptr_t end,
+	bool decode_pairs(T &dec, addr_t start, addr_t end,
 		typename std::deque<T>::iterator bi,
 		typename std::deque<T>::iterator bend,
 		std::deque<T> &dec_hist)
@@ -217,7 +217,7 @@ struct riscv_compress_elf
 
 	// decode address for branches and label jumps and continuations for jump and link
 	template <typename T>
-	bool deocde_jumps(T &dec, uintptr_t start, uintptr_t end,
+	bool deocde_jumps(T &dec, addr_t start, addr_t end,
 		typename std::deque<T>::iterator bi,
 		typename std::deque<T>::iterator bend)
 	{
@@ -262,7 +262,7 @@ struct riscv_compress_elf
 
 	// decode address for loads and stores from the global pointer
 	template <typename T>
-	bool deocde_gprel(T &dec, uintptr_t gp)
+	bool deocde_gprel(T &dec, addr_t gp)
 	{
 		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
 		switch (dec.op) {
@@ -291,10 +291,10 @@ struct riscv_compress_elf
 		return false;
 	}
 
-	void disassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
+	void disassemble(std::deque<spasm> &bin, addr_t start, addr_t end, addr_t pc_bias)
 	{
-		intptr_t pc_offset;
-		uintptr_t pc = start;
+		addr_t pc_offset;
+		addr_t pc = start;
 		while (pc < end) {
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
@@ -306,7 +306,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void scan_continuations(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t gp)
+	void scan_continuations(std::deque<spasm> &bin, addr_t start, addr_t end, addr_t gp)
 	{
 		std::deque<spasm> dec_hist;
 
@@ -353,14 +353,14 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (bi != bin.begin()) {
-				uintptr_t new_pc = (bi-1)->pc + inst_length((bi-1)->inst);
+				addr_t new_pc = (bi-1)->pc + inst_length((bi-1)->inst);
 				elf.update_sym_addr(dec.pc, new_pc);
 				relocations[dec.pc] = new_pc;
 				auto ci = continuations.find(dec.pc);
 				dec.pc = new_pc;
 				if (ci != continuations.end()) {
 					continuations.erase(ci);
-					ci = continuations.insert(std::pair<uintptr_t,uint32_t>(dec.pc, ci->second)).first;
+					ci = continuations.insert(std::pair<addr_t,label_t>(dec.pc, ci->second)).first;
 				}
 			}
 			if (inst_length(dec.inst) == 4 && compress_inst_rv64(dec)) {
@@ -374,9 +374,9 @@ struct riscv_compress_elf
 		return std::pair<size_t,size_t>(bytes, saving);
 	}
 
-	void relocate(std::deque<spasm> &bin, uintptr_t start, uintptr_t end)
+	void relocate(std::deque<spasm> &bin, addr_t start, addr_t end)
 	{
-		std::map<uint32_t,intptr_t> label_addr;
+		std::map<label_t,addr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if (dec.label_target == 0) continue;
@@ -388,9 +388,9 @@ struct riscv_compress_elf
 				auto rbi = bi;
 				if (dec.label_branch) dec.addr = label_addr[dec.label_branch];
 				while (rbi->label_target != dec.label_pair) rbi--;
-				dec.imm = sign_extend<int64_t,12>(intptr_t(dec.addr - rbi->pc));
-				rbi->imm = sign_extend<int64_t,32>(intptr_t(dec.addr - rbi->pc) & 0xfffff000);
-				if (intptr_t(dec.imm + rbi->imm + rbi->pc) < intptr_t(dec.addr)) rbi->imm += 0x1000;
+				dec.imm = sign_extend<int64_t,12>(addr_t(dec.addr - rbi->pc));
+				rbi->imm = sign_extend<int64_t,32>(addr_t(dec.addr - rbi->pc) & 0xfffff000);
+				if (addr_t(dec.imm + rbi->imm + rbi->pc) < addr_t(dec.addr)) rbi->imm += 0x1000;
 				if (dec.imm + rbi->imm + rbi->pc != dec.addr) {
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
@@ -399,7 +399,7 @@ struct riscv_compress_elf
 					rbi->inst = encode_inst(*rbi);
 				}
 			} else if (dec.label_branch) {
-				dec.imm = label_addr[dec.label_branch] - intptr_t(dec.pc);
+				dec.imm = label_addr[dec.label_branch] - addr_t(dec.pc);
 				dec.addr = dec.pc + dec.imm;
 				dec.inst = encode_inst(dec);
 			}
@@ -422,27 +422,27 @@ struct riscv_compress_elf
 		}
 	}
 
-	void reassemble(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
+	void reassemble(std::deque<spasm> &bin, addr_t start, addr_t end, addr_t pc_bias)
 	{
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
-			uintptr_t pc = dec.pc + pc_bias;
+			addr_t pc = dec.pc + pc_bias;
 			if (pc < start || pc > end) {
 				panic("pc outside of section range");
 			}
 			size_t inst_len = inst_length(dec.inst);
 			switch (inst_len) {
-				case 2: *((uint16_t*)pc) = htole16(dec.inst); break;
-				case 4: *((uint32_t*)pc) = htole32(dec.inst); break;
+				case 2: *((u16*)pc) = htole16(dec.inst); break;
+				case 4: *((u32*)pc) = htole32(dec.inst); break;
 				default: panic("can only handle 2 or 4 byte insts");
 			}
 			pc += inst_len;
 		}
 	}
 
-	void print_external(std::deque<spasm> &bin, uintptr_t start, uintptr_t end, uintptr_t pc_bias)
+	void print_external(std::deque<spasm> &bin, addr_t start, addr_t end, addr_t pc_bias)
 	{
-		std::map<uint32_t,intptr_t> label_addr;
+		std::map<label_t,addr_t> label_addr;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			if ((dec.is_pcrel || dec.is_abs || dec.is_gprel) &&
@@ -452,7 +452,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_continuations(std::deque<spasm> &bin, uintptr_t gp)
+	void print_continuations(std::deque<spasm> &bin, addr_t gp)
 	{
 		size_t line = 0;
 		std::deque<disasm> dec_hist;
@@ -464,7 +464,7 @@ struct riscv_compress_elf
 		}
 	}
 
-	void print_disassembly(std::deque<spasm> &bin, uintptr_t gp)
+	void print_disassembly(std::deque<spasm> &bin, addr_t gp)
 	{
 		std::deque<disasm> dec_hist;
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
@@ -486,7 +486,7 @@ struct riscv_compress_elf
 			auto ri = relocations.find(*addr);
 			if (ri == relocations.end()) continue;
 			if (do_print_relocations) {
-				debug("relocate section %s: 0x%016tx -> 0x%016tx", elf.shdr_name(shdr_idx), *addr, ri->second);
+				debug("relocate section %s: 0x%016llx -> 0x%016llx", elf.shdr_name(shdr_idx), addr_t(*addr), addr_t(ri->second));
 			}
 			*addr = ri->second;
 		}
@@ -500,13 +500,13 @@ struct riscv_compress_elf
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR)
 			{
-				printf("\nSection[%2lu] %s (0x%tx - 0x%tx)\n",
-					i, elf.shdr_name(i), uintptr_t(shdr.sh_addr), uintptr_t(shdr.sh_addr + shdr.sh_size));
+				printf("\nSection[%2lu] %s (0x%llx - 0x%llx)\n",
+					i, elf.shdr_name(i), addr_t(shdr.sh_addr), addr_t(shdr.sh_addr + shdr.sh_size));
 
 				std::deque<spasm> bin;
-				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
+				addr_t offset = (addr_t)elf.sections[i].buf.data();
 				disassemble(bin, offset, offset + shdr.sh_size, offset - shdr.sh_addr);
-				scan_continuations(bin, shdr.sh_addr, shdr.sh_addr + shdr.sh_size, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+				scan_continuations(bin, shdr.sh_addr, shdr.sh_addr + shdr.sh_size, addr_t(gp_sym ? gp_sym->st_value : 0));
 				label_contntinuations(bin);
 				auto res = compress(bin);
 				relocate(bin, offset, offset + shdr.sh_size);
@@ -527,11 +527,11 @@ struct riscv_compress_elf
 				}
 
 				if (do_print_continuations) {
-					print_continuations(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+					print_continuations(bin, addr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 
 				if (do_print_disassembly) {
-					print_disassembly(bin, uintptr_t(gp_sym ? gp_sym->st_value : 0));
+					print_disassembly(bin, addr_t(gp_sym ? gp_sym->st_value : 0));
 				}
 			}
 		}

@@ -42,7 +42,7 @@ struct riscv_parse_elf
 {
 	elf_file elf;
 	std::string filename;
-	std::map<uintptr_t,uint32_t> continuations;
+	std::map<addr_t,uint32_t> continuations;
 	ssize_t continuation_num = 1;
 
 	bool enable_color = false;
@@ -76,7 +76,7 @@ struct riscv_parse_elf
 		return "";
 	}
 
-	const char* symlookup(uintptr_t addr, bool nearest)
+	const char* symlookup(addr_t addr, bool nearest)
 	{
 		static char symbol_tmpname[256];
 		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
@@ -109,12 +109,12 @@ struct riscv_parse_elf
 		return nullptr;
 	}
 
-	void scan_continuations(uintptr_t start, uintptr_t end, uintptr_t pc_bias)
+	void scan_continuations(addr_t start, addr_t end, addr_t pc_bias)
 	{
 		disasm dec;
-		uintptr_t pc = start;
-		intptr_t pc_offset;
-		uint64_t addr = 0;
+		addr_t pc = start;
+		addr_t pc_offset;
+		addr_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = inst_fetch(pc, &pc_offset);
@@ -125,7 +125,7 @@ struct riscv_parse_elf
 					if (pc + pc_offset < end) {
 						addr = pc - pc_bias + pc_offset;
 						if (continuations.find(addr) == continuations.end()) {
-							continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+							continuations.insert(std::pair<addr_t,uint32_t>(addr, continuation_num++));
 						}
 					}
 					break;
@@ -136,7 +136,7 @@ struct riscv_parse_elf
 				case riscv_codec_sb:
 					addr = pc - pc_bias + dec.imm;
 					if (continuations.find(addr) == continuations.end()) {
-						continuations.insert(std::pair<uintptr_t,uint32_t>(addr, continuation_num++));
+						continuations.insert(std::pair<addr_t,uint32_t>(addr, continuation_num++));
 					}
 					break;
 				default:
@@ -146,12 +146,12 @@ struct riscv_parse_elf
 		}
 	}
 
-	void print_disassembly(uintptr_t start, uintptr_t end, uintptr_t pc_bias, uintptr_t gp)
+	void print_disassembly(addr_t start, addr_t end, addr_t pc_bias, addr_t gp)
 	{
 		disasm dec;
 		std::deque<disasm> dec_hist;
-		uintptr_t pc = start;
-		intptr_t pc_offset;
+		addr_t pc = start;
+		addr_t pc_offset;
 		while (pc < end) {
 			dec.pc = pc;
 			dec.inst = inst_fetch(pc, &pc_offset);
@@ -170,11 +170,11 @@ struct riscv_parse_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.sections[i].buf.data();
+				addr_t offset = (addr_t)elf.sections[i].buf.data();
 				printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 				scan_continuations(offset, offset + shdr.sh_size, offset - shdr.sh_addr);
 				print_disassembly(offset, offset + shdr.sh_size, offset- shdr.sh_addr,
-					uintptr_t(gp_sym ? gp_sym->st_value : 0));
+					addr_t(gp_sym ? gp_sym->st_value : 0));
 				printf("\n");
 			}
 		}

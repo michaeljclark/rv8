@@ -9,8 +9,8 @@ namespace riscv {
 
 	struct disasm : decode
 	{
-		uintptr_t pc;
-		uint64_t  inst;
+		addr_t pc;
+		inst_t inst;
 
 		disasm() : decode(), pc(0), inst(0) {}
 	};
@@ -55,7 +55,7 @@ namespace riscv {
 
 	// decode pc relative address
 	template <typename T>
-	bool decode_pcrel(T &dec, uint64_t &addr, uintptr_t pc, uintptr_t pc_bias)
+	bool decode_pcrel(T &dec, addr_t &addr, addr_t pc, addr_t pc_bias)
 	{
 		switch (dec.codec) {
 			case riscv_codec_uj:
@@ -70,7 +70,7 @@ namespace riscv {
 
 	// decode address using instruction pair constraints
 	template <typename T>
-	bool decode_pairs(T &dec, uint64_t &addr, std::deque<T> &dec_hist, uintptr_t pc_bias)
+	bool decode_pairs(T &dec, addr_t &addr, std::deque<T> &dec_hist, addr_t pc_bias)
 	{
 		const rvx* rvxi = rvx_constraints;
 		while(rvxi->addr != rva_none) {
@@ -99,7 +99,7 @@ namespace riscv {
 
 	// decode address for loads and stores from the global pointer
 	template <typename T>
-	bool deocde_gprel(T &dec, uint64_t &addr, uintptr_t gp)
+	bool deocde_gprel(T &dec, addr_t &addr, addr_t gp)
 	{
 		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
 		switch (dec.op) {
@@ -119,7 +119,7 @@ namespace riscv {
 			case riscv_op_sd:
 			case riscv_op_fsw:
 			case riscv_op_fsd:
-				addr = int64_t(gp + dec.imm);
+				addr = intptr_t(gp + dec.imm);
 				return true;
 			default:
 				break;
@@ -127,10 +127,10 @@ namespace riscv {
 		return false;
 	}
 
-	typedef std::function<const char*(uintptr_t, bool nearest)> symbol_name_fn;
+	typedef std::function<const char*(addr_t, bool nearest)> symbol_name_fn;
 	typedef std::function<const char*(const char *type)> symbol_colorize_fn;
 
-	const char* null_symbol_lookup(uintptr_t, bool nearest);
+	const char* null_symbol_lookup(addr_t, bool nearest);
 	const char* null_symbol_colorize(const char *type);
 
 	template <typename T>
@@ -197,7 +197,7 @@ namespace riscv {
 	}
 
 	void disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
-		uintptr_t pc, uintptr_t pc_bias, uintptr_t gp,
+		addr_t pc, addr_t pc_bias, addr_t gp,
 		symbol_name_fn symlookup = null_symbol_lookup,
 		symbol_colorize_fn colorize = null_symbol_colorize);
 

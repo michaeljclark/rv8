@@ -10,8 +10,8 @@ namespace riscv {
 	struct mmu_proxy
 	{
 		std::vector<std::pair<void*,size_t>> segments;
-		uintptr_t heap_begin;
-		uintptr_t heap_end;
+		addr_t heap_begin;
+		addr_t heap_end;
 
 		mmu_proxy() : segments(), heap_begin(0), heap_end(0) {}
 	};
@@ -108,26 +108,26 @@ namespace riscv {
 	template <typename P> void abi_sys_read(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = read(proc.ireg[riscv_ireg_a0],
-			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
 	}
 
 	template <typename P> void abi_sys_write(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
-			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
 	}
 
 	template <typename P> void abi_sys_pread(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = pread(proc.ireg[riscv_ireg_a0],
-			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
+			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
 			proc.ireg[riscv_ireg_a3]);
 	}
 
 	template <typename P> void abi_sys_pwrite(P &proc)
 	{
 		proc.ireg[riscv_ireg_a0] = pwrite(proc.ireg[riscv_ireg_a0],
-			(void*)(uintptr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
+			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
 			proc.ireg[riscv_ireg_a3]);
 	}
 
@@ -136,7 +136,7 @@ namespace riscv {
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
 		if ((proc.ireg[riscv_ireg_a0] = fstat(proc.ireg[riscv_ireg_a0], &host_stat)) == 0) {
-			abi_stat<P> *guest_stat = (abi_stat<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
 			cvt_abi_stat(guest_stat, &host_stat);
 		}
 	}
@@ -154,12 +154,12 @@ namespace riscv {
 		memset(&host_tzp, 0, sizeof(host_tzp));
 		if ((proc.ireg[riscv_ireg_a0] = gettimeofday(&host_tp, &host_tzp)) == 0) {
 			if (proc.ireg[riscv_ireg_a0].r.xu.val != 0) {
-				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(uintptr_t)proc.ireg[riscv_ireg_a0].r.xu.val;
+				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(addr_t)proc.ireg[riscv_ireg_a0].r.xu.val;
 				guest_tp->tv_sec = host_tp.tv_sec;
 				guest_tp->tv_usec = host_tp.tv_usec;
 			}
 			if (proc.ireg[riscv_ireg_a1].r.xu.val != 0) {
-				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(uintptr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
 				guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
 				guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
 			}
@@ -169,9 +169,9 @@ namespace riscv {
 	template <typename P> void abi_sys_brk(P &proc)
 	{
 		// calculate the new heap address rounded up to the nearest page
-		uintptr_t new_addr = proc.ireg[riscv_ireg_a0];
-		uintptr_t curr_heap_end = round_up(proc.mmu.heap_end, page_size);
-		uintptr_t new_heap_end = round_up(new_addr, page_size);
+		addr_t new_addr = proc.ireg[riscv_ireg_a0];
+		addr_t curr_heap_end = round_up(proc.mmu.heap_end, page_size);
+		addr_t new_heap_end = round_up(new_addr, page_size);
 
 		// return if the heap is already big enough
 		if (proc.mmu.heap_end >= new_heap_end || new_heap_end == curr_heap_end) {

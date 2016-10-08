@@ -86,16 +86,16 @@ struct processor_base : P
 		log_flags(0)
 	{}
 
-	std::string format_inst(uintptr_t pc)
+	std::string format_inst(addr_t pc)
 	{
 		char buf[20];
-		intptr_t pc_offset;
-		uint64_t inst = inst_fetch(pc, &pc_offset);
+		addr_t pc_offset;
+		inst_t inst = inst_fetch(pc, &pc_offset);
 		switch (pc_offset) {
-			case 2:  snprintf(buf, sizeof(buf), "    0x%04tx", inst); break;
-			case 4:  snprintf(buf, sizeof(buf), "0x%08tx", inst); break;
-			case 6:  snprintf(buf, sizeof(buf), "0x%012tx", inst); break;
-			case 8:  snprintf(buf, sizeof(buf), "0x%016tx", inst); break;
+			case 2:  snprintf(buf, sizeof(buf), "    0x%04llx", inst); break;
+			case 4:  snprintf(buf, sizeof(buf), "0x%08llx", inst); break;
+			case 6:  snprintf(buf, sizeof(buf), "0x%012llx", inst); break;
+			case 8:  snprintf(buf, sizeof(buf), "0x%016llx", inst); break;
 			default: snprintf(buf, sizeof(buf), "(invalid)"); break;
 		}
 		return buf;
@@ -175,9 +175,9 @@ struct processor_base : P
 
 	void print_log(T &dec)
 	{
-		static const char *fmt_32 = "core %3zu: 0x%08tx (%s) %-30s %s\n";
-		static const char *fmt_64 = "core %3zu: 0x%016tx (%s) %-30s %s\n";
-		static const char *fmt_128 = "core %3zu: 0x%032tx (%s) %-30s %s\n";
+		static const char *fmt_32 = "core %3zu: 0x%08llx (%s) %-30s %s\n";
+		static const char *fmt_64 = "core %3zu: 0x%016llx (%s) %-30s %s\n";
+		static const char *fmt_128 = "core %3zu: 0x%032llx (%s) %-30s %s\n";
 		if (log_flags & reg_log_inst) {
 			std::string op_args;
 			if (!(log_flags & reg_log_no_pseudo)) decode_pseudo_inst(dec);
@@ -186,7 +186,7 @@ struct processor_base : P
 				op_args = format_operands(dec);
 			}
 			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
-				P::hart_id, uintptr_t(P::pc), format_inst(P::pc).c_str(), args.c_str(), op_args.c_str());
+				P::hart_id, addr_t(P::pc), format_inst(P::pc).c_str(), args.c_str(), op_args.c_str());
 		}
 		if (log_flags & reg_log_int) print_int_registers();
 		if (log_flags & reg_log_f32) print_f32_registers();
@@ -238,11 +238,11 @@ struct processor_base : P
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32ima_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMA>(dec, inst);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv32<RV_IMA>(dec, *this, pc_offset);
 	}
 };
@@ -250,12 +250,12 @@ struct processor_rv32ima_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imac_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
 		decompress_inst_rv32<T>(dec);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv32<RV_IMAC>(dec, *this, pc_offset);
 	}
 };
@@ -263,11 +263,11 @@ struct processor_rv32imac_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imafd_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv32<RV_IMAFD>(dec, *this, pc_offset);
 	}
 };
@@ -275,12 +275,12 @@ struct processor_rv32imafd_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imafdc_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
 		decompress_inst_rv32<T>(dec);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv32<RV_IMAFDC>(dec, *this, pc_offset);
 	}
 };
@@ -291,11 +291,11 @@ struct processor_rv32imafdc_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64ima_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMA>(dec, inst);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv64<RV_IMA>(dec, *this, pc_offset);
 	}
 };
@@ -303,12 +303,12 @@ struct processor_rv64ima_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imac_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
 		decompress_inst_rv64<T>(dec);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv64<RV_IMAC>(dec, *this, pc_offset);
 	}
 };
@@ -316,11 +316,11 @@ struct processor_rv64imac_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imafd_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv64<RV_IMAFD>(dec, *this, pc_offset);
 	}
 };
@@ -328,12 +328,12 @@ struct processor_rv64imafd_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imafdc_unit : B
 {
-	void inst_decode(T &dec, uint64_t inst) {
+	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
 		decompress_inst_rv64<T>(dec);
 	}
 
-	intptr_t inst_exec(T &dec, intptr_t pc_offset) {
+	addr_t inst_exec(T &dec, addr_t pc_offset) {
 		return exec_inst_rv64<RV_IMAFDC>(dec, *this, pc_offset);
 	}
 };
@@ -371,7 +371,7 @@ struct processor_proxy : P
 		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
 	}
 
-	intptr_t inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, intptr_t pc_offset)
+	addr_t inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, addr_t pc_offset)
 	{
 		switch (csr) {
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
@@ -395,7 +395,7 @@ struct processor_proxy : P
 		return pc_offset;
 	}
 
-	intptr_t inst_priv(typename P::decode_type &dec, intptr_t pc_offset) {
+	addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 		switch (dec.op) {
 			case riscv_op_ecall:  proxy_syscall(*this); return pc_offset;
 			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
@@ -416,7 +416,7 @@ struct processor_proxy : P
 template <typename P>
 struct processor_privileged : P
 {
-	intptr_t inst_priv(typename P::decode_type &dec, intptr_t pc_offset) {
+	addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 		// TODO - emulate privileged instructions
 		switch (dec.op) {
 			case riscv_op_ecall:     /* TODO */ return 0; break;
@@ -449,7 +449,7 @@ struct processor_stepper : P
 
 	struct riscv_inst_cache_ent
 	{
-		uint64_t inst;
+		inst_t inst;
 		typename P::decode_type dec;
 	};
 
@@ -459,11 +459,11 @@ struct processor_stepper : P
 	{
 		typename P::decode_type dec;
 		size_t i = 0;
-		uint64_t inst;
-		intptr_t pc_offset, new_offset;
+		inst_t inst;
+		addr_t pc_offset, new_offset;
 		while (i < count) {
 			inst = inst_fetch(P::pc, &pc_offset); // TODO - MMU
-			uint64_t inst_cache_key = inst % inst_cache_size;
+			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
 			} else {
@@ -480,8 +480,8 @@ struct processor_stepper : P
 				if (P::log_flags) P::print_log(dec);
 				continue;
 			}
-			debug("illegal instruciton: pc=0x%tx inst=%s",
-				uintptr_t(P::pc), P::format_inst(P::pc).c_str());
+			debug("illegal instruciton: pc=0x%llx inst=%s",
+				addr_t(P::pc), P::format_inst(P::pc).c_str());
 			return false;
 		}
 		return true;
@@ -578,7 +578,7 @@ struct riscv_emulator
 
 	/* Map a single stack segment into user address space */
 	template <typename P>
-	void map_stack(P &proc, uintptr_t stack_top, uintptr_t stack_size)
+	void map_stack(P &proc, addr_t stack_top, addr_t stack_size)
 	{
 		void *addr = mmap((void*)(stack_top - stack_size), stack_size,
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -612,12 +612,12 @@ struct riscv_emulator
 		}
 
 		/* add the loaded segment to the emulator mmu */
-		proc.mmu.mem.add_segment(phdr.p_vaddr, uintptr_t(addr), phdr.p_memsz,
+		proc.mmu.mem.add_segment(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
 		if (emulator_debug) {
 			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
-				uintptr_t(phdr.p_vaddr), uintptr_t(phdr.p_vaddr + phdr.p_memsz),
+				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
 	}
@@ -639,12 +639,12 @@ struct riscv_emulator
 
 		/* keep track of the mapped segment and set the heap_end */
 		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
-		uintptr_t seg_end = uintptr_t(phdr.p_vaddr + phdr.p_memsz);
+		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
 		if (emulator_debug) {
 			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
-				uintptr_t(phdr.p_vaddr), uintptr_t(phdr.p_vaddr + phdr.p_memsz),
+				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
 	}
@@ -722,9 +722,9 @@ struct riscv_emulator
 	{
 		static const char *textptr = nullptr;
 		void *heapptr = malloc(8);
-		debug("text : ~0x%016" PRIxPTR, (uintptr_t)&textptr);
-		debug("heap : ~0x%016" PRIxPTR, (uintptr_t)heapptr);
-		debug("stack: ~0x%016" PRIxPTR, (uintptr_t)argv);
+		debug("text : ~0x%016" PRIxPTR, (addr_t)&textptr);
+		debug("heap : ~0x%016" PRIxPTR, (addr_t)heapptr);
+		debug("stack: ~0x%016" PRIxPTR, (addr_t)argv);
 		free(heapptr);
 	}
 

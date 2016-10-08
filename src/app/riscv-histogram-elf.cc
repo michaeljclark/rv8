@@ -96,11 +96,11 @@ struct riscv_histogram_elf
 		}
 	}
 
-	void histogram(map_t &hist, uintptr_t start, uintptr_t end)
+	void histogram(map_t &hist, addr_t start, addr_t end)
 	{
 		decode dec;
-		intptr_t pc_offset;
-		uintptr_t pc = start;
+		addr_t pc_offset;
+		addr_t pc = start;
 		while (pc < end) {
 			uint64_t inst = inst_fetch(pc, &pc_offset);
 			decode_inst_rv64(dec, inst);
@@ -129,7 +129,7 @@ struct riscv_histogram_elf
 		for (size_t i = 0; i < elf.shdrs.size(); i++) {
 			Elf64_Shdr &shdr = elf.shdrs[i];
 			if (shdr.sh_flags & SHF_EXECINSTR) {
-				uintptr_t offset = (uintptr_t)elf.offset(shdr.sh_offset);
+				addr_t offset = (addr_t)elf.offset(shdr.sh_offset);
 				histogram(hist, offset, offset + shdr.sh_size);
 			}
 		}

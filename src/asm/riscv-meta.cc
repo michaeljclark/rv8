@@ -1995,7 +1995,7 @@ const riscv_operand_data* riscv_inst_operand_data[] = {
 	/*             fsflagsi */ riscv_operands_sx_rd_T_zimm,
 };
 
-const uint64_t riscv_inst_match[] = {
+const riscv::inst_t riscv_inst_match[] = {
 	/*              unknown */ 0x0000000000000000,
 	/*                  lui */ 0x0000000000000037,
 	/*                auipc */ 0x0000000000000017,
@@ -2249,7 +2249,7 @@ const uint64_t riscv_inst_match[] = {
 	/*             fsflagsi */ 0x0000000000000000,
 };
 
-const uint64_t riscv_inst_mask[] = {
+const riscv::inst_t riscv_inst_mask[] = {
 	/*              unknown */ 0x0000000000000000,
 	/*                  lui */ 0x000000000000007f,
 	/*                auipc */ 0x000000000000007f,

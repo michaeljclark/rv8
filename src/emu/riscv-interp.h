@@ -10,7 +10,7 @@
 /* Execute Instruction RV32 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc, typename T, typename P>
-intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
+riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 {
 	enum { xlen = 32 };
 	typedef int32_t sx;
@@ -70,42 +70,42 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_lb:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s8*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lh:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s16*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lw:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s32*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lbu:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u8*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lhu:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u16*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_sb:
 			if (rvi) {
-				*((u8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u8*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_sh:
 			if (rvi) {
-				*((u16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u16*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_sw:
 			if (rvi) {
-				*((u32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u32*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_addi:
@@ -300,12 +300,12 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_flw:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = *(f32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm);
+				proc.freg[dec.rd].r.s.val = *(f32*)addr_t(proc.ireg[dec.rs1] + dec.imm);
 			};
 			break;
 		case riscv_op_fsw:
 			if (rvf) {
-				*(f32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
+				*(f32*)addr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fmadd_s:
@@ -430,12 +430,12 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fld:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = *(f64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm);
+				proc.freg[dec.rd].r.d.val = *(f64*)addr_t(proc.ireg[dec.rs1] + dec.imm);
 			};
 			break;
 		case riscv_op_fsd:
 			if (rvd) {
-				*(f64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
+				*(f64*)addr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fmadd_d:
@@ -566,7 +566,7 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 /* Execute Instruction RV64 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc, typename T, typename P>
-intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
+riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 {
 	enum { xlen = 64 };
 	typedef int64_t sx;
@@ -626,42 +626,42 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_lb:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s8*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lh:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s16*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lw:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s32*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lbu:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u8*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_lhu:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u16*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_sb:
 			if (rvi) {
-				*((u8*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u8*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_sh:
 			if (rvi) {
-				*((u16*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u16*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_sw:
 			if (rvi) {
-				*((u32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
+				*((u32*)addr_t(proc.ireg[dec.rs1] + dec.imm)) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_addi:
@@ -746,17 +746,17 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_lwu:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = ux(*(u32*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_ld:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(*(s64*)addr_t(proc.ireg[dec.rs1] + dec.imm));
 			};
 			break;
 		case riscv_op_sd:
 			if (rvi) {
-				*(u64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm) = proc.ireg[dec.rs2];
+				*(u64*)addr_t(proc.ireg[dec.rs1] + dec.imm) = proc.ireg[dec.rs2];
 			};
 			break;
 		case riscv_op_slli_rv64i:
@@ -996,12 +996,12 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_flw:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = *(f32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm);
+				proc.freg[dec.rd].r.s.val = *(f32*)addr_t(proc.ireg[dec.rs1] + dec.imm);
 			};
 			break;
 		case riscv_op_fsw:
 			if (rvf) {
-				*(f32*)uintptr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
+				*(f32*)addr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fmadd_s:
@@ -1146,12 +1146,12 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fld:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = *(f64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm);
+				proc.freg[dec.rd].r.d.val = *(f64*)addr_t(proc.ireg[dec.rs1] + dec.imm);
 			};
 			break;
 		case riscv_op_fsd:
 			if (rvd) {
-				*(f64*)uintptr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
+				*(f64*)addr_t(proc.ireg[dec.rs1] + dec.imm) = proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fmadd_d:

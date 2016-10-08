@@ -25,7 +25,7 @@
 
 using namespace riscv;
 
-const char* riscv::null_symbol_lookup(uintptr_t, bool nearest) { return nullptr; }
+const char* riscv::null_symbol_lookup(addr_t, bool nearest) { return nullptr; }
 const char* riscv::null_symbol_colorize(const char *type) { return ""; }
 
 static const void print_add(size_t &offset, const char *str)
@@ -69,15 +69,15 @@ static const void print_pad(size_t &offset, size_t pad_to, const char *str)
 	print_pad(offset, pad_to);
 }
 
-static const void print_addr(size_t &offset, uint64_t addr,
+static const void print_addr(size_t &offset, addr_t addr,
 	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
 	print_pad(offset, 80);
 	printf("%s", colorize("address"));
 	print_add(offset, "# ");
-	print_fmt(offset, "0x%016tx", addr);
+	print_fmt(offset, "0x%016llx", addr);
 	printf("%s", colorize("reset"));
-	const char* symbol_name = symlookup((uintptr_t)addr, true);
+	const char* symbol_name = symlookup((addr_t)addr, true);
 	if (symbol_name) {
 		printf(" %s", colorize("label"));
 		print_fmt(offset, "%s", symbol_name);
@@ -86,19 +86,19 @@ static const void print_addr(size_t &offset, uint64_t addr,
 }
 
 void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
-	uintptr_t pc, uintptr_t pc_bias, uintptr_t gp,
+	addr_t pc, addr_t pc_bias, addr_t gp,
 	riscv::symbol_name_fn symlookup, riscv::symbol_colorize_fn colorize)
 {
 	size_t offset = 0;
-	uint64_t addr = pc - pc_bias;
+	addr_t addr = pc - pc_bias;
 	const char *fmt = riscv_inst_format[dec.op];
-	const char *symbol_name = symlookup((uintptr_t)addr, false);
+	const char *symbol_name = symlookup((addr_t)addr, false);
 	const char* csr_name = nullptr;
 
 	// print symbol name if present
 	if (symbol_name) {
 		printf("\n%s", colorize("address"));
-		print_fmt(offset, "0x%016tx: ", addr);
+		print_fmt(offset, "0x%016llx: ", addr);
 		printf("%s", colorize("reset"));
 		printf("%s", colorize("label"));
 		print_fmt(offset, "%s", symbol_name);
@@ -109,7 +109,7 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 
 	// print address
 	printf("%s", colorize("address"));
-	print_fmt(offset, "%8tx:", addr & 0xffffffff);
+	print_fmt(offset, "%8llx:", addr & 0xffffffff);
 	printf("%s", colorize("reset"));
 	print_pad(offset, 24);
 

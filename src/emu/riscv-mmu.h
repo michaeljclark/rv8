@@ -20,7 +20,7 @@ namespace riscv {
 		cache_type   l1_icache;
 		memory_type  mem;
 
-		template <typename P> u64 fetch_inst(P &proc, UX pc)
+		template <typename P> inst_t fetch_inst(P &proc, UX pc)
 		{
 			return 0; // TODO
 		}

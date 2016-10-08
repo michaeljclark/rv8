@@ -8,21 +8,21 @@
 /* Instruction decoders */
 
 /* Decode none */
-template <typename T> inline void decode_none(T &dec, uint64_t inst)
+template <typename T> inline void decode_none(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode C nop */
-template <typename T> inline void decode_ci_none(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_none(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode CR */
-template <typename T> inline void decode_cr(T &dec, uint64_t inst)
+template <typename T> inline void decode_cr(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
 	dec.rs2 = operand_crs2::decode(inst);
@@ -30,7 +30,7 @@ template <typename T> inline void decode_cr(T &dec, uint64_t inst)
 }
 
 /* Decode CR mv */
-template <typename T> inline void decode_cr_mv(T &dec, uint64_t inst)
+template <typename T> inline void decode_cr_mv(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
 	dec.rs1 = riscv_ireg_zero;
@@ -39,7 +39,7 @@ template <typename T> inline void decode_cr_mv(T &dec, uint64_t inst)
 }
 
 /* Decode CR jalr */
-template <typename T> inline void decode_cr_jalr(T &dec, uint64_t inst)
+template <typename T> inline void decode_cr_jalr(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_ra;
 	dec.rs1 = operand_crs1::decode(inst);
@@ -48,7 +48,7 @@ template <typename T> inline void decode_cr_jalr(T &dec, uint64_t inst)
 }
 
 /* Decode CR jr */
-template <typename T> inline void decode_cr_jr(T &dec, uint64_t inst)
+template <typename T> inline void decode_cr_jr(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_crs1::decode(inst);
@@ -57,7 +57,7 @@ template <typename T> inline void decode_cr_jr(T &dec, uint64_t inst)
 }
 
 /* Decode CI */
-template <typename T> inline void decode_ci(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
 	dec.rs2 = riscv_ireg_zero;
@@ -65,7 +65,7 @@ template <typename T> inline void decode_ci(T &dec, uint64_t inst)
 }
 
 /* Decode CI shamt5 */
-template <typename T> inline void decode_ci_sh5(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_sh5(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
 	dec.rs2 = riscv_ireg_zero;
@@ -73,7 +73,7 @@ template <typename T> inline void decode_ci_sh5(T &dec, uint64_t inst)
 }
 
 /* Decode CI shamt6 */
-template <typename T> inline void decode_ci_sh6(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_sh6(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
 	dec.rs2 = riscv_ireg_zero;
@@ -81,7 +81,7 @@ template <typename T> inline void decode_ci_sh6(T &dec, uint64_t inst)
 }
 
 /* Decode CI li */
-template <typename T> inline void decode_ci_li(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_li(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
 	dec.rs1 = riscv_ireg_zero;
@@ -90,7 +90,7 @@ template <typename T> inline void decode_ci_li(T &dec, uint64_t inst)
 }
 
 /* Decode CI lui */
-template <typename T> inline void decode_ci_lui(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_lui(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
 	dec.rs1 = riscv_ireg_zero;
@@ -99,7 +99,7 @@ template <typename T> inline void decode_ci_lui(T &dec, uint64_t inst)
 }
 
 /* Decode CI lwsp */
-template <typename T> inline void decode_ci_lwsp(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_lwsp(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
 	dec.rs1 = riscv_ireg_sp;
@@ -108,7 +108,7 @@ template <typename T> inline void decode_ci_lwsp(T &dec, uint64_t inst)
 }
 
 /* Decode CI ldsp */
-template <typename T> inline void decode_ci_ldsp(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_ldsp(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
 	dec.rs1 = riscv_ireg_sp;
@@ -117,7 +117,7 @@ template <typename T> inline void decode_ci_ldsp(T &dec, uint64_t inst)
 }
 
 /* Decode CI 16sp */
-template <typename T> inline void decode_ci_16sp(T &dec, uint64_t inst)
+template <typename T> inline void decode_ci_16sp(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_sp;
 	dec.rs1 = riscv_ireg_sp;
@@ -126,7 +126,7 @@ template <typename T> inline void decode_ci_16sp(T &dec, uint64_t inst)
 }
 
 /* Decode CSS swsp */
-template <typename T> inline void decode_css_swsp(T &dec, uint64_t inst)
+template <typename T> inline void decode_css_swsp(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = riscv_ireg_sp;
@@ -135,7 +135,7 @@ template <typename T> inline void decode_css_swsp(T &dec, uint64_t inst)
 }
 
 /* Decode CSS sdsp */
-template <typename T> inline void decode_css_sdsp(T &dec, uint64_t inst)
+template <typename T> inline void decode_css_sdsp(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = riscv_ireg_sp;
@@ -144,7 +144,7 @@ template <typename T> inline void decode_css_sdsp(T &dec, uint64_t inst)
 }
 
 /* Decode CIW 4spn */
-template <typename T> inline void decode_ciw_4spn(T &dec, uint64_t inst)
+template <typename T> inline void decode_ciw_4spn(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
 	dec.rs1 = riscv_ireg_sp;
@@ -153,7 +153,7 @@ template <typename T> inline void decode_ciw_4spn(T &dec, uint64_t inst)
 }
 
 /* Decode CL lw */
-template <typename T> inline void decode_cl_lw(T &dec, uint64_t inst)
+template <typename T> inline void decode_cl_lw(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
@@ -162,7 +162,7 @@ template <typename T> inline void decode_cl_lw(T &dec, uint64_t inst)
 }
 
 /* Decode CL ld */
-template <typename T> inline void decode_cl_ld(T &dec, uint64_t inst)
+template <typename T> inline void decode_cl_ld(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
@@ -171,7 +171,7 @@ template <typename T> inline void decode_cl_ld(T &dec, uint64_t inst)
 }
 
 /* Decode CS f */
-template <typename T> inline void decode_cs(T &dec, uint64_t inst)
+template <typename T> inline void decode_cs(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
 	dec.rs2 = operand_crs2q::decode(inst) + 8;
@@ -179,7 +179,7 @@ template <typename T> inline void decode_cs(T &dec, uint64_t inst)
 }
 
 /* Decode CS sd */
-template <typename T> inline void decode_cs_sd(T &dec, uint64_t inst)
+template <typename T> inline void decode_cs_sd(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
@@ -188,7 +188,7 @@ template <typename T> inline void decode_cs_sd(T &dec, uint64_t inst)
 }
 
 /* Decode CS sw */
-template <typename T> inline void decode_cs_sw(T &dec, uint64_t inst)
+template <typename T> inline void decode_cs_sw(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
@@ -197,7 +197,7 @@ template <typename T> inline void decode_cs_sw(T &dec, uint64_t inst)
 }
 
 /* Decode CB */
-template <typename T> inline void decode_cb(T &dec, uint64_t inst)
+template <typename T> inline void decode_cb(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
@@ -206,7 +206,7 @@ template <typename T> inline void decode_cb(T &dec, uint64_t inst)
 }
 
 /* Decode CB imm */
-template <typename T> inline void decode_cb_imm(T &dec, uint64_t inst)
+template <typename T> inline void decode_cb_imm(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
 	dec.rs2 = riscv_ireg_zero;
@@ -214,7 +214,7 @@ template <typename T> inline void decode_cb_imm(T &dec, uint64_t inst)
 }
 
 /* Decode CB shamt5 */
-template <typename T> inline void decode_cb_sh5(T &dec, uint64_t inst)
+template <typename T> inline void decode_cb_sh5(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
 	dec.rs2 = riscv_ireg_zero;
@@ -222,7 +222,7 @@ template <typename T> inline void decode_cb_sh5(T &dec, uint64_t inst)
 }
 
 /* Decode CB shamt6 */
-template <typename T> inline void decode_cb_sh6(T &dec, uint64_t inst)
+template <typename T> inline void decode_cb_sh6(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
 	dec.rs2 = riscv_ireg_zero;
@@ -230,14 +230,14 @@ template <typename T> inline void decode_cb_sh6(T &dec, uint64_t inst)
 }
 
 /* Decode CJ */
-template <typename T> inline void decode_cj(T &dec, uint64_t inst)
+template <typename T> inline void decode_cj(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.imm = operand_cimmj::decode(inst);
 }
 
 /* Decode CJ jal */
-template <typename T> inline void decode_cj_jal(T &dec, uint64_t inst)
+template <typename T> inline void decode_cj_jal(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_ra;
 	dec.rs1 = dec.rs2 = riscv_ireg_zero;
@@ -245,7 +245,7 @@ template <typename T> inline void decode_cj_jal(T &dec, uint64_t inst)
 }
 
 /* Decode R */
-template <typename T> inline void decode_r(T &dec, uint64_t inst)
+template <typename T> inline void decode_r(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -254,7 +254,7 @@ template <typename T> inline void decode_r(T &dec, uint64_t inst)
 }
 
 /* Decode R RM */
-template <typename T> inline void decode_r_m(T &dec, uint64_t inst)
+template <typename T> inline void decode_r_m(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -264,7 +264,7 @@ template <typename T> inline void decode_r_m(T &dec, uint64_t inst)
 }
 
 /* Decode R AMO L */
-template <typename T> inline void decode_r_l(T &dec, uint64_t inst)
+template <typename T> inline void decode_r_l(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -275,7 +275,7 @@ template <typename T> inline void decode_r_l(T &dec, uint64_t inst)
 }
 
 /* Decode R AMO S */
-template <typename T> inline void decode_r_a(T &dec, uint64_t inst)
+template <typename T> inline void decode_r_a(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -286,7 +286,7 @@ template <typename T> inline void decode_r_a(T &dec, uint64_t inst)
 }
 
 /* Decode R 4f */
-template <typename T> inline void decode_r4_m(T &dec, uint64_t inst)
+template <typename T> inline void decode_r4_m(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -297,7 +297,7 @@ template <typename T> inline void decode_r4_m(T &dec, uint64_t inst)
 }
 
 /* Decode R fence */
-template <typename T> inline void decode_r_f(T &dec, uint64_t inst)
+template <typename T> inline void decode_r_f(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
 	dec.pred = operand_pred::decode(inst);
@@ -306,7 +306,7 @@ template <typename T> inline void decode_r_f(T &dec, uint64_t inst)
 }
 
 /* Decode I */
-template <typename T> inline void decode_i(T &dec, uint64_t inst)
+template <typename T> inline void decode_i(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -315,7 +315,7 @@ template <typename T> inline void decode_i(T &dec, uint64_t inst)
 }
 
 /* Decode I sh5 */
-template <typename T> inline void decode_i_sh5(T &dec, uint64_t inst)
+template <typename T> inline void decode_i_sh5(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -324,7 +324,7 @@ template <typename T> inline void decode_i_sh5(T &dec, uint64_t inst)
 }
 
 /* Decode I sh6 */
-template <typename T> inline void decode_i_sh6(T &dec, uint64_t inst)
+template <typename T> inline void decode_i_sh6(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
@@ -333,7 +333,7 @@ template <typename T> inline void decode_i_sh6(T &dec, uint64_t inst)
 }
 
 /* Decode S Store */
-template <typename T> inline void decode_s(T &dec, uint64_t inst)
+template <typename T> inline void decode_s(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_rs1::decode(inst);
@@ -342,7 +342,7 @@ template <typename T> inline void decode_s(T &dec, uint64_t inst)
 }
 
 /* Decode SB Branch */
-template <typename T> inline void decode_sb(T &dec, uint64_t inst)
+template <typename T> inline void decode_sb(T &dec, inst_t inst)
 {
 	dec.rd = riscv_ireg_zero;
 	dec.rs1 = operand_rs1::decode(inst);
@@ -351,7 +351,7 @@ template <typename T> inline void decode_sb(T &dec, uint64_t inst)
 }
 
 /* Decode U */
-template <typename T> inline void decode_u(T &dec, uint64_t inst)
+template <typename T> inline void decode_u(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = dec.rs2 = riscv_ireg_zero;
@@ -359,7 +359,7 @@ template <typename T> inline void decode_u(T &dec, uint64_t inst)
 }
 
 /* Decode UJ */
-template <typename T> inline void decode_uj(T &dec, uint64_t inst)
+template <typename T> inline void decode_uj(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = dec.rs2 = riscv_ireg_zero;

@@ -138,9 +138,9 @@ static void print_switch_h(riscv_gen *gen)
 		printf("bool %s", mi->c_str());
 	}
 	printf(">\n");
-	printf("inline uint64_t decode_inst_op(uint64_t inst)\n");
+	printf("inline opcode_t decode_inst_op(riscv::inst_t inst)\n");
 	printf("{\n");
-	printf("\tuint64_t op = riscv_op_illegal;\n");
+	printf("\topcode_t op = riscv_op_illegal;\n");
 	print_switch_decoder_node(gen, gen->root_node, 1);
 	printf("\treturn op;\n");
 	printf("}\n\n");
@@ -148,7 +148,7 @@ static void print_switch_h(riscv_gen *gen)
 	// print type decoder
 	printf("/* Decode Instruction Type */\n\n");
 	printf("template <typename T>\n");
-	printf("inline void decode_inst_type(T &dec, uint64_t inst)\n");
+	printf("inline void decode_inst_type(T &dec, riscv::inst_t inst)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
@@ -163,10 +163,10 @@ static void print_switch_h(riscv_gen *gen)
 	// print encoder
 	printf("/* Encode Instruction */\n\n");
 	printf("template <typename T>\n");
-	printf("inline uint64_t encode_inst(T &dec)\n");
+	printf("inline riscv::inst_t encode_inst(T &dec)\n");
 	printf("{\n");
 	printf("\tdec.codec = riscv_inst_codec[dec.op];\n");
-	printf("\tuint64_t inst = riscv_inst_match[dec.op];\n");
+	printf("\triscv::inst_t inst = riscv_inst_match[dec.op];\n");
 	printf("\tswitch (dec.codec) {\n");
 	for (auto &codec : gen->get_unique_codecs()) {
 		printf("\t\tcase %-26s %-50s break;\n",
