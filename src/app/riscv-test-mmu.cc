@@ -63,7 +63,6 @@ int main(int argc, char *argv[])
 	printf("cache_type::ppn_bits          : %tu\n", cache_type::ppn_bits);
 	printf("cache_type::cache_line_mask   : 0x%08tx\n", cache_type::cache_line_mask);
 	printf("cache_type::num_entries_mask  : 0x%08tx\n", cache_type::num_entries_mask);
-	printf("cache_type::ppn_state_mask    : 0x%08tx\n", cache_type::ppn_state_mask);
 
 	printf("tlb_type::size                : %tu\n", tlb_type::size);
 	printf("tlb_type::key_size            : %tu\n", tlb_type::key_size);

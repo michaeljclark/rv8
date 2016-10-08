@@ -147,13 +147,6 @@ namespace riscv {
 
 			asid_bits =           AST_PT_VA::asid_bits,
 			ppn_bits =            AST_PT_VA::ppn_bits,
-
-			/* TBA cache state (encode in uppermost 2 bits of ppn) */
-			ppn_state_modified =  UX(0) << (ppn_bits - 2), /* modified */
-			ppn_state_exclusive = UX(1) << (ppn_bits - 2), /* exclusive */
-			ppn_state_shared =    UX(2) << (ppn_bits - 2), /* shared */
-			ppn_state_invalid =   UX(3) << (ppn_bits - 2), /* invalid */
-			ppn_state_mask    =   UX(3) << (ppn_bits - 2),
 		};
 
 		// TODO - the cache index and the cache data will be mapped into the
