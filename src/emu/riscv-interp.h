@@ -375,7 +375,7 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fsqrt_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = f32_sqrt(proc.freg[dec.rs1].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = riscv::f32_sqrt(proc.freg[dec.rs1].r.s.val);
 			};
 			break;
 		case riscv_op_fle_s:
@@ -515,7 +515,7 @@ intptr_t exec_inst_rv32(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fsqrt_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = f64_sqrt(proc.freg[dec.rs1].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = riscv::f64_sqrt(proc.freg[dec.rs1].r.d.val);
 			};
 			break;
 		case riscv_op_fle_d:
@@ -1071,7 +1071,7 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fsqrt_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = f32_sqrt(proc.freg[dec.rs1].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = riscv::f32_sqrt(proc.freg[dec.rs1].r.s.val);
 			};
 			break;
 		case riscv_op_fle_s:
@@ -1231,7 +1231,7 @@ intptr_t exec_inst_rv64(T &dec, P &proc, intptr_t pc_offset)
 			break;
 		case riscv_op_fsqrt_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = f64_sqrt(proc.freg[dec.rs1].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = riscv::f64_sqrt(proc.freg[dec.rs1].r.d.val);
 			};
 			break;
 		case riscv_op_fle_d:

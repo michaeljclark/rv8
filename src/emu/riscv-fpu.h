@@ -81,8 +81,9 @@ namespace riscv {
 				: (fcsr |= riscv_fcsr_NV, s64(0));
 	}
 
-	inline float f32_sqrt(float a) { return std::sqrt(a); }
-	inline double f64_sqrt(double a) { return std::sqrt(a); }
+	inline f32 f32_sqrt(f32 a) { return std::sqrt(a); }
+
+	inline f64 f64_sqrt(f64 a) { return std::sqrt(a); }
 
 	inline int f32_classify(float a)
 	{
