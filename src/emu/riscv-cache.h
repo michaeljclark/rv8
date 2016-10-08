@@ -7,6 +7,18 @@
 
 namespace riscv {
 
+	/* cache state */
+
+	enum cache_state {
+		cache_state_modified  = 0b011, /* only copy, modified */
+		cache_state_owned     = 0b110, /* several copies, modify permission */
+		cache_state_exclusive = 0b010, /* only copy, unmodified */
+		cache_state_shared    = 0b100, /* several copies, no modify permission */
+		cache_state_invalid   = 0b000, /* not valid, must be fetched */
+		cache_state_mask      = 0b111,
+	};
+
+
 	/* address space tagged physical page number */
 
 	template <typename UX, const int ASID_BITS, const int PPN_BITS>
