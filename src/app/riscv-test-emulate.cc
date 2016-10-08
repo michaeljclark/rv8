@@ -28,6 +28,7 @@
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-bits.h"
+#include "riscv-sha512.h"
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
@@ -533,13 +534,12 @@ struct riscv_emulator
 
 	elf_file elf;
 	std::string filename;
-	std::vector<uint32_t> entropy;
-
 	int log_flags = 0;
 	bool priv_mode = false;
 	bool memory_debug = false;
 	bool emulator_debug = false;
 	bool help_or_error = false;
+	uint64_t initial_seed = 0;
 
 	enum rv_isa {
 		rv_isa_none,
@@ -685,7 +685,7 @@ struct riscv_emulator
 				[&](std::string s) { return (log_flags |= (reg_log_inst | reg_log_operands)); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
-				[&](std::string s) { entropy.push_back(strtoull(s.c_str(), nullptr, 10)); return true; } },
+				[&](std::string s) { initial_seed = strtoull(s.c_str(), nullptr, 10); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -731,33 +731,42 @@ struct riscv_emulator
 	template <typename P>
 	void seed_registers(P &proc, size_t n)
 	{
-		// if no entropy is present, get n bits of entropy from the host
-		if (entropy.size() == 0) {
-			host_cpu &cpu = host_cpu::get_instance();
-			for (size_t i = 0; i < (n >> 5); i++) {
-				/* get_random_seed returns uint32_t value */
-				entropy.push_back(cpu.get_random_seed());
-			}
+		sha512_ctx_t sha512;
+		u8 seed[SHA512_OUTPUT_BYTES]; /* 512-bits random seed */
+		u8 random[SHA512_OUTPUT_BYTES]; /* 512-bits hash output */
+
+		// if 64-bit initial seed is specified, repeat seed 8 times in the seed buffer
+		// if no initial seed is specified then fill the seed buffer with 512-bits of random
+		host_cpu &cpu = host_cpu::get_instance();
+		for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+			*(u64*)(seed + i) = initial_seed ? initial_seed
+				: (((u64)cpu.get_random_seed()) << 32) | (u64)cpu.get_random_seed() ;
 		}
 
-		// print seed
+		// print seed initial seed state
 		if (emulator_debug) {
 			std::stringstream ss;
-			for (auto i = entropy.begin(); i != entropy.end(); i++) {
-				ss << (i != entropy.begin() ? "," : "") << format_string("0x%08x", *i);
+			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+				ss << format_string("%016llx", *(u64*)(seed + i));
 			}
-			debug("seed: %s", ss.str().c_str());
+			debug("seed: 0x%s", ss.str().c_str());
 		}
 
-		// seed the mersenne twister
-		std::mt19937 twister;
-		std::seed_seq seq(entropy.begin(), entropy.end());
-		twister.seed(seq);
-
 		// randomize the integer registers
+		size_t rand_bytes = 0;
 		std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
 		for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
-			proc.ireg[i].r.xu.val = distribution(twister);
+			// on buffer exhaustion sha-512 hash the seed and xor the hash back into the seed
+			if ((rand_bytes & (SHA512_OUTPUT_BYTES - 1)) == 0) {
+				sha512_init(&sha512);
+				sha512_update(&sha512, seed, SHA512_OUTPUT_BYTES);
+				sha512_final(&sha512, random);
+				for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+					*(u64*)(seed + i) ^= *(u64*)(random + i);
+				}
+			}
+			proc.ireg[i].r.xu.val = *(u64*)(random + (rand_bytes & (SHA512_OUTPUT_BYTES - 1)));
+			rand_bytes += 8;
 		}
 	}
 

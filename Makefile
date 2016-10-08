@@ -33,6 +33,7 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 TOP_DIR =       $(shell pwd)
 INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
+                -I$(TOP_DIR)/src/crypto \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
                 -I$(TOP_DIR)/src/gen \
@@ -153,6 +154,11 @@ RV_UTIL_SRCS =  $(SRC_DIR)/util/riscv-base64.cc \
                 $(SRC_DIR)/util/riscv-util.cc
 RV_UTIL_OBJS =  $(call src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
+
+# libriscv_crypto
+RV_CRYPTO_SRCS = $(SRC_DIR)/crypto/riscv-sha512.cc
+RV_CRYPTO_OBJS = $(call src_objs, $(RV_CRYPTO_SRCS))
+RV_CRYPTO_LIB =  $(LIB_DIR)/libriscv_crypto.a
 
 # libriscv_model
 RV_MODEL_HDR =  $(SRC_DIR)/model/riscv-model.h
@@ -419,6 +425,10 @@ $(RV_ASM_LIB): $(RV_ASM_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
+$(RV_CRYPTO_LIB): $(RV_CRYPTO_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 $(RV_ELF_LIB): $(RV_ELF_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
@@ -465,7 +475,7 @@ $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(TLSF_LIB)
+$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
 
