@@ -56,12 +56,14 @@ namespace riscv {
 	template <typename UX>
 	struct pma_entry
 	{
-		UX     pa;
-		UX     mask;
-		pdid_t pdid;
-		pma_t  pma;
+		/* PMA entry attributes */
 
-		pma_entry() : pa(UX(-1)), mask(0), pdid(-1), pma(0) {}
+		UX     pa;                  /* Physical Address */
+		UX     mask;                /* Address Mask */
+		pdid_t pdid;                /* Protection Domain Identifier */
+		pma_t  pma;                 /* Physical Memory Attributes */
+
+		pma_entry() : pa(-1), mask(0), pdid(-1), pma(0) {}
 		pma_entry(UX pa, UX mask, pdid_t pdid, pma_t pma) : pa(pa), mask(mask), pdid(pdid), pma(pma) {}
 	};
 
@@ -82,6 +84,8 @@ namespace riscv {
 		enum : UX {
 			size = pma_table_size
 		};
+
+		// TODO - map pma table into the machine address space with user_memory::add_segment
 
 		pma_entry_t table[size];
 		size_t count;

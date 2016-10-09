@@ -8,7 +8,7 @@
 namespace riscv {
 
 	/*
-	 * cache state
+	 * cache_state
 	 */
 
 	enum cache_state {
@@ -49,21 +49,21 @@ namespace riscv {
 		static_assert(asid_bits + ppn_bits == 32 || asid_bits + ppn_bits == 64 ||
 			asid_bits + ppn_bits == 128, "asid_bits + ppn_bits == (32, 64, 128)");
 
-		/* cache entry attributes */
+		/* Cache entry attributes */
 
-		UX      vcln  : va_bits;                         /* virtual cache line number */
-		UX      state : state_bits;                      /* cache state */
-		UX      ppn   : ppn_bits;                        /* physical page number */
-		UX      asid  : asid_bits;                       /* address space identifier */
-		pdid_t  pdid;                                    /* protection domain identifer */
-		u8*     data;                                    /* pointer to cache data */
+		UX      vcln  : va_bits;       /* Virtual Cache Line Number */
+		UX      state : state_bits;    /* State */
+		UX      ppn   : ppn_bits;      /* Physical Page Number */
+		UX      asid  : asid_bits;     /* Address Space Identifier */
+		pdid_t  pdid;                  /* Protection Domain Identifer */
+		u8*     data;                  /* Cache Data */
 
 		tagged_cache_entry() :
 			 vcln(vcln_limit),
 			 state(cache_state_invalid),
 			 ppn(ppn_limit),
 			 asid(asid_limit),
-			 pdid(pdid_t(-1)),
+			 pdid(-1),
 			 data(nullptr) {}
 
 		tagged_cache_entry(UX vcln, UX asid, UX ppn) :
@@ -79,7 +79,7 @@ namespace riscv {
 	/*
 	 * tagged_cache
 	 *
-	 * protection domain, address space and physically tagged, virtually indexed cache
+	 * protection domain, address space and physically tagged, virtually indexed set associative cache
 	 *
 	 * cache[PDID:ASID:VA] = STATE:PPN:DATA
 	 */
@@ -116,10 +116,11 @@ namespace riscv {
 		};
 
 		// TODO - map cache index and data into the machine address space with user_memory::add_segment
+
 		cache_entry_t cache_key[num_entries * num_ways];
 		u8 cache_data[cache_size];
 
-		tagged_cache()
+		tagged_cache() : cache_key()
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
 				cache_key[i].data = cache_data + i * cache_line_size;

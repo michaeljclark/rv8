@@ -35,25 +35,35 @@ namespace riscv {
 
 		/* TLB entry attributes */
 
-		UX      ppn  : ppn_bits;                         /* physical page number */
-		UX      asid : asid_bits;                        /* address space identifier */
-		UX      vpn  : vpn_bits;                         /* virtual page number */
-		UX      pteb : pte_bits;                         /* PTE protection bits copy */
-		pdid_t  pdid;                                    /* Protection Domain Identifier */
-		pma_t   pma;                                     /* Physical Memory Attributes copy */
+		UX      ppn  : ppn_bits;       /* Physical Page Number */
+		UX      asid : asid_bits;      /* Address Space Identifier */
+		UX      vpn  : vpn_bits;       /* Virtual Page Number */
+		UX      pteb : pte_bits;       /* PTE Bits */
+		pdid_t  pdid;                  /* Protection Domain Identifier */
+		pma_t   pma;                   /* Physical Memory Attributes copy */
 
 		tagged_tlb_entry() :
-			ppn(ppn_limit), asid(asid_limit), vpn(vpn_limit), pteb(0), pdid(pdid_t(-1)), pma(0) {}
+			ppn(ppn_limit),
+			asid(asid_limit),
+			vpn(vpn_limit),
+			pteb(0),
+			pdid(-1),
+			pma(0) {}
 
 		tagged_tlb_entry(UX pdid, UX asid, UX vpn, UX pteb, UX ppn) :
-			ppn(ppn), asid(asid), vpn(vpn), pteb(pteb), pdid(pdid), pma(0) {}
+			ppn(ppn),
+			asid(asid),
+			vpn(vpn),
+			pteb(pteb),
+			pdid(pdid),
+			pma(0) {}
 	};
 
 
 	/*
 	 * tagged_tlb
 	 *
-	 * protection domain and address space tagged tlb
+	 * protection domain and address space tagged direct mapped tlb
 	 *
 	 * tlb[PDID:ASID:VPN] = PPN:PTE.bits:PMA
 	 */
@@ -74,9 +84,10 @@ namespace riscv {
 		};
 
 		// TODO - map TLB to machine address space with user_memory::add_segment
+
 		tlb_entry_t tlb[size];
 
-		tagged_tlb() { flush(); }
+		tagged_tlb() : tlb() {}
 
 		void flush()
 		{
@@ -98,7 +109,7 @@ namespace riscv {
 		{
 			UX vpn = va >> page_shift;
 			size_t i = vpn & mask;
-			return tlb[i].pdid == pdid && tlb[i].asid == asid && (tlb[i].vpn == vpn) ?
+			return tlb[i].pdid == pdid && tlb[i].asid == asid && tlb[i].vpn == vpn ?
 				tlb + i : nullptr;
 		}
 
