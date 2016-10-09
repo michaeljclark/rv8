@@ -15,6 +15,8 @@ namespace riscv {
 		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
+		/* MMU properties */
+
 		tlb_type       l1_dtlb;     /* L1 Data TLB */
 		tlb_type       l1_itlb;     /* L1 Instruction TLB */
 		cache_type     l1_dcache;   /* L1 Data Cache */
@@ -22,19 +24,21 @@ namespace riscv {
 		pma_type       pma;         /* PMA table */
 		memory_type    mem;         /* memory device */
 
-		template <typename P> inst_t fetch_inst(P &proc, UX pc)
-		{
-			return 0; // TODO
-		}
+		/* MMU methods */
 
-		// T is one of u64, u32, u16, u8
-		template <typename P, typename T, bool aligned> bool load(P &proc, UX va, T &val)
+		template <typename P> bool fetch_inst(P &proc, UX pc, inst_t &inst, addr_t *pc_offset)
 		{
 			return false; // TODO
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T, bool aligned> bool store(P &proc, UX va, T val)
+		template <typename P, typename T> bool load(P &proc, UX va, T &val, bool aligned, bool translated)
+		{
+			return false; // TODO
+		}
+
+		// T is one of u64, u32, u16, u8
+		template <typename P, typename T> bool store(P &proc, UX va, T val, bool aligned, bool translated)
 		{
 			return false; // TODO
 		}
