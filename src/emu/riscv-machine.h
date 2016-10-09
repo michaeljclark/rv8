@@ -7,7 +7,16 @@
 
 namespace riscv {
 
-	/* status */
+	/* privileged mode */
+
+	enum priv_mode {
+		priv_mode_M,           /* Machine mode  */
+		priv_mode_H,           /* Hypervisor mode  */
+		priv_mode_S,           /* Supervisor mode  */
+		priv_mode_U            /* User mode */
+	};
+
+	/* machine status */
 
 	template <typename UX>
 	union status {
@@ -35,7 +44,7 @@ namespace riscv {
 		} status;
 	};
 
-	/* ip */
+	/* interrupt pending */
 
 	template <typename UX>
 	union ip {
@@ -56,7 +65,7 @@ namespace riscv {
 		} ip;
 	};
 
-	/* ie */
+	/* interrupt enable */
 
 	template <typename UX>
 	union ie {
@@ -77,7 +86,7 @@ namespace riscv {
 		} ie;
 	};
 
-	/* counten */
+	/* counter enable */
 
 	template <typename UX>
 	union counten {
@@ -99,11 +108,12 @@ namespace riscv {
 		typedef SX   sx;
 		typedef UX   ux;
 
-		typedef SX   long_t;
-		typedef UX   ulong_t;
-
 		typedef s32  int_t;
 		typedef u32  uint_t;
+
+		/* Private Mode Register */
+
+		priv_mode    mode;
 
 		/* Privileged Control Registers */
 
@@ -142,7 +152,7 @@ namespace riscv {
 		u64          msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
 		u64          muinstret_delta; /* Machine User Number of Instructions Retired Delta */
 
-		processor_priv() : processor_type() {}
+		processor_priv() : processor_type(), mode(priv_mode_M) {}
 	};
 
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
