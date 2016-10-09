@@ -40,7 +40,10 @@ namespace riscv {
 			va_bits =             (sizeof(UX) << 3) - cache_line_shift,
 			state_bits =          cache_line_shift,
 			asid_bits =           PARAM::asid_bits,
-			ppn_bits =            PARAM::ppn_bits
+			ppn_bits =            PARAM::ppn_bits,
+			vcln_limit =          (1ULL<<va_bits)-1,
+			ppn_limit =           (1ULL<<ppn_bits)-1,
+			asid_limit =          (1ULL<<asid_bits)-1
 		};
 
 		static_assert(asid_bits + ppn_bits == 32 || asid_bits + ppn_bits == 64 ||
@@ -48,7 +51,7 @@ namespace riscv {
 
 		/* cache entry attributes */
 
-		UX      va    : va_bits;                         /* virtual address */
+		UX      vcln  : va_bits;                         /* virtual cache line number */
 		UX      state : state_bits;                      /* cache state */
 		UX      ppn   : ppn_bits;                        /* physical page number */
 		UX      asid  : asid_bits;                       /* address space identifier */
@@ -56,15 +59,15 @@ namespace riscv {
 		u8*     data;                                    /* pointer to cache data */
 
 		tagged_cache_entry() :
-			 va((1ULL<<va_bits)-1),
+			 vcln(vcln_limit),
 			 state(cache_state_invalid),
-			 ppn((1ULL<<(ppn_bits - page_shift))-1),
-			 asid((1ULL<<asid_bits)-1),
-			 pdid(0),
+			 ppn(ppn_limit),
+			 asid(asid_limit),
+			 pdid(pdid_t(-1)),
 			 data(nullptr) {}
 
-		tagged_cache_entry(UX va, UX asid, UX ppn) :
-			va(va),
+		tagged_cache_entry(UX vcln, UX asid, UX ppn) :
+			vcln(vcln),
 			state(cache_state_invalid),
 			ppn(ppn),
 			asid(asid),
@@ -149,13 +152,13 @@ namespace riscv {
 			}
 		}
 
-		cache_entry_t* get_cache_line(memory_type &mem, UX vaddr, UX ppn, UX pdid, UX asid)
+		cache_entry_t* get_cache_line(memory_type &mem, UX va, UX pdid, UX asid)
 		{
-			UX va = vaddr & cache_line_mask;
-			UX entry = vaddr & num_entries_mask;
+			UX vcln = va >> cache_line_shift;
+			UX entry = vcln & num_entries_mask;
 			cache_entry_t *ent = cache_key + (entry << num_ways_shift);
 			for (size_t i = 0; i < num_ways; i++) {
-				if (ent->va == va && ent->ppn == ppn && ent->pdid == pdid && ent->asid == asid) {
+				if (ent->vcln == vcln && ent->pdid == pdid && ent->asid == asid) {
 					return ent;
 				}
 				ent++;
