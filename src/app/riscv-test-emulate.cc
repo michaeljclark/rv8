@@ -46,6 +46,7 @@
 #include "riscv-pte.h"
 #include "riscv-pma.h"
 #include "riscv-memory.h"
+#include "riscv-tlb.h"
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
 #include "riscv-interp.h"

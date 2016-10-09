@@ -13,11 +13,11 @@ namespace riscv {
 	struct user_memory_segment
 	{
 		UX mpa;         /* machine physical address (emulator address domain) */
-		uintptr_t uva;  /* user virtual address     (process address domain) */
+		intptr_t uva;   /* user virtual address     (process address domain) */
 		size_t size;    /* segment size */
 		uint32_t flags; /* segment PMA flags */
 
-		user_memory_segment(UX mpa, uintptr_t uva, size_t size, UX flags) :
+		user_memory_segment(UX mpa, intptr_t uva, size_t size, UX flags) :
 			mpa(mpa), uva(uva), size(size), flags(0) {}
 	};
 
@@ -70,14 +70,14 @@ namespace riscv {
 		}
 
 		/* convert machine physical address to user virtual address */
-		uintptr_t mpa_to_uva(UX mpa)
+		intptr_t mpa_to_uva(UX mpa)
 		{
 			for (auto &seg : segments) {
 				if (mpa >= seg.mpa && mpa < seg.mpa + seg.size) {
 					return seg.uva + (mpa - seg.mpa);
 				}
 			}
-			return 0;
+			return -1;
 		}
 
 	};

@@ -7,20 +7,20 @@
 
 namespace riscv {
 
-	template <typename UX, typename TLB, typename CACHE, typename PMAS, typename MEMORY = user_memory<UX>>
+	template <typename UX, typename TLB, typename CACHE, typename PMA, typename MEMORY = user_memory<UX>>
 	struct mmu
 	{
-		typedef TLB tlb_type;
-		typedef CACHE cache_type;
-		typedef PMAS pma_type;
+		typedef TLB    tlb_type;
+		typedef CACHE  cache_type;
+		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
-		tlb_type     l1_dtlb;
-		tlb_type     l1_itlb;
-		cache_type   l1_dcache;
-		cache_type   l1_icache;
-		pma_type     pmas;
-		memory_type  mem;
+		tlb_type       l1_dtlb;     /* L1 Data TLB */
+		tlb_type       l1_itlb;     /* L1 Instruction TLB */
+		cache_type     l1_dcache;   /* L1 Data Cache */
+		cache_type     l1_icache;   /* L1 Instruction Cache */
+		pma_type       pma;         /* PMA table */
+		memory_type    mem;         /* memory device */
 
 		template <typename P> inst_t fetch_inst(P &proc, UX pc)
 		{
@@ -28,15 +28,29 @@ namespace riscv {
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool load(P &proc, UX va, T &val)
+		template <typename P, typename T, bool aligned> bool load(P &proc, UX va, T &val)
 		{
 			return false; // TODO
 		}
 
 		// T is one of u64, u32, u16, u8
-		template <typename P, typename T> bool store(P &proc, UX va, T val)
+		template <typename P, typename T, bool aligned> bool store(P &proc, UX va, T val)
 		{
 			return false; // TODO
+		}
+
+		template <typename P> addr_t translate_addr(P &proc, UX va,
+			tlb_type &tlb, typename tlb_type::tlb_entry_t *tlb_ent = nullptr)
+		{
+			switch (proc.mstatus.vm) {
+				case riscv_vm_mbare: /* TODO */ break;
+				case riscv_vm_mbb:   /* TODO */ break;
+				case riscv_vm_mbid:  /* TODO */ break;
+				case riscv_vm_sv32:  /* TODO */ break;
+				case riscv_vm_sv39:  /* TODO */ break;
+				case riscv_vm_sv48:  /* TODO */ break;
+			}
+			return -1;
 		}
 
 		// PTM is one of sv32, sv39, sv48
@@ -46,11 +60,11 @@ namespace riscv {
 		}
 	};
 
-	typedef as_tagged_cache_rv32<65536,8,64> cache_type_rv32;
-	typedef as_tagged_tlb_rv32<128> tlb_type_rv32;
+	typedef tagged_cache_rv32<65536,8,64> cache_type_rv32;
+	typedef tagged_tlb_rv32<128> tlb_type_rv32;
 
-	typedef as_tagged_cache_rv64<65536,8,64> cache_type_rv64;
-	typedef as_tagged_tlb_rv64<128> tlb_type_rv64;
+	typedef tagged_cache_rv64<65536,8,64> cache_type_rv64;
+	typedef tagged_tlb_rv64<128> tlb_type_rv64;
 
 	typedef pma_table<u32,8> pma_table_rv32;
 	typedef pma_table<u64,8> pma_table_rv64;

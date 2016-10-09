@@ -8,12 +8,6 @@
 namespace riscv {
 
 	enum {
-		page_shift    = 12,
-		page_size     = 1UL << page_shift,
-		page_mask     = ~(page_size-1)
-	};
-
-	enum {
 		pte_flag_V     = 1<<0, /* Valid */
 		pte_flag_R     = 1<<1, /* Read */
 		pte_flag_W     = 1<<2, /* Write */
