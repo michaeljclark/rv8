@@ -12,7 +12,7 @@ namespace riscv {
 	 *
 	 * protection domain and address space tagged virtual to physical mapping with page attributes
 	 *
-	 * tlb[PDID:ASID:VA] = PPN:PMA
+	 * tlb[PDID:ASID:VPN] = PPN:PTE.bits:PMA
 	 */
 
 	template <typename PARAM>
@@ -21,8 +21,13 @@ namespace riscv {
 		typedef typename PARAM::UX      UX;              /* address type */
 
 		enum : UX {
-			asid_bits = PARAM::asid_bits,
-			ppn_bits = PARAM::ppn_bits
+			asid_bits =   PARAM::asid_bits,
+			ppn_bits =    PARAM::ppn_bits,
+			vpn_bits =    (sizeof(UX) << 3) - page_shift,
+			pte_bits =    page_shift,
+			ppn_limit =   (1ULL<<ppn_bits)-1,
+			asid_limit =  (1ULL<<asid_bits)-1,
+			vpn_limit =   (1ULL<<vpn_bits)-1
 		};
 
 		static_assert(asid_bits + ppn_bits == 32 || asid_bits + ppn_bits == 64 ||
@@ -30,15 +35,16 @@ namespace riscv {
 
 		UX      ppn  : ppn_bits;
 		UX      asid : asid_bits;
-		UX      va;
+		UX      vpn  : vpn_bits;
+		UX      pteb : pte_bits;
 		pdid_t  pdid;
 		pma_t   pma;
 
 		tagged_tlb_entry() :
-			ppn((1ULL<<ppn_bits)-1), asid((1ULL<<asid_bits)-1), va(UX(-1) & page_mask), pdid(0), pma(0) {}
+			ppn(ppn_limit), asid(asid_limit), vpn(vpn_limit), pteb(0), pdid(0), pma(0) {}
 
-		tagged_tlb_entry(UX pdid, UX asid, UX va, UX ppn) :
-			ppn(ppn), asid(asid), va(va), pdid(pdid), pma(0) {}
+		tagged_tlb_entry(UX pdid, UX asid, UX vpn, UX pteb, UX ppn) :
+			ppn(ppn), asid(asid), vpn(vpn), pteb(pteb), pdid(pdid), pma(0) {}
 	};
 
 
@@ -47,7 +53,7 @@ namespace riscv {
 	 *
 	 * protection domain and address space tagged tlb
 	 *
-	 * tlb[PDID:ASID:VA] = PPN:PMA
+	 * tlb[PDID:ASID:VPN] = PPN:PTE.bits:PMA
 	 */
 
 	template <const size_t tlb_size, typename PARAM>
@@ -62,8 +68,7 @@ namespace riscv {
 			size = tlb_size,
 			shift = ctz_pow2(size),
 			mask = (1ULL << shift) - 1,
-			key_size = sizeof(tlb_entry_t),
-			invalid_ppn = UX(-1)
+			key_size = sizeof(tlb_entry_t)
 		};
 
 		// TODO - map TLB to machine address space with user_memory::add_segment
@@ -74,7 +79,7 @@ namespace riscv {
 		void flush()
 		{
 			for (size_t i = 0; i < size; i++) {
-				tlb[i].asid = tlb[i].ppn = tlb[i].va = UX(-1);
+				tlb[i] = tlb_entry_t();
 			}
 		}
 
@@ -82,29 +87,26 @@ namespace riscv {
 		{
 			for (size_t i = 0; i < size; i++) {
 				if (tlb[i].asid != asid) continue;
-				tlb[i].asid = tlb[i].ppn = tlb[i].va = UX(-1);
+				tlb[i] = tlb_entry_t();
 			}
 		}
 
-		// lookup TLB entry for the given PDID:ASID:VA -> X:12[PPN],11:0[PTE.flags]
-		UX lookup(UX pdid, UX asid, UX vaddr)
+		// lookup TLB entry for the given PDID + ASID + X:12[VA] + 11:0[PTE.bits] -> PPN]
+		tlb_entry_t* lookup(UX pdid, UX asid, UX va)
 		{
-			// TODO - change the API to return tlb_entry_t*
-			UX va = vaddr & page_mask;
-			size_t vpn = (vaddr >> page_shift) & mask;
-			// pte flags are returned in bits 11:0
-			return ((tlb[vpn].va & page_mask) == va && tlb[vpn].pdid == pdid && tlb[vpn].asid == asid) ?
-				UX(tlb[vpn].ppn << page_shift) | (tlb[vpn].va & ~page_mask) : invalid_ppn;
+			UX vpn = va >> page_shift;
+			size_t i = vpn & mask;
+			return tlb[i].pdid == pdid && tlb[i].asid == asid && (tlb[i].vpn == vpn) ?
+				tlb + i : nullptr;
 		}
 
-		// insert TLB entry for the given PDID:ASID:VA <- X:12[PPN],11:0[PTE.flags]
-		void insert(UX pdid, UX asid, UX vaddr, UX ppn)
+		// insert TLB entry for the given PDID + ASID + X:12[VA] + 11:0[PTE.bits] <- PPN]
+		void insert(UX pdid, UX asid, UX va, UX pteb, UX ppn)
 		{
-			UX va = vaddr & page_mask;
-			size_t i = (vaddr >> page_shift) & mask;
-			// pte flags are stored in bits 11:0 of the PPN
-			tlb[i] = tlb_entry_t(pdid, asid, (va & page_mask) | (ppn & ~page_mask), ppn >> page_shift);
+			UX vpn = va >> page_shift;
+			size_t i = vpn & mask;
 			// we are implicitly evicting an entry by overwriting it
+			tlb[i] = tlb_entry_t(pdid, asid, vpn, pteb, ppn);
 		}
 	};
 

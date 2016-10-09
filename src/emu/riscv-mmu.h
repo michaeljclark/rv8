@@ -70,7 +70,7 @@ namespace riscv {
 	typedef pma_table<u64,8> pma_table_rv64;
 
 	using mmu_rv32 = mmu<u32,tlb_type_rv32,cache_type_rv32,pma_table_rv32>;
-	using mmu_rv64 = mmu<u64,tlb_type_rv32,cache_type_rv64,pma_table_rv64>;
+	using mmu_rv64 = mmu<u64,tlb_type_rv64,cache_type_rv64,pma_table_rv64>;
 
 }
 

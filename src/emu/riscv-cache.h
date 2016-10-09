@@ -126,7 +126,7 @@ namespace riscv {
 		void flush(memory_type &mem)
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
-				// flush this line to memory
+				// TODO - flush this line to memory
 				cache_key[i] = cache_entry_t();
 			}
 		}
@@ -135,7 +135,7 @@ namespace riscv {
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
 				if (cache_key[i].pdid != pdid) continue;
-				// flush this line to memory
+				// TODO - flush this line to memory
 				cache_key[i] = cache_entry_t();
 			}
 		}
@@ -144,7 +144,7 @@ namespace riscv {
 		{
 			for (size_t i = 0; i < num_entries * num_ways; i++) {
 				if (cache_key[i].pdid != pdid && cache_key[i].asid != asid) continue;
-				// flush this line to memory
+				// TODO - flush this line to memory
 				cache_key[i] = cache_entry_t();
 			}
 		}
@@ -160,9 +160,9 @@ namespace riscv {
 				}
 				ent++;
 			}
-			// choose a way to flush
-			// flush the line to memory
-			// fetch the new line from memory
+			// TODO - choose a way to flush
+			// TODO - flush the line to memory
+			// TODO - fetch the new line from memory
 			return nullptr;
 		}
 	};

@@ -71,23 +71,26 @@ int main(int argc, char *argv[])
 
 	mmu_type mmu;
 
-	// insert entry for VA 0x10000 into the TLB (PDID=0, ASID=0, VA=0x10000, PPN=1, PTE.flags=DAGURWXV)
-	mmu.l1_dtlb.insert(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000, /* ppn << page_shift | pte.flags */ 0x10ff);
+	// insert entry for VA 0x10000 into the TLB (PDID=0, ASID=0, VA=0x10000, PPN=1, PTE.bits=DAGURWXV)
+	mmu.l1_dtlb.insert(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000, /* PTE */ 0xff, /* PPN */ 0x1);
 
-	// test that PPN 1 is returned for (PDID=0, ASID=0, VA=0x10000) -> PPN=1, PTE.flags=DAGURWXV)
-	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == 0x10ff); /* ppn << page_shift | pte.flags */
+	// test that PPN 1 is returned for (PDID=0, ASID=0, VA=0x10000) -> PPN=1, PTE.bits=DAGURWXV)
+	tlb_type::tlb_entry_t *tlb_ent = mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000);
+	assert(tlb_ent != nullptr);
+	assert(tlb_ent->ppn == 0x1);
+	assert(tlb_ent->pteb == 0xff);
 
 	// test that invalid_ppn is returned for (PDID=0, ASID=0, VA=0x11000)
-	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x11000) == mmu_type::tlb_type::invalid_ppn);
+	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x11000) == nullptr);
 
 	// test that invalid_ppn is returned for (PDID=0, ASID=1, VA=0x11000)
-	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 1, /* VA */ 0x10000) == mmu_type::tlb_type::invalid_ppn);
+	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 1, /* VA */ 0x10000) == nullptr);
 
 	// flush the L1 DTLB
 	mmu.l1_dtlb.flush();
 
 	// test that invalid_ppn is returned for (VA=0x10000, ASID=0)
-	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == mmu_type::tlb_type::invalid_ppn);
+	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == nullptr);
 
 	// add RAM to the MMU emulation
 	mmu.mem.add_ram(0x0, /*1GB*/0x40000000LL);
