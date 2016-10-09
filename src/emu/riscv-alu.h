@@ -7,7 +7,7 @@
 
 namespace riscv {
 
-	/* multiply high unsigned unsigned */
+	/* multiply high unsigned */
 
 	template <typename U>
 	U mulhu(U x, U y)
@@ -32,7 +32,7 @@ namespace riscv {
 		return hi;
 	}
 
-	/* multiply high signed signed */
+	/* multiply high signed */
 
 	template <typename S>
 	S mulh(S x, S y)
@@ -99,11 +99,15 @@ namespace riscv {
 		return hi;
 	}
 
+	/* multiply */
+
 	template <typename S>
 	S mul(S x, S y)
 	{
 		return x * y;
 	}
+
+	/* divide signed */
 
 	template <typename S>
 	S div(S x, S y)
@@ -111,17 +115,23 @@ namespace riscv {
 		return (x == std::numeric_limits<S>::min() && y == -1) ? std::numeric_limits<S>::min() : (y == 0) ? S(-1) : x / y;
 	}
 
+	/* divide unsigned */
+
 	template <typename U>
 	U divu(U x, U y)
 	{
 		return (y == 0) ? U(-1) : x / y;
 	}
 
+	/* remainder signed */
+
 	template <typename S>
 	S rem(S x, S y)
 	{
 		return (x == std::numeric_limits<S>::min() && y == -1) ? 0 : (y == 0) ? x : x % y;
 	}
+
+	/* remainder unsigned */
 
 	template <typename U>
 	U remu(U x, U y)

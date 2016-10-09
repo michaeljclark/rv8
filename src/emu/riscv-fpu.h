@@ -7,6 +7,8 @@
 
 namespace riscv {
 
+	/* get accrued exception flags (C11) */
+
 	template <typename T>
 	inline void fenv_getflags(T &fcsr)
 	{
@@ -17,6 +19,9 @@ namespace riscv {
 		if (flags & FE_OVERFLOW) fcsr |= riscv_fcsr_OF;
 		if (flags & FE_UNDERFLOW) fcsr |= riscv_fcsr_UF;
 	}
+
+	/* clear accrued exception flags (C11) */
+
 	template <typename T>
 	inline void fenv_clearflags(T &fcsr)
 	{
@@ -28,6 +33,8 @@ namespace riscv {
 		if (!(fcsr & riscv_fcsr_UF)) flags |= FE_UNDERFLOW;
 		feclearexcept(flags);
 	}
+
+	/* set round mode (C11) */
 
 	inline void fenv_setrm(int rm)
 	{
@@ -41,6 +48,8 @@ namespace riscv {
 		}
 	}
 
+	/* convert single or double to signed word (32-bit) */
+
 	template <typename T, typename F>
 	inline s32 fcvt_w(T &fcsr, F f)
 	{
@@ -48,6 +57,8 @@ namespace riscv {
 				? std::numeric_limits<s32>::max()
 				: s32(f);
 	}
+
+	/* convert single or double to unsigned word (32-bit) */
 
 	template <typename T, typename F>
 	inline s32 fcvt_wu(T &fcsr, F f)
@@ -61,6 +72,8 @@ namespace riscv {
 				: (fcsr |= riscv_fcsr_NV, s32(0));
 	}
 
+	/* convert single or double to signed long (64-bit) */
+
 	template <typename T, typename F>
 	inline s64 fcvt_l(T &fcsr, F f)
 	{
@@ -68,6 +81,8 @@ namespace riscv {
 				? std::numeric_limits<s64>::max()
 				: s64(f);
 	}
+
+	/* convert single or double to unsigned long (64-bit) */
 
 	template <typename T, typename F>
 	inline s64 fcvt_lu(T &fcsr, F f)
@@ -81,9 +96,15 @@ namespace riscv {
 				: (fcsr |= riscv_fcsr_NV, s64(0));
 	}
 
+	/* single precision square root */
+
 	inline f32 f32_sqrt(f32 a) { return std::sqrt(a); }
 
+	/* double precision square root */
+
 	inline f64 f64_sqrt(f64 a) { return std::sqrt(a); }
+
+	/* single precision classify */
 
 	inline int f32_classify(float a)
 	{
@@ -101,6 +122,8 @@ namespace riscv {
 			return neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm;
 		}
 	}
+
+	/* double precision classify */
 
 	inline int f64_classify(double a)
 	{
