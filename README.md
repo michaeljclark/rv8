@@ -11,18 +11,19 @@ About
 -------------
 
 RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
-Set Architecture) Metadata. The RISC-V Meta suite of tools can generate
-RISC-V instruction opcode maps, C headers and source containing instruction
-set metadata, instruction decoders, JIT encoder, instruction interpreters
-and LaTeX documentation (`riscv-parse-meta`).
+Set Architecture) Metadata. The RISC-V Meta tools can generate RISC-V
+instruction opcode maps, C headers and source containing instruction
+set metadata, instruction decoders, disassemblers, JIT encoders,
+instruction interpreters and LaTeX documentation.
 
-The suite also contains simple decoupled libraries with an ELF parser, a
-functional metadata based RISC-V disassembler (`riscv-parse-elf`), a
-RVC compressor / decompressor (`riscv-compress-elf`) plus library routines
-and tools for generating statistics on RISC-V executables (`riscv-histogram-elf`).
+The suite contains simple decoupled libraries including an ELF parser, a
+functional metadata based RISC-V disassembler (`riscv-parse-elf`), an
+extensible source generator (`riscv-parse-meta`), an RVC compressor /
+decompressor (`riscv-compress-elf`) plus library routines and tools for
+generating statistics on RISC-V ELF executables (`riscv-histogram-elf`).
 
-RISC-V Meta is the starting point for a RISC-V binary translation and security
-sandboxing investigation.
+RISC-V Meta is the starting point for a RISC-V binary translation and
+security sandboxing investigation.
 
 The future goals of the RISC-V Meta project are:
 
@@ -38,7 +39,8 @@ The future goals of the RISC-V Meta project are:
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
 
-See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for sample LaTeX output.
+See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for
+sample LaTeX output.
 
 Screenshots
 ----------------

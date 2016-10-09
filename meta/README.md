@@ -5,7 +5,7 @@ This directory contains metadata for the RISC-V Instruction Set
 |File|Description|
 |:---|:----------|
 |`codecs`               |Instruction encodings|
-|`compression`          |Compressed instruction metadata|
+|`compression`          |Compressed instruction|
 |`constraints`          |Constraint definitions|
 |`csrs`                 |Control and status registers|
 |`enums`                |Enumerated types|
@@ -16,7 +16,7 @@ This directory contains metadata for the RISC-V Instruction Set
 |`opcode-fullnames`     |Instruction full names|
 |`opcode-pseudocode-c`  |Instruction pseudo code (C)|
 |`opcode-pseudocode-alt`|Instruction pseudo code (Alternative)|
-|`operands`             |Bit encodings of operands|
+|`operands`             |Operand bit encodings|
 |`pseudos`              |Pseudo instructions|
-|`registers`            |Registers and their ABI names|
+|`registers`            |Registers ABI definitions|
 |`types`                |Instruction types|
