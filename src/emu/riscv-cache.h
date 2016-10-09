@@ -153,7 +153,9 @@ namespace riscv {
 			}
 		}
 
-		cache_entry_t* get_cache_line(memory_type &mem, UX pdid, UX asid, UX va)
+		// cache line is virtually indexed but physically tagged.
+		// caller has to check that the ppn of the cache line matches the TLB ppn.
+		cache_entry_t* lookup_cache_line(memory_type &mem, UX pdid, UX asid, UX va)
 		{
 			UX vcln = va >> cache_line_shift;
 			UX entry = vcln & num_entries_mask;
@@ -164,11 +166,21 @@ namespace riscv {
 				}
 				ent++;
 			}
-			// TODO - choose a way to flush
-			// TODO - flush the line to memory
-			// TODO - fetch the new line from memory
 			return nullptr;
 		}
+
+		// caller got a cache miss or invalid ppn from TLB and wants to allocate
+		cache_entry_t* alloc_cache_line(memory_type &mem, UX pdid, UX asid, UX va)
+		{
+			// TODO - choose a way, if there is no free way, flush and allocate
+		}
+
+		// caller got a cache line with an invalid ppn and wants to invalidate
+		void invalidate_cache_line(memory_type &mem, cache_entry_t *ent)
+		{
+			// TODO - flush to memory and invalidate cache line
+		}
+
 	};
 
 	template <const size_t cache_size, const size_t cache_ways, const size_t cache_line_size>
