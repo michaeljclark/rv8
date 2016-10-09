@@ -18,7 +18,7 @@ namespace riscv {
 	template <typename PARAM>
 	struct tagged_tlb_entry
 	{
-		typedef typename PARAM::UX      UX;              /* address type */
+		typedef typename PARAM::UX UX;
 
 		enum : UX {
 			asid_bits =   PARAM::asid_bits,
@@ -33,12 +33,14 @@ namespace riscv {
 		static_assert(asid_bits + ppn_bits == 32 || asid_bits + ppn_bits == 64 ||
 			asid_bits + ppn_bits == 128, "asid_bits + ppn_bits == (32, 64, 128)");
 
-		UX      ppn  : ppn_bits;
-		UX      asid : asid_bits;
-		UX      vpn  : vpn_bits;
-		UX      pteb : pte_bits;
-		pdid_t  pdid;
-		pma_t   pma;
+		/* TLB entry attributes */
+
+		UX      ppn  : ppn_bits;                         /* physical page number */
+		UX      asid : asid_bits;                        /* address space identifier */
+		UX      vpn  : vpn_bits;                         /* virtual page number */
+		UX      pteb : pte_bits;                         /* PTE protection bits copy */
+		pdid_t  pdid;                                    /* Protection Domain Identifier */
+		pma_t   pma;                                     /* Physical Memory Attributes copy */
 
 		tagged_tlb_entry() :
 			ppn(ppn_limit), asid(asid_limit), vpn(vpn_limit), pteb(0), pdid(pdid_t(-1)), pma(0) {}
@@ -61,8 +63,8 @@ namespace riscv {
 	{
 	    static_assert(ispow2(tlb_size), "tlb_size must be a power of 2");
 
-		typedef typename PARAM::UX      UX;              /* address type */
-		typedef tagged_tlb_entry<PARAM> tlb_entry_t;     /* TLB entry type */
+		typedef typename PARAM::UX UX;
+		typedef tagged_tlb_entry<PARAM> tlb_entry_t;
 
 		enum : UX {
 			size = tlb_size,
