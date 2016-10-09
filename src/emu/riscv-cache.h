@@ -153,7 +153,7 @@ namespace riscv {
 			}
 		}
 
-		cache_entry_t* get_cache_line(memory_type &mem, UX va, UX pdid, UX asid)
+		cache_entry_t* get_cache_line(memory_type &mem, UX pdid, UX asid, UX va)
 		{
 			UX vcln = va >> cache_line_shift;
 			UX entry = vcln & num_entries_mask;
