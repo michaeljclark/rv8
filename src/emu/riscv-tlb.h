@@ -56,7 +56,7 @@ namespace riscv {
 	    static_assert(ispow2(tlb_size), "tlb_size must be a power of 2");
 
 		typedef typename PARAM::UX      UX;              /* address type */
-	    typedef tagged_tlb_entry<PARAM> tlb_entry_t;     /* TLB entry type */
+		typedef tagged_tlb_entry<PARAM> tlb_entry_t;     /* TLB entry type */
 
 		enum : UX {
 			size = tlb_size,
