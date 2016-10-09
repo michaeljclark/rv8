@@ -71,7 +71,7 @@ namespace riscv {
 	template <const size_t tlb_size, typename PARAM>
 	struct tagged_tlb
 	{
-	    static_assert(ispow2(tlb_size), "tlb_size must be a power of 2");
+		static_assert(ispow2(tlb_size), "tlb_size must be a power of 2");
 
 		typedef typename PARAM::UX UX;
 		typedef tagged_tlb_entry<PARAM> tlb_entry_t;
