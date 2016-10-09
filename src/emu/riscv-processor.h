@@ -149,23 +149,30 @@ namespace riscv {
 		enum  { xlen = sizeof(ux) << 3 };
 		enum  { ireg_count = IREG_COUNT, freg_count = FREG_COUNT };
 
-		size_t node_id;
-		size_t hart_id;
-		u64 flags;
-		UX pc;
-		SX lr;
+		/* Topology */
 
-		IREG ireg[ireg_count];
-		FREG freg[freg_count];
+		size_t node_id;               /* Node Identifier */
+		size_t hart_id;               /* Hardware Thread Identifier */
 
-		/* Base ISA CSRs */
+		/* State */
+
+		u64 flags;                    /* Debug flags */
+		SX lr;                        /* Load Reservation, TODO - should be global state */
+
+		/* Registers */
+
+		UX pc;                        /* Program Counter */
+		IREG ireg[ireg_count];        /* Integer registers */
+		FREG freg[freg_count];        /* Floating-point registers */
+
+		/* Base ISA Control and Status Registers */
 
 		u64          time;            /* User Time Register */
 		u64          cycle;           /* User Number of Cycles */
 		u64          instret;         /* User Number of Instructions Retired  */
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
-		processor() : node_id(0), hart_id(0), flags(0), pc(0), lr(-1), ireg(), freg(),
+		processor() : node_id(0), hart_id(0), flags(0), lr(-1), pc(0), ireg(), freg(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 

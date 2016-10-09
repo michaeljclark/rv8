@@ -111,11 +111,11 @@ namespace riscv {
 		typedef s32  int_t;
 		typedef u32  uint_t;
 
-		/* Private Mode Register */
+		/* Private Privileged Mode Register */
 
 		priv_mode    mode;
 
-		/* Privileged Control Registers */
+		/* Privileged Control and Status Registers */
 
 		UX           misa;            /* Extensions misa[25:0], Base misa[XLEN-1:XLEN-2] (enum riscv_isa) */
 		UX           mvendorid;       /* Vendor ID, (0 = not implemented) */
