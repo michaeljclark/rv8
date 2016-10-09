@@ -41,7 +41,7 @@ namespace riscv {
 		pma_t   pma;
 
 		tagged_tlb_entry() :
-			ppn(ppn_limit), asid(asid_limit), vpn(vpn_limit), pteb(0), pdid(0), pma(0) {}
+			ppn(ppn_limit), asid(asid_limit), vpn(vpn_limit), pteb(0), pdid(pdid_t(-1)), pma(0) {}
 
 		tagged_tlb_entry(UX pdid, UX asid, UX vpn, UX pteb, UX ppn) :
 			ppn(ppn), asid(asid), vpn(vpn), pteb(pteb), pdid(pdid), pma(0) {}
