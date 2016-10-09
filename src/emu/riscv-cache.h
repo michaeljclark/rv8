@@ -52,7 +52,7 @@ namespace riscv {
 		/* Cache entry attributes */
 
 		UX      vcln  : va_bits;       /* Virtual Cache Line Number */
-		UX      state : state_bits;    /* State */
+		UX      state : state_bits;    /* Cache State */
 		UX      ppn   : ppn_bits;      /* Physical Page Number */
 		UX      asid  : asid_bits;     /* Address Space Identifier */
 		pdid_t  pdid;                  /* Protection Domain Identifer */
