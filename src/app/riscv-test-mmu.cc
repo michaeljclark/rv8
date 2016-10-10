@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 1, /* VA */ 0x10000) == nullptr);
 
 	// flush the L1 DTLB
-	mmu.l1_dtlb.flush();
+	mmu.l1_dtlb.flush(0);
 
 	// test that invalid_ppn is returned for (VA=0x10000, ASID=0)
 	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == nullptr);
