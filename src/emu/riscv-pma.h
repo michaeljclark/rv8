@@ -79,7 +79,7 @@ namespace riscv {
 	template <typename UX, const size_t pma_table_size>
 	struct pma_table
 	{
-	    typedef pma_entry<UX> pma_entry_t;
+		typedef pma_entry<UX> pma_entry_t;
 
 		enum : UX {
 			size = pma_table_size

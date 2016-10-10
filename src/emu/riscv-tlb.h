@@ -89,17 +89,18 @@ namespace riscv {
 
 		tagged_tlb() : tlb() {}
 
-		void flush()
+		void flush(UX pdid)
 		{
 			for (size_t i = 0; i < size; i++) {
+				if (tlb[i].pdid != pdid) continue;
 				tlb[i] = tlb_entry_t();
 			}
 		}
 
-		void flush(UX asid)
+		void flush(UX pdid, UX asid)
 		{
 			for (size_t i = 0; i < size; i++) {
-				if (tlb[i].asid != asid) continue;
+				if (tlb[i].pdid != pdid && tlb[i].asid != asid) continue;
 				tlb[i] = tlb_entry_t();
 			}
 		}
