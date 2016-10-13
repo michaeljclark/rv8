@@ -546,11 +546,11 @@ enum {
 	R_RISCV_TPREL_LO12_I = 30,       /* 32, 11:0  TLS LE thread pointer offset, %tprel_lo(label),    I-Type (lb,lbu,lh,lhu,lw,lwu,addi,addiw) */
 	R_RISCV_TPREL_LO12_S = 31,       /* 32, 11:0  TLS LE thread pointer offset, %tprel_lo(label),    S-Type (sb,sh,sw) */
 	R_RISCV_TPREL_ADD = 32,          /* 32, 31:0  TLS LE thread pointer usage,  %tprel_add(label),   internal assembler expansion */
-	R_RISCV_ADD8 = 33,               /* 8 , 8-bit  add, word8  = S + A,         label addition */
+	R_RISCV_ADD8 = 33,               /* 8,  8-bit  add, word8  = S + A,         label addition */
 	R_RISCV_ADD16 = 34,              /* 16, 16-bit add, word16 = S + A,         label addition */
 	R_RISCV_ADD32 = 35,              /* 32, 32-bit add, word32 = S + A,         label addition */
 	R_RISCV_ADD64 = 36,              /* 64, 64-bit add, word64 = S + A,         label addition */
-	R_RISCV_SUB8 = 37,               /* 8 , 8-bit  sub, word8  = S - A,         label subtraction */
+	R_RISCV_SUB8 = 37,               /* 8,  8-bit  sub, word8  = S - A,         label subtraction */
 	R_RISCV_SUB16 = 38,              /* 16, 16-bit sub, word16 = S - A,         label subtraction */
 	R_RISCV_SUB32 = 39,              /* 32, 32-bit sub, word32 = S - A,         label subtraction */
 	R_RISCV_SUB64 = 40,              /* 64, 64-bit sub, word64 = S - A,         label subtraction */
