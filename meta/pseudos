@@ -35,6 +35,8 @@ jal         jal                    offset      rd_eq_ra
 ret         jalr                   none        rd_eq_x0 rs1_eq_ra
 jr          jalr                   rs1         rd_eq_x0 imm_eq_zero
 jalr        jalr                   rs1         rd_eq_ra imm_eq_zero
+#call       {auipc,jalr}           offset
+#tail       {auipc,jalr}           offset
 rdcycle     csrrs                  rd          rs1_eq_x0 csr_eq_0xc00
 rdtime      csrrs                  rd          rs1_eq_x0 csr_eq_0xc01
 rdinstret   csrrs                  rd          rs1_eq_x0 csr_eq_0xc02
