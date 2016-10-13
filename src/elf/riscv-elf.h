@@ -529,36 +529,51 @@ enum {
 	R_RISCV_TLS_DTPREL64 = 9,        /* word64 = TLS + S + A - TLS_TP_OFFSET */
 	R_RISCV_TLS_TPREL32 = 10,        /* word32 = TLS + S + A + S->TLS_OFFSET - TLS_DTV_OFFSET */
 	R_RISCV_TLS_TPREL64 = 11,        /* word64 = TLS + S + A + S->TLS_OFFSET - TLS_DTV_OFFSET */
-	R_RISCV_BRANCH = 16,
-	R_RISCV_JAL = 17,
+	R_RISCV_BRANCH = 16,             /* SB-Type (beq,bne,blt,bge,bltu,bgeu) */
+	R_RISCV_JAL = 17,                /* UJ-Type (jal) */
 	R_RISCV_CALL = 18,
 	R_RISCV_CALL_PLT = 19,
 	R_RISCV_GOT_HI20 = 20,
-	R_RISCV_TLS_GOT_HI20 = 21,
-	R_RISCV_TLS_GD_HI20 = 22,
-	R_RISCV_PCREL_HI20 = 23,
-	R_RISCV_PCREL_LO12_I = 24,
-	R_RISCV_PCREL_LO12_S = 25,
-	R_RISCV_HI20 = 26,
-	R_RISCV_LO12_I = 27,
-	R_RISCV_LO12_S = 28,
-	R_RISCV_TPREL_HI20 = 29,
-	R_RISCV_TPREL_LO12_I = 30,
-	R_RISCV_TPREL_LO12_S = 31,
-	R_RISCV_TPREL_ADD = 32,
-	R_RISCV_ADD8 = 33,
-	R_RISCV_ADD16 = 34,
-	R_RISCV_ADD32 = 35,
-	R_RISCV_ADD64 = 36,
-	R_RISCV_SUB8 = 37,
-	R_RISCV_SUB16 = 38,
-	R_RISCV_SUB32 = 39,
-	R_RISCV_SUB64 = 40,
+	R_RISCV_TLS_GOT_HI20 = 21,       /* %tls_ie_pcrel_hi(x); la.tls.ie; TLS_MODEL_INITIAL_EXEC */
+	R_RISCV_TLS_GD_HI20 = 22,        /* %tls_gd_pcrel_hi(x); la.tls.gd; TLS_MODEL_GLOBAL_DYNAMIC */
+	R_RISCV_PCREL_HI20 = 23,         /* %pcrel_hi(symbol) U-Type (auipc) */
+	R_RISCV_PCREL_LO12_I = 24,       /* %pcrel_lo(label) I-Type (addi,addiw) */
+	R_RISCV_PCREL_LO12_S = 25,       /* %pcrel_lo(label) S-Type (sb,sh,sw) */
+	R_RISCV_HI20 = 26,               /* %hi(symbol) U-Type (lui,auipc) */
+	R_RISCV_LO12_I = 27,             /* %lo(symbol) I-Type (addi,addiw) */
+	R_RISCV_LO12_S = 28,             /* %lo(symbol) I-Type (sb,sh,sw) */
+	R_RISCV_TPREL_HI20 = 29,         /* %tprel_hi(symbol) */
+	R_RISCV_TPREL_LO12_I = 30,       /* %tprel_lo(label) I-Type (addi,addiw) */
+	R_RISCV_TPREL_LO12_S = 31,       /* %tprel_lo(label) S-Type (sb,sh,sw) */
+	R_RISCV_TPREL_ADD = 32,          /* %tprel_add(label) assembler expansion */
+	R_RISCV_ADD8 = 33,               /* word8 = S + A */
+	R_RISCV_ADD16 = 34,              /* word16 = S + A */
+	R_RISCV_ADD32 = 35,              /* word32 = S + A */
+	R_RISCV_ADD64 = 36,              /* word64 = S + A */
+	R_RISCV_SUB8 = 37,               /* word8 = S - A */
+	R_RISCV_SUB16 = 38,              /* word16 = S - A */
+	R_RISCV_SUB32 = 39,              /* word32 = S - A */
+	R_RISCV_SUB64 = 40,              /* word64 = S - A */
 	R_RISCV_GNU_VTINHERIT = 41,
 	R_RISCV_GNU_VTENTRY = 42,
 	R_RISCV_ALIGN = 43,
-	R_RISCV_RVC_BRANCH = 44,
-	R_RISCV_RVC_JUMP = 45
+	R_RISCV_RVC_BRANCH = 44,         /* SB-Type (c.beqz,c.bnez) */
+	R_RISCV_RVC_JUMP = 45,           /* UJ-Type (c.j) */
+	R_RISCV_RVC_LUI = 46,            /* CI-Type (c.lui) */
+	R_RISCV_GPREL_I = 47,
+	R_RISCV_GPREL_S = 48
+};
+
+
+// Dynamic Flags
+
+// d_flags
+enum {
+	DF_ORIGIN = 1,                  /* $ORIGIN reference substitution to directory of the object */
+	DF_SYMBOLIC = 2,                /* dynamic linker starts search from the object instead of executable */
+	DF_TEXTREL = 4,                 /* allow relocations to make modifications to non-writable segments */
+	DF_BIND_NOW = 8,                /* process all relocations before passing control to the executable */
+	DF_STATIC_TLS = 16              /* executable or shared object has static thread local storage */
 };
 
 
@@ -595,6 +610,8 @@ enum {
 	DT_FINI_ARRAY = 26,              /* d_ptr - Pointer to an array of pointers to termination functions */
 	DT_INIT_ARRAYSZ = 27,            /* d_val - Size, in bytes, of the array of initialization functions */
 	DT_FINI_ARRAYSZ = 28,            /* d_val - Size, in bytes, of the array of termination functions */
+	DT_RUNPATH = 29,                 /* d_val - DT_STRTAB dynamic string table offsetc containing library search paths */
+	DT_FLAGS = 30,                   /* d_val - (DF_ORIGIN, DF_SYMBOLIC, DF_TEXTREL, DF_BIND_NOW, DF_STATIC_TLS) */
 	DT_LOOS = 0x60000000,            /*       - Defines a range of dynamic table tags that are reserved */
 	DT_HIOS = 0x6fffffff,
 	DT_LOPROC = 0x70000000,          /*       - Defines a range of dynamic table tags that are reserved */
