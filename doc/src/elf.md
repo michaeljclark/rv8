@@ -1,6 +1,8 @@
 ELF Relocations
 ====================
 
+_work in progress_
+
 The following table provides information of the RISC-V ELF relocations.
 
 |ELF Reloc Type|Number|Size|Bits|Description|Assembler|Details|
