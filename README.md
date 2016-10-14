@@ -93,6 +93,7 @@ References
 - [Standard C++](https://isocpp.org/std/the-standard/)
 - [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
 - [ELF Handling for Thread-Local Storage](https://www.akkadia.org/drepper/tls.pdf)
+- [DWARF Debugging Information Format Version 4](http://dwarfstd.org/doc/DWARF4.pdf)
 - [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
 - [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
 - A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
