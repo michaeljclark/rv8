@@ -16,19 +16,16 @@ Candidate instructions for Bit Manipulation (unofficial)
 | CLZB.{w,d,q} rd,rs1       | Count Leading Zero Bits        | Count leading zero bits in rs1                                                       |
 | CTZB.{w,d,q} rd,rs1       | Count Trailing Zero Bits       | Count trailing zero bits in rs1                                                      |
 | PBC.{w,d,q} rd,rs1        | Parallel Bit Count             | Count number of bits set in rs1                                                      |
-| PBG.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using the mask in rs2 to a set of LSB justified contiguous bits |
-| PBS.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter a set of LSB justified contiguous bits from rs1 using the mask in rs2        |
-| PBGI.{w,d,q} rd,rs1,imm   | Parallel Bit Extract Immediate | Gather bits from rs1 using the mask in imm to a set of LSB justified contiguous bits |
-| PBSI.{w,d,q} rd,rs1,imm   | Parallel Bit Deposit Immediate | Scatter a set of LSB justified contiguous bits from rs1 using the mask in imm        |
+| PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using the mask in rs2 to a set of LSB justified contiguous bits |
+| PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter a set of LSB justified contiguous bits from rs1 using the mask in rs2        |
 
 Notes
 ==========
 - RV32B, RV64B and RV128B
 - Bit Extend and Bit Extend Immediate (see below)
-- Parallel Bit Extract could possibly be called Parallel Bit Gather
-- Parallel Bit Deposit could possibly be called Parallel Bit Scatter
-- Parallel Bit Extract and Deposit Immediate (longer instruction?)
-- Investigate static versus dynamic bit extraction
+- Parallel Bit Extract could potentially be named Parallel Bit Gather
+- Parallel Bit Deposit could potentially be named Parallel Bit Scatter
+- Investigate static versus dynamic bit extraction (implementation dependent)
 - Investigate Butterfly and Inverse Butterfly bit permutation instructions
 
 RISC-V Immediates
@@ -39,7 +36,7 @@ As an effort to virtualise the ISA both form the Popek and Goldberg model and fr
 a fast translation model, specific instructions are proposed that will aid in fast
 decoding of RISC-V instructions in software.
 
-- Parallel Bit Extract and Deposit for accelerated immediate extraction
+- Parallel Bit Extract and Parallel Bit Deposit for accelerated immediate extraction
 - Bit Extend Immediate for arbitrary width sign and zero extension
 
 References
