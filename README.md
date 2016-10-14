@@ -64,9 +64,10 @@ Screenshots
 References
 ----------------
 
-- [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
-- [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
 - [lowRISC project](http://www.lowrisc.org/)
+- [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
+- [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
+- [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
 - [RISC-V ISA Specification](http://riscv.org/specifications/)
 - [RISC-V Compressed ISA Specification](http://riscv.org/specifications/compressed-isa/)
 - [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
@@ -77,7 +78,7 @@ References
 - [Clang SafeStack](http://clang.llvm.org/docs/SafeStack.html)
 - [musl libc](https://www.musl-libc.org/)
 - [Yocto Project](https://www.yoctoproject.org/)
-- [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
+- [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html)
 - [The Netwide Assembler](http://repo.or.cz/nasm.git)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [Abstractions for Practical Virtual Machine Replay](https://www.cs.utah.edu/~aburtsev/doc/vee16-xentt.pdf)
@@ -87,9 +88,9 @@ References
 - [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
 - [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
 - [Geometric Memory Management](http://arxiv.org/pdf/1512.09358.pdf)
+- [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
 - [TLSF: a New Dynamic Memory Allocator for Real-Time Systems](http://www.gii.upv.es/tlsf/files/ecrts04_tlsf.pdf)
 - [A Precise Memory Model for Low-Level Bounded Model Checking](https://www.usenix.org/legacy/event/ssv10/tech/full_papers/Sinz.pdf)
-- [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
 - [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
 - [Standard C++](https://isocpp.org/std/the-standard/)
 - [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
