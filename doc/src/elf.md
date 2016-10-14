@@ -27,14 +27,14 @@ The following table provides information of the RISC-V ELF relocations.
 |R_RISCV_TLS_GOT_HI20 |PC-relative TLS IE GOT ref  |%tls_ie_pcrel_hi(x)|Macro (la.tls.ie); `-ftls-model=initial-exec`        |
 |R_RISCV_TLS_GD_HI20  |PC-relative TLS GD GOT ref  |%tls_gd_pcrel_hi(x)|Macro (la.tls.gd); `-ftls-model=global-dynamic`      |
 |R_RISCV_PCREL_HI20   |PC-relative reference       |%pcrel_hi(symbol)  |U-Type (auipc)                                       |
-|R_RISCV_PCREL_LO12_I |PC-relative reference       |%pcrel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,addi,addiw)             |
-|R_RISCV_PCREL_LO12_S |PC-relative reference       |%pcrel_lo(label)   |S-Type (sb,sh,sw)                                    |
+|R_RISCV_PCREL_LO12_I |PC-relative reference       |%pcrel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
+|R_RISCV_PCREL_LO12_S |PC-relative reference       |%pcrel_lo(label)   |S-Type (sb,sh,sw,fsw,fsd)                            |
 |R_RISCV_HI20         |Absolute address            |%hi(symbol)        |U-Type (lui,auipc)                                   |
-|R_RISCV_LO12_I       |Absolute address            |%lo(symbol)        |I-Type (lb,lbu,lh,lhu,lw,lwu,addi,addiw)             |
-|R_RISCV_LO12_S       |Absolute address            |%lo(symbol)        |S-Type (sb,sh,sw)                                    |
+|R_RISCV_LO12_I       |Absolute address            |%lo(symbol)        |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
+|R_RISCV_LO12_S       |Absolute address            |%lo(symbol)        |S-Type (sb,sh,sw,fsw,fsd)                            |
 |R_RISCV_TPREL_HI20   |TLS LE thread pointer offset|%tprel_hi(symbol)  |U-Type (auipc); `-ftls-model=local-exec`             |
-|R_RISCV_TPREL_LO12_I |TLS LE thread pointer offset|%tprel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,addi,addiw)             |
-|R_RISCV_TPREL_LO12_S |TLS LE thread pointer offset|%tprel_lo(label)   |S-Type (sb,sh,sw)                                    |
+|R_RISCV_TPREL_LO12_I |TLS LE thread pointer offset|%tprel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
+|R_RISCV_TPREL_LO12_S |TLS LE thread pointer offset|%tprel_lo(label)   |S-Type (sb,sh,sw,fsw,fsd)                            |
 |R_RISCV_TPREL_ADD    |TLS LE thread pointer usage | %tprel_add(label) |internal assembler expansion                         |
 |R_RISCV_ADD8         |8-bit  add                  |                   |word8 = S + A|label addition                         |
 |R_RISCV_ADD16        |16-bit add                  |                   |word16 = S + A|label addition                        |
@@ -50,5 +50,5 @@ The following table provides information of the RISC-V ELF relocations.
 |R_RISCV_RVC_BRANCH   |PC-relative branch offset   |                   |SB-Type (c.beqz,c.bnez)                              |
 |R_RISCV_RVC_JUMP     |PC-relative jump offset     |                   |UJ-Type (c.j)                                        |
 |R_RISCV_RVC_LUI      |Absolute address            |                   |CI-Type (c.lui)                                      |
-|R_RISCV_GPREL_I      |PC-relative reference       |%gprel(symbol)     |I-Type (lb,lbu,lh,lhu,lw,lwu,addi,addiw)             |
-|R_RISCV_GPREL_S      |PC-relative reference       |%gprel(symbol)     |S-Type (sb,sh,sw)                                    |
+|R_RISCV_GPREL_I      |PC-relative reference       |%gprel(symbol)     |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
+|R_RISCV_GPREL_S      |PC-relative reference       |%gprel(symbol)     |S-Type (sb,sh,sw,fsw,fsd)                            |
