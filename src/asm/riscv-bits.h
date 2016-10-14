@@ -98,6 +98,17 @@ namespace riscv {
 		return b < 1 ? (type_max<R>() + b >= a ? false : true) : (type_min<R>() + b <= a ? false : true);
 	}
 
+	/* bitextend implementation credits: https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend */
+
+	/* extend bit at position b to the most significant bit  */
+	template <typename T>
+	static inline _bits_u32 bitextend(T val, int b)
+	{
+		T mask = 1U << (b - 1);
+		val = val & ((1U << b) - 1);
+		return (val ^ mask) - mask;
+	}
+
 	/* count number of one bits in constant time */
 	template <typename T>
 	static inline _bits_u32 popcount(T val)

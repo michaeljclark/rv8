@@ -98,6 +98,28 @@ void test_sub_underflow(T a, T b, bool expected, int iters = TIME_ITERATIONS)
 }
 
 template <typename T>
+void test_bitextend(T val, int bit, T expected, int iters = TIME_ITERATIONS)
+{
+	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
+	for (int i = 0; i < iters; i++) {
+		tstart = cpu_cycle_clock();
+		bitextend<T>(val, bit);
+		ttotal += (trun = (cpu_cycle_clock() - tstart));
+		if (tmin == 0 || trun < tmin) tmin = trun;
+		if (tmax == 0 || trun > tmax) tmax = trun;
+	}
+	tavg = ttotal / iters;
+
+	T result = bitextend<T>(val, bit);
+	bool pass = result == expected;
+	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) result=%lld (0b%s) expected=%lld (0b%s)\n",
+		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+		   (u64)val, to_binary_string<T>(val).c_str(),
+		   (u64)result, to_binary_string<T>(result).c_str(),
+		   (u64)expected, to_binary_string<T>(expected).c_str());
+}
+
+template <typename T>
 void test_popcount(T val, int expected, int iters = TIME_ITERATIONS)
 {
 	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
@@ -302,6 +324,22 @@ void test_roundpow2()
 	test_roundpow2<uint32_t>(14, 16);
 	test_roundpow2<uint32_t>(15, 16);
 	test_roundpow2<uint32_t>(16, 16);
+}
+
+void test_bitextend()
+{
+	test_bitextend<uint16_t>(0b010, 3, 0b0010);
+	test_bitextend<uint16_t>(0b011, 3, 0b0011);
+	test_bitextend<uint16_t>(0b110, 3, 0xfffe);
+	test_bitextend<uint16_t>(0b111, 3, 0xffff);
+	test_bitextend<uint32_t>(0b010, 3, 0b010);
+	test_bitextend<uint32_t>(0b011, 3, 0b011);
+	test_bitextend<uint32_t>(0b110, 3, 0xfffffffe);
+	test_bitextend<uint32_t>(0b111, 3, 0xffffffff);
+	test_bitextend<uint64_t>(0b010, 3, 0b010ULL);
+	test_bitextend<uint64_t>(0b011, 3, 0b011ULL);
+	test_bitextend<uint64_t>(0b110, 3, 0xfffffffffffffffeULL);
+	test_bitextend<uint64_t>(0b111, 3, 0xffffffffffffffffULL);
 }
 
 void test_popcount()
@@ -514,6 +552,7 @@ void bits_run_tests()
 	test_sub_underflow();
 	test_ispow2();
 	test_roundpow2();
+	test_bitextend();
 	test_popcount();
 	test_clz();
 	test_ctz();
