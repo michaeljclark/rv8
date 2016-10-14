@@ -3,7 +3,7 @@ ELF Relocations
 
 _work in progress_
 
-The following table provides information of the RISC-V ELF relocations.
+The following table provides information of the RISC-V ELF relocations:
 
 |ELF Reloc Type       |Description                 |Assembler Notation |Details|
 |:--------------------|:---------------------------|:------------------|:----------------------------------------------------|
@@ -24,31 +24,37 @@ The following table provides information of the RISC-V ELF relocations.
 |R_RISCV_CALL         |PC-relative function call   |                   |MACRO call (auipc/jalr)                              |
 |R_RISCV_CALL_PLT     |PC-relative function call   |                   |MACRO tail (auipc/jalr)                              |
 |R_RISCV_GOT_HI20     |PC-relative GOT offset      |                   |MACRO la                                             |
-|R_RISCV_TLS_GOT_HI20 |PC-relative TLS IE GOT ref  |%tls_ie_pcrel_hi(x)|Macro (la.tls.ie); `-ftls-model=initial-exec`        |
-|R_RISCV_TLS_GD_HI20  |PC-relative TLS GD GOT ref  |%tls_gd_pcrel_hi(x)|Macro (la.tls.gd); `-ftls-model=global-dynamic`      |
+|R_RISCV_TLS_GOT_HI20 |PC-relative TLS IE GOT ref  |%tls_ie_pcrel_hi(x)|Macro (la.tls.ie);                                   |
+|R_RISCV_TLS_GD_HI20  |PC-relative TLS GD GOT ref  |%tls_gd_pcrel_hi(x)|Macro (la.tls.gd);                                   |
 |R_RISCV_PCREL_HI20   |PC-relative reference       |%pcrel_hi(symbol)  |U-Type (auipc)                                       |
 |R_RISCV_PCREL_LO12_I |PC-relative reference       |%pcrel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
 |R_RISCV_PCREL_LO12_S |PC-relative reference       |%pcrel_lo(label)   |S-Type (sb,sh,sw,fsw,fsd)                            |
 |R_RISCV_HI20         |Absolute address            |%hi(symbol)        |U-Type (lui,auipc)                                   |
 |R_RISCV_LO12_I       |Absolute address            |%lo(symbol)        |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
 |R_RISCV_LO12_S       |Absolute address            |%lo(symbol)        |S-Type (sb,sh,sw,fsw,fsd)                            |
-|R_RISCV_TPREL_HI20   |TLS LE thread pointer offset|%tprel_hi(symbol)  |U-Type (auipc); `-ftls-model=local-exec`             |
+|R_RISCV_TPREL_HI20   |TLS LE thread pointer offset|%tprel_hi(symbol)  |U-Type (auipc);                                      |
 |R_RISCV_TPREL_LO12_I |TLS LE thread pointer offset|%tprel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
 |R_RISCV_TPREL_LO12_S |TLS LE thread pointer offset|%tprel_lo(label)   |S-Type (sb,sh,sw,fsw,fsd)                            |
-|R_RISCV_TPREL_ADD    |TLS LE thread pointer usage | %tprel_add(label) |internal assembler expansion                         |
-|R_RISCV_ADD8         |8-bit  add                  |                   |word8 = S + A|label addition                         |
+|R_RISCV_TPREL_ADD    |TLS LE thread pointer usage |%tprel_add(label)  |internal assembler expansion                         |
+|R_RISCV_ADD8         |8-bit add                   |                   |word8 = S + A|label addition                         |
 |R_RISCV_ADD16        |16-bit add                  |                   |word16 = S + A|label addition                        |
 |R_RISCV_ADD32        |32-bit add                  |                   |word32 = S + A|label addition                        |
 |R_RISCV_ADD64        |64-bit add                  |                   |word64 = S + A|label addition                        |
-|R_RISCV_SUB8         |8-bit  sub                  |                   |word8 = S - A|label subtraction                      |
+|R_RISCV_SUB8         |8-bit sub                   |                   |word8 = S - A|label subtraction                      |
 |R_RISCV_SUB16        |16-bit sub                  |                   |word16 = S - A|label subtraction                     |
 |R_RISCV_SUB32        |32-bit sub                  |                   |word32 = S - A|label subtraction                     |
 |R_RISCV_SUB64        |64-bit sub                  |                   |word64 = S - A|label subtraction                     |
 |R_RISCV_GNU_VTINHERIT|GNU C++ vtable hierarchy    |                   |                                                     |
 |R_RISCV_GNU_VTENTRY  |GNU C++ vtable member usage |                   |                                                     |
 |R_RISCV_ALIGN        |Alignment statement         |                   |                                                     |
-|R_RISCV_RVC_BRANCH   |PC-relative branch offset   |                   |SB-Type (c.beqz,c.bnez)                              |
-|R_RISCV_RVC_JUMP     |PC-relative jump offset     |                   |UJ-Type (c.j)                                        |
-|R_RISCV_RVC_LUI      |Absolute address            |                   |CI-Type (c.lui)                                      |
+|R_RISCV_RVC_BRANCH   |PC-relative branch offset   |                   |RVC CB-Type (c.beqz,c.bnez)                          |
+|R_RISCV_RVC_JUMP     |PC-relative jump offset     |                   |RVC CJ-Type (c.j)                                    |
+|R_RISCV_RVC_LUI      |Absolute address            |                   |RVC CI-Type (c.lui)                                  |
 |R_RISCV_GPREL_I      |PC-relative reference       |%gprel(symbol)     |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
 |R_RISCV_GPREL_S      |PC-relative reference       |%gprel(symbol)     |S-Type (sb,sh,sw,fsw,fsd)                            |
+
+## Glossary
+
+- TLS LE (Thread Local Storage - Local Exec) `-ftls-model=local-exec`
+- TLS IE (Thread Local Storage - Initial Exec) `-ftls-model=initial-exec`
+- TLS GD (Thread Local Storage - Global Dynamic) `-ftls-model=global-dynamic`
