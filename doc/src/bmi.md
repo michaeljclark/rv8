@@ -6,18 +6,18 @@ _work in progress_
 Candidate instructions for Bit Manipulation (unofficial)
 
 |Opcode                     |Long Name                       |Description
-|:--------------------------|:-------------------------------|:-------------------------------------------------------------------------------------|
-| RLL.{w,d,q} rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 left by the amount in rs2                                         |
-| RRL.{w,d,q} rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2                                        |
-| RLLI.{w,d,q} rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate                                             |
-| RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate                                            |
-| BXI.{w,d,q} rd,rs1,rs2    | Bit Extend                     | Copy the bit in rs1 at the position in rs2 and extend to the XLEN                    |
-| BXI.{w,d,q} rd,rs1,imm    | Bit Extend Immediate           | Copy the bit in rs1 at the position in imm and extend to the XLEN                    |
-| CLZB.{w,d,q} rd,rs1       | Count Leading Zero Bits        | Count leading zero bits in rs1                                                       |
-| CTZB.{w,d,q} rd,rs1       | Count Trailing Zero Bits       | Count trailing zero bits in rs1                                                      |
-| PBC.{w,d,q} rd,rs1        | Parallel Bit Count             | Count number of bits set in rs1                                                      |
-| PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using the mask in rs2 to a set of LSB justified contiguous bits |
-| PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter a set of LSB justified contiguous bits from rs1 using the mask in rs2        |
+|:--------------------------|:-------------------------------|:------------------------------------------------------------------------|
+| RLL.{w,d,q} rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 left by the amount in rs2                            |
+| RRL.{w,d,q} rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2                           |
+| RLLI.{w,d,q} rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate                                |
+| RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate                               |
+| BX.{w,d,q} rd,rs1,rs2     | Bit Extend                     | Copy the bit in rs1 at the position in rs2 and extend to the MSB        |
+| BXI.{w,d,q} rd,rs1,imm    | Bit Extend Immediate           | Copy the bit in rs1 at the position in imm and extend to the MSB        |
+| CLZB.{w,d,q} rd,rs1       | Count Leading Zero Bits        | Count leading zero bits in rs1                                          |
+| CTZB.{w,d,q} rd,rs1       | Count Trailing Zero Bits       | Count trailing zero bits in rs1                                         |
+| PBC.{w,d,q} rd,rs1        | Parallel Bit Count             | Count number of bits set in rs1                                         |
+| PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits |
+| PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2        |
 
 Notes
 ==========
