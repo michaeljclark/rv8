@@ -17,8 +17,8 @@ The following table provides information of the RISC-V ELF relocations:
 |R_RISCV_TLS_DTPMOD64 |TLS relocation              |                   |word64 = S->TLSINDEX                                 |
 |R_RISCV_TLS_DTPREL32 |TLS relocation              |                   |word32 = TLS + S + A - TLS_TP_OFFSET                 |
 |R_RISCV_TLS_DTPREL64 |TLS relocation              |                   |word64 = TLS + S + A - TLS_TP_OFFSET                 |
-|R_RISCV_TLS_TPREL32  |TLS relocation              |                   |word32 = TLS + S + A + S->TLS_OFFSET - TLS_DTV_OFFSET|
-|R_RISCV_TLS_TPREL64  |TLS relocation              |                   |word64 = TLS + S + A + S->TLS_OFFSET - TLS_DTV_OFFSET|
+|R_RISCV_TLS_TPREL32  |TLS relocation              |                   |word32 = TLS + S + A + S_TLS_OFFSET - TLS_DTV_OFFSET |
+|R_RISCV_TLS_TPREL64  |TLS relocation              |                   |word64 = TLS + S + A + S_TLS_OFFSET - TLS_DTV_OFFSET |
 |R_RISCV_BRANCH       |PC-relative branch offset   |                   |SB-Type (beq,bne,blt,bge,bltu,bgeu)                  |
 |R_RISCV_JAL          |PC-relative jump offset     |                   |UJ-Type (jal)                                        |
 |R_RISCV_CALL         |PC-relative function call   |                   |MACRO call (auipc+jalr)                              |
