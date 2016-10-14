@@ -205,7 +205,7 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_mul:
 			if (rvm) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = riscv::mul(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) * sx(proc.ireg[dec.rs2]);
 			};
 			break;
 		case riscv_op_mulh:
@@ -821,7 +821,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_mul:
 			if (rvm) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = riscv::mul(sx(proc.ireg[dec.rs1]), sx(proc.ireg[dec.rs2]));
+				if (dec.rd > 0) proc.ireg[dec.rd] = sx(proc.ireg[dec.rs1]) * sx(proc.ireg[dec.rs2]);
 			};
 			break;
 		case riscv_op_mulh:

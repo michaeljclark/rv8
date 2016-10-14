@@ -60,7 +60,7 @@ sraw       "rd = s32(rs1) >> (rs2 & 0b11111)"
 
 # RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
 
-mul        "rd = riscv::mul(sx(rs1), sx(rs2))"
+mul        "rd = sx(rs1) * sx(rs2)"
 mulh       "rd = riscv::mulh(sx(rs1), sx(rs2))"
 mulhsu     "rd = riscv::mulhsu(sx(rs1), ux(rs2))"
 mulhu      "rd = riscv::mulhu(ux(rs1), ux(rs2))"

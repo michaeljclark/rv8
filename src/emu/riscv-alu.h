@@ -99,14 +99,6 @@ namespace riscv {
 		return hi;
 	}
 
-	/* multiply */
-
-	template <typename S>
-	S mul(S x, S y)
-	{
-		return x * y;
-	}
-
 	/* divide signed */
 
 	template <typename S>
