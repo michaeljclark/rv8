@@ -36,14 +36,14 @@ The following table provides information of the RISC-V ELF relocations:
 |R_RISCV_TPREL_LO12_I |TLS LE thread pointer offset|%tprel_lo(label)   |I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)     |
 |R_RISCV_TPREL_LO12_S |TLS LE thread pointer offset|%tprel_lo(label)   |S-Type (sb,sh,sw,fsw,fsd)                            |
 |R_RISCV_TPREL_ADD    |TLS LE thread pointer usage |%tprel_add(label)  |internal assembler expansion                         |
-|R_RISCV_ADD8         |8-bit add                   |                   |word8 = S + A|label addition                         |
-|R_RISCV_ADD16        |16-bit add                  |                   |word16 = S + A|label addition                        |
-|R_RISCV_ADD32        |32-bit add                  |                   |word32 = S + A|label addition                        |
-|R_RISCV_ADD64        |64-bit add                  |                   |word64 = S + A|label addition                        |
-|R_RISCV_SUB8         |8-bit sub                   |                   |word8 = S - A|label subtraction                      |
-|R_RISCV_SUB16        |16-bit sub                  |                   |word16 = S - A|label subtraction                     |
-|R_RISCV_SUB32        |32-bit sub                  |                   |word32 = S - A|label subtraction                     |
-|R_RISCV_SUB64        |64-bit sub                  |                   |word64 = S - A|label subtraction                     |
+|R_RISCV_ADD8         |8-bit label addition        |                   |word8 = S + A                                        |
+|R_RISCV_ADD16        |16-bit label addition       |                   |word16 = S + A                                       |
+|R_RISCV_ADD32        |32-bit label addition       |                   |word32 = S + A                                       |
+|R_RISCV_ADD64        |64-bit label addition       |                   |word64 = S + A                                       |
+|R_RISCV_SUB8         |8-bit label subtraction     |                   |word8 = S - A                                        |
+|R_RISCV_SUB16        |16-bit label subtraction    |                   |word16 = S - A                                       |
+|R_RISCV_SUB32        |32-bit label subtraction    |                   |word32 = S - A                                       |
+|R_RISCV_SUB64        |64-bit label subtraction    |                   |word64 = S - A                                       |
 |R_RISCV_GNU_VTINHERIT|GNU C++ vtable hierarchy    |                   |                                                     |
 |R_RISCV_GNU_VTENTRY  |GNU C++ vtable member usage |                   |                                                     |
 |R_RISCV_ALIGN        |Alignment statement         |                   |                                                     |
