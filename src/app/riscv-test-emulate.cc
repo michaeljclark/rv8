@@ -475,10 +475,10 @@ struct processor_stepper : P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
+				if (P::log_flags) P::print_log(dec);
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
-				if (P::log_flags) P::print_log(dec);
 				continue;
 			}
 			debug("illegal instruciton: pc=0x%llx inst=%s",
