@@ -644,16 +644,9 @@ struct processor_stepper : processor_fault, P
 
 	static void signal_handler(int signum, siginfo_t *info, void *)
 	{
-		switch (signum) {
-			case SIGBUS:
-			case SIGSEGV:
-				static_cast<processor_stepper<P>*>
-					(processor_fault::current)->fault
-						(info->si_signo, (addr_t)info->si_addr);
-				break;
-			default:
-				break;
-		}
+		static_cast<processor_stepper<P>*>
+			(processor_fault::current)->fault
+				(info->si_signo, (addr_t)info->si_addr);
 	}
 
 	void fault(int signum, addr_t fault_addr) 
