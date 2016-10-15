@@ -477,7 +477,7 @@ $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB)
 
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -lpthread $(DEBUG_FLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;

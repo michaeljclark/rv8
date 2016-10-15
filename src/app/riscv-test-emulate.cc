@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cinttypes>
 #include <cstdarg>
+#include <csignal>
 #include <cerrno>
 #include <cmath>
 #include <cfenv>
@@ -18,6 +19,7 @@
 #include <vector>
 #include <deque>
 #include <map>
+#include <thread>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -63,10 +65,20 @@ enum {
 	reg_log_int = 1,
 	reg_log_f32 = 2,
 	reg_log_f64 = 4,
-	reg_log_inst = 8,
-	reg_log_operands = 16,
-	reg_log_no_pseudo = 32,
+	reg_log_csr = 8,
+	reg_log_inst = 16,
+	reg_log_operands = 32,
+	reg_log_no_pseudo = 64,
 };
+
+template <typename T>
+std::string format_reg(std::string name, T &reg)
+{
+	return
+		sizeof(T) == 4 ? format_string("%-10s: %08x ", name.c_str(), reg) :
+		sizeof(T) == 8 ? format_string("%-10s: %016llx ", name.c_str(), reg) :
+		format_string("%-8s:<INVALID>", name.c_str(), reg);
+}
 
 /*
  * Processor base template
@@ -93,10 +105,10 @@ struct processor_base : P
 		addr_t pc_offset;
 		inst_t inst = inst_fetch(pc, &pc_offset);
 		switch (pc_offset) {
-			case 2:  snprintf(buf, sizeof(buf), "    0x%04llx", inst); break;
-			case 4:  snprintf(buf, sizeof(buf), "0x%08llx", inst); break;
-			case 6:  snprintf(buf, sizeof(buf), "0x%012llx", inst); break;
-			case 8:  snprintf(buf, sizeof(buf), "0x%016llx", inst); break;
+			case 2:  snprintf(buf, sizeof(buf), "%04llx    ", inst); break;
+			case 4:  snprintf(buf, sizeof(buf), "%08llx", inst); break;
+			case 6:  snprintf(buf, sizeof(buf), "%012llx", inst); break;
+			case 8:  snprintf(buf, sizeof(buf), "%016llx", inst); break;
 			default: snprintf(buf, sizeof(buf), "(invalid)"); break;
 		}
 		return buf;
@@ -145,7 +157,7 @@ struct processor_base : P
 					{
 						snprintf(buf, sizeof(buf),
 							operand_data->primitive == riscv_primitive_f64 ?
-							"%.17g[0x%016llx]" : "%.9g[0x%08llx]",
+							"%.17g[%016llx]" : "%.9g[%08llx]",
 							operand_data->primitive == riscv_primitive_f64 ?
 							P::freg[reg].r.d.val : P::freg[reg].r.s.val,
 							operand_data->primitive == riscv_primitive_f64 ?
@@ -165,20 +177,20 @@ struct processor_base : P
 			operand_data++;
 		}
 
-        std::stringstream ss;
-        ss << "(";
-        for (auto i = ops.begin(); i != ops.end(); i++) {
-                ss << (i != ops.begin() ? ", " : "") << *i;
-        }
-        ss << ")";
-        return ss.str();
+		std::stringstream ss;
+		ss << "(";
+		for (auto i = ops.begin(); i != ops.end(); i++) {
+				ss << (i != ops.begin() ? ", " : "") << *i;
+		}
+		ss << ")";
+		return ss.str();
 	}
 
 	void print_log(T &dec)
 	{
-		static const char *fmt_32 = "core %3zu: 0x%08llx (%s) %-30s %s\n";
-		static const char *fmt_64 = "core %3zu: 0x%016llx (%s) %-30s %s\n";
-		static const char *fmt_128 = "core %3zu: 0x%032llx (%s) %-30s %s\n";
+		static const char *fmt_32 = "core %3zu: %08llx (%s) %-30s %s\n";
+		static const char *fmt_64 = "core %3zu: %016llx (%s) %-30s %s\n";
+		static const char *fmt_128 = "core %3zu: %032llx (%s) %-30s %s\n";
 		if (log_flags & reg_log_inst) {
 			std::string op_args;
 			if (!(log_flags & reg_log_no_pseudo)) decode_pseudo_inst(dec);
@@ -194,14 +206,23 @@ struct processor_base : P
 		if (log_flags & reg_log_f64) print_f64_registers();
 	}
 
+	void print_csr_registers()
+	{
+		printf("%s\n",
+			format_reg("fcsr", P::fcsr).c_str());
+		printf("%s%s\n",
+			format_reg("pc", P::pc).c_str(),
+			format_reg("instret", P::instret).c_str());
+		printf("%s%s\n",
+			format_reg("time", P::cycle).c_str(),
+			format_reg("cycle", P::cycle).c_str());
+	}
+
 	void print_int_registers()
 	{
 		for (size_t i = riscv_ireg_x0; i < P::ireg_count; i++) {
-			char fmt[32];
-			snprintf(fmt, sizeof(fmt), "%%-4s: 0x%%0%u%sx%%s",
-				(P::xlen >> 2), P::xlen == 64 ? "ll" : "");
-			printf(fmt, riscv_ireg_name_sym[i],
-				P::ireg[i].r.xu.val, (i + 1) % 4 == 0 ? "\n" : " ");
+			printf("%s%s", format_reg(riscv_ireg_name_sym[i],
+				P::ireg[i].r.xu.val).c_str(), (i + 1) % 2 == 0 ? "\n" : "");
 		}
 	}
 
@@ -209,7 +230,7 @@ struct processor_base : P
 	{
 		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
-				P::freg[i].r.s.val, (i + 1) % 4 == 0 ? "\n" : " ");
+				P::freg[i].r.s.val, (i + 1) % 2 == 0 ? "\n" : " ");
 		}
 	}
 
@@ -217,7 +238,7 @@ struct processor_base : P
 	{
 		for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
 			printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
-				P::freg[i].r.d.val, (i + 1) % 4 == 0 ? "\n" : " ");
+				P::freg[i].r.d.val, (i + 1) % 2 == 0 ? "\n" : " ");
 		}
 	}
 };
@@ -417,6 +438,45 @@ struct processor_proxy : P
 template <typename P>
 struct processor_privileged : P
 {
+	void print_csr_registers()
+	{
+		P::print_csr_registers();
+
+		printf("%s%s\n",
+			format_reg("misa", P::misa).c_str(),
+			format_reg("mvendorid", P::mvendorid).c_str());
+		printf("%s%s\n",
+			format_reg("marchid", P::marchid).c_str(),
+			format_reg("mimpid", P::mimpid).c_str());
+		printf("%s%s\n",
+			format_reg("mhartid", P::mhartid).c_str(),
+			format_reg("mstatus", P::mstatus).c_str());
+		printf("%s%s\n",
+			format_reg("mtvec", P::mtvec).c_str(),
+			format_reg("mtimecmp", P::mtimecmp).c_str());
+		printf("%s%s\n",
+			format_reg("medeleg", P::medeleg).c_str(),
+			format_reg("mideleg", P::mideleg).c_str());
+		printf("%s%s\n",
+			format_reg("mip", P::mip).c_str(),
+			format_reg("mie", P::mie).c_str());
+		printf("%s%s\n",
+			format_reg("mscratch", P::mscratch).c_str(),
+			format_reg("mepc", P::mepc).c_str());
+		printf("%s%s\n",
+			format_reg("mcause", P::mcause).c_str(),
+			format_reg("mbadaddr", P::mbadaddr).c_str());
+		printf("%s%s\n",
+			format_reg("mbase", P::mbase).c_str(),
+			format_reg("mbound", P::mbound).c_str());
+		printf("%s%s\n",
+			format_reg("mibase", P::mibase).c_str(),
+			format_reg("mibound", P::mibound).c_str());
+		printf("%s%s\n",
+			format_reg("mdbase", P::mdbase).c_str(),
+			format_reg("mdbound", P::mdbound).c_str());
+	}
+
 	addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 		// TODO - emulate privileged instructions
 		switch (dec.op) {
@@ -443,8 +503,15 @@ struct processor_privileged : P
 
 /* Simple processor stepper with instruction cache */
 
+struct processor_fault
+{
+	static processor_fault *current;
+};
+
+processor_fault* processor_fault::current = nullptr;
+
 template <typename P>
-struct processor_stepper : P
+struct processor_stepper : processor_fault, P
 {
 	static const size_t inst_cache_size = 8191;
 
@@ -455,6 +522,60 @@ struct processor_stepper : P
 	};
 
 	riscv_inst_cache_ent inst_cache[inst_cache_size];
+
+	static void signal_handler(int signum, siginfo_t *info, void *)
+	{
+		switch (signum) {
+			case SIGBUS:
+			case SIGSEGV:
+				printf("SIGNAL-%02d : %016llx\n",
+					info->si_signo, (addr_t)info->si_addr);
+				static_cast<processor_stepper<P>*>(processor_fault::current)->fault();
+				break;
+			default:
+				break;
+		}
+	}
+
+	void fault() 
+	{
+		P::print_csr_registers();
+		P::print_int_registers();
+		exit(1);
+	}
+
+	void init()
+	{
+		// block signals before so we don't deadlock in signal handlers
+		sigset_t set;
+		sigemptyset(&set);
+		sigaddset(&set, SIGTERM);
+		sigaddset(&set, SIGINT);
+		sigaddset(&set, SIGHUP);
+		if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
+			panic("can't set thread signal mask: %s", strerror(errno));
+		}
+
+		// disable unwanted signals
+		sigset_t sigpipe_set;
+		sigemptyset(&sigpipe_set);
+		sigaddset(&sigpipe_set, SIGPIPE);
+		sigprocmask(SIG_BLOCK, &sigpipe_set, nullptr);
+
+		// install fault handler
+		struct sigaction sigaction_handler;
+		memset(&sigaction_handler, 0, sizeof(sigaction_handler));
+		sigaction_handler.sa_sigaction = &processor_stepper<P>::signal_handler;
+		sigaction_handler.sa_flags = SA_SIGINFO;
+		sigaction(SIGBUS, &sigaction_handler, nullptr);
+		sigaction(SIGSEGV, &sigaction_handler, nullptr);
+		processor_fault::current = this;
+
+		// unblock signals
+		if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
+			panic("can't set thread signal mask: %s", strerror(errno));
+		}
+	}
 
 	bool step(size_t count)
 	{
@@ -476,14 +597,14 @@ struct processor_stepper : P
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
 				if (P::log_flags) P::print_log(dec);
+				if (P::log_flags & reg_log_csr) P::print_csr_registers();
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 				continue;
 			}
-			debug("illegal instruciton: pc=0x%llx inst=%s",
-				addr_t(P::pc), P::format_inst(P::pc).c_str());
-			return false;
+			debug("illegal instruciton: %s", P::format_inst(P::pc).c_str());
+			fault();
 		}
 		return true;
 	}
@@ -666,6 +787,9 @@ struct riscv_emulator
 			{ "-p", "--privileged", cmdline_arg_type_none,
 				"Privileged ISA Emulation",
 				[&](std::string s) { return (priv_mode = true); } },
+			{ "-c", "--log-csr-registers", cmdline_arg_type_none,
+				"Log Control and Status Registers",
+				[&](std::string s) { return (log_flags |= reg_log_csr); } },
 			{ "-r", "--log-int-registers", cmdline_arg_type_none,
 				"Log Integer Registers",
 				[&](std::string s) { return (log_flags |= reg_log_int); } },
@@ -798,6 +922,9 @@ struct riscv_emulator
 		/* Add 1GB RAM to the mmu (make this a command line option) */
 		proc.mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);
 
+		/* setup signal handlers */
+		proc.init();
+
 		/* Step the CPU until it halts */
 		while(proc.step(1024));
 	}
@@ -828,6 +955,9 @@ struct riscv_emulator
 
 		/* Map a stack and set the stack pointer */
 		map_stack(proc, stack_top, stack_size);
+
+		/* setup signal handlers */
+		proc.init();
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");
