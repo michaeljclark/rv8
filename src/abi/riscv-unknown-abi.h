@@ -190,7 +190,7 @@ namespace riscv {
 			proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
 			proc.mmu.heap_end = new_heap_end;
 			if (proc.flags & processor_flag_emulator_debug) {
-				debug("brk: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
+				debug("mmap   brk: %016" PRIxPTR " - %016" PRIxPTR " +R+W",
 					curr_heap_end, new_heap_end);
 			}
 			proc.ireg[riscv_ireg_a0] = new_addr;

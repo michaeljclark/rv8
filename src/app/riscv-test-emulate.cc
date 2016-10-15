@@ -61,7 +61,15 @@
 
 using namespace riscv;
 
-enum {
+enum rv_isa {
+	rv_isa_none,
+	rv_isa_ima,
+	rv_isa_imac,
+	rv_isa_imafd,
+	rv_isa_imafdc,
+};
+
+enum reg_log {
 	reg_log_int = 1,
 	reg_log_f32 = 2,
 	reg_log_f64 = 4,
@@ -69,6 +77,12 @@ enum {
 	reg_log_inst = 16,
 	reg_log_operands = 32,
 	reg_log_no_pseudo = 64,
+};
+
+enum csr_perm {
+	csr_rw,
+	csr_rs,
+	csr_rc
 };
 
 template <typename T>
@@ -188,9 +202,9 @@ struct processor_base : P
 
 	void print_log(T &dec)
 	{
-		static const char *fmt_32 = "core %3zu: %08llx (%s) %-30s %s\n";
-		static const char *fmt_64 = "core %3zu: %016llx (%s) %-30s %s\n";
-		static const char *fmt_128 = "core %3zu: %032llx (%s) %-30s %s\n";
+		static const char *fmt_32 = "core %4zu : %08llx (%s) %-30s %s\n";
+		static const char *fmt_64 = "core %4zu : %016llx (%s) %-30s %s\n";
+		static const char *fmt_128 = "core %4zu : %032llx (%s) %-30s %s\n";
 		if (log_flags & reg_log_inst) {
 			std::string op_args;
 			if (!(log_flags & reg_log_no_pseudo)) decode_pseudo_inst(dec);
@@ -208,14 +222,11 @@ struct processor_base : P
 
 	void print_csr_registers()
 	{
-		printf("%s\n",
-			format_reg("fcsr", P::fcsr).c_str());
-		printf("%s%s\n",
-			format_reg("pc", P::pc).c_str(),
-			format_reg("instret", P::instret).c_str());
-		printf("%s%s\n",
-			format_reg("time", P::cycle).c_str(),
-			format_reg("cycle", P::cycle).c_str());
+		printf("%s\n", format_reg("pc", P::pc).c_str());
+		printf("%s\n", format_reg("cycle", P::cycle).c_str());
+		printf("%s\n", format_reg("instret", P::instret).c_str());
+		printf("%s\n", format_reg("time", P::time).c_str());
+		printf("%s\n", format_reg("fcsr", P::fcsr).c_str());
 	}
 
 	void print_int_registers()
@@ -241,6 +252,40 @@ struct processor_base : P
 				P::freg[i].r.d.val, (i + 1) % 2 == 0 ? "\n" : " ");
 		}
 	}
+
+	template <typename D, typename R, typename V>
+	void set_csr(D &dec, int mode, int op, int csr, R &reg, V value,
+		const R write_mask = -1, const R read_mask = -1, const size_t shift = 0)
+	{
+		const int csr_mode = (csr >> 8) & 3, readonly = (csr >> 12) & 1;
+		if (dec.rd != riscv_ireg_x0) {
+			P::ireg[dec.rd] = (mode >= csr_mode) ? (reg >> shift) & read_mask : 0;
+		}
+		if (readonly) return;
+		switch (op) {
+			case csr_rw: reg = value; break;
+			case csr_rs: if (value) reg |= ((value & write_mask) << shift); break;
+			case csr_rc: if (value) reg &= ~((value & write_mask) << shift); break;
+		}
+	}
+
+	template <typename D, typename R, typename V>
+	void get_csr(D &dec, int mode, int op, int csr, R &reg, V value)
+	{
+		const int csr_mode = (csr >> 8) & 3;
+		if (dec.rd != riscv_ireg_x0) {
+			P::ireg[dec.rd] = (mode >= csr_mode) ? reg : 0;
+		}
+	}
+
+	template <typename D, typename R, typename V>
+	void get_csr_hi(D &dec, int mode, int op, int csr, R &reg, V value)
+	{
+		const int csr_mode = (csr >> 8) & 3;
+		if (dec.rd != riscv_ireg_x0) {
+			P::ireg[dec.rd] = (mode >= csr_mode) ? s32(u32(reg >> 32)) : 0;
+		}
+	}
 };
 
 
@@ -254,12 +299,18 @@ struct processor_base : P
 #define RV_IMAFD  /*I*/true, /*M*/true, /*A*/true, /*S*/true, /*F*/true, /*D*/true, /*C*/false
 #define RV_IMAFDC /*I*/true, /*M*/true, /*A*/true, /*S*/true, /*F*/true, /*D*/true, /*C*/true
 
+template <typename P>
+static constexpr typename P::ux BASE(riscv_isa isa) { return typename P::ux(isa) << (P::xlen-2); }
+static constexpr int EXT(char x) { return 1 << (x - 'A'); }
 
 /* RV32 Partial processor specialization templates (RV32IMA, RV32IMAC, RV32IMAFD, RV32IMAFDC) */
 
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32ima_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		| EXT('I') | EXT('M') | EXT('A');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMA>(dec, inst);
 	}
@@ -272,6 +323,9 @@ struct processor_rv32ima_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imac_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('C');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAC>(dec, inst);
 		decompress_inst_rv32<T>(dec);
@@ -285,6 +339,9 @@ struct processor_rv32imac_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imafd_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAFD>(dec, inst);
 	}
@@ -297,6 +354,9 @@ struct processor_rv32imafd_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv32imafdc_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D') | EXT('C');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_32,RV_IMAFDC>(dec, inst);
 		decompress_inst_rv32<T>(dec);
@@ -313,6 +373,9 @@ struct processor_rv32imafdc_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64ima_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		| EXT('I') | EXT('M') | EXT('A');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMA>(dec, inst);
 	}
@@ -325,6 +388,9 @@ struct processor_rv64ima_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imac_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('C');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAC>(dec, inst);
 		decompress_inst_rv64<T>(dec);
@@ -338,6 +404,9 @@ struct processor_rv64imac_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imafd_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAFD>(dec, inst);
 	}
@@ -350,6 +419,9 @@ struct processor_rv64imafd_unit : B
 template <typename T, typename P, typename M, typename B = processor_base<T,P,M>>
 struct processor_rv64imafdc_unit : B
 {
+	const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D') | EXT('C');
+
 	void inst_decode(T &dec, inst_t inst) {
 		decode_inst<T,RV_64,RV_IMAFDC>(dec, inst);
 		decompress_inst_rv64<T>(dec);
@@ -366,52 +438,37 @@ struct processor_rv64imafdc_unit : B
 template <typename P>
 struct processor_proxy : P
 {
-	enum csr_op { csr_rw, csr_rs, csr_rc };
+	void priv_init() {}
 
-	template <typename T>
-	void update_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value,
-		size_t msb, size_t lsb)
+	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 	{
-		const size_t shift = lsb, mask = (1 << (msb - lsb + 1)) - 1;
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = (csr >> shift) & mask;
-		switch (op) {
-			case csr_rw: csr = value; break;
-			case csr_rs: if (value) csr |= ((value & mask) << shift); break;
-			case csr_rc: if (value) csr &= ~((value & mask) << shift); break;
-		}
-	}
+		const typename P::ux fflags_mask   = 0x1f;
+		const typename P::ux frm_mask      = 0x3;
+		const typename P::ux fcsr_mask     = 0xff;
 
-	template <typename T>
-	void read_csr(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
-	{
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = csr;
-	}
-
-	template <typename T>
-	void read_csr_hi(typename P::decode_type &dec, csr_op op, T &csr, typename P::ux value)
-	{
-		if (dec.rd != riscv_ireg_x0) P::ireg[dec.rd] = s32(u32(csr >> 32));
-	}
-
-	addr_t inst_csr(typename P::decode_type &dec, csr_op op, int csr, typename P::ux value, addr_t pc_offset)
-	{
 		switch (csr) {
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
-			                         update_csr(dec, op, P::fcsr, value, 4, 0);
-			                         fenv_clearflags(P::fcsr);                  break;
-			case riscv_csr_frm:      update_csr(dec, op, P::fcsr, value, 7, 5);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);          break;
-			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
-			                         update_csr(dec, op, P::fcsr, value, 7, 0);
+			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                            fflags_mask, fflags_mask);
 			                         fenv_clearflags(P::fcsr);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);          break;
-			case riscv_csr_cycle:    P::cycle = cpu_cycle_clock();
-			                         read_csr(dec, op, P::cycle, value);     	break;
-			case riscv_csr_time:     read_csr(dec, op, P::time, value);         break;
-			case riscv_csr_instret:  read_csr(dec, op, P::instret, value);      break;
-			case riscv_csr_cycleh:   read_csr_hi(dec, op, P::cycle, value);     break;
-			case riscv_csr_timeh:    read_csr_hi(dec, op, P::time, value);      break;
-			case riscv_csr_instreth: read_csr_hi(dec, op, P::instret, value);   break;
+			                         break;
+			case riscv_csr_frm:      P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                             frm_mask, frm_mask, /* shift >> */ 5);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
+			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
+			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                             fcsr_mask, fcsr_mask);
+			                         fenv_clearflags(P::fcsr);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
+			case riscv_csr_cycle:    P::get_csr(dec, priv_mode_U, op, csr, P::cycle, value);      break;
+			case riscv_csr_time:     P::time = cpu_cycle_clock();
+			                         P::get_csr(dec, priv_mode_U, op, csr, P::time, value);       break;
+			case riscv_csr_instret:  P::get_csr(dec, priv_mode_U, op, csr, P::instret, value);    break;
+			case riscv_csr_cycleh:   P::get_csr_hi(dec, priv_mode_U, op, csr, P::cycle, value);   break;
+			case riscv_csr_timeh:    P::get_csr_hi(dec, priv_mode_U, op, csr, P::time, value);    break;
+			case riscv_csr_instreth: P::get_csr_hi(dec, priv_mode_U, op, csr, P::instret, value); break;
 			default: return 0; /* illegal instruction */
 		}
 		return pc_offset;
@@ -438,47 +495,109 @@ struct processor_proxy : P
 template <typename P>
 struct processor_privileged : P
 {
+	void priv_init()
+	{
+		P::misa = P::misa_default; // set initial value for misa register
+	}
+
 	void print_csr_registers()
 	{
 		P::print_csr_registers();
 
-		printf("%s%s\n",
-			format_reg("misa", P::misa).c_str(),
-			format_reg("mvendorid", P::mvendorid).c_str());
-		printf("%s%s\n",
-			format_reg("marchid", P::marchid).c_str(),
-			format_reg("mimpid", P::mimpid).c_str());
-		printf("%s%s\n",
-			format_reg("mhartid", P::mhartid).c_str(),
-			format_reg("mstatus", P::mstatus).c_str());
-		printf("%s%s\n",
-			format_reg("mtvec", P::mtvec).c_str(),
-			format_reg("mtimecmp", P::mtimecmp).c_str());
-		printf("%s%s\n",
-			format_reg("medeleg", P::medeleg).c_str(),
-			format_reg("mideleg", P::mideleg).c_str());
-		printf("%s%s\n",
-			format_reg("mip", P::mip).c_str(),
-			format_reg("mie", P::mie).c_str());
-		printf("%s%s\n",
-			format_reg("mscratch", P::mscratch).c_str(),
-			format_reg("mepc", P::mepc).c_str());
-		printf("%s%s\n",
-			format_reg("mcause", P::mcause).c_str(),
-			format_reg("mbadaddr", P::mbadaddr).c_str());
-		printf("%s%s\n",
-			format_reg("mbase", P::mbase).c_str(),
-			format_reg("mbound", P::mbound).c_str());
-		printf("%s%s\n",
-			format_reg("mibase", P::mibase).c_str(),
-			format_reg("mibound", P::mibound).c_str());
-		printf("%s%s\n",
-			format_reg("mdbase", P::mdbase).c_str(),
-			format_reg("mdbound", P::mdbound).c_str());
+		printf("%s%s\n", format_reg("misa",      P::misa).c_str(),
+		                 format_reg("mvendorid", P::mvendorid).c_str());
+		printf("%s%s\n", format_reg("marchid",   P::marchid).c_str(),
+		                 format_reg("mimpid",    P::mimpid).c_str());
+		printf("%s%s\n", format_reg("mhartid",   P::mhartid).c_str(),
+		                 format_reg("mstatus",   P::mstatus).c_str());
+		printf("%s%s\n", format_reg("mtvec",     P::mtvec).c_str(),
+		                 format_reg("mtimecmp",  P::mtimecmp).c_str());
+		printf("%s%s\n", format_reg("medeleg",   P::medeleg).c_str(),
+		                 format_reg("mideleg",   P::mideleg).c_str());
+		printf("%s%s\n", format_reg("mip",       P::mip).c_str(),
+		                 format_reg("mie",       P::mie).c_str());
+		printf("%s%s\n", format_reg("mscratch",  P::mscratch).c_str(),
+		                 format_reg("mepc",      P::mepc).c_str());
+		printf("%s%s\n", format_reg("mcause",    P::mcause).c_str(),
+		                 format_reg("mbadaddr",  P::mbadaddr).c_str());
+		printf("%s%s\n", format_reg("mbase",     P::mbase).c_str(),
+		                 format_reg("mbound",    P::mbound).c_str());
+		printf("%s%s\n", format_reg("mibase",    P::mibase).c_str(),
+		                 format_reg("mibound",   P::mibound).c_str());
+		printf("%s%s\n", format_reg("mdbase",    P::mdbase).c_str(),
+		                 format_reg("mdbound",   P::mdbound).c_str());
+	}
+
+	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
+	{
+		const typename P::ux fflags_mask   = 0x1f;
+		const typename P::ux frm_mask      = 0x3;
+		const typename P::ux fcsr_mask     = 0xff;
+		const typename P::ux mstatus_wmask = (1ULL<<30)-1;
+		const typename P::ux mstatus_rmask = (1ULL<<(P::xlen-1)) | ((1ULL<<30)-1);
+		const typename P::ux misa_rmask    = (1ULL<<28)-1;
+
+		switch (csr) {
+			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
+			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                             fflags_mask, fflags_mask);
+			                         fenv_clearflags(P::fcsr);
+			                         break;
+			case riscv_csr_frm:      P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                             frm_mask, frm_mask, /* shift >> */ 5);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
+			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
+			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
+			                             fcsr_mask, fcsr_mask);
+			                         fenv_clearflags(P::fcsr);
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);
+			                         break;
+			case riscv_csr_cycle:    P::get_csr(dec, priv_mode_U, op, csr, P::cycle, value);  break;
+			case riscv_csr_time:     P::time = cpu_cycle_clock();
+			                         P::get_csr(dec, priv_mode_U, op, csr, P::time, value);   break;
+			case riscv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
+			case riscv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+			case riscv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
+			case riscv_csr_instreth: P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
+			case riscv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa, misa_rmask);  break;
+			case riscv_csr_mvendorid:P::get_csr(dec, P::mode, op, csr, P::mvendorid, value);  break;
+			case riscv_csr_marchid:  P::get_csr(dec, P::mode, op, csr, P::marchid, value);    break;
+			case riscv_csr_mimpid:   P::get_csr(dec, P::mode, op, csr, P::mimpid, value);     break;
+			case riscv_csr_mhartid:  P::get_csr(dec, P::mode, op, csr, P::mhartid, value);    break;
+			case riscv_csr_mstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+			                             value, mstatus_wmask, mstatus_rmask);                break;
+			case riscv_csr_mtvec:    P::get_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
+			case riscv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
+			case riscv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
+			case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value); break;
+			case riscv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value); break;
+			case riscv_csr_mscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
+			case riscv_csr_mepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
+			case riscv_csr_mcause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
+			case riscv_csr_mbadaddr: P::set_csr(dec, P::mode, op, csr, P::mbadaddr, value);   break;
+			case riscv_csr_mbase:    P::set_csr(dec, P::mode, op, csr, P::mbase, value);      break;
+			case riscv_csr_mbound:   P::set_csr(dec, P::mode, op, csr, P::mbound, value);     break;
+			case riscv_csr_mibase:   P::set_csr(dec, P::mode, op, csr, P::mibase, value);     break;
+			case riscv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
+			case riscv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
+			case riscv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
+			case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
+			case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
+			case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
+			case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value); break;
+			case riscv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value); break;
+			case riscv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
+			case riscv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
+			case riscv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
+			case riscv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::mbadaddr, value);   break;
+			case riscv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
+			default: return 0; /* illegal instruction */
+		}
+		return pc_offset;
 	}
 
 	addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
-		// TODO - emulate privileged instructions
 		switch (dec.op) {
 			case riscv_op_ecall:     /* TODO */ return 0; break;
 			case riscv_op_ebreak:    /* TODO */ return 0; break;
@@ -488,12 +607,12 @@ struct processor_privileged : P
 			case riscv_op_mret:      /* TODO */ return 0; break;
 			case riscv_op_sfence_vm: /* TODO */ return 0; break;
 			case riscv_op_wfi:       /* TODO */ return 0; break;
-			case riscv_op_csrrw:     /* TODO */ return 0; break;
-			case riscv_op_csrrs:     /* TODO */ return 0; break;
-			case riscv_op_csrrc:     /* TODO */ return 0; break;
-			case riscv_op_csrrwi:    /* TODO */ return 0; break;
-			case riscv_op_csrrsi:    /* TODO */ return 0; break;
-			case riscv_op_csrrci:    /* TODO */ return 0; break;
+			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 			default: break;
 		}
 		return 0;
@@ -528,17 +647,28 @@ struct processor_stepper : processor_fault, P
 		switch (signum) {
 			case SIGBUS:
 			case SIGSEGV:
-				printf("SIGNAL-%02d : %016llx\n",
-					info->si_signo, (addr_t)info->si_addr);
-				static_cast<processor_stepper<P>*>(processor_fault::current)->fault();
+				static_cast<processor_stepper<P>*>
+					(processor_fault::current)->fault
+						(info->si_signo, (addr_t)info->si_addr);
 				break;
 			default:
 				break;
 		}
 	}
 
-	void fault() 
+	void fault(int signum, addr_t fault_addr) 
 	{
+		const char* fault_name;
+		switch (signum) {
+			case SIGILL: fault_name = "SIGILL"; break;
+			case SIGBUS: fault_name = "SIGBUS"; break;
+			case SIGSEGV: fault_name = "SIGSEGV"; break;
+			case SIGTERM: fault_name = "SIGTERM"; break;
+			case SIGQUIT: fault_name = "SIGQUIT"; break;
+			case SIGINT: fault_name = "SIGINT"; break;
+			default: fault_name = "FAULT";
+		}
+		printf("%-10s: %016llx\n", fault_name, fault_addr);
 		P::print_csr_registers();
 		P::print_int_registers();
 		exit(1);
@@ -569,12 +699,18 @@ struct processor_stepper : processor_fault, P
 		sigaction_handler.sa_flags = SA_SIGINFO;
 		sigaction(SIGBUS, &sigaction_handler, nullptr);
 		sigaction(SIGSEGV, &sigaction_handler, nullptr);
+		sigaction(SIGTERM, &sigaction_handler, nullptr);
+		sigaction(SIGQUIT, &sigaction_handler, nullptr);
+		sigaction(SIGINT, &sigaction_handler, nullptr);
 		processor_fault::current = this;
 
 		// unblock signals
 		if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
 			panic("can't set thread signal mask: %s", strerror(errno));
 		}
+
+		// call privileged init
+		P::priv_init();
 	}
 
 	bool step(size_t count)
@@ -583,6 +719,7 @@ struct processor_stepper : processor_fault, P
 		size_t i = 0;
 		inst_t inst;
 		addr_t pc_offset, new_offset;
+		P::time = cpu_cycle_clock();
 		while (i < count) {
 			inst = inst_fetch(P::pc, &pc_offset); // TODO - MMU
 			inst_t inst_cache_key = inst % inst_cache_size;
@@ -603,8 +740,7 @@ struct processor_stepper : processor_fault, P
 				P::instret++;
 				continue;
 			}
-			debug("illegal instruciton: %s", P::format_inst(P::pc).c_str());
-			fault();
+			fault(SIGILL, P::pc);
 		}
 		return true;
 	}
@@ -662,14 +798,10 @@ struct riscv_emulator
 	bool emulator_debug = false;
 	bool help_or_error = false;
 	uint64_t initial_seed = 0;
+	int ext = rv_isa_imafdc;
+	host_cpu &cpu;
 
-	enum rv_isa {
-		rv_isa_none,
-		rv_isa_ima,
-		rv_isa_imac,
-		rv_isa_imafd,
-		rv_isa_imafdc,
-	} ext = rv_isa_imafdc;
+	riscv_emulator() : cpu(host_cpu::get_instance()) {}
 
 	static rv_isa decode_isa_ext(std::string isa_ext)
 	{
@@ -713,7 +845,7 @@ struct riscv_emulator
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
 		if (emulator_debug) {
-			debug("sp : mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " +R+W",
+			debug("mmap    sp: %016" PRIxPTR " - %016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
 	}
@@ -738,7 +870,7 @@ struct riscv_emulator
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
 		if (emulator_debug) {
-			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
+			debug("mmap   elf: %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -765,7 +897,7 @@ struct riscv_emulator
 		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
 		if (emulator_debug) {
-			debug("elf: mmap: 0x%016" PRIxPTR " - 0x%016" PRIxPTR " %s",
+			debug("mmap   elf: %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -862,7 +994,6 @@ struct riscv_emulator
 
 		// if 64-bit initial seed is specified, repeat seed 8 times in the seed buffer
 		// if no initial seed is specified then fill the seed buffer with 512-bits of random
-		host_cpu &cpu = host_cpu::get_instance();
 		for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
 			*(u64*)(seed + i) = initial_seed ? initial_seed
 				: (((u64)cpu.get_random_seed()) << 32) | (u64)cpu.get_random_seed() ;
@@ -874,7 +1005,7 @@ struct riscv_emulator
 			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
 				ss << format_string("%016llx", *(u64*)(seed + i));
 			}
-			debug("seed: 0x%s", ss.str().c_str());
+			debug("seed: %s", ss.str().c_str());
 		}
 
 		// randomize the integer registers
@@ -922,8 +1053,16 @@ struct riscv_emulator
 		/* Add 1GB RAM to the mmu (make this a command line option) */
 		proc.mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);
 
+#if defined (ENABLE_GPERFTOOL)
+		ProfilerStart("test-emulate.out");
+#endif
+
 		/* setup signal handlers */
 		proc.init();
+
+#if defined (ENABLE_GPERFTOOL)
+		ProfilerStop();
+#endif
 
 		/* Step the CPU until it halts */
 		while(proc.step(1024));
@@ -979,6 +1118,14 @@ struct riscv_emulator
 	/* Start a specific processor implementation based on ELF type and ISA extensions */
 	void exec()
 	{
+		/* check for RDTSCP on X86 */
+		#if X86_USE_RDTSCP
+		if (cpu.caps.size() > 0 && cpu.caps.find("RDTSCP") == cpu.caps.end()) {
+			panic("error: x86 host without RDTSCP. Recompile with -DX86_NO_RDTSCP");
+		}
+		#endif
+
+		/* execute */
 		if (priv_mode) {
 			switch (elf.ei_class) {
 				case ELFCLASS32:

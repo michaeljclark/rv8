@@ -10,10 +10,10 @@ namespace riscv {
 	/* privileged mode */
 
 	enum priv_mode {
-		priv_mode_M,           /* Machine mode  */
-		priv_mode_H,           /* Hypervisor mode  */
-		priv_mode_S,           /* Supervisor mode  */
-		priv_mode_U            /* User mode */
+		priv_mode_U = 0,       /* User mode */
+		priv_mode_S = 1,       /* Supervisor mode */
+		priv_mode_H = 2,       /* Hypervisor mode */
+		priv_mode_M = 3        /* Machine mode */
 	};
 
 	/* machine status */
@@ -142,6 +142,7 @@ namespace riscv {
 		UX           mibound;         /* Mbbid: Separate Instruction Bound Register */
 		UX           mdbase;          /* Mbbid: Separate Data Base Register */
 		UX           mdbound;         /* Mbbid: Separate Data Bound Register */
+		UX           sptbr;           /* Supervisor Page Table Base Register */
 		u64          mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
 		u64          mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
 		u64          mucycle_delta;   /* Machine User Number of Cycles Delta */

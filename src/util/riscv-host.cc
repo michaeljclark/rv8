@@ -77,6 +77,7 @@ inline void x86_cpuid_count(int reg[], int level, int count)
 #define X86_HAS_LAHF_LM     x86_cpuid_h80000001.r.ecx & (1 << 0)
 #define X86_HAS_ABM         x86_cpuid_h80000001.r.ecx & (1 << 5)
 #define X86_HAS_PREFETCHW   x86_cpuid_h80000001.r.ecx & (1 << 8)
+#define X86_HAS_RDTSCP      x86_cpuid_h80000001.r.ecx & (1 << 27)
 #define X86_HAS_BMI1        x86_cpuid_h7_c0.r.ebx & (1 << 3)
 #define X86_HAS_AVX2        x86_cpuid_h7_c0.r.ebx & (1 << 5)
 #define X86_HAS_BMI2        x86_cpuid_h7_c0.r.ebx & (1 << 8)
@@ -169,6 +170,7 @@ host_cpu::host_cpu()
 	caps["RDRAND"] = X86_HAS_RDRAND;
 	caps["LAHF_LM"] = X86_HAS_LAHF_LM;
 	caps["PREFETCHW"] = X86_HAS_PREFETCHW;
+	caps["RDTSCP"] = X86_HAS_RDTSCP;
 
 	/* >= Haswell capabilities */
 	caps["ABM"] = X86_HAS_ABM;

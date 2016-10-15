@@ -15,6 +15,11 @@
 #include <arm_neon.h>
 #endif
 
+/* Baseline Intel support is Core i7 Nehalem (i786) */
+#if !defined(X86_NO_RDTSCP)
+#define X86_USE_RDTSCP 1
+#endif
+
 namespace riscv {
 
     /* cpu_cycle_clock - (lfence requires SSE, >= Pentium III)*/
@@ -26,8 +31,12 @@ namespace riscv {
     {
         uint64_t c;
         __asm {
+    #if X86_USE_RDTSCP
+            rdtscp
+    #else
             lfence
             rdtsc
+    #endif
             mov dword ptr [c + 0], eax
             mov dword ptr [c + 4], edx
         }
@@ -35,7 +44,11 @@ namespace riscv {
     }
     #elif defined _M_X64
     #define HAVE_CPU_CYCLE_CLOCK 1
+    #if X86_USE_RDTSCP
     inline uint64_t cpu_cycle_clock() { _mm_lfence(); return __rdtsc(); }
+    #else
+    inline uint64_t cpu_cycle_clock() { return __rdtscp(); }
+    #endif
     #endif
     #endif
 
@@ -45,8 +58,12 @@ namespace riscv {
     inline uint64_t __attribute__((__always_inline__)) cpu_cycle_clock()
     {
         uint32_t a, d;
+    #if X86_USE_RDTSCP
+        __asm__ volatile ("rdtscp\n" : "=a" (a), "=d" (d));
+    #else
         __asm__ volatile ("lfence\n"
                           "rdtsc\n" : "=a" (a), "=d" (d));
+    #endif
         return uint64_t(d)<<32 | a;
     }
     #endif
