@@ -120,7 +120,7 @@ namespace riscv {
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
 
-					/* Construct address (could be a megapages or gigapages translation) */
+					/* Construct address (could be a megapage or gigapage translation) */
 					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL<<shift)-1));
 
 					/*
@@ -153,11 +153,11 @@ namespace riscv {
 		}
 	};
 
-	typedef tagged_cache_rv32<65536,8,64> cache_type_rv32;
 	typedef tagged_tlb_rv32<128> tlb_type_rv32;
-
-	typedef tagged_cache_rv64<65536,8,64> cache_type_rv64;
 	typedef tagged_tlb_rv64<128> tlb_type_rv64;
+
+	typedef tagged_cache_rv32<65536,8,64> cache_type_rv32;
+	typedef tagged_cache_rv64<65536,8,64> cache_type_rv64;
 
 	typedef pma_table<u32,8> pma_table_rv32;
 	typedef pma_table<u64,8> pma_table_rv64;
