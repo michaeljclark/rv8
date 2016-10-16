@@ -113,12 +113,10 @@ struct processor_base : P
 		log_flags(0)
 	{}
 
-	std::string format_inst(addr_t pc)
+	std::string format_inst(inst_t inst)
 	{
 		char buf[20];
-		addr_t pc_offset;
-		inst_t inst = inst_fetch(pc, &pc_offset);
-		switch (pc_offset) {
+		switch (inst_length(inst)) {
 			case 2:  snprintf(buf, sizeof(buf), "%04llx    ", inst); break;
 			case 4:  snprintf(buf, sizeof(buf), "%08llx", inst); break;
 			case 6:  snprintf(buf, sizeof(buf), "%012llx", inst); break;
@@ -200,7 +198,7 @@ struct processor_base : P
 		return ss.str();
 	}
 
-	void print_log(T &dec)
+	void print_log(T &dec, inst_t inst)
 	{
 		static const char *fmt_32 = "core %4zu : %08llx (%s) %-30s %s\n";
 		static const char *fmt_64 = "core %4zu : %016llx (%s) %-30s %s\n";
@@ -213,7 +211,7 @@ struct processor_base : P
 				op_args = format_operands(dec);
 			}
 			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
-				P::hart_id, addr_t(P::pc), format_inst(P::pc).c_str(), args.c_str(), op_args.c_str());
+				P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
 		}
 		if (log_flags & reg_log_int) print_int_registers();
 		if (log_flags & reg_log_f32) print_f32_registers();
@@ -728,7 +726,7 @@ struct processor_stepper : processor_fault, P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
-				if (P::log_flags) P::print_log(dec);
+				if (P::log_flags) P::print_log(dec, inst);
 				if (P::log_flags & reg_log_csr) P::print_csr_registers();
 				P::pc += new_offset;
 				P::cycle++;
