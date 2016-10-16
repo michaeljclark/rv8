@@ -28,19 +28,28 @@ namespace riscv {
 
 		inst_t inst_fetch(UX pc, addr_t &pc_offset)
 		{
-			pc_offset = 0; return 0; /* illegel instruction */
+			/* TODO: translate, check tags, PMA and cache */
+
+			/* will call riscv::inst_fetch(uva, pc_offset) with the translated address */
+			pc_offset = 0;
+
+			return 0; /* illegel instruction */
 		}
 
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool load(P &proc, UX va, T &val, bool aligned, bool translated)
 		{
-			return false; // TODO: PTE, PMA and Cache
+			/* TODO: translate, check tags, PMA and cache */
+
+			return false;
 		}
 
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool store(P &proc, UX va, T val, bool aligned, bool translated)
 		{
-			return false; // TODO: PTE, PMA and Cache
+			/* TODO: translate, check tags, PMA and cache */
+
+			return false;
 		}
 
 		template <typename P> addr_t get_physical_address(P &proc, UX va,
