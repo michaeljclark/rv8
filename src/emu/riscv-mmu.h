@@ -26,9 +26,9 @@ namespace riscv {
 
 		/* MMU methods */
 
-		template <typename P> bool fetch_inst(P &proc, UX pc, inst_t &inst, addr_t *pc_offset)
+		inst_t inst_fetch(UX pc, addr_t &pc_offset)
 		{
-			return false; // TODO: PTE, PMA and Cache
+			pc_offset = 0; return 0; /* illegel instruction */
 		}
 
 		// T is one of u64, u32, u16, u8

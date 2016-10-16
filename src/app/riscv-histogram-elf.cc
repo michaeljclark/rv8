@@ -102,7 +102,7 @@ struct riscv_histogram_elf
 		addr_t pc_offset;
 		addr_t pc = start;
 		while (pc < end) {
-			uint64_t inst = inst_fetch(pc, &pc_offset);
+			uint64_t inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, inst);
 			if (inst_histogram) {
 				histogram_add(hist, riscv_inst_name_sym[dec.op]);

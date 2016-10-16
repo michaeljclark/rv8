@@ -7,6 +7,7 @@
 
 namespace riscv {
 
+	template <typename UX>
 	struct mmu_proxy
 	{
 		std::vector<std::pair<void*,size_t>> segments;
@@ -14,7 +15,15 @@ namespace riscv {
 		addr_t heap_end;
 
 		mmu_proxy() : segments(), heap_begin(0), heap_end(0) {}
+
+		inst_t inst_fetch(UX pc, addr_t &pc_offset)
+		{
+			return riscv::inst_fetch(pc, pc_offset);
+		}
 	};
+
+	using mmu_proxy_rv32 = mmu_proxy<u32>;
+	using mmu_proxy_rv64 = mmu_proxy<u64>;
 
 	enum abi_syscall
 	{

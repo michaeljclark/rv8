@@ -117,7 +117,7 @@ struct riscv_parse_elf
 		addr_t addr = 0;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &pc_offset);
+			dec.inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			switch (dec.op) {
 				case riscv_op_jal:
@@ -154,7 +154,7 @@ struct riscv_parse_elf
 		addr_t pc_offset;
 		while (pc < end) {
 			dec.pc = pc;
-			dec.inst = inst_fetch(pc, &pc_offset);
+			dec.inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			if (decode_pseudo) decode_pseudo_inst(dec);
 			disasm_inst_print(dec, dec_hist, pc, pc_bias, gp,

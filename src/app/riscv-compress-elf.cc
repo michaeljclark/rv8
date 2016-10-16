@@ -299,7 +299,7 @@ struct riscv_compress_elf
 			bin.resize(bin.size() + 1);
 			auto &dec = bin.back();
 			dec.pc = pc - pc_bias;
-			dec.inst = inst_fetch(pc, &pc_offset);
+			dec.inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			decompress_inst_rv64(dec);
 			pc += pc_offset;

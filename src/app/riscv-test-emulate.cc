@@ -435,11 +435,6 @@ struct processor_proxy : P
 {
 	void priv_init() {}
 
-	inst_t inst_fetch(addr_t &pc_offset)
-	{
-		return riscv::inst_fetch(P::pc, &pc_offset);
-	}
-
 	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 	{
 		const typename P::ux fflags_mask   = 0x1f;
@@ -495,11 +490,6 @@ struct processor_privileged : P
 	void priv_init()
 	{
 		P::misa = P::misa_default; // set initial value for misa register
-	}
-
-	inst_t inst_fetch(addr_t &pc_offset)
-	{
-		return riscv::inst_fetch(P::pc, &pc_offset);
 	}
 
 	void print_csr_registers()
@@ -715,7 +705,7 @@ struct processor_stepper : processor_fault, P
 		addr_t pc_offset, new_offset;
 		P::time = cpu_cycle_clock();
 		while (i < count) {
-			inst = P::inst_fetch(pc_offset);
+			inst = P::mmu.inst_fetch(P::pc, pc_offset);
 			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -743,14 +733,14 @@ struct processor_stepper : processor_fault, P
 
 /* Parameterized ABI proxy processor models */
 
-using proxy_emulator_rv32ima = processor_stepper<processor_proxy<processor_rv32ima_unit<decode,processor_rv32imafd,mmu_proxy>>>;
-using proxy_emulator_rv32imac = processor_stepper<processor_proxy<processor_rv32imac_unit<decode,processor_rv32imafd,mmu_proxy>>>;
-using proxy_emulator_rv32imafd = processor_stepper<processor_proxy<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_proxy>>>;
-using proxy_emulator_rv32imafdc = processor_stepper<processor_proxy<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_proxy>>>;
-using proxy_emulator_rv64ima = processor_stepper<processor_proxy<processor_rv64ima_unit<decode,processor_rv64imafd,mmu_proxy>>>;
-using proxy_emulator_rv64imac = processor_stepper<processor_proxy<processor_rv64imac_unit<decode,processor_rv64imafd,mmu_proxy>>>;
-using proxy_emulator_rv64imafd = processor_stepper<processor_proxy<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_proxy>>>;
-using proxy_emulator_rv64imafdc = processor_stepper<processor_proxy<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_proxy>>>;
+using proxy_emulator_rv32ima = processor_stepper<processor_proxy<processor_rv32ima_unit<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
+using proxy_emulator_rv32imac = processor_stepper<processor_proxy<processor_rv32imac_unit<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
+using proxy_emulator_rv32imafd = processor_stepper<processor_proxy<processor_rv32imafd_unit<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
+using proxy_emulator_rv32imafdc = processor_stepper<processor_proxy<processor_rv32imafdc_unit<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
+using proxy_emulator_rv64ima = processor_stepper<processor_proxy<processor_rv64ima_unit<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_emulator_rv64imac = processor_stepper<processor_proxy<processor_rv64imac_unit<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_emulator_rv64imafd = processor_stepper<processor_proxy<processor_rv64imafd_unit<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_emulator_rv64imafdc = processor_stepper<processor_proxy<processor_rv64imafdc_unit<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
 
 /* Parameterized privileged soft-mmu processor models */
