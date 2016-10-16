@@ -93,38 +93,56 @@ namespace riscv {
 		template <typename P, typename PTM> addr_t translate_addr_tlb_miss(P &proc, UX va,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
-			typename PTM::pte_type pte;
-			if (walk_page_table(proc, va, pte)) {
-				tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va, pte.val.flags, pte.val.ppn);
-				return pte.val.ppn | (va & ~page_mask);
-			} else {
-				return -1; /* fault */
-			}
-		}
-
-		// PTM is one of sv32, sv39, sv48
-		template <typename P, typename PTM> bool walk_page_table(P &proc, UX va, typename PTM::pte_type &pte)
-		{
 			typedef typename PTM::pte_type pte_type;
+
 			UX ppn = proc.sptbr & ((1ULL<<PTM::ppn_bits)-1);
 			UX vpn, pte_mpa, pte_uva;
-			int level = PTM::levels - 1;
-			for (; level >= 0; level--) {
-				vpn = (va >> (PTM::bits * level + page_shift)) & ((1ULL<<PTM::bits)-1);
+			int shift, level;
+			pte_type pte;
+
+			/* walk the page table */
+			for (level = PTM::levels - 1; level >= 0; level--) {
+
+				/* calculate the shift for this page table level */
+				shift = PTM::bits * level + page_shift;
+				vpn = (va >> shift) & ((1ULL<<PTM::bits)-1);
 				pte_mpa = ppn + vpn * sizeof(pte_type);
+
+				/* map the ppn into the host address space */
 				pte_uva = mem.mpa_to_uva(pte_mpa);
 				if (pte_uva == -1) goto out;
 				pte = *(pte_type*)pte_uva;
+
+				/* If pte.v = 0, or if pte.r = 0 and pte.w = 1, raise an access exception */
 				if (!(pte.val.flags & pte_flag_V) ||
 					(!(pte.val.flags & pte_flag_R) && (pte.val.flags & pte_flag_W))) goto out;
-				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) return true; /* success */
+
+				/* translate address if we have a valid PTE */
+				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
+
+					/* Construct address (could be a megapages or gigapages translation) */
+					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL<<shift)-1));
+
+					/* Insert into TLB - direct mapped TLB implementation only holds entries for page_size pages
+					   so the code will rewalk the page table if the entry is a megapage or gigapaga */
+					tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va, pte.val.flags, pte.val.ppn);
+
+					/* return the translation */
+					return pa;
+				}
+
+				/* step to the next entry */
 				ppn = pte.val.ppn;
+
+				/* clearing the pte holder so translation fault messages contain zeros */
 				pte.wu.val = 0;
 			}
+
 		out:
 			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
 				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.wu.val);
-			return false; /* invalid */
+
+			return -1; /* invalid */
 		}
 	};
 
