@@ -123,9 +123,16 @@ namespace riscv {
 					/* Construct address (could be a megapages or gigapages translation) */
 					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL<<shift)-1));
 
-					/* Insert into TLB - direct mapped TLB implementation only holds entries for page_size pages
-					   so the code will rewalk the page table if the entry is a megapage or gigapaga */
-					tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va, pte.val.flags, pte.val.ppn);
+					/*
+					 * Insert into TLB
+					 *
+					 * The simple direct mapped TLB implementation currently maps page_size
+					 * entries so as a byproduct, the code will rewalk the page table every
+					 * page_size interval, even if the PTE is a megapage or gigapage. This
+					 * can be solved by adding a secondary TLB with larger entries.
+					 */
+					tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits,
+						va, pte.val.flags, pte.val.ppn);
 
 					/* return the translation */
 					return pa;
