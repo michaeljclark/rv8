@@ -504,6 +504,8 @@ struct processor_privileged : P
 	{
 		P::print_csr_registers();
 
+		printf("%s%s\n", format_reg("pdid",      P::pdid).c_str(),
+		                 format_reg("mode",      P::mode).c_str());
 		printf("%s%s\n", format_reg("misa",      P::misa).c_str(),
 		                 format_reg("mvendorid", P::mvendorid).c_str());
 		printf("%s%s\n", format_reg("marchid",   P::marchid).c_str(),
