@@ -23,7 +23,7 @@ namespace riscv {
 	/* sv32 */
 
 	union sv32_va {
-		struct { u32 val; } wu;
+		struct { u32 val; } xu;
 		struct {
 			u32 pg_off : 12;
 			u32 vpn    : 10; /* 10,10 */
@@ -40,11 +40,11 @@ namespace riscv {
 	};
 
 	union sv32_pte {
-		struct { u32 val; } wu;
+		struct { u32 val; } xu;
 		struct {
 			u32 flags   : 10;
 			u32 ppn     : 22; /* 12,10 */
-		} pte;
+		} val;
 	};
 
 	struct sv32 {
@@ -84,7 +84,7 @@ namespace riscv {
 			u64 flags   : 10;
 			u64 ppn     : 38; /* 20,9,9 */
 			u64 rsrv_16 : 16;
-		} pte;
+		} val;
 	};
 
 	struct sv39 {
@@ -124,7 +124,7 @@ namespace riscv {
 			u64 flags   : 10;
 			u64 ppn     : 38; /* 11,9,9,9 */
 			u64 rsrv_16 : 16;
-		} pte;
+		} val;
 	};
 
 	struct sv48 {

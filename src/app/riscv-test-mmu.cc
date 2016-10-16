@@ -21,6 +21,8 @@
 #include "riscv-bits.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
+#include "riscv-processor.h"
+#include "riscv-machine.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
 #include "riscv-memory.h"

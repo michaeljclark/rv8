@@ -28,39 +28,103 @@ namespace riscv {
 
 		template <typename P> bool fetch_inst(P &proc, UX pc, inst_t &inst, addr_t *pc_offset)
 		{
-			return false; // TODO
+			return false; // TODO: PTE, PMA and Cache
 		}
 
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool load(P &proc, UX va, T &val, bool aligned, bool translated)
 		{
-			return false; // TODO
+			return false; // TODO: PTE, PMA and Cache
 		}
 
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool store(P &proc, UX va, T val, bool aligned, bool translated)
 		{
-			return false; // TODO
+			return false; // TODO: PTE, PMA and Cache
 		}
 
-		template <typename P> addr_t translate_addr(P &proc, UX va,
-			tlb_type &tlb, typename tlb_type::tlb_entry_t *tlb_ent = nullptr)
+		template <typename P> addr_t get_physical_address(P &proc, UX va,
+			bool inst_fetch, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
-			switch (proc.mstatus.vm) {
-				case riscv_vm_mbare: /* TODO */ break;
-				case riscv_vm_mbb:   /* TODO */ break;
-				case riscv_vm_mbid:  /* TODO */ break;
-				case riscv_vm_sv32:  /* TODO */ break;
-				case riscv_vm_sv39:  /* TODO */ break;
-				case riscv_vm_sv48:  /* TODO */ break;
+			tlb_ent = nullptr;
+			addr_t pa = -1; /* fault */
+			if (proc.mode == priv_mode_M && proc.mstatus.r.mprv == 0) {
+				pa = va;
+			} else {
+				switch (proc.mstatus.vm) {
+					case riscv_vm_mbare:
+						pa = va;
+						break;
+					case riscv_vm_mbb:
+						if (va < proc.mbound) {
+							pa = va + proc.mbase;
+						}
+						break;
+					case riscv_vm_mbid:
+						if (va < (inst_fetch ? proc.mibound : proc.mdbound)) {
+							pa = va + (inst_fetch ? proc.mibase : proc.mdbase);
+						}
+						break;
+					case riscv_vm_sv32:
+						pa = translate_addr<sv32>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						break;
+					case riscv_vm_sv39:
+						pa = translate_addr<sv39>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						break;
+					case riscv_vm_sv48:
+						pa = translate_addr<sv48>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						break;
+				}
 			}
-			return -1;
+			return pa;
+		}
+
+		template <typename P, typename PTM> addr_t translate_addr(P &proc, UX va,
+			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent)
+		{
+			tlb_ent = tlb.lookup(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va);
+			if (tlb_ent) {
+				return (tlb_ent->ppn << page_shift) | (va & ~page_mask);
+			} else {
+				return translate_addr_tlb_miss(proc, va, tlb, tlb_ent);
+			}
+		}
+
+		template <typename P, typename PTM> addr_t translate_addr_tlb_miss(P &proc, UX va,
+			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent)
+		{
+			typename PTM::pte_type pte;
+			if (walk_page_table(proc, va, pte)) {
+				tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va, pte.val.flags, pte.val.ppn);
+				return pte.val.ppn | (va & ~page_mask);
+			} else {
+				return -1; /* fault */
+			}
 		}
 
 		// PTM is one of sv32, sv39, sv48
-		template <typename PTM> bool walk_page_table(UX va, typename PTM::pte_type &pte)
+		template <typename P, typename PTM> bool walk_page_table(P &proc, UX va, typename PTM::pte_type &pte)
 		{
-			return false; // TODO
+			typedef typename PTM::pte_type pte_type;
+			UX ppn = proc.sptbr & ((1ULL<<PTM::ppn_bits)-1);
+			UX vpn, pte_mpa, pte_uva;
+			int level = PTM::levels - 1;
+			for (; level >= 0; level--) {
+				vpn = (va >> (PTM::bits * level + page_shift)) & ((1ULL<<PTM::bits)-1);
+				pte_mpa = ppn + vpn * sizeof(pte_type);
+				pte_uva = mem.mpa_to_uva(pte_mpa);
+				if (pte_uva == -1) goto out;
+				pte = *(pte_type*)pte_uva;
+				if (!(pte.val.flags & pte_flag_V) ||
+					(!(pte.val.flags & pte_flag_R) && (pte.val.flags & pte_flag_W))) goto out;
+				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) return true; /* success */
+				ppn = pte.val.ppn;
+				pte.wu.val = 0;
+			}
+		out:
+			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
+				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.wu.val);
+			return false; /* invalid */
 		}
 	};
 

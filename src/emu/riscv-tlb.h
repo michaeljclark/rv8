@@ -80,7 +80,9 @@ namespace riscv {
 			size = tlb_size,
 			shift = ctz_pow2(size),
 			mask = (1ULL << shift) - 1,
-			key_size = sizeof(tlb_entry_t)
+			key_size = sizeof(tlb_entry_t),
+			asid_bits = PARAM::asid_bits,
+			ppn_bits = PARAM::ppn_bits
 		};
 
 		// TODO - map TLB to machine address space with user_memory::add_segment
@@ -115,12 +117,13 @@ namespace riscv {
 		}
 
 		// insert TLB entry for the given PDID + ASID + X:12[VA] + 11:0[PTE.bits] <- PPN]
-		void insert(UX pdid, UX asid, UX va, UX pteb, UX ppn)
+		tlb_entry_t* insert(UX pdid, UX asid, UX va, UX pteb, UX ppn)
 		{
 			UX vpn = va >> page_shift;
 			size_t i = vpn & mask;
 			// we are implicitly evicting an entry by overwriting it
 			tlb[i] = tlb_entry_t(pdid, asid, vpn, pteb, ppn);
+			return &tlb[i];
 		}
 	};
 

@@ -43,6 +43,7 @@
 #include "riscv-strings.h"
 #include "riscv-disasm.h"
 #include "riscv-processor.h"
+#include "riscv-machine.h"
 #include "riscv-alu.h"
 #include "riscv-fpu.h"
 #include "riscv-pte.h"
@@ -52,7 +53,6 @@
 #include "riscv-cache.h"
 #include "riscv-mmu.h"
 #include "riscv-interp.h"
-#include "riscv-machine.h"
 #include "riscv-unknown-abi.h"
 
 #if defined (ENABLE_GPERFTOOL)
