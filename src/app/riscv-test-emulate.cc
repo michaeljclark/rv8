@@ -582,15 +582,15 @@ struct processor_privileged : P
 			case riscv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
 			case riscv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
 			case riscv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
-			case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
+			case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value);      break;
 			case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
 			case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
 			case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value); break;
 			case riscv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value); break;
-			case riscv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
-			case riscv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
-			case riscv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
-			case riscv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::mbadaddr, value);   break;
+			case riscv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
+			case riscv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
+			case riscv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
+			case riscv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
 			case riscv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
 			default: return 0; /* illegal instruction */
 		}

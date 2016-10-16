@@ -143,6 +143,11 @@ namespace riscv {
 		UX           mdbase;          /* Mbbid: Separate Data Base Register */
 		UX           mdbound;         /* Mbbid: Separate Data Bound Register */
 		UX           sptbr;           /* Supervisor Page Table Base Register */
+		UX           stvec;           /* Supervisor Trap Vector Base-Address Register */
+		UX           sscratch;        /* Supervisor Scratch Register */
+		UX           sepc;            /* Supervisor Exception Program Counter */
+		UX           scause;          /* Supervisor Cause Register */
+		UX           sbadaddr;        /* Supervisor Bad Address Register */
 		u64          mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
 		u64          mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
 		u64          mucycle_delta;   /* Machine User Number of Cycles Delta */
