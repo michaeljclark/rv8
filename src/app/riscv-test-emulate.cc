@@ -438,6 +438,11 @@ struct processor_proxy : P
 {
 	void priv_init() {}
 
+	inst_t inst_fetch(addr_t &pc_offset)
+	{
+		return riscv::inst_fetch(P::pc, &pc_offset);
+	}
+
 	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 	{
 		const typename P::ux fflags_mask   = 0x1f;
@@ -496,6 +501,11 @@ struct processor_privileged : P
 	void priv_init()
 	{
 		P::misa = P::misa_default; // set initial value for misa register
+	}
+
+	inst_t inst_fetch(addr_t &pc_offset)
+	{
+		return riscv::inst_fetch(P::pc, &pc_offset);
 	}
 
 	void print_csr_registers()
@@ -714,7 +724,7 @@ struct processor_stepper : processor_fault, P
 		addr_t pc_offset, new_offset;
 		P::time = cpu_cycle_clock();
 		while (i < count) {
-			inst = inst_fetch(P::pc, &pc_offset); // TODO - MMU
+			inst = P::inst_fetch(pc_offset);
 			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -838,7 +848,7 @@ struct riscv_emulator
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
 		if (emulator_debug) {
-			debug("mmap    sp: %016" PRIxPTR " - %016" PRIxPTR " +R+W",
+			debug("mmap   sp : %016" PRIxPTR " - %016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
 	}
@@ -863,7 +873,7 @@ struct riscv_emulator
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
 		if (emulator_debug) {
-			debug("mmap   elf: %016" PRIxPTR " - %016" PRIxPTR " %s",
+			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -890,7 +900,7 @@ struct riscv_emulator
 		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
 		if (emulator_debug) {
-			debug("mmap   elf: %016" PRIxPTR " - %016" PRIxPTR " %s",
+			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
