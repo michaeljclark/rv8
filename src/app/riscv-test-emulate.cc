@@ -108,10 +108,7 @@ struct processor_base : P
 	int log_flags;
 	mmu_type mmu;
 
-	processor_base() :
-		P(),
-		log_flags(0)
-	{}
+	processor_base() : P(), log_flags(0) {}
 
 	std::string format_inst(inst_t inst)
 	{
@@ -453,18 +450,15 @@ struct processor_proxy : P
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                            fflags_mask, fflags_mask);
-			                         fenv_clearflags(P::fcsr);
-			                         break;
+			                         fenv_clearflags(P::fcsr);                                    break;
 			case riscv_csr_frm:      P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                             frm_mask, frm_mask, /* shift >> */ 5);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);                            break;
 			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
 			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                             fcsr_mask, fcsr_mask);
 			                         fenv_clearflags(P::fcsr);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);                            break;
 			case riscv_csr_cycle:    P::get_csr(dec, priv_mode_U, op, csr, P::cycle, value);      break;
 			case riscv_csr_time:     P::time = cpu_cycle_clock();
 			                         P::get_csr(dec, priv_mode_U, op, csr, P::time, value);       break;
@@ -551,18 +545,15 @@ struct processor_privileged : P
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                             fflags_mask, fflags_mask);
-			                         fenv_clearflags(P::fcsr);
-			                         break;
+			                         fenv_clearflags(P::fcsr);                                break;
 			case riscv_csr_frm:      P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                             frm_mask, frm_mask, /* shift >> */ 5);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
 			case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
 			                         P::set_csr(dec, priv_mode_U, op, csr, P::fcsr, value,
 			                             fcsr_mask, fcsr_mask);
 			                         fenv_clearflags(P::fcsr);
-			                         fenv_setrm((P::fcsr >> 5) & 0x7);
-			                         break;
+			                         fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
 			case riscv_csr_cycle:    P::get_csr(dec, priv_mode_U, op, csr, P::cycle, value);  break;
 			case riscv_csr_time:     P::time = cpu_cycle_clock();
 			                         P::get_csr(dec, priv_mode_U, op, csr, P::time, value);   break;
@@ -609,20 +600,20 @@ struct processor_privileged : P
 
 	addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 		switch (dec.op) {
-			case riscv_op_ecall:     /* TODO */ return 0; break;
-			case riscv_op_ebreak:    /* TODO */ return 0; break;
-			case riscv_op_uret:      /* TODO */ return 0; break;
-			case riscv_op_sret:      /* TODO */ return 0; break;
-			case riscv_op_hret:      /* TODO */ return 0; break;
-			case riscv_op_mret:      /* TODO */ return 0; break;
-			case riscv_op_sfence_vm: /* TODO */ return 0; break;
-			case riscv_op_wfi:       /* TODO */ return 0; break;
-			case riscv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
-			case riscv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
-			case riscv_op_csrrc:  return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
-			case riscv_op_csrrwi: return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
-			case riscv_op_csrrsi: return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
-			case riscv_op_csrrci: return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_ecall:     return 0; break;
+			case riscv_op_ebreak:    return 0; break;
+			case riscv_op_uret:      return 0; break;
+			case riscv_op_sret:      return 0; break;
+			case riscv_op_hret:      return 0; break;
+			case riscv_op_mret:      return 0; break;
+			case riscv_op_sfence_vm: return 0; break;
+			case riscv_op_wfi:       return 0; break;
+			case riscv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrc:     return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
+			case riscv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
+			case riscv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 			default: break;
 		}
 		return 0;
