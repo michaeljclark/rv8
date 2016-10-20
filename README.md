@@ -93,6 +93,7 @@ References
 - [TLSF: a New Dynamic Memory Allocator for Real-Time Systems](http://www.gii.upv.es/tlsf/files/ecrts04_tlsf.pdf)
 - [A Precise Memory Model for Low-Level Bounded Model Checking](https://www.usenix.org/legacy/event/ssv10/tech/full_papers/Sinz.pdf)
 - [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
+- [Virtual IO Device Specification](http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.html)
 - [Standard C++](https://isocpp.org/std/the-standard/)
 - [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
 - [ELF Handling for Thread-Local Storage](https://www.akkadia.org/drepper/tls.pdf)
