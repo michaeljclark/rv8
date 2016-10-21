@@ -13,14 +13,19 @@
 #include <cassert>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <sys/mman.h>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-bits.h"
+#include "riscv-sha512.h"
+#include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
+#include "riscv-host.h"
+#include "riscv-codec.h"
 #include "riscv-processor.h"
 #include "riscv-machine.h"
 #include "riscv-pte.h"

@@ -71,7 +71,7 @@ namespace riscv {
 	/* sv39 */
 
 	union sv39_va {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
 			u64 vpn_0   : 27; /* 9,9,9 */
@@ -80,7 +80,7 @@ namespace riscv {
 	};
 
 	union sv39_pa {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
 			u64 ppn     : 38; /* 20,9,9 */
@@ -89,7 +89,7 @@ namespace riscv {
 	};
 
 	union sv39_pte {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 flags   : 10;
 			u64 ppn     : 38; /* 20,9,9 */
@@ -111,7 +111,7 @@ namespace riscv {
 	/* sv48 */
 
 	union sv48_va {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
 			u64 vpn     : 36; /* 9,9,9,9 */
@@ -120,7 +120,7 @@ namespace riscv {
 	};
 
 	union sv48_pa {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
 			u64 ppn     : 38; /* 11,9,9,9 */
@@ -129,7 +129,7 @@ namespace riscv {
 	};
 
 	union sv48_pte {
-		struct { u64 val; } lu;
+		struct { u64 val; } xu;
 		struct {
 			u64 flags   : 10;
 			u64 ppn     : 38; /* 11,9,9,9 */

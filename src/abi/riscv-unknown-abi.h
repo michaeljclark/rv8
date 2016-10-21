@@ -16,7 +16,7 @@ namespace riscv {
 
 		mmu_proxy() : segments(), heap_begin(0), heap_end(0) {}
 
-		inst_t inst_fetch(UX pc, addr_t &pc_offset)
+		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			return riscv::inst_fetch(pc, pc_offset);
 		}

@@ -15,6 +15,8 @@ namespace riscv {
 		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
+		static const addr_t illegal_address = addr_t(-1);
+
 		/* MMU properties */
 
 		tlb_type       l1_dtlb;     /* L1 Data TLB */
@@ -26,20 +28,36 @@ namespace riscv {
 
 		/* MMU methods */
 
-		inst_t inst_fetch(UX pc, addr_t &pc_offset)
+		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
-			/* TODO: translate, check tags, PMA, PTE, mode and cache */
+			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
-			/* call riscv::inst_fetch(uva, pc_offset) with the translated address */
+			addr_t mpa = translate_addr<P,false>(proc, pc, tlb_ent);
+			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+
+			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+
+			if (uva != illegal_address) {
+				return riscv::inst_fetch(uva, pc_offset);
+			}
+
 			pc_offset = 0;
-
 			return 0; /* illegel instruction */
 		}
 
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool load(P &proc, UX va, T &val)
 		{
-			/* TODO: translate, check tags, PMA, PTE, mode and cache */
+			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			addr_t mpa = translate_addr(proc, va, tlb_ent);
+			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+
+			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+
+			if (uva != illegal_address) {
+				val = *static_cast<T*>(uva);
+				return true;
+			}
 
 			return false;
 		}
@@ -47,21 +65,29 @@ namespace riscv {
 		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool store(P &proc, UX va, T val)
 		{
-			/* TODO: translate, check tags, PMA, PTE, mode and cache */
+			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			addr_t mpa = translate_addr(proc, va, tlb_ent);
+			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+
+			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+
+			if (uva != illegal_address) {
+				*static_cast<T*>(uva) = val;
+				return true;
+			}
 
 			return false;
 		}
 
 		// translate address depending on translation mode
-		template <typename P> addr_t translate_addr(P &proc, UX va,
-			bool inst_fetch, typename tlb_type::tlb_entry_t* &tlb_ent)
+		template <typename P, bool inst_fetch = false> addr_t translate_addr(P &proc, UX va,
+			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
-			tlb_ent = nullptr;
-			addr_t pa = -1; /* invalid physical address */
+			addr_t pa = illegal_address;
 			if (proc.mode == priv_mode_M && proc.mstatus.r.mprv == 0) {
 				pa = va;
 			} else {
-				switch (proc.mstatus.vm) {
+				switch (proc.mstatus.r.vm) {
 					case riscv_vm_mbare:
 						pa = va;
 						break;
@@ -76,13 +102,13 @@ namespace riscv {
 						}
 						break;
 					case riscv_vm_sv32:
-						pa = page_translate_addr<sv32>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv32>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 					case riscv_vm_sv39:
-						pa = page_translate_addr<sv39>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv39>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 					case riscv_vm_sv48:
-						pa = page_translate_addr<sv48>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv48>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 				}
 			}
@@ -95,11 +121,11 @@ namespace riscv {
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent
 		)
 		{
-			tlb_ent = tlb.lookup(proc.pdid, proc.sbptr >> tlb_type::ppn_bits, va);
+			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
 				return (tlb_ent->ppn << page_shift) | (va & ~page_mask);
 			} else {
-				return page_translate_addr_tlb_miss(proc, va, tlb, tlb_ent);
+				return page_translate_addr_tlb_miss<P,PTM>(proc, va, tlb, tlb_ent);
 			}
 		}
 
@@ -119,11 +145,13 @@ namespace riscv {
 
 			typename PTM::pte_type pte;
 
+			/* TODO: TLB statistics */
+
 			addr_t pa;
-			if ((pa = walk_page_table(proc, va, tlb, tlb_ent, pte)) != -1)
+			if ((pa = walk_page_table<P,PTM>(proc, va, tlb, tlb_ent, pte)) != illegal_address)
 			{
 				/* Insert the virtual to physical mapping into the TLB */
-				tlb_ent = tlb.insert(proc.pdid, proc.sbptr >> tlb_type::ppn_bits,
+				tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
 					va, pte.val.flags, pte.val.ppn);
 			}
 			return pa;
@@ -137,8 +165,9 @@ namespace riscv {
 		{
 			typedef typename PTM::pte_type pte_type;
 
-			UX ppn = proc.sptbr & ((1ULL<<PTM::ppn_bits)-1);
-			UX vpn, pte_mpa, pte_uva;
+			UX ppn = proc.sptbr & ((1ULL << tlb_type::ppn_bits) - 1);
+			UX vpn, pte_mpa;
+			addr_t pte_uva;
 			int shift, level;
 
 			/* walk the page table */
@@ -146,12 +175,12 @@ namespace riscv {
 
 				/* calculate the shift for this page table level */
 				shift = PTM::bits * level + page_shift;
-				vpn = (va >> shift) & ((1ULL<<PTM::bits)-1);
+				vpn = (va >> shift) & ((1ULL << PTM::bits) - 1);
 				pte_mpa = ppn + vpn * sizeof(pte_type);
 
 				/* map the ppn into the host address space */
 				pte_uva = mem.mpa_to_uva(pte_mpa);
-				if (pte_uva == -1) goto out;
+				if (pte_uva == illegal_address) goto out;
 				pte = *(pte_type*)pte_uva;
 
 				/* If pte.v = 0, or if pte.r = 0 and pte.w = 1, raise an access exception */
@@ -162,7 +191,7 @@ namespace riscv {
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
 
 					/* Construct address (could be a megapage or gigapage translation) */
-					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL<<shift)-1));
+					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL << shift) - 1));
 
 					return pa; /* translated physical address */
 				}
@@ -171,14 +200,14 @@ namespace riscv {
 				ppn = pte.val.ppn;
 
 				/* clearing the pte holder so translation fault messages contain zeros */
-				pte.wu.val = 0;
+				pte.xu.val = 0;
 			}
 
 		out:
 			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
-				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.wu.val);
+				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
 
-			return -1; /* invalid physical address */
+			return illegal_address;
 		}
 	};
 

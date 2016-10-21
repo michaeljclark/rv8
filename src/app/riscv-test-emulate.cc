@@ -705,7 +705,7 @@ struct processor_stepper : processor_fault, P
 		addr_t pc_offset, new_offset;
 		P::time = cpu_cycle_clock();
 		while (i < count) {
-			inst = P::mmu.inst_fetch(P::pc, pc_offset);
+			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;

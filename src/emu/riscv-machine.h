@@ -41,7 +41,7 @@ namespace riscv {
 			UX mxr  : 1; /* 19    Make eXecute Readable allows loads from X-only pages when enabled */
 			UX wpri : 4; /* 23:20 */
 			UX vm   : 4; /* 28:24 Virtual Memory Mode (mbare, mbb, sv32, sv39, sv48 )*/
-		} status;
+		} r;
 	};
 
 	/* interrupt pending */
@@ -62,7 +62,7 @@ namespace riscv {
 			UX seip  : 1; /* 9  MHS   Supervisor External Interrupt Pending */
 			UX heip  : 1; /* 10 MH    Hypervisor External Interrupt Pending */
 			UX meip  : 1; /* 11 M     Machine External Interrupt Pending */
-		} ip;
+		} r;
 	};
 
 	/* interrupt enable */
@@ -83,7 +83,7 @@ namespace riscv {
 			UX seie  : 1; /* 9  MHS   Supervisor External Interrupt Enable */
 			UX heie  : 1; /* 10 MH    Hypervisor External Interrupt Enable */
 			UX meie  : 1; /* 11 M     Machine External Interrupt Enable */
-		} ie;
+		} r;
 	};
 
 	/* counter enable */
@@ -95,7 +95,7 @@ namespace riscv {
 			UX cy  : 1;   /* 0     Cycles Enabled */
 			UX tm  : 1;   /* 1     Timer Enabled */
 			UX ir  : 1;   /* 2     Instructions Retired Enabled */
-		} counten;
+		} r;
 	};
 
 	/* Processor state */
