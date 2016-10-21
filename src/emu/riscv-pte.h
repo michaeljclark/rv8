@@ -8,16 +8,26 @@
 namespace riscv {
 
 	enum {
-		pte_flag_V     = 1<<0, /* Valid */
-		pte_flag_R     = 1<<1, /* Read */
-		pte_flag_W     = 1<<2, /* Write */
-		pte_flag_X     = 1<<3, /* Execute */
-		pte_flag_U     = 1<<4, /* User */
-		pte_flag_G     = 1<<5, /* Global */
-		pte_flag_A     = 1<<6, /* Accessed */
-		pte_flag_D     = 1<<7, /* Dirty */
-		pte_flag_RSRV1 = 1<<8, /* Reserved for SW 1 */
-		pte_flag_RSRV2 = 1<<9, /* Reserved for SW 2 */
+		pte_shift_V     = 0, /* Valid */
+		pte_shift_R     = 1, /* Read */
+		pte_shift_W     = 2, /* Write */
+		pte_shift_X     = 3, /* Execute */
+		pte_shift_U     = 4, /* User */
+		pte_shift_G     = 5, /* Global */
+		pte_shift_A     = 6, /* Accessed */
+		pte_shift_D     = 7, /* Dirty */
+		pte_shift_RSRV1 = 8, /* Reserved for SW 1 */
+		pte_shift_RSRV2 = 9, /* Reserved for SW 2 */
+		pte_flag_V      = 1 << pte_shift_V,
+		pte_flag_R      = 1 << pte_shift_R,
+		pte_flag_W      = 1 << pte_shift_W,
+		pte_flag_X      = 1 << pte_shift_X,
+		pte_flag_U      = 1 << pte_shift_U,
+		pte_flag_G      = 1 << pte_shift_G,
+		pte_flag_A      = 1 << pte_shift_A,
+		pte_flag_D      = 1 << pte_shift_D,
+		pte_flag_RSRV1  = 1 << pte_shift_RSRV1,
+		pte_flag_RSRV2  = 1 << pte_shift_RSRV2
 	};
 
 	/* sv32 */
