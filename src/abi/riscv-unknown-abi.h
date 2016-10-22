@@ -33,16 +33,14 @@ namespace riscv {
 			return riscv::inst_fetch(pc, pc_offset);
 		}
 
-		template <typename P, typename T> bool load(P &proc, UX va, T &val)
+		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			val = UX(*(T*)addr_t(va));
-			return true;
 		}
 
-		template <typename P, typename T> bool store(P &proc, UX va, T val)
+		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
-			*((T*)addr_t(va & (memory_top - 1))) = val; // mask stores
-			return true;
+			*((T*)addr_t(va & (memory_top - 1))) = val;
 		}
 	};
 

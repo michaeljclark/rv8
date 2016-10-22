@@ -701,6 +701,7 @@ struct processor_stepper : processor_fault, P
 		P::time = cpu_cycle_clock();
 		while (i < count) {
 			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
+			if (P::cause & proc_fault_flag) goto illegal_inst;
 			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -712,7 +713,7 @@ struct processor_stepper : processor_fault, P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
-				if (P::fault) goto bad_addr;
+				if (P::cause & proc_fault_flag) goto bad_addr;
 				if (P::log) P::print_log(dec, inst);
 				P::pc += new_offset;
 				P::cycle++;
@@ -748,6 +749,11 @@ bad_addr:
 		 * - Load access fault
 		 * - Store/AMO address misaligned
 		 * - Store/AMO access fault
+		 *
+		 * Note: The destination register is clobbered for a load fault.
+		 *       as the load function doesn't alter control flow. In
+		 *       the pseudocode implementation, faults are detected by
+		 *       reading the cause register after inst_exec.
 		 *
 		 * Temporarily call signal handler until traps are implemented
 		 */

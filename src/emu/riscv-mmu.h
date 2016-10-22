@@ -37,15 +37,20 @@ namespace riscv {
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
-			if (uva != illegal_address) {
-				return riscv::inst_fetch(uva, pc_offset);
+			inst_t inst;
+			if (uva == illegal_address) {
+				proc.cause = proc_fault_flag | riscv_cause_fault_fetch;
+				proc.badaddr = pc;
+				pc_offset = 0;
+				inst = 0;
+			} else {
+				inst = riscv::inst_fetch(uva, pc_offset);
 			}
 
-			pc_offset = 0;
-			return 0; /* illegel instruction */
+			return inst;
 		}
 
-		template <typename P, typename T> bool load(P &proc, UX va, T &val)
+		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
@@ -53,15 +58,16 @@ namespace riscv {
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
-			if (uva != illegal_address) {
+			if (uva == illegal_address) {
+				proc.cause = proc_fault_flag | riscv_cause_fault_load;
+				proc.badaddr = va;
+				val = 0; /* suppress uninitialised */
+			} else {
 				val = *static_cast<T*>((void*)uva);
-				return true;
 			}
-
-			return false;
 		}
 
-		template <typename P, typename T> bool store(P &proc, UX va, T val)
+		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
@@ -69,12 +75,12 @@ namespace riscv {
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
-			if (uva != illegal_address) {
+			if (uva == illegal_address) {
+				proc.cause = proc_fault_flag | riscv_cause_fault_store;
+				proc.badaddr = va;
+			} else {
 				*static_cast<T*>((void*)uva) = val;
-				return true;
 			}
-
-			return false;
 		}
 
 		// translate address depending on translation mode

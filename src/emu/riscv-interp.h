@@ -70,42 +70,42 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_lb:
 			if (rvi) {
-				s8 t; if (!proc.mmu.template load<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s8 t; proc.mmu.template load<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lh:
 			if (rvi) {
-				s16 t; if (!proc.mmu.template load<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s16 t; proc.mmu.template load<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lw:
 			if (rvi) {
-				s32 t; if (!proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t; proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lbu:
 			if (rvi) {
-				u8 t; if (!proc.mmu.template load<P,u8>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				u8 t; proc.mmu.template load<P,u8>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lhu:
 			if (rvi) {
-				u16 t; if (!proc.mmu.template load<P,u16>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				u16 t; proc.mmu.template load<P,u16>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sb:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, s8(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, s8(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_sh:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, s16(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, s16(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_sw:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, s32(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, s32(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_addi:
@@ -245,67 +245,67 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_lr_w:
 			if (rva) {
-				proc.lr = proc.ireg[dec.rs1]; s32 t; if (!proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1], t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				proc.lr = proc.ireg[dec.rs1]; s32 t; proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1], t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sc_w:
 			if (rva) {
-				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]))) proc.fault = 1; if (dec.rd > 0) proc.ireg[dec.rd] = res;
+				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = res;
 			};
 			break;
 		case riscv_op_amoswap_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]))) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoadd_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) + t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoxor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) ^ t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) | t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoand_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) & t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomin_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomax_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amominu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomaxu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_flw:
 			if (rvf) {
-				u32 t; if (!proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else proc.freg[dec.rd].r.wu.val = t;
+				u32 t; proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t); proc.freg[dec.rd].r.wu.val = t;
 			};
 			break;
 		case riscv_op_fsw:
 			if (rvf) {
-				if (!proc.mmu.template store<P,f32>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.s.val)) proc.fault = 1;
+				proc.mmu.template store<P,f32>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.s.val);
 			};
 			break;
 		case riscv_op_fmadd_s:
@@ -430,12 +430,12 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fld:
 			if (rvd) {
-				u64 t; if (!proc.mmu.template load<P,u64>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else proc.freg[dec.rd].r.lu.val = t;
+				u64 t; proc.mmu.template load<P,u64>(proc, proc.ireg[dec.rs1] + dec.imm, t); proc.freg[dec.rd].r.lu.val = t;
 			};
 			break;
 		case riscv_op_fsd:
 			if (rvd) {
-				if (!proc.mmu.template store<P,f64>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.d.val)) proc.fault = 1;
+				proc.mmu.template store<P,f64>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.d.val);
 			};
 			break;
 		case riscv_op_fmadd_d:
@@ -626,42 +626,42 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_lb:
 			if (rvi) {
-				s8 t; if (!proc.mmu.template load<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s8 t; proc.mmu.template load<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lh:
 			if (rvi) {
-				s16 t; if (!proc.mmu.template load<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s16 t; proc.mmu.template load<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lw:
 			if (rvi) {
-				s32 t; if (!proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t; proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lbu:
 			if (rvi) {
-				u8 t; if (!proc.mmu.template load<P,u8>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				u8 t; proc.mmu.template load<P,u8>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lhu:
 			if (rvi) {
-				u16 t; if (!proc.mmu.template load<P,u16>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				u16 t; proc.mmu.template load<P,u16>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sb:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, s8(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s8>(proc, proc.ireg[dec.rs1] + dec.imm, s8(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_sh:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, s16(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s16>(proc, proc.ireg[dec.rs1] + dec.imm, s16(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_sw:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, s32(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1] + dec.imm, s32(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_addi:
@@ -746,17 +746,17 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_lwu:
 			if (rvi) {
-				u32 t; if (!proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				u32 t; proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_ld:
 			if (rvi) {
-				s64 t; if (!proc.mmu.template load<P,s64>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t; proc.mmu.template load<P,s64>(proc, proc.ireg[dec.rs1] + dec.imm, t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sd:
 			if (rvi) {
-				if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1] + dec.imm, s64(proc.ireg[dec.rs2]))) proc.fault = 1;
+				proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1] + dec.imm, s64(proc.ireg[dec.rs2]));
 			};
 			break;
 		case riscv_op_slli_rv64i:
@@ -886,122 +886,122 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_lr_w:
 			if (rva) {
-				proc.lr = proc.ireg[dec.rs1]; s32 t; if (!proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1], t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				proc.lr = proc.ireg[dec.rs1]; s32 t; proc.mmu.template load<P,s32>(proc, proc.ireg[dec.rs1], t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sc_w:
 			if (rva) {
-				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]))) proc.fault = 1; if (dec.rd > 0) proc.ireg[dec.rd] = res;
+				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = res;
 			};
 			break;
 		case riscv_op_amoswap_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]))) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoadd_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) + t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoxor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) ^ t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) | t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoand_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) & t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomin_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) < t ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomax_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], s32(proc.ireg[dec.rs2]) > t ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amominu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) < u32(t) ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomaxu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], u32(proc.ireg[dec.rs2]) > u32(t) ? s32(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_lr_d:
 			if (rva) {
-				proc.lr = proc.ireg[dec.rs1]; s64 t; if (!proc.mmu.template load<P,s64>(proc, proc.ireg[dec.rs1], t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				proc.lr = proc.ireg[dec.rs1]; s64 t; proc.mmu.template load<P,s64>(proc, proc.ireg[dec.rs1], t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_sc_d:
 			if (rva) {
-				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]))) proc.fault = 1; if (dec.rd > 0) proc.ireg[dec.rd] = res;
+				ux res = 0; if (proc.lr != proc.ireg[dec.rs1]) res = 1; else proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = res;
 			};
 			break;
 		case riscv_op_amoswap_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]))) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2])); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoadd_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) + t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoxor_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) ^ t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoor_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) | t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amoand_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) & t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomin_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) < t ? s64(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) < t ? s64(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomax_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) > t ? s64(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], s64(proc.ireg[dec.rs2]) > t ? s64(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amominu_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], u64(proc.ireg[dec.rs2]) < u64(t) ? s64(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], u64(proc.ireg[dec.rs2]) < u64(t) ? s64(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_amomaxu_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); if (!proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], u64(proc.ireg[dec.rs2]) > u64(t) ? s64(proc.ireg[dec.rs2]) : t)) proc.fault = 1; else if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], u64(proc.ireg[dec.rs2]) > u64(t) ? s64(proc.ireg[dec.rs2]) : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
 			};
 			break;
 		case riscv_op_flw:
 			if (rvf) {
-				u32 t; if (!proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else proc.freg[dec.rd].r.wu.val = t;
+				u32 t; proc.mmu.template load<P,u32>(proc, proc.ireg[dec.rs1] + dec.imm, t); proc.freg[dec.rd].r.wu.val = t;
 			};
 			break;
 		case riscv_op_fsw:
 			if (rvf) {
-				if (!proc.mmu.template store<P,f32>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.s.val)) proc.fault = 1;
+				proc.mmu.template store<P,f32>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.s.val);
 			};
 			break;
 		case riscv_op_fmadd_s:
@@ -1146,12 +1146,12 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fld:
 			if (rvd) {
-				u64 t; if (!proc.mmu.template load<P,u64>(proc, proc.ireg[dec.rs1] + dec.imm, t)) proc.fault = 1; else proc.freg[dec.rd].r.lu.val = t;
+				u64 t; proc.mmu.template load<P,u64>(proc, proc.ireg[dec.rs1] + dec.imm, t); proc.freg[dec.rd].r.lu.val = t;
 			};
 			break;
 		case riscv_op_fsd:
 			if (rvd) {
-				if (!proc.mmu.template store<P,f64>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.d.val)) proc.fault = 1;
+				proc.mmu.template store<P,f64>(proc, proc.ireg[dec.rs1] + dec.imm, proc.freg[dec.rs2].r.d.val);
 			};
 			break;
 		case riscv_op_fmadd_d:

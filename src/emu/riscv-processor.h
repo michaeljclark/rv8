@@ -7,15 +7,22 @@
 
 namespace riscv {
 
-	/* Logging flags */
+	/* Processor logging flags */
 
 	enum {
-		proc_log_int = 1,
-		proc_log_csr = 2,
-		proc_log_inst = 4,
-		proc_log_operands = 8,
-		proc_log_no_pseudo = 16,
-		proc_log_mmap = 32,
+		proc_log_int =             1,       /* Log integer registers */
+		proc_log_csr =             2,       /* Log status and control registers */
+		proc_log_inst =            4,       /* Log instructions */
+		proc_log_operands =        8,       /* Log instruction operands */
+		proc_log_mmap =            16,      /* Log memory map */
+		proc_log_no_pseudo =       36,      /* Don't decode pseudoinstructions */
+	};
+
+	/* Processor cause indicator flags */
+
+	enum {
+		proc_fault_flag =          256,     /* Interrupt bit clear */
+		proc_intr_flag =           512,     /* Interrupt bit set */
 	};
 
 	/* RV32 integer register */
@@ -151,8 +158,13 @@ namespace riscv {
 		typedef s32  int_t;
 		typedef u32  uint_t;
 
-		enum  { xlen = sizeof(ux) << 3 };
-		enum  { ireg_count = IREG_COUNT, freg_count = FREG_COUNT };
+		/* processor dimensions */
+
+		enum  {
+			xlen = sizeof(ux) << 3,        /* Size of integer register in bits */
+			ireg_count = IREG_COUNT,       /* Number of integer registers  */
+			freg_count = FREG_COUNT        /* Number of floating point registers */
+		};
 
 		/* Topology */
 
@@ -161,7 +173,8 @@ namespace riscv {
 
 		/* State */
 
-		SX fault;                     /* Access fault */
+		SX cause;                     /* Fault cause */
+		SX badaddr;                   /* Fault address */
 		SX log;                       /* Log flags */
 		SX lr;                        /* Load Reservation (TODO - global) */
 
@@ -178,7 +191,7 @@ namespace riscv {
 		u64          instret;         /* User Number of Instructions Retired  */
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
-		processor() : node_id(0), hart_id(0), fault(0), log(0), lr(-1), pc(0), ireg(), freg(),
+		processor() : node_id(0), hart_id(0), cause(0), badaddr(0), log(0), lr(-1), pc(0), ireg(), freg(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 
