@@ -13,15 +13,15 @@ blt        "if (sx(rs1) < sx(rs2)) pc_offset = imm"
 bge        "if (sx(rs1) >= sx(rs2)) pc_offset = imm"
 bltu       "if (ux(rs1) < ux(rs2)) pc_offset = imm"
 bgeu       "if (ux(rs1) >= ux(rs2)) pc_offset = imm"
-lb         "rd = sx(*(s8*)ptr(rs1 + imm))"
-lh         "rd = sx(*(s16*)ptr(rs1 + imm))"
-lw         "rd = sx(*(s32*)ptr(rs1 + imm))"
-lbu        "rd = ux(*(u8*)ptr(rs1 + imm))"
-lhu        "rd = ux(*(u16*)ptr(rs1 + imm))"
-lwu        "rd = ux(*(u32*)ptr(rs1 + imm))"
-sb         "*((u8*)ptr(rs1 + imm)) = rs2"
-sh         "*((u16*)ptr(rs1 + imm)) = rs2"
-sw         "*((u32*)ptr(rs1 + imm)) = rs2"
+lb         "s8 t; if (!mmu.load<s8>(rs1 + imm, t)) fault(); else rd = t"            # rd = sx(*(s8*)ptr(rs1 + imm))
+lh         "s16 t; if (!mmu.load<s16>(rs1 + imm, t)) fault(); else rd = t"          # rd = sx(*(s16*)ptr(rs1 + imm))
+lw         "s32 t; if (!mmu.load<s32>(rs1 + imm, t)) fault(); else rd = t"          # rd = sx(*(s32*)ptr(rs1 + imm))
+lbu        "u8 t; if (!mmu.load<u8>(rs1 + imm, t)) fault(); else rd = t"            # rd = ux(*(u8*)ptr(rs1 + imm))
+lhu        "u16 t; if (!mmu.load<u16>(rs1 + imm, t)) fault(); else rd = t"          # rd = ux(*(u16*)ptr(rs1 + imm))
+lwu        "u32 t; if (!mmu.load<u32>(rs1 + imm, t)) fault(); else rd = t"          # rd = ux(*(u32*)ptr(rs1 + imm))
+sb         "if (!mmu.store<s8>(rs1 + imm, s8(rs2))) fault()"                        # *((u8*)ptr(rs1 + imm)) = rs2
+sh         "if (!mmu.store<s16>(rs1 + imm, s16(rs2))) fault()"                      # *((u16*)ptr(rs1 + imm)) = rs2
+sw         "if (!mmu.store<s32>(rs1 + imm, s32(rs2))) fault()"                      # *((u32*)ptr(rs1 + imm)) = rs2
 addi       "rd = sx(rs1) + sx(imm)"
 slti       "rd = sx(rs1) < sx(imm)"
 sltiu      "rd = ux(rs1) < ux(imm)"
@@ -33,12 +33,12 @@ srli       "rd = ux(rs1) >> imm"
 srai       "rd = sx(rs1) >> imm"
 add        "rd = sx(rs1) + sx(rs2)"
 sub        "rd = sx(rs1) - sx(rs2)"
-sll        "rd = ux(rs1) << (rs2 & 0b1111111)" # 7-bit mask is for RV128I
+sll        "rd = ux(rs1) << (rs2 & 0b1111111)"                                     # 7-bit mask for RV128I
 slt        "rd = sx(rs1) < sx(rs2)"
 sltu       "rd = ux(rs1) < ux(rs2)"
 xor        "rd = ux(rs1) ^ ux(rs2)"
-srl        "rd = ux(rs1) >> (rs2 & 0b1111111)" # 7-bit mask is for RV128I
-sra        "rd = sx(rs1) >> (rs2 & 0b1111111)" # 7-bit mask is for RV128I
+srl        "rd = ux(rs1) >> (rs2 & 0b1111111)"                                     # 7-bit mask for RV128I
+sra        "rd = sx(rs1) >> (rs2 & 0b1111111)"                                     # 7-bit mask for RV128I
 or         "rd = ux(rs1) | ux(rs2)"
 and        "rd = ux(rs1) & ux(rs2)"
 fence      ""
@@ -46,9 +46,9 @@ fence.i    ""
 
 # RV64I    "RV64I Base Integer Instruction Set (in addition to RV32I)"
 
-ld         "rd = sx(*(s64*)ptr(rs1 + imm))"
-sd         "*(u64*)ptr(rs1 + imm) = rs2"
-addiw      "rd = s32(s32(rs1) + sx(imm))"     # gcc-works vs clang-bugs with "rd = s32(rs1) + s32(imm)"
+ld         "s64 t; if (!mmu.load<s64>(rs1 + imm, t)) fault(); else rd = t"         # rd = sx(*(s64*)ptr(rs1 + imm))
+sd         "if (!mmu.store<s64>(rs1 + imm, s64(rs2))) fault()"                     # *(u64*)ptr(rs1 + imm) = rs2
+addiw      "rd = s32(s32(rs1) + sx(imm))"                                          # clang-bugs with "rd = s32(rs1) + s32(imm)"
 slliw      "rd = s32(u32(rs1) << imm)"
 srliw      "rd = s32(u32(rs1) >> imm)"
 sraiw      "rd = s32(rs1) >> imm"
@@ -79,31 +79,31 @@ remuw      "rd = s32(rs2) == 0 ? s32(rs1) : s32(u32(rs1) % u32(rs2))"
 
 # RV32A    "RV32A Standard Extension for Atomic Instructions"
 
-lr.w       "lr = rs1; rd = sx(*((s32*)rs1))"
-sc.w       "ux res; if (lr == rs1) { *((s32*)rs1) = s32(rs2); res = 0; } else { res = 1; }; rd = res"
-amoswap.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2); rd = t"
-amoadd.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) + t; rd = t"
-amoxor.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) ^ t; rd = t"
-amoor.w    "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) | t; rd = t"
-amoand.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) & t; rd = t"
-amomin.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) < t ? s32(rs2) : t; rd = t"
-amomax.w   "s32 t(*(s32*)rs1); *((s32*)rs1) = s32(rs2) > t ? s32(rs2) : t; rd = t"
-amominu.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = u32(rs2) < u32(t) ? s32(rs2) : t; rd = t"
-amomaxu.w  "s32 t(*(s32*)rs1); *((s32*)rs1) = u32(rs2) > u32(t) ? s32(rs2) : t; rd = t"
+lr.w       "lr = rs1; s32 t; if (!mmu.load<s32>(rs1, t)) fault(); else rd = t"
+sc.w       "ux res = 0; if (lr != rs1) res = 1; else if (!mmu.store<s32>(rs1, s32(rs2))) fault(); rd = res"
+amoswap.w  "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2))) fault(); else rd = t"
+amoadd.w   "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) + t)) fault(); else rd = t"
+amoxor.w   "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) ^ t)) fault(); else rd = t"
+amoor.w    "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) | t)) fault(); else rd = t"
+amoand.w   "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) & t)) fault(); else rd = t"
+amomin.w   "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) < t ? s32(rs2) : t)) fault(); else rd = t"
+amomax.w   "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, s32(rs2) > t ? s32(rs2) : t)) fault(); else rd = t"
+amominu.w  "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, u32(rs2) < u32(t) ? s32(rs2) : t)) fault(); else rd = t"
+amomaxu.w  "s32 t(*(s32*)rs1); if (!mmu.store<s32>(rs1, u32(rs2) > u32(t) ? s32(rs2) : t)) fault(); else rd = t"
 
 # RV64A    "RV64A Standard Extension for Atomic Instructions (in addition to RV32A)"
 
-lr.d       "lr = rs1; rd = sx(*((s64*)rs1))"
-sc.d       "ux res; if (lr == rs1) { *((s64*)rs1) = s64(rs2); res = 0; } else { res = 1; }; rd = res"
-amoswap.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2); rd = t"
-amoadd.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) + t; rd = t"
-amoxor.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) ^ t; rd = t"
-amoor.d    "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) | t; rd = t"
-amoand.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) & t; rd = t"
-amomin.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) < t ? s64(rs2) : t; rd = t"
-amomax.d   "s64 t(*(s64*)rs1); *((s64*)rs1) = s64(rs2) > t ? s64(rs2) : t; rd = t"
-amominu.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = u64(rs2) < u64(t) ? s64(rs2) : t; rd = t"
-amomaxu.d  "s64 t(*(s64*)rs1); *((s64*)rs1) = u64(rs2) > u64(t) ? s64(rs2) : t; rd = t"
+lr.d       "lr = rs1; s64 t; if (!mmu.load<s64>(rs1, t)) fault(); else rd = t"
+sc.d       "ux res = 0; if (lr != rs1) res = 1; else if (!mmu.store<s64>(rs1, s64(rs2))) fault(); rd = res"
+amoswap.d  "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2))) fault(); else rd = t"
+amoadd.d   "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) + t)) fault(); else rd = t"
+amoxor.d   "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) ^ t)) fault(); else rd = t"
+amoor.d    "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) | t)) fault(); else rd = t"
+amoand.d   "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) & t)) fault(); else rd = t"
+amomin.d   "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) < t ? s64(rs2) : t)) fault(); else rd = t"
+amomax.d   "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, s64(rs2) > t ? s64(rs2) : t)) fault(); else rd = t"
+amominu.d  "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, u64(rs2) < u64(t) ? s64(rs2) : t)) fault(); else rd = t"
+amomaxu.d  "s64 t(*(s64*)rs1); if (!mmu.store<s64>(rs1, u64(rs2) > u64(t) ? s64(rs2) : t)) fault(); else rd = t"
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
@@ -131,8 +131,8 @@ csrrci
 
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
-flw        "f32(frd) = *(f32*)ptr(rs1 + imm)"
-fsw        "*(f32*)ptr(rs1 + imm) = f32(frs2)"
+flw        "u32 t; if (!mmu.load<u32>(rs1 + imm, t)) fault(); else u32(frd) = t"   # f32(frd) = *(f32*)ptr(rs1 + imm)
+fsw        "if (!mmu.store<f32>(rs1 + imm, f32(frs2))) fault()"                    # *(f32*)ptr(rs1 + imm) = f32(frs2)
 fmadd.s    "fenv_setrm(rm); f32(frd) = f32(frs1) * f32(frs2) + f32(frs3)"
 fmsub.s    "fenv_setrm(rm); f32(frd) = f32(frs1) * f32(frs2) - f32(frs3)"
 fnmadd.s   "fenv_setrm(rm); f32(frd) = -(f32(frs1) * f32(frs2) + f32(frs3))"
@@ -150,8 +150,8 @@ fsqrt.s    "fenv_setrm(rm); f32(frd) = riscv::f32_sqrt(f32(frs1))"
 fle.s      "rd = f32(frs1) <= f32(frs2)"
 flt.s      "rd = f32(frs1) < f32(frs2)"
 feq.s      "rd = f32(frs1) == f32(frs2)"
-fcvt.w.s   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f32(frs1))"                                   # s32(f32(frs1))
-fcvt.wu.s  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f32(frs1))"                                  # s32(u32(f32(frs1)))
+fcvt.w.s   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f32(frs1))"                   # s32(f32(frs1))
+fcvt.wu.s  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f32(frs1))"                  # s32(u32(f32(frs1)))
 fcvt.s.w   "fenv_setrm(rm); f32(frd) = f32(s32(rs1))"
 fcvt.s.wu  "fenv_setrm(rm); f32(frd) = f32(u32(rs1))"
 fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"    # s32(frs1)
@@ -160,15 +160,15 @@ fmv.s.x    "u32(frd) = u32(rs1)"
 
 # RV64F    "RV64F Standard Extension for Single-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.s   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f32(frs1))"                                   # s64(f32(frs1))
-fcvt.lu.s  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f32(frs1))"                                  # s64(u32(f32(frs1)))
+fcvt.l.s   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f32(frs1))"                   # s64(f32(frs1))
+fcvt.lu.s  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f32(frs1))"                  # s64(u32(f32(frs1)))
 fcvt.s.l   "fenv_setrm(rm); f32(frd) = f32(s64(rs1))"
 fcvt.s.lu  "fenv_setrm(rm); f32(frd) = f32(u64(rs1))"
 
 # RV32D    "RV32D Standard Extension for Double-Precision Floating-Point"
 
-fld        "f64(frd) = *(f64*)ptr(rs1 + imm)"
-fsd        "*(f64*)ptr(rs1 + imm) = f64(frs2)"
+fld        "u64 t; if (!mmu.load<u64>(rs1 + imm, t)) fault(); else u64(frd) = t"   # f64(frd) = *(f64*)ptr(rs1 + imm)
+fsd        "if (!mmu.store<f64>(rs1 + imm, f64(frs2))) fault()"                    # *(f64*)ptr(rs1 + imm) = f64(frs2)
 fmadd.d    "fenv_setrm(rm); f64(frd) = f64(frs1) * f64(frs2) + f64(frs3)"
 fmsub.d    "fenv_setrm(rm); f64(frd) = f64(frs1) * f64(frs2) - f64(frs3)"
 fnmadd.d   "fenv_setrm(rm); f64(frd) = -(f64(frs1) * f64(frs2) + f64(frs3))"
@@ -188,16 +188,16 @@ fsqrt.d    "fenv_setrm(rm); f64(frd) = riscv::f64_sqrt(f64(frs1))"
 fle.d      "rd = f64(frs1) <= f64(frs2)"
 flt.d      "rd = f64(frs1) < f64(frs2)"
 feq.d      "rd = f64(frs1) == f64(frs2)"
-fcvt.w.d   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f64(frs1))"                                   # s32(f64(frs1))
-fcvt.wu.d  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f64(frs1))"                                  # s32(u32(f64(frs1)))
+fcvt.w.d   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f64(frs1))"                   # s32(f64(frs1))
+fcvt.wu.d  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f64(frs1))"                  # s32(u32(f64(frs1)))
 fcvt.d.w   "fenv_setrm(rm); f64(frd) = f64(s32(rs1))"
 fcvt.d.wu  "fenv_setrm(rm); f64(frd) = f64(u32(rs1))"
 fclass.d   "rd = f64_classify(f64(frs1))"
 
 # RV64D    "RV64D Standard Extension for Double-Precision Floating-Point (in addition to RV32F)"
 
-fcvt.l.d   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f64(frs1))"                                   # s64(f64(frs1))
-fcvt.lu.d  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f64(frs1))"                                  # s64(u64(f64(frs1)))
+fcvt.l.d   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f64(frs1))"                   # s64(f64(frs1))
+fcvt.lu.d  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f64(frs1))"                  # s64(u64(f64(frs1)))
 fmv.x.d    "rd = (u64(frs1) & u64(f64(NAN))) == u64(f64(NAN)) ? s64(u64(f64(NAN))) : s64(frs1)"    # s64(frs1)
 fcvt.d.l   "fenv_setrm(rm); f64(frd) = f64(s64(rs1))"
 fcvt.d.lu  "fenv_setrm(rm); f64(frd) = f64(u64(rs1))"

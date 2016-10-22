@@ -10,6 +10,18 @@ namespace riscv {
 	template <typename UX>
 	struct mmu_proxy
 	{
+		/*
+		 * Define top of emulator address space, beginning of emulator text.
+		 * Note: due to memory model limitations the executable is linked below 2GB.
+		 *
+		 * MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
+		 * LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000 -static
+		 */
+
+		enum : UX {
+			memory_top = 0x78000000
+		};
+
 		std::vector<std::pair<void*,size_t>> segments;
 		addr_t heap_begin;
 		addr_t heap_end;
@@ -19,6 +31,18 @@ namespace riscv {
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			return riscv::inst_fetch(pc, pc_offset);
+		}
+
+		template <typename P, typename T> bool load(P &proc, UX va, T &val)
+		{
+			val = UX(*(T*)addr_t(va));
+			return true;
+		}
+
+		template <typename P, typename T> bool store(P &proc, UX va, T val)
+		{
+			*((T*)addr_t(va & (memory_top - 1))) = val; // mask stores
+			return true;
 		}
 	};
 

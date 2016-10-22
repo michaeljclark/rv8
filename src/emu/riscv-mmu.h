@@ -45,7 +45,6 @@ namespace riscv {
 			return 0; /* illegel instruction */
 		}
 
-		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
@@ -55,14 +54,13 @@ namespace riscv {
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
 			if (uva != illegal_address) {
-				val = *static_cast<T*>(uva);
+				val = *static_cast<T*>((void*)uva);
 				return true;
 			}
 
 			return false;
 		}
 
-		// T is one of u64, u32, u16, u8
 		template <typename P, typename T> bool store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
@@ -72,7 +70,7 @@ namespace riscv {
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
 			if (uva != illegal_address) {
-				*static_cast<T*>(uva) = val;
+				*static_cast<T*>((void*)uva) = val;
 				return true;
 			}
 

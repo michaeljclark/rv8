@@ -157,7 +157,8 @@ namespace riscv {
 		/* State */
 
 		u64 flags;                    /* Debug flags */
-		SX lr;                        /* Load Reservation, TODO - should be global state */
+		SX lr;                        /* Load Reservation (TODO - change to global state) */
+		SX fault;                     /* Access fault */
 
 		/* Registers */
 
