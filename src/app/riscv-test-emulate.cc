@@ -797,9 +797,6 @@ struct riscv_emulator
 		(AEE) application execution environment
 	*/
 
-	static const size_t stack_top =  0x78000000; // 1920 MiB
-	static const size_t stack_size = 0x01000000; //   16 MiB
-
 	elf_file elf;
 	std::string filename;
 	int proc_logs = 0;
@@ -1074,7 +1071,8 @@ struct riscv_emulator
 		}
 
 		/* Map a stack and set the stack pointer */
-		map_stack(proc, stack_top, stack_size);
+		static const size_t stack_size = 0x00100000; // 1 MiB
+		map_stack(proc, P::mmu_type::memory_top, stack_size);
 
 		/* setup signal handlers */
 		proc.init();

@@ -14,12 +14,12 @@ namespace riscv {
 		 * Define top of emulator address space, beginning of emulator text.
 		 * Note: due to memory model limitations the executable is linked below 2GB.
 		 *
-		 * MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x78000000
-		 * LINUX_LDFLAGS = -Wl,--section-start=.text=0x78000000 -static
+		 * MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000
+		 * LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static
 		 */
 
 		enum : UX {
-			memory_top = 0x78000000
+			memory_top = 0x40000000
 		};
 
 		std::vector<std::pair<void*,size_t>> segments;

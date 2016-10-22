@@ -20,8 +20,8 @@
 #else
 #endif
 
-static const uintptr_t heap_loc = 0x780000000000; // 120 TiB
-static const size_t heap_size   = 0x10000000;     // 1GiB
+static const uintptr_t heap_loc = 0x80000000; // 2 GiB
+static const size_t heap_size   = 0x10000000; // 1 GiB
 static void *tlsf_heap_mmap     = nullptr;
 static tlsf_t tlsf_heap         = nullptr;
 
