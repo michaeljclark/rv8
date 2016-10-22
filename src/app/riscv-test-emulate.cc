@@ -717,15 +717,17 @@ struct processor_stepper : processor_fault, P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
+				if (P::fault) goto f;
 				if (P::log_flags) P::print_log(dec, inst);
 				if (P::log_flags & reg_log_csr) P::print_csr_registers();
-				if (P::fault) goto f;
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 				continue;
 			}
-f:			fault(SIGILL, P::pc);
+f:			if (P::log_flags) P::print_log(dec, inst);
+			if (P::log_flags & reg_log_csr) P::print_csr_registers();
+			fault(SIGILL, P::pc);
 		}
 		return true;
 	}
