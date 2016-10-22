@@ -7,6 +7,17 @@
 
 namespace riscv {
 
+	/* Logging flags */
+
+	enum {
+		proc_log_int = 1,
+		proc_log_csr = 2,
+		proc_log_inst = 4,
+		proc_log_operands = 8,
+		proc_log_no_pseudo = 16,
+		proc_log_mmap = 32,
+	};
+
 	/* RV32 integer register */
 
 	struct ireg_rv32
@@ -126,12 +137,6 @@ namespace riscv {
 		inline freg_fp64() { memset(&r, 0, sizeof(r)); }
 	};
 
-	/* Processor flags */
-
-	enum processor_flag {
-		processor_flag_emulator_debug = 0x1
-	};
-
 	/* Processor state */
 
 	template <typename SX, typename UX, typename IREG, int IREG_COUNT, typename FREG, int FREG_COUNT>
@@ -156,9 +161,9 @@ namespace riscv {
 
 		/* State */
 
-		u64 flags;                    /* Debug flags */
-		SX lr;                        /* Load Reservation (TODO - change to global state) */
 		SX fault;                     /* Access fault */
+		SX log;                       /* Log flags */
+		SX lr;                        /* Load Reservation (TODO - global) */
 
 		/* Registers */
 
@@ -173,7 +178,7 @@ namespace riscv {
 		u64          instret;         /* User Number of Instructions Retired  */
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
-		processor() : node_id(0), hart_id(0), flags(0), lr(-1), pc(0), ireg(), freg(),
+		processor() : node_id(0), hart_id(0), fault(0), log(0), lr(-1), pc(0), ireg(), freg(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 

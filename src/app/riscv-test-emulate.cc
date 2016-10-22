@@ -69,16 +69,6 @@ enum rv_isa {
 	rv_isa_imafdc,
 };
 
-enum reg_log {
-	reg_log_int = 1,
-	reg_log_f32 = 2,
-	reg_log_f64 = 4,
-	reg_log_csr = 8,
-	reg_log_inst = 16,
-	reg_log_operands = 32,
-	reg_log_no_pseudo = 64,
-};
-
 enum csr_perm {
 	csr_rw,
 	csr_rs,
@@ -105,10 +95,9 @@ struct processor_base : P
 	typedef P processor_type;
 	typedef M mmu_type;
 
-	int log_flags;
 	mmu_type mmu;
 
-	processor_base() : P(), log_flags(0) {}
+	processor_base() : P() {}
 
 	std::string format_inst(inst_t inst)
 	{
@@ -187,32 +176,25 @@ struct processor_base : P
 		}
 
 		std::stringstream ss;
-		ss << "(";
 		for (auto i = ops.begin(); i != ops.end(); i++) {
-				ss << (i != ops.begin() ? ", " : "") << *i;
+			ss << (i == ops.begin() ? "(" : ", ") << *i << (i == ops.end() - 1 ? ")" : "");
 		}
-		ss << ")";
 		return ss.str();
 	}
 
-	void print_log(T &dec, inst_t inst)
+	void print_log(decode_type &dec, inst_t inst)
 	{
 		static const char *fmt_32 = "core %4zu : %08llx (%s) %-30s %s\n";
 		static const char *fmt_64 = "core %4zu : %016llx (%s) %-30s %s\n";
 		static const char *fmt_128 = "core %4zu : %032llx (%s) %-30s %s\n";
-		if (log_flags & reg_log_inst) {
-			std::string op_args;
-			if (!(log_flags & reg_log_no_pseudo)) decode_pseudo_inst(dec);
+		if (P::log & proc_log_inst) {
+			if (!(P::log & proc_log_no_pseudo)) decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
-			if (log_flags & reg_log_operands) {
-				op_args = format_operands(dec);
-			}
+			std::string op_args = (P::log & proc_log_operands) ? format_operands(dec) : std::string();
 			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 				P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
 		}
-		if (log_flags & reg_log_int) print_int_registers();
-		if (log_flags & reg_log_f32) print_f32_registers();
-		if (log_flags & reg_log_f64) print_f64_registers();
+		if (P::log & proc_log_int) print_int_registers();
 	}
 
 	void print_csr_registers()
@@ -522,6 +504,12 @@ struct processor_privileged : P
 		                 format_reg("mdbound",   P::mdbound).c_str());
 	}
 
+	void print_log(typename P::decode_type &dec, inst_t inst)
+	{
+		P::print_log(dec, inst);
+		if (P::log & proc_log_csr) P::print_csr_registers();
+	}
+
 	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 	{
 		const typename P::ux fflags_mask   = 0x1f;
@@ -640,8 +628,15 @@ struct processor_stepper : processor_fault, P
 				(info->si_signo, (addr_t)info->si_addr);
 	}
 
-	void fault(int signum, addr_t fault_addr) 
+	[[noreturn]] void fault(int signum, addr_t fault_addr) 
 	{
+		/*
+		 * TODO - faults are currently unrecoverable
+		 *
+		 * Instruction stepper needs to save context with
+		 * setjmp and this signal handler will need to use
+		 * longjmp to return to the stepper to issue a trap
+		 */
 		const char* fault_name;
 		switch (signum) {
 			case SIGILL: fault_name = "SIGILL"; break;
@@ -701,7 +696,7 @@ struct processor_stepper : processor_fault, P
 	{
 		typename P::decode_type dec;
 		size_t i = 0;
-		inst_t inst;
+		inst_t inst = 0;
 		addr_t pc_offset, new_offset;
 		P::time = cpu_cycle_clock();
 		while (i < count) {
@@ -717,19 +712,47 @@ struct processor_stepper : processor_fault, P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
-				if (P::fault) goto f;
-				if (P::log_flags) P::print_log(dec, inst);
-				if (P::log_flags & reg_log_csr) P::print_csr_registers();
+				if (P::fault) goto bad_addr;
+				if (P::log) P::print_log(dec, inst);
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
-				continue;
+			} else {
+				goto illegal_inst;
 			}
-f:			if (P::log_flags) P::print_log(dec, inst);
-			if (P::log_flags & reg_log_csr) P::print_csr_registers();
-			fault(SIGILL, P::pc);
 		}
 		return true;
+
+illegal_inst:
+		/*
+		 * TODO - issue trap
+		 *
+		 * MMU inst_fetch needs to distinguish instruction access fault
+		 *
+		 * - Illegal instruction
+		 * - Instruction access fault
+		 * - Instruction address misaligned
+		 *
+		 * Temporarily call signal handler until traps are implemented
+		 */
+		if (P::log) P::print_log(dec, inst);
+		fault(SIGILL, P::pc);
+
+bad_addr:
+		/*
+		 * TODO - issue trap
+		 *
+		 * MMU needs to set faulting address and distinguish fault type
+		 *
+		 * - Load address misaligned
+		 * - Load access fault
+		 * - Store/AMO address misaligned
+		 * - Store/AMO access fault
+		 *
+		 * Temporarily call signal handler until traps are implemented
+		 */
+		if (P::log) P::print_log(dec, inst);
+		fault(SIGSEGV, P::pc);
 	}
 };
 
@@ -779,10 +802,8 @@ struct riscv_emulator
 
 	elf_file elf;
 	std::string filename;
-	int log_flags = 0;
+	int proc_logs = 0;
 	bool priv_mode = false;
-	bool memory_debug = false;
-	bool emulator_debug = false;
 	bool help_or_error = false;
 	uint64_t initial_seed = 0;
 	int ext = rv_isa_imafdc;
@@ -831,7 +852,7 @@ struct riscv_emulator
 		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
-		if (emulator_debug) {
+		if (proc.log & proc_log_mmap) {
 			debug("mmap   sp : %016" PRIxPTR " - %016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
@@ -856,7 +877,7 @@ struct riscv_emulator
 		proc.mmu.mem.add_segment(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
-		if (emulator_debug) {
+		if (proc.log & proc_log_mmap) {
 			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
@@ -883,7 +904,7 @@ struct riscv_emulator
 		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
-		if (emulator_debug) {
+		if (proc.log & proc_log_mmap) {
 			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
@@ -894,39 +915,30 @@ struct riscv_emulator
 	{
 		cmdline_option options[] =
 		{
-			{ "-m", "--memory-debug", cmdline_arg_type_none,
-				"Memory debug",
-				[&](std::string s) { return (memory_debug = true); } },
-			{ "-d", "--emulator-debug", cmdline_arg_type_none,
-				"Emulator debug",
-				[&](std::string s) { return (emulator_debug = true); } },
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
 			{ "-p", "--privileged", cmdline_arg_type_none,
 				"Privileged ISA Emulation",
 				[&](std::string s) { return (priv_mode = true); } },
+			{ "-m", "--log-mmap", cmdline_arg_type_none,
+				"Log memory mapping",
+				[&](std::string s) { return (proc_logs |= proc_log_mmap); } },
 			{ "-c", "--log-csr-registers", cmdline_arg_type_none,
 				"Log Control and Status Registers",
-				[&](std::string s) { return (log_flags |= reg_log_csr); } },
+				[&](std::string s) { return (proc_logs |= proc_log_csr); } },
 			{ "-r", "--log-int-registers", cmdline_arg_type_none,
 				"Log Integer Registers",
-				[&](std::string s) { return (log_flags |= reg_log_int); } },
-			{ "-F", "--log-float-registers", cmdline_arg_type_none,
-				"Log SP Float Registers",
-				[&](std::string s) { return (log_flags |= reg_log_f32); } },
-			{ "-D", "--log-double-registers", cmdline_arg_type_none,
-				"Log DP Float Registers",
-				[&](std::string s) { return (log_flags |= reg_log_f64); } },
+				[&](std::string s) { return (proc_logs |= proc_log_int); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
-				[&](std::string s) { return (log_flags |= reg_log_inst); } },
+				[&](std::string s) { return (proc_logs |= proc_log_inst); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
-				"Disable Pseudoinstructions",
-				[&](std::string s) { return (log_flags |= reg_log_no_pseudo); } },
+				"Disable Pseudoinstruction decoding",
+				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
 			{ "-o", "--log-operands", cmdline_arg_type_none,
 				"Log Instructions and operands",
-				[&](std::string s) { return (log_flags |= (reg_log_inst | reg_log_operands)); } },
+				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_operands)); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
 				[&](std::string s) { initial_seed = strtoull(s.c_str(), nullptr, 10); return true; } },
@@ -952,24 +964,8 @@ struct riscv_emulator
 
 		filename = result.first[0];
 
-		/* print process information */
-		if (memory_debug) {
-			memory_info(argc, argv);
-		}
-
 		/* load ELF (headers only) */
 		elf.load(filename, true);
-	}
-
-	/* print approximate location of host text, heap and stack of our user process */
-	void memory_info(int argc, const char *argv[])
-	{
-		static const char *textptr = nullptr;
-		void *heapptr = malloc(8);
-		debug("text : ~0x%016" PRIxPTR, (addr_t)&textptr);
-		debug("heap : ~0x%016" PRIxPTR, (addr_t)heapptr);
-		debug("stack: ~0x%016" PRIxPTR, (addr_t)argv);
-		free(heapptr);
 	}
 
 	template <typename P>
@@ -987,7 +983,7 @@ struct riscv_emulator
 		}
 
 		// print seed initial seed state
-		if (emulator_debug) {
+		if (proc.log & proc_log_mmap) {
 			std::stringstream ss;
 			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
 				ss << format_string("%016llx", *(u64*)(seed + i));
@@ -1022,8 +1018,7 @@ struct riscv_emulator
 
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
-		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
-		proc.log_flags = log_flags;
+		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 
 		/* randomise integer register state with 512 bits of entropy */
@@ -1064,8 +1059,7 @@ struct riscv_emulator
 
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
-		proc.flags = emulator_debug ? processor_flag_emulator_debug : 0;
-		proc.log_flags = log_flags;
+		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 
 		/* randomise integer register state with 512 bits of entropy */
