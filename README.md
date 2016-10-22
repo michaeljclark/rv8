@@ -278,8 +278,8 @@ usage: riscv-test-emulate [<options>] <elf_file>
            --log-csr-registers, -c            Log Control and Status Registers
            --log-int-registers, -r            Log Integer Registers
             --log-instructions, -l            Log Instructions
-                   --no-pseudo, -x            Disable Pseudoinstruction decoding
                 --log-operands, -o            Log Instructions and operands
+                   --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
 ```
