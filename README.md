@@ -274,11 +274,14 @@ Emulator command line options:
 usage: riscv-test-emulate [<options>] <elf_file>
                          --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
                   --privileged, -p            Privileged ISA Emulation
-                    --log-mmap, -m            Log memory mapping
-           --log-csr-registers, -c            Log Control and Status Registers
-           --log-int-registers, -r            Log Integer Registers
             --log-instructions, -l            Log Instructions
-                --log-operands, -o            Log Instructions and operands
+                --log-operands, -o            Log Instructions and Operands
+              --log-memory-map, -m            Log Memory Map
+               --log-mmode-csr, -M            Log Machine Control and Status Registers
+               --log-hmode-csr, -H            Log Hypervisor Control and Status Registers
+               --log-smode-csr, -S            Log Supervisor Control and Status Registers
+               --log-umode-csr, -U            Log User Control and Status Registers
+               --log-registers, -r            Log Registers (defaults to integer registers)
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help

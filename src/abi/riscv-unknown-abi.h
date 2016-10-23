@@ -220,8 +220,8 @@ namespace riscv {
 			// keep track of the mapped segment and set the new heap_end
 			proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
 			proc.mmu.heap_end = new_heap_end;
-			if (proc.log & proc_log_mmap) {
-				debug("mmap  brk : %016" PRIxPTR " - %016" PRIxPTR " +R+W",
+			if (proc.log & proc_log_memory) {
+				debug("mmap brk :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 					curr_heap_end, new_heap_end);
 			}
 			proc.ireg[riscv_ireg_a0] = new_addr;

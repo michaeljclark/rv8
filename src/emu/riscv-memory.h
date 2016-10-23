@@ -37,9 +37,9 @@ namespace riscv {
 		void add_segment(UX mpa, uintptr_t uva, size_t size, UX flags)
 		{
 			segments.push_back(memory_segment_type(mpa, uva, size, flags));
-			debug("mmap  uva : %016" PRIxPTR " - %016" PRIxPTR,
+			debug("mmap uva :%016" PRIxPTR "-%016" PRIxPTR,
 				(uintptr_t)uva, (uintptr_t)uva + size);
-			debug("      mpa : %016" PRIxPTR " - %016" PRIxPTR " %s%s%s",
+			debug("     mpa :%016" PRIxPTR "-%016" PRIxPTR " %s%s%s",
 				(uintptr_t)mpa, (uintptr_t)mpa + size,
 				(flags & pma_prot_read) ? "+R" : "",
 				(flags & pma_prot_write) ? "+W" : "",

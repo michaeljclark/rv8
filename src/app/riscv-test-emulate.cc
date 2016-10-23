@@ -76,12 +76,42 @@ enum csr_perm {
 	csr_rc
 };
 
+const char* riscv_fault_sym[] = {
+	"misaligned_fetch",
+	"fault_fetch",
+	"illegal_instruction",
+	"breakpoint",
+	"misaligned_load",
+	"fault_load",
+	"misaligned_store",
+	"fault_store",
+	"user_ecall",
+	"supervisor_ecall",
+	"hypervisor_ecall",
+	"machine_ecall"
+};
+
+const char* riscv_intr_sym[] = {
+	"u_software",
+	"s_software",
+	"h_software",
+	"m_software",
+	"u_timer",
+	"s_timer",
+	"h_timer",
+	"m_timer",
+	"u_external",
+	"s_external",
+	"h_external",
+	"m_external"
+};
+
 template <typename T>
 std::string format_reg(std::string name, T &reg)
 {
 	return
-		sizeof(T) == 4 ? format_string("%-10s: %08x ", name.c_str(), reg) :
-		sizeof(T) == 8 ? format_string("%-10s: %016llx ", name.c_str(), reg) :
+		sizeof(T) == 4 ? format_string("%-9s:%08x", name.c_str(), reg) :
+		sizeof(T) == 8 ? format_string("%-9s:%016llx", name.c_str(), reg) :
 		format_string("%-8s:<INVALID>", name.c_str(), reg);
 }
 
@@ -185,9 +215,9 @@ struct processor_base : P
 
 	void print_log(decode_type &dec, inst_t inst)
 	{
-		static const char *fmt_32 = "core %4zu : %08llx (%s) %-30s %s\n";
-		static const char *fmt_64 = "core %4zu : %016llx (%s) %-30s %s\n";
-		static const char *fmt_128 = "core %4zu : %032llx (%s) %-30s %s\n";
+		static const char *fmt_32 = "core-%-4zu:%08llx (%s) %-30s %s\n";
+		static const char *fmt_64 = "core-%-4zu:%016llx (%s) %-30s %s\n";
+		static const char *fmt_128 = "core-%-4zu:%032llx (%s) %-30s %s\n";
 		if (P::log & proc_log_inst) {
 			if (!(P::log & proc_log_no_pseudo)) decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
@@ -195,23 +225,24 @@ struct processor_base : P
 			printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 				P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
 		}
-		if (P::log & proc_log_int) print_int_registers();
+		if (P::log & proc_log_int_reg) print_int_registers();
 	}
 
 	void print_csr_registers()
 	{
-		printf("%s\n", format_reg("pc", P::pc).c_str());
-		printf("%s\n", format_reg("cycle", P::cycle).c_str());
-		printf("%s\n", format_reg("instret", P::instret).c_str());
-		printf("%s\n", format_reg("time", P::time).c_str());
-		printf("%s\n", format_reg("fcsr", P::fcsr).c_str());
+		printf("%s %s %s\n", format_reg("cycle", P::cycle).c_str(),
+		                     format_reg("instret", P::instret).c_str(),
+		                     format_reg("time", P::time).c_str());
+		printf("%s %s\n",    format_reg("pc", P::pc).c_str(),
+		                     format_reg("fcsr", P::fcsr).c_str());
 	}
 
 	void print_int_registers()
 	{
-		for (size_t i = riscv_ireg_x0; i < P::ireg_count; i++) {
+		for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
 			printf("%s%s", format_reg(riscv_ireg_name_sym[i],
-				P::ireg[i].r.xu.val).c_str(), (i + 1) % 2 == 0 ? "\n" : "");
+				P::ireg[i].r.xu.val).c_str(), /* 3 column layout */
+				((i - 1) % 3) == 0 ? "\n" : ((i - 1) % 3) > 0 ? " " : "");
 		}
 	}
 
@@ -483,38 +514,67 @@ struct processor_privileged : P
 
 	void print_csr_registers()
 	{
+		printf("%s %s %s\n", format_reg("misa",      P::misa).c_str(),
+		                     format_reg("pdid",      P::pdid).c_str(),
+		                     format_reg("mode",      P::mode).c_str());
+		printf("%s %s %s\n", format_reg("mvendorid", P::mvendorid).c_str(),
+		                     format_reg("marchid",   P::marchid).c_str(),
+		                     format_reg("mimpid",    P::mimpid).c_str());
+		printf("%s %s %s\n", format_reg("mhartid",   P::mhartid).c_str(),
+		                     format_reg("mstatus",   P::mstatus).c_str(),
+		                     format_reg("mtimecmp",  P::mtimecmp).c_str());
+		printf("%s %s %s\n", format_reg("medeleg",   P::medeleg).c_str(),
+		                     format_reg("mideleg",   P::mideleg).c_str(),
+		                     format_reg("mip",       P::mip).c_str());
+		printf("%s %s %s\n", format_reg("mtvec",     P::mtvec).c_str(),
+		                     format_reg("mscratch",  P::mscratch).c_str(),
+		                     format_reg("mie",       P::mie).c_str());
+		printf("%s %s %s\n", format_reg("mepc",      P::mepc).c_str(),
+		                     format_reg("mcause",    P::mcause).c_str(),
+		                     format_reg("mbadaddr",  P::mbadaddr).c_str());
+		printf("%s %s %s\n", format_reg("mbase",     P::mbase).c_str(),
+		                     format_reg("mibase",    P::mibase).c_str(),
+		                     format_reg("mdbase",    P::mdbase).c_str());
+		printf("%s %s %s\n", format_reg("mbound",    P::mbound).c_str(),
+		                     format_reg("mibound",   P::mibound).c_str(),
+		                     format_reg("mdbound",   P::mdbound).c_str());
+		if (P::log & proc_log_csr_hmode) {
+			printf("%s %s\n",    format_reg("htvec",     P::htvec).c_str(),
+			                     format_reg("hscratch",  P::hscratch).c_str());
+			printf("%s %s %s\n", format_reg("hepc",      P::hepc).c_str(),
+			                     format_reg("hcause",    P::hcause).c_str(),
+			                     format_reg("hbadaddr",  P::hbadaddr).c_str());
+			printf("%s %s\n",    format_reg("hedeleg",   P::hedeleg).c_str(),
+			                     format_reg("hideleg",   P::hideleg).c_str());
+		}
+		if (P::log & proc_log_csr_smode) {
+			printf("%s %s %s\n", format_reg("stvec",     P::stvec).c_str(),
+			                     format_reg("sscratch",  P::sscratch).c_str(),
+			                     format_reg("sptbr",     P::sptbr).c_str());
+			printf("%s %s %s\n", format_reg("sepc",      P::sepc).c_str(),
+			                     format_reg("scause",    P::scause).c_str(),
+			                     format_reg("sbadaddr",  P::sbadaddr).c_str());
+		}
+		if (P::log & proc_log_csr_umode) {
+			printf("%s %s\n",    format_reg("sedeleg",   P::sedeleg).c_str(),
+			                     format_reg("sideleg",   P::sideleg).c_str());
+			printf("%s %s\n",    format_reg("utvec",     P::utvec).c_str(),
+			                     format_reg("uscratch",  P::uscratch).c_str());
+			printf("%s %s %s\n", format_reg("uepc",      P::uepc).c_str(),
+			                     format_reg("ucause",    P::ucause).c_str(),
+			                     format_reg("ubadaddr",  P::ubadaddr).c_str());
+		}
 		P::print_csr_registers();
-
-		printf("%s%s\n", format_reg("pdid",      P::pdid).c_str(),
-		                 format_reg("mode",      P::mode).c_str());
-		printf("%s%s\n", format_reg("misa",      P::misa).c_str(),
-		                 format_reg("mvendorid", P::mvendorid).c_str());
-		printf("%s%s\n", format_reg("marchid",   P::marchid).c_str(),
-		                 format_reg("mimpid",    P::mimpid).c_str());
-		printf("%s%s\n", format_reg("mhartid",   P::mhartid).c_str(),
-		                 format_reg("mstatus",   P::mstatus).c_str());
-		printf("%s%s\n", format_reg("mtvec",     P::mtvec).c_str(),
-		                 format_reg("mtimecmp",  P::mtimecmp).c_str());
-		printf("%s%s\n", format_reg("medeleg",   P::medeleg).c_str(),
-		                 format_reg("mideleg",   P::mideleg).c_str());
-		printf("%s%s\n", format_reg("mip",       P::mip).c_str(),
-		                 format_reg("mie",       P::mie).c_str());
-		printf("%s%s\n", format_reg("mscratch",  P::mscratch).c_str(),
-		                 format_reg("mepc",      P::mepc).c_str());
-		printf("%s%s\n", format_reg("mcause",    P::mcause).c_str(),
-		                 format_reg("mbadaddr",  P::mbadaddr).c_str());
-		printf("%s%s\n", format_reg("mbase",     P::mbase).c_str(),
-		                 format_reg("mbound",    P::mbound).c_str());
-		printf("%s%s\n", format_reg("mibase",    P::mibase).c_str(),
-		                 format_reg("mibound",   P::mibound).c_str());
-		printf("%s%s\n", format_reg("mdbase",    P::mdbase).c_str(),
-		                 format_reg("mdbound",   P::mdbound).c_str());
 	}
 
 	void print_log(typename P::decode_type &dec, inst_t inst)
 	{
 		P::print_log(dec, inst);
-		if (P::log & proc_log_csr) P::print_csr_registers();
+		if ((P::log & (proc_log_int_reg)) &&
+		    (P::log & (proc_log_csr_mmode | proc_log_csr_hmode |
+		               proc_log_csr_smode | proc_log_csr_umode))) {
+			print_csr_registers();
+		}
 	}
 
 	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
@@ -686,8 +746,8 @@ struct processor_privileged : P
 		 * mode, medeleg, hedeleg, sedeleg, update mstatus, and one of
 		 * mepc, hepc or sepc, and set PC to one of mtvec, htvec or stvec.
 		 */
-		printf("FAULT     : cause=%d badaddr=%016llx\n",
-			cause, addr_t(P::badaddr));
+		printf("FAULT    :%s [pc:%016llx badaddr:%016llx]\n",
+			riscv_fault_sym[cause], addr_t(P::pc), addr_t(P::badaddr));
 		P::print_csr_registers();
 		P::print_int_registers();
 		exit(1);
@@ -836,7 +896,8 @@ struct processor_stepper : processor_fault, P
 illegal_inst:
 		// TODO - issue Illegal instruction fault
 		if (P::log) P::print_log(dec, inst);
-		printf("FAULT     : illegal instruction\n");
+		printf("FAULT    :%s\n",
+			riscv_fault_sym[riscv_cause_illegal_instruction]);
 		P::print_csr_registers();
 		P::print_int_registers();
 		exit(1);
@@ -938,8 +999,8 @@ struct riscv_emulator
 		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
-		if (proc.log & proc_log_mmap) {
-			debug("mmap   sp : %016" PRIxPTR " - %016" PRIxPTR " +R+W",
+		if (proc.log & proc_log_memory) {
+			debug("mmap sp  :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
 	}
@@ -963,8 +1024,8 @@ struct riscv_emulator
 		proc.mmu.mem.add_segment(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
-		if (proc.log & proc_log_mmap) {
-			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
+		if (proc.log & proc_log_memory) {
+			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -990,8 +1051,8 @@ struct riscv_emulator
 		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
 
-		if (proc.log & proc_log_mmap) {
-			debug("mmap  elf : %016" PRIxPTR " - %016" PRIxPTR " %s",
+		if (proc.log & proc_log_memory) {
+			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -1007,21 +1068,30 @@ struct riscv_emulator
 			{ "-p", "--privileged", cmdline_arg_type_none,
 				"Privileged ISA Emulation",
 				[&](std::string s) { return (priv_mode = true); } },
-			{ "-m", "--log-mmap", cmdline_arg_type_none,
-				"Log memory mapping",
-				[&](std::string s) { return (proc_logs |= proc_log_mmap); } },
-			{ "-c", "--log-csr-registers", cmdline_arg_type_none,
-				"Log Control and Status Registers",
-				[&](std::string s) { return (proc_logs |= proc_log_csr); } },
-			{ "-r", "--log-int-registers", cmdline_arg_type_none,
-				"Log Integer Registers",
-				[&](std::string s) { return (proc_logs |= proc_log_int); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (proc_logs |= proc_log_inst); } },
 			{ "-o", "--log-operands", cmdline_arg_type_none,
-				"Log Instructions and operands",
+				"Log Instructions and Operands",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_operands)); } },
+			{ "-m", "--log-memory-map", cmdline_arg_type_none,
+				"Log Memory Map",
+				[&](std::string s) { return (proc_logs |= proc_log_memory); } },
+			{ "-M", "--log-mmode-csr", cmdline_arg_type_none,
+				"Log Machine Control and Status Registers",
+				[&](std::string s) { return (proc_logs |= proc_log_csr_mmode); } },
+			{ "-H", "--log-hmode-csr", cmdline_arg_type_none,
+				"Log Hypervisor Control and Status Registers",
+				[&](std::string s) { return (proc_logs |= proc_log_csr_hmode); } },
+			{ "-S", "--log-smode-csr", cmdline_arg_type_none,
+				"Log Supervisor Control and Status Registers",
+				[&](std::string s) { return (proc_logs |= proc_log_csr_smode); } },
+			{ "-U", "--log-umode-csr", cmdline_arg_type_none,
+				"Log User Control and Status Registers",
+				[&](std::string s) { return (proc_logs |= proc_log_csr_umode); } },
+			{ "-r", "--log-registers", cmdline_arg_type_none,
+				"Log Registers (defaults to integer registers)",
+				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
@@ -1069,7 +1139,7 @@ struct riscv_emulator
 		}
 
 		// print seed initial seed state
-		if (proc.log & proc_log_mmap) {
+		if (proc.log & proc_log_memory) {
 			std::stringstream ss;
 			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
 				ss << format_string("%016llx", *(u64*)(seed + i));

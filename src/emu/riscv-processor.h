@@ -10,12 +10,15 @@ namespace riscv {
 	/* Processor logging flags */
 
 	enum {
-		proc_log_int =             1,       /* Log integer registers */
-		proc_log_csr =             2,       /* Log status and control registers */
-		proc_log_inst =            4,       /* Log instructions */
-		proc_log_operands =        8,       /* Log instruction operands */
-		proc_log_mmap =            16,      /* Log memory map */
-		proc_log_no_pseudo =       36,      /* Don't decode pseudoinstructions */
+		proc_log_inst =            1<<0,       /* Log instructions */
+		proc_log_operands =        1<<1,       /* Log instruction operands */
+		proc_log_memory =          1<<2,       /* Log memory mapping information */
+		proc_log_csr_mmode =       1<<3,       /* Log machine status and control registers */
+		proc_log_csr_hmode =       1<<4,       /* Log hypervisor status and control registers */
+		proc_log_csr_smode =       1<<5,       /* Log supervisor status and control registers */
+		proc_log_csr_umode =       1<<6,       /* Log user status and control registers */
+		proc_log_int_reg =         1<<7,       /* Log integer registers */
+		proc_log_no_pseudo =       1<<8,       /* Don't decode pseudoinstructions */
 	};
 
 	/* RV32 integer register */
