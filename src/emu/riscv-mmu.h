@@ -28,21 +28,34 @@ namespace riscv {
 
 		/* MMU methods */
 
+		template <typename T> constexpr bool misaligned(UX va)
+		{
+			return (va & (sizeof(T) - 1)) != 0;
+		}
+
+		constexpr bool illegal(addr_t pa)
+		{
+			return pa == illegal_address;
+		}
+
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
+			if (unlikely(misaligned<u16>(pc))) {
+				proc.badaddr = pc;
+				longjmp(proc.env, riscv_cause_misaligned_fetch);
+			}
+
 			addr_t mpa = translate_addr<P,false>(proc, pc, tlb_ent);
-			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
 			inst_t inst;
-			if (uva == illegal_address) {
-				proc.cause = proc_fault_flag | riscv_cause_fault_fetch;
+			if (unlikely(illegal(uva))) {
 				proc.badaddr = pc;
-				pc_offset = 0;
-				inst = 0;
+				longjmp(proc.env, riscv_cause_fault_fetch);
 			} else {
 				inst = riscv::inst_fetch(uva, pc_offset);
 			}
@@ -53,15 +66,20 @@ namespace riscv {
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+
+			if (unlikely(misaligned<T>(va))) {
+				proc.badaddr = va;
+				longjmp(proc.env, riscv_cause_misaligned_load);
+			}
+
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
-			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
-			if (uva == illegal_address) {
-				proc.cause = proc_fault_flag | riscv_cause_fault_load;
+			if (unlikely(illegal(uva))) {
 				proc.badaddr = va;
-				val = 0; /* suppress uninitialised */
+				longjmp(proc.env, riscv_cause_fault_load);
 			} else {
 				val = *static_cast<T*>((void*)uva);
 			}
@@ -70,14 +88,20 @@ namespace riscv {
 		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+
+			if (unlikely(misaligned<T>(va))) {
+				proc.badaddr = va;
+				longjmp(proc.env, riscv_cause_misaligned_store);
+			}
+
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
-			addr_t uva = mpa != illegal_address ? mem.mpa_to_uva(mpa) : illegal_address;
+			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
 			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
 
-			if (uva == illegal_address) {
-				proc.cause = proc_fault_flag | riscv_cause_fault_store;
+			if (unlikely(illegal(uva))) {
 				proc.badaddr = va;
+				longjmp(proc.env, riscv_cause_fault_store);
 			} else {
 				*static_cast<T*>((void*)uva) = val;
 			}

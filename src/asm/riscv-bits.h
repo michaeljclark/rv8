@@ -18,6 +18,15 @@ namespace riscv {
 	typedef unsigned int       _bits_u32;
 	typedef unsigned long long _bits_u64;
 
+	/* branch prediction hints */
+	#if defined __GNUC__
+	#define likely(x)      __builtin_expect(!!(x), 1)
+	#define unlikely(x)    __builtin_expect(!!(x), 0)
+	#else
+	#define likely(x) x
+	#define unlikely(x) x
+	#endif
+
 	inline constexpr bool ispow2(size_t val) { return val && !(val & (val-1)); }
 
 	inline constexpr size_t ctz_pow2(_bits_u32 v)

@@ -18,13 +18,6 @@ namespace riscv {
 		proc_log_no_pseudo =       36,      /* Don't decode pseudoinstructions */
 	};
 
-	/* Processor cause indicator flags */
-
-	enum {
-		proc_fault_flag =          256,     /* Interrupt bit clear */
-		proc_intr_flag =           512,     /* Interrupt bit set */
-	};
-
 	/* RV32 integer register */
 
 	struct ireg_rv32
@@ -166,23 +159,20 @@ namespace riscv {
 			freg_count = FREG_COUNT        /* Number of floating point registers */
 		};
 
-		/* Topology */
-
-		size_t node_id;               /* Node Identifier */
-		size_t hart_id;               /* Hardware Thread Identifier */
-
-		/* State */
-
-		SX cause;                     /* Fault cause */
-		SX badaddr;                   /* Fault address */
-		SX log;                       /* Log flags */
-		SX lr;                        /* Load Reservation (TODO - global) */
-
 		/* Registers */
 
 		UX pc;                        /* Program Counter */
 		IREG ireg[ireg_count];        /* Integer registers */
 		FREG freg[freg_count];        /* Floating-point registers */
+
+		/* Internal State */
+
+		u16 node_id;                  /* Node Identifier */
+		u16 hart_id;                  /* Hardware Thread Identifier */
+		u32 log;                      /* Log flags */
+		SX lr;                        /* Load Reservation (TODO - global) */
+		SX badaddr;                   /* Fault address */
+		jmp_buf env;                  /* Fault handler */
 
 		/* Base ISA Control and Status Registers */
 
@@ -191,7 +181,8 @@ namespace riscv {
 		u64          instret;         /* User Number of Instructions Retired  */
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
-		processor() : node_id(0), hart_id(0), cause(0), badaddr(0), log(0), lr(-1), pc(0), ireg(), freg(),
+		processor() : pc(0), ireg(), freg(),
+			node_id(0), hart_id(0), log(0), lr(-1), badaddr(0), env(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 

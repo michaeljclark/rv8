@@ -143,12 +143,26 @@ namespace riscv {
 		UX           mibound;         /* Mbbid: Separate Instruction Bound Register */
 		UX           mdbase;          /* Mbbid: Separate Data Base Register */
 		UX           mdbound;         /* Mbbid: Separate Data Bound Register */
-		UX           sptbr;           /* Supervisor Page Table Base Register */
+		UX           htvec;           /* Hypervisor Trap Vector Base-Address Register */
+		UX           hedeleg;         /* Hypervisor Exception Delegation Mask (enum riscv_cause) */
+		UX           hideleg;         /* Hypervisor Interrupt Delegation Mask (enum riscv_intr) */
+		UX           hscratch;        /* Hypervisor Scratch Register */
+		UX           hepc;            /* Hypervisor Exception Program Counter */
+		UX           hcause;          /* Hypervisor Cause Register */
+		UX           hbadaddr;        /* Hypervisor Bad Address Register */
 		UX           stvec;           /* Supervisor Trap Vector Base-Address Register */
+		UX           sedeleg;         /* Supervisor Exception Delegation Mask (enum riscv_cause) */
+		UX           sideleg;         /* Supervisor Interrupt Delegation Mask (enum riscv_intr) */
 		UX           sscratch;        /* Supervisor Scratch Register */
 		UX           sepc;            /* Supervisor Exception Program Counter */
 		UX           scause;          /* Supervisor Cause Register */
 		UX           sbadaddr;        /* Supervisor Bad Address Register */
+		UX           sptbr;           /* Supervisor Page Table Base Register */
+		UX           utvec;           /* User Trap Vector Base-Address Register */
+		UX           uscratch;        /* User Scratch Register */
+		UX           uepc;            /* User Exception Program Counter */
+		UX           ucause;          /* User Cause Register */
+		UX           ubadaddr;        /* User Bad Address Register */
 		u64          mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
 		u64          mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
 		u64          mucycle_delta;   /* Machine User Number of Cycles Delta */

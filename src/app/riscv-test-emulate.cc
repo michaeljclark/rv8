@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <cstdarg>
 #include <csignal>
+#include <csetjmp>
 #include <cerrno>
 #include <cmath>
 #include <cfenv>
@@ -461,6 +462,12 @@ struct processor_proxy : P
 		}
 		return 0; /* illegal instruction */
 	}
+
+	void fault(int cause)
+	{
+		// proxy_mmu does not implement longjmp faults
+		exit(1);
+	}
 };
 
 
@@ -512,12 +519,54 @@ struct processor_privileged : P
 
 	addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 	{
+		/*
+		 * fcsr
+		 */
 		const typename P::ux fflags_mask   = 0x1f;
 		const typename P::ux frm_mask      = 0x3;
 		const typename P::ux fcsr_mask     = 0xff;
-		const typename P::ux mstatus_wmask = (1ULL<<30)-1;
-		const typename P::ux mstatus_rmask = (1ULL<<(P::xlen-1)) | ((1ULL<<30)-1);
-		const typename P::ux misa_rmask    = (1ULL<<28)-1;
+
+		/*
+		 * misa
+		 */
+		const typename P::ux misa_rmask    = typename P::ux(-1);
+		const typename P::ux misa_wmask    = (1ULL<<(P::xlen-2))-1;
+
+		/*
+		 * mstatus                           33222222222211111111110000000000
+		 *                                   10987654321098765432109876543210
+		 *                                               MPMXXFFMMHHSMHSUMHSU
+		 *                                               XUPSSSSPPPPPPPPPIIII
+		 *                                               RMR    PPPPPIIIIEEEE
+		 *                                                 V         EEEE
+		 * Machine Read/Write Bits         M 11111111111111111111111111111111
+		 * Hypervisor Read/Write Bits      H 00000000000001011110011101110111
+		 * Supervisor Read/Write Bits      S 00000000000001011110000100110011
+		 * User Read/Write Bits            U 00000000000000000000000000010001
+		 */
+		const typename P::ux mstatus_rmask = typename P::ux(-1);
+		const typename P::ux mstatus_wmask = (1ULL<<(P::xlen-1))-1;
+		const typename P::ux hstatus_rmask = 0b1011110011101110111 | 1ULL<<(P::xlen-1);
+		const typename P::ux hstatus_wmask = 0b1011110011101110111;
+		const typename P::ux sstatus_rmask = 0b1011110000100110011 | 1ULL<<(P::xlen-1);
+		const typename P::ux sstatus_wmask = 0b1011110000100110011;
+		const typename P::ux ustatus_rmask = 0b0000000000000010001 | 1ULL<<(P::xlen-1);
+		const typename P::ux ustatus_wmask = 0b0000000000000010001;
+
+		/*
+		 * mip/mie                           33222222222211111111110000000000
+		 *                                   10987654321098765432109876543210
+		 *                                                       MHSUMHSUMHSU
+		 *                                                       EEEETTTTSSSS
+		 * Machine Read/Write Bits         M 11111111111111111111111111111111
+		 * Hypervisor Read/Write Bits      H 00000000000000000000011101110111
+		 * Supervisor Read/Write Bits      S 00000000000000000000001100110011
+		 * User Read/Write Bits            U 00000000000000000000000100010001
+		 */
+		const typename P::ux mi_mask       = typename P::ux(-1);
+		const typename P::ux hi_mask       = 0b011101110111;
+		const typename P::ux si_mask       = 0b001100110011;
+		const typename P::ux ui_mask       = 0b000100010001;
 
 		switch (csr) {
 			case riscv_csr_fflags:   fenv_getflags(P::fcsr);
@@ -539,7 +588,8 @@ struct processor_privileged : P
 			case riscv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
 			case riscv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
 			case riscv_csr_instreth: P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
-			case riscv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa, misa_rmask);  break;
+			case riscv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa,
+			                             value, misa_wmask, misa_rmask);                      break;
 			case riscv_csr_mvendorid:P::get_csr(dec, P::mode, op, csr, P::mvendorid, value);  break;
 			case riscv_csr_marchid:  P::get_csr(dec, P::mode, op, csr, P::marchid, value);    break;
 			case riscv_csr_mimpid:   P::get_csr(dec, P::mode, op, csr, P::mimpid, value);     break;
@@ -549,8 +599,10 @@ struct processor_privileged : P
 			case riscv_csr_mtvec:    P::get_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
 			case riscv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
 			case riscv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
-			case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value); break;
-			case riscv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value); break;
+			case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+			                             value, mi_mask, mi_mask);                            break;
+			case riscv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+			                             value, mi_mask, mi_mask);                            break;
 			case riscv_csr_mscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
 			case riscv_csr_mepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
 			case riscv_csr_mcause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
@@ -561,16 +613,44 @@ struct processor_privileged : P
 			case riscv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
 			case riscv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
 			case riscv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
+			case riscv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+			                             value, hstatus_wmask, hstatus_rmask);                break;
+			case riscv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec, value);      break;
+			case riscv_csr_hedeleg:  P::set_csr(dec, P::mode, op, csr, P::hedeleg, value);    break;
+			case riscv_csr_hideleg:  P::set_csr(dec, P::mode, op, csr, P::hideleg, value);    break;
+			case riscv_csr_hip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+			                             value, hi_mask, hi_mask);                            break;
+			case riscv_csr_hie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+			                             value, hi_mask, hi_mask);                            break;
+			case riscv_csr_hscratch: P::set_csr(dec, P::mode, op, csr, P::hscratch, value);   break;
+			case riscv_csr_hepc:     P::set_csr(dec, P::mode, op, csr, P::hepc, value);       break;
+			case riscv_csr_hcause:   P::set_csr(dec, P::mode, op, csr, P::hcause, value);     break;
+			case riscv_csr_hbadaddr: P::set_csr(dec, P::mode, op, csr, P::hbadaddr, value);   break;
+			case riscv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+			                             value, sstatus_wmask, sstatus_rmask);                break;
 			case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value);      break;
-			case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
-			case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
-			case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value); break;
-			case riscv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value); break;
+			case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::sedeleg, value);    break;
+			case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::sideleg, value);    break;
+			case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+			                             value, si_mask, si_mask);                            break;
+			case riscv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+			                             value, si_mask, si_mask);                            break;
 			case riscv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
 			case riscv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
 			case riscv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
 			case riscv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
 			case riscv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
+			case riscv_csr_ustatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+			                             value, ustatus_wmask, ustatus_rmask);                break;
+			case riscv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value);      break;
+			case riscv_csr_uip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+			                             value, ui_mask, ui_mask);                            break;
+			case riscv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+			                             value, ui_mask, ui_mask);                            break;
+			case riscv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
+			case riscv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
+			case riscv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
+			case riscv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
 			default: return 0; /* illegal instruction */
 		}
 		return pc_offset;
@@ -595,6 +675,22 @@ struct processor_privileged : P
 			default: break;
 		}
 		return 0;
+	}
+
+	void fault(int cause)
+	{
+		/*
+		 * TODO - setup processor state to execute fault handler
+		 *
+		 * NOTE: fault dispatch needs to be implemented. Check privilege
+		 * mode, medeleg, hedeleg, sedeleg, update mstatus, and one of
+		 * mepc, hepc or sepc, and set PC to one of mtvec, htvec or stvec.
+		 */
+		printf("FAULT     : cause=%d badaddr=%016llx\n",
+			cause, addr_t(P::badaddr));
+		P::print_csr_registers();
+		P::print_int_registers();
+		exit(1);
 	}
 };
 
@@ -624,22 +720,15 @@ struct processor_stepper : processor_fault, P
 	static void signal_handler(int signum, siginfo_t *info, void *)
 	{
 		static_cast<processor_stepper<P>*>
-			(processor_fault::current)->fault
+			(processor_fault::current)->signal_dispatch
 				(info->si_signo, (addr_t)info->si_addr);
 	}
 
-	[[noreturn]] void fault(int signum, addr_t fault_addr) 
+	[[noreturn]] void signal_dispatch(int signum, addr_t fault_addr)
 	{
-		/*
-		 * TODO - faults are currently unrecoverable
-		 *
-		 * Instruction stepper needs to save context with
-		 * setjmp and this signal handler will need to use
-		 * longjmp to return to the stepper to issue a trap
-		 */
+		// get signal name
 		const char* fault_name;
 		switch (signum) {
-			case SIGILL: fault_name = "SIGILL"; break;
 			case SIGBUS: fault_name = "SIGBUS"; break;
 			case SIGSEGV: fault_name = "SIGSEGV"; break;
 			case SIGTERM: fault_name = "SIGTERM"; break;
@@ -647,6 +736,19 @@ struct processor_stepper : processor_fault, P
 			case SIGINT: fault_name = "SIGINT"; break;
 			default: fault_name = "FAULT";
 		}
+
+		/*
+		 * NOTE: processor_proxy with the proxy_mmu is not able to
+		 * recover enough information from a SIGSEGV to issue faults.
+		 *
+		 * SIGSEGV is a fatal error, and in the proxy_mmu which uses
+		 * the process virtual address space, it can be caused by the
+		 * interpreter referencing unmapped memory (however proxy_mmu
+		 * does mask stores to below < 1GB). processor_privileged MMU
+		 * uses longjmp to communicate memory access faults which
+		 * will result in a call to the fault(int cause) handler.
+		 */
+
 		printf("%-10s: %016llx\n", fault_name, fault_addr);
 		P::print_csr_registers();
 		P::print_int_registers();
@@ -671,7 +773,7 @@ struct processor_stepper : processor_fault, P
 		sigaddset(&sigpipe_set, SIGPIPE);
 		sigprocmask(SIG_BLOCK, &sigpipe_set, nullptr);
 
-		// install fault handler
+		// install signal handler
 		struct sigaction sigaction_handler;
 		memset(&sigaction_handler, 0, sizeof(sigaction_handler));
 		sigaction_handler.sa_sigaction = &processor_stepper<P>::signal_handler;
@@ -699,9 +801,17 @@ struct processor_stepper : processor_fault, P
 		inst_t inst = 0;
 		addr_t pc_offset, new_offset;
 		P::time = cpu_cycle_clock();
+
+		// fault return path
+		int cause;
+		if (unlikely((cause = setjmp(P::env)) > 0)) {
+			// received fault from the MMU
+			P::fault(cause);
+		}
+
+		// step the processor
 		while (i < count) {
 			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
-			if (P::cause & proc_fault_flag) goto illegal_inst;
 			inst_t inst_cache_key = inst % inst_cache_size;
 			if (inst_cache[inst_cache_key].inst == inst) {
 				dec = inst_cache[inst_cache_key].dec;
@@ -713,7 +823,6 @@ struct processor_stepper : processor_fault, P
 			if ((new_offset = P::inst_exec(dec, pc_offset)) ||
 				(new_offset = P::inst_priv(dec, pc_offset)))
 			{
-				if (P::cause & proc_fault_flag) goto bad_addr;
 				if (P::log) P::print_log(dec, inst);
 				P::pc += new_offset;
 				P::cycle++;
@@ -725,40 +834,12 @@ struct processor_stepper : processor_fault, P
 		return true;
 
 illegal_inst:
-		/*
-		 * TODO - issue trap
-		 *
-		 * MMU inst_fetch needs to distinguish instruction access fault
-		 *
-		 * - Illegal instruction
-		 * - Instruction access fault
-		 * - Instruction address misaligned
-		 *
-		 * Temporarily call signal handler until traps are implemented
-		 */
+		// TODO - issue Illegal instruction fault
 		if (P::log) P::print_log(dec, inst);
-		fault(SIGILL, P::pc);
-
-bad_addr:
-		/*
-		 * TODO - issue trap
-		 *
-		 * MMU needs to set faulting address and distinguish fault type
-		 *
-		 * - Load address misaligned
-		 * - Load access fault
-		 * - Store/AMO address misaligned
-		 * - Store/AMO access fault
-		 *
-		 * Note: The destination register is clobbered for a load fault.
-		 *       as the load function doesn't alter control flow. In
-		 *       the pseudocode implementation, faults are detected by
-		 *       reading the cause register after inst_exec.
-		 *
-		 * Temporarily call signal handler until traps are implemented
-		 */
-		if (P::log) P::print_log(dec, inst);
-		fault(SIGSEGV, P::pc);
+		printf("FAULT     : illegal instruction\n");
+		P::print_csr_registers();
+		P::print_int_registers();
+		exit(1);
 	}
 };
 
@@ -811,6 +892,8 @@ struct riscv_emulator
 	uint64_t initial_seed = 0;
 	int ext = rv_isa_imafdc;
 	host_cpu &cpu;
+
+	static const int inst_step = 1000000; /* Number of instructions executes in step call */
 
 	riscv_emulator() : cpu(host_cpu::get_instance()) {}
 
@@ -1050,7 +1133,7 @@ struct riscv_emulator
 #endif
 
 		/* Step the CPU until it halts */
-		while(proc.step(1024));
+		while(proc.step(inst_step));
 	}
 
 	/* Start the execuatable with the given proxy processor template */
@@ -1088,7 +1171,7 @@ struct riscv_emulator
 #endif
 
 		/* Step the CPU until it halts */
-		while(proc.step(1024));
+		while(proc.step(inst_step));
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();
