@@ -173,7 +173,7 @@ namespace riscv {
 		u64          msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
 		u64          muinstret_delta; /* Machine User Number of Instructions Retired Delta */
 
-		processor_priv() : processor_type(), pdid(-1), mode(priv_mode_M) {}
+		processor_priv() : processor_type(), pdid(0), mode(priv_mode_M) {}
 	};
 
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
