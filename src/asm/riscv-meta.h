@@ -125,6 +125,14 @@ enum riscv_ext
 	riscv_ext_C = 4,                    /* Compressed extension */
 };
 
+enum riscv_mode
+{
+	riscv_mode_U = 0,                   /* User mode */
+	riscv_mode_S = 1,                   /* Supervisor mode */
+	riscv_mode_H = 2,                   /* Hypervisor mode */
+	riscv_mode_M = 3,                   /* Machine mode */
+};
+
 enum riscv_vm
 {
 	riscv_vm_mbare = 0,                 /* No translation or protection */

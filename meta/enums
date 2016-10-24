@@ -75,6 +75,12 @@ ext     F                    32      "Single-precision foating-point extension"
 ext     D                    8       "Double-precision foating-point extension"
 ext     C                    4       "Compressed extension"
 
+# Privilege mode
+mode   U                     0       "User mode"
+mode   S                     1       "Supervisor mode"
+mode   H                     2       "Hypervisor mode"
+mode   M                     3       "Machine mode"
+
 # Virtualization Management field (mstatus.vm)
 vm      mbare                0       "No translation or protection"
 vm      mbb                  1       "Single base-and-bound"

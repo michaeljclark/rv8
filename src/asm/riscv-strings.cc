@@ -4513,3 +4513,33 @@ const char* riscv_csr_name_sym[] = {
 	nullptr,
 };
 
+const char* riscv_fault_name_sym[] = {
+	"u_software"
+	"s_software"
+	"h_software"
+	"m_software"
+	"u_timer"
+	"s_timer"
+	"h_timer"
+	"m_timer"
+	"u_external"
+	"s_external"
+	"h_external"
+	"m_external"
+};
+
+const char* riscv_intr_name_sym[] = {
+	"u_software"
+	"s_software"
+	"h_software"
+	"m_software"
+	"u_timer"
+	"s_timer"
+	"h_timer"
+	"m_timer"
+	"u_external"
+	"s_external"
+	"h_external"
+	"m_external"
+};
+

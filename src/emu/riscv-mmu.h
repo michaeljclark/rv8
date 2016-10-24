@@ -38,6 +38,7 @@ namespace riscv {
 			return pa == illegal_address;
 		}
 
+		// instruction fetch
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
@@ -63,6 +64,7 @@ namespace riscv {
 			return inst;
 		}
 
+		// load
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
@@ -85,6 +87,7 @@ namespace riscv {
 			}
 		}
 
+		// store
 		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
@@ -107,12 +110,12 @@ namespace riscv {
 			}
 		}
 
-		// translate address depending on translation mode
+		// translate address based on processor translation mode
 		template <typename P, bool inst_fetch = false> addr_t translate_addr(P &proc, UX va,
 			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			addr_t pa = illegal_address;
-			if (proc.mode == priv_mode_M && proc.mstatus.r.mprv == 0) {
+			if (proc.mode == riscv_mode_M && proc.mstatus.r.mprv == 0) {
 				pa = va;
 			} else {
 				switch (proc.mstatus.r.vm) {
@@ -143,7 +146,7 @@ namespace riscv {
 			return pa;
 		}
 
-		// translate address based using a TLB and a paged addressing mode
+		// translate address using a TLB and a paged addressing mode
 		template <typename P, typename PTM> addr_t page_translate_addr(
 			P &proc, UX va,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent
@@ -157,7 +160,7 @@ namespace riscv {
 			}
 		}
 
-		// translate address based using a TLB and a paged addressing mode
+		// translate address using a TLB and a paged addressing mode
 		// TLB miss slow path that invokes the page table walker
 		template <typename P, typename PTM> addr_t page_translate_addr_tlb_miss(
 			P &proc, UX va,

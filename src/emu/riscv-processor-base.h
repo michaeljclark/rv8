@@ -1,25 +1,11 @@
 //
-//  riscv-processor.h
+//  riscv-processor-base.h
 //
 
-#ifndef riscv_processor_h
-#define riscv_processor_h
+#ifndef riscv_processor_base_h
+#define riscv_processor_base_h
 
 namespace riscv {
-
-	/* Processor logging flags */
-
-	enum {
-		proc_log_inst =            1<<0,       /* Log instructions */
-		proc_log_operands =        1<<1,       /* Log instruction operands */
-		proc_log_memory =          1<<2,       /* Log memory mapping information */
-		proc_log_csr_mmode =       1<<3,       /* Log machine status and control registers */
-		proc_log_csr_hmode =       1<<4,       /* Log hypervisor status and control registers */
-		proc_log_csr_smode =       1<<5,       /* Log supervisor status and control registers */
-		proc_log_csr_umode =       1<<6,       /* Log user status and control registers */
-		proc_log_int_reg =         1<<7,       /* Log integer registers */
-		proc_log_no_pseudo =       1<<8,       /* Don't decode pseudoinstructions */
-	};
 
 	/* RV32 integer register */
 
@@ -143,7 +129,7 @@ namespace riscv {
 	/* Processor state */
 
 	template <typename SX, typename UX, typename IREG, int IREG_COUNT, typename FREG, int FREG_COUNT>
-	struct processor
+	struct processor_base
 	{
 		typedef SX   sx;
 		typedef UX   ux;
@@ -184,13 +170,13 @@ namespace riscv {
 		u64          instret;         /* User Number of Instructions Retired  */
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
-		processor() : pc(0), ireg(), freg(),
+		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(-1), badaddr(0), env(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 
-	using processor_rv32imafd = processor<s32,u32,ireg_rv32,32,freg_fp64,32>;
-	using processor_rv64imafd = processor<s64,u64,ireg_rv64,32,freg_fp64,32>;
+	using processor_rv32imafd = processor_base<s32,u32,ireg_rv32,32,freg_fp64,32>;
+	using processor_rv64imafd = processor_base<s64,u64,ireg_rv64,32,freg_fp64,32>;
 
 }
 
