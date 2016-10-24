@@ -143,9 +143,9 @@ namespace riscv {
 		/* processor dimensions */
 
 		enum  {
-			xlen = sizeof(ux) << 3,        /* Size of integer register in bits */
-			ireg_count = IREG_COUNT,       /* Number of integer registers  */
-			freg_count = FREG_COUNT        /* Number of floating point registers */
+			xlen = sizeof(ux) << 3,   /* Size of integer register in bits */
+			ireg_count = IREG_COUNT,  /* Number of integer registers  */
+			freg_count = FREG_COUNT   /* Number of floating point registers */
 		};
 
 		/* Registers */

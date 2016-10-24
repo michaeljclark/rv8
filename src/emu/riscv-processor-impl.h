@@ -34,9 +34,9 @@ namespace riscv {
 	/* CSR permissions */
 
 	enum csr_perm {
-		csr_rw,
-		csr_rs,
-		csr_rc
+		csr_rw,       /* Read/Write CSR */
+		csr_rs,       /* Read/Set CSR */
+		csr_rc        /* Read/Clear CSR */
 	};
 
 	/* Register formatter */

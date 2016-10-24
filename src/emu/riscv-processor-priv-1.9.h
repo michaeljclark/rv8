@@ -41,18 +41,18 @@ namespace riscv {
 	union ip {
 		struct { UX val; } xu;
 		struct {
-			UX usip  : 1; /* 0  MHS   User Software Interrupt Pending */
-			UX ssip  : 1; /* 1  MHS   Supervisor Software Interrupt Pending */
-			UX hsip  : 1; /* 2  MH    Hypervisor Software Interrupt Pending */
-			UX msip  : 1; /* 3  M     Machine Software Interrupt Pending */
-			UX utip  : 1; /* 4  MHS   User Timer Interrupt Pending */
-			UX stip  : 1; /* 5  MHS   Supervisor Timer Interrupt Pending */
-			UX htip  : 1; /* 6  MH    Hypervisor Timer Interrupt Pending */
-			UX mtip  : 1; /* 7  M     Machine Timer Interrupt Pending */
-			UX ueip  : 1; /* 8  MHS   User External Interrupt Pending */
-			UX seip  : 1; /* 9  MHS   Supervisor External Interrupt Pending */
-			UX heip  : 1; /* 10 MH    Hypervisor External Interrupt Pending */
-			UX meip  : 1; /* 11 M     Machine External Interrupt Pending */
+			UX usip : 1; /* 0  MHS   User Software Interrupt Pending */
+			UX ssip : 1; /* 1  MHS   Supervisor Software Interrupt Pending */
+			UX hsip : 1; /* 2  MH    Hypervisor Software Interrupt Pending */
+			UX msip : 1; /* 3  M     Machine Software Interrupt Pending */
+			UX utip : 1; /* 4  MHS   User Timer Interrupt Pending */
+			UX stip : 1; /* 5  MHS   Supervisor Timer Interrupt Pending */
+			UX htip : 1; /* 6  MH    Hypervisor Timer Interrupt Pending */
+			UX mtip : 1; /* 7  M     Machine Timer Interrupt Pending */
+			UX ueip : 1; /* 8  MHS   User External Interrupt Pending */
+			UX seip : 1; /* 9  MHS   Supervisor External Interrupt Pending */
+			UX heip : 1; /* 10 MH    Hypervisor External Interrupt Pending */
+			UX meip : 1; /* 11 M     Machine External Interrupt Pending */
 		} r;
 	};
 
@@ -83,9 +83,9 @@ namespace riscv {
 	union counten {
 		struct { UX val; } xu;
 		struct {
-			UX cy  : 1;   /* 0     Cycles Enabled */
-			UX tm  : 1;   /* 1     Timer Enabled */
-			UX ir  : 1;   /* 2     Instructions Retired Enabled */
+			UX cy    : 1; /* 0     Cycles Enabled */
+			UX tm    : 1; /* 1     Timer Enabled */
+			UX ir    : 1; /* 2     Instructions Retired Enabled */
 		} r;
 	};
 
@@ -206,6 +206,7 @@ namespace riscv {
 			printf("%s %s %s\n", format_reg("mbound",    P::mbound).c_str(),
 			                     format_reg("mibound",   P::mibound).c_str(),
 			                     format_reg("mdbound",   P::mdbound).c_str());
+
 			if (P::log & proc_log_csr_hmode) {
 				printf("%s %s\n",    format_reg("htvec",     P::htvec).c_str(),
 				                     format_reg("hscratch",  P::hscratch).c_str());
@@ -215,6 +216,7 @@ namespace riscv {
 				printf("%s %s\n",    format_reg("hedeleg",   P::hedeleg).c_str(),
 				                     format_reg("hideleg",   P::hideleg).c_str());
 			}
+
 			if (P::log & proc_log_csr_smode) {
 				printf("%s %s %s\n", format_reg("stvec",     P::stvec).c_str(),
 				                     format_reg("sscratch",  P::sscratch).c_str(),
@@ -223,6 +225,7 @@ namespace riscv {
 				                     format_reg("scause",    P::scause).c_str(),
 				                     format_reg("sbadaddr",  P::sbadaddr).c_str());
 			}
+
 			if (P::log & proc_log_csr_umode) {
 				printf("%s %s\n",    format_reg("sedeleg",   P::sedeleg).c_str(),
 				                     format_reg("sideleg",   P::sideleg).c_str());
@@ -232,6 +235,7 @@ namespace riscv {
 				                     format_reg("ucause",    P::ucause).c_str(),
 				                     format_reg("ubadaddr",  P::ubadaddr).c_str());
 			}
+
 			P::print_csr_registers();
 		}
 
@@ -309,9 +313,9 @@ namespace riscv {
 				                             fcsr_mask, fcsr_mask);
 				                         fenv_clearflags(P::fcsr);
 				                         fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
-				case riscv_csr_cycle:    P::get_csr(dec, riscv_mode_U, op, csr, P::cycle, value);  break;
+				case riscv_csr_cycle:    P::get_csr(dec, riscv_mode_U, op, csr, P::cycle, value); break;
 				case riscv_csr_time:     P::time = cpu_cycle_clock();
-				                         P::get_csr(dec, riscv_mode_U, op, csr, P::time, value);   break;
+				                         P::get_csr(dec, riscv_mode_U, op, csr, P::time, value);  break;
 				case riscv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
 				case riscv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
 				case riscv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;

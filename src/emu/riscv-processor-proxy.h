@@ -24,15 +24,15 @@ namespace riscv {
 				case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
 				                            fflags_mask, fflags_mask);
-				                         fenv_clearflags(P::fcsr);                                    break;
+				                         fenv_clearflags(P::fcsr);                                     break;
 				case riscv_csr_frm:      P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
 				                             frm_mask, frm_mask, /* shift >> */ 5);
-				                         fenv_setrm((P::fcsr >> 5) & 0x7);                            break;
+				                         fenv_setrm((P::fcsr >> 5) & 0x7);                             break;
 				case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
 				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
 				                             fcsr_mask, fcsr_mask);
 				                         fenv_clearflags(P::fcsr);
-				                         fenv_setrm((P::fcsr >> 5) & 0x7);                            break;
+				                         fenv_setrm((P::fcsr >> 5) & 0x7);                             break;
 				case riscv_csr_cycle:    P::get_csr(dec, riscv_mode_U, op, csr, P::cycle, value);      break;
 				case riscv_csr_time:     P::time = cpu_cycle_clock();
 				                         P::get_csr(dec, riscv_mode_U, op, csr, P::time, value);       break;
