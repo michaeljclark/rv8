@@ -7,11 +7,10 @@
 
 namespace riscv {
 
-	template <typename UX, typename TLB, typename CACHE, typename PMA, typename MEMORY = user_memory<UX>>
+	template <typename UX, typename TLB, typename PMA, typename MEMORY = user_memory<UX>>
 	struct mmu
 	{
 		typedef TLB    tlb_type;
-		typedef CACHE  cache_type;
 		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
@@ -21,8 +20,6 @@ namespace riscv {
 
 		tlb_type       l1_dtlb;     /* L1 Data TLB */
 		tlb_type       l1_itlb;     /* L1 Instruction TLB */
-		cache_type     l1_dcache;   /* L1 Data Cache */
-		cache_type     l1_icache;   /* L1 Instruction Cache */
 		pma_type       pma;         /* PMA table */
 		memory_type    mem;         /* memory device */
 
@@ -51,7 +48,7 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,false>(proc, pc, tlb_ent);
 			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
-			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+			/* TODO: check tags, PMA, PTE, mode and alignment */
 
 			inst_t inst;
 			if (unlikely(illegal(uva))) {
@@ -77,7 +74,7 @@ namespace riscv {
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
 			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
-			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+			/* TODO: check tags, PMA, PTE, mode and alignment */
 
 			if (unlikely(illegal(uva))) {
 				proc.badaddr = va;
@@ -100,7 +97,7 @@ namespace riscv {
 			addr_t mpa = translate_addr(proc, va, tlb_ent);
 			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
 
-			/* TODO: lookup cache, check tags, PMA, PTE, mode and alignment */
+			/* TODO: check tags, PMA, PTE, mode and alignment */
 
 			if (unlikely(illegal(uva))) {
 				proc.badaddr = va;
@@ -245,14 +242,11 @@ namespace riscv {
 	typedef tagged_tlb_rv32<128> tlb_type_rv32;
 	typedef tagged_tlb_rv64<128> tlb_type_rv64;
 
-	typedef tagged_cache_rv32<65536,8,64> cache_type_rv32;
-	typedef tagged_cache_rv64<65536,8,64> cache_type_rv64;
-
 	typedef pma_table<u32,8> pma_table_rv32;
 	typedef pma_table<u64,8> pma_table_rv64;
 
-	using mmu_rv32 = mmu<u32,tlb_type_rv32,cache_type_rv32,pma_table_rv32>;
-	using mmu_rv64 = mmu<u64,tlb_type_rv64,cache_type_rv64,pma_table_rv64>;
+	using mmu_rv32 = mmu<u32,tlb_type_rv32,pma_table_rv32>;
+	using mmu_rv64 = mmu<u64,tlb_type_rv64,pma_table_rv64>;
 
 }
 
