@@ -362,7 +362,7 @@ R"C(#include "riscv-types.h"
 
 		// find extension with minimum isa width
 		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
-			[](auto &a, auto &b){ return a->isa_width < b->isa_width; });
+			[](riscv_extension_ptr &a, riscv_extension_ptr &b){ return a->isa_width < b->isa_width; });
 		if (ext_min_width_i == opcode->extensions.end()) ext_min_width_i = gen->extensions.begin();
 		auto ext = *ext_min_width_i;
 
