@@ -51,6 +51,8 @@ LDFLAGS =
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000
 LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static
+PTHREAD_FLAGS = -pthread
+LIBCXX_FLAGS =  -stdlib=libcxx
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -101,6 +103,16 @@ CXXFLAGS +=     -fno-omit-frame-pointer -fsanitize=$(sanitize)
 ifeq ($(sanitize),memory)
 CXXFLAGS +=     -fsanitize-memory-track-origins=2
 endif
+endif
+
+# check if we can use pthreads
+ifeq ($(call check_opt,$(CXX),cc,$(PTHREAD_FLAGS)), 0)
+CXXFLAGS +=     $(PTHREAD_FLAGS)
+endif
+
+# check if we can use libcxx
+ifeq ($(call check_opt,$(CXX),cc,$(LIBCXX_FLAGS)), 0)
+CXXFLAGS +=     $(LIBCXX_FLAGS)
 endif
 
 # architecture specific flags
@@ -477,7 +489,7 @@ $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB)
 
 $(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(TLSF_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -lpthread $(DEBUG_FLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
