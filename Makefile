@@ -51,8 +51,9 @@ LDFLAGS =
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000
 LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static
-PTHREAD_FLAGS = -pthread
 LIBCXX_FLAGS =  -stdlib=libcxx
+PTH_CPPFLAGS =  -pthread
+PTH_LDFLAGS =   -lpthread
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -105,9 +106,14 @@ CXXFLAGS +=     -fsanitize-memory-track-origins=2
 endif
 endif
 
-# check if we can use pthreads
-ifeq ($(call check_opt,$(CXX),cc,$(PTHREAD_FLAGS)), 0)
-CXXFLAGS +=     $(PTHREAD_FLAGS)
+# check if we can use pthread preprocessor flag
+ifeq ($(call check_opt,$(CXX),cc,$(PTH_CPPFLAGS)), 0)
+CPPFLAGS +=     $(PTH_CPPFLAGS)
+endif
+
+# check if we can use pthread lib flags
+ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS)), 0)
+LDFLAGS +=      $(PTH_LDFLAGS)
 endif
 
 # check if we can use libcxx
