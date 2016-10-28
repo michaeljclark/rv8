@@ -1,15 +1,25 @@
+
+language: cpp
+
 script: make
 
+os:
+  - linux
+  - osx
+
 compiler:
-  - gcc-5
+  - clang
+  - gcc
 
-env:
-  - CXX=g++-5
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-5
-    - g++-5
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      addons:
+        apt:
+          packages:
+          - libcxx
+          - libcxx-dev
+    - os: osx
+      osx_image: xcode7.2
