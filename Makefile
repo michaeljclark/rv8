@@ -140,21 +140,21 @@ src_objs =  $(subst $(SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 src_deps =  $(subst $(SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1)))
 
 # riscv meta data
-RV_META_DATA =  $(META_DIR$)/codecs \
-                $(META_DIR$)/compression \
-                $(META_DIR$)/constraints \
-                $(META_DIR$)/csrs \
-                $(META_DIR$)/enums \
-                $(META_DIR$)/extensions \
-                $(META_DIR$)/formats \
-                $(META_DIR$)/opcodes \
-                $(META_DIR$)/opcode-descriptions \
-                $(META_DIR$)/opcode-fullnames \
-                $(META_DIR$)/opcode-pseudocode-alt \
-                $(META_DIR$)/opcode-pseudocode-c \
-                $(META_DIR$)/operands \
-                $(META_DIR$)/registers \
-                $(META_DIR$)/types
+RV_META_DATA =  $(META_DIR)/codecs \
+                $(META_DIR)/compression \
+                $(META_DIR)/constraints \
+                $(META_DIR)/csrs \
+                $(META_DIR)/enums \
+                $(META_DIR)/extensions \
+                $(META_DIR)/formats \
+                $(META_DIR)/opcodes \
+                $(META_DIR)/opcode-descriptions \
+                $(META_DIR)/opcode-fullnames \
+                $(META_DIR)/opcode-pseudocode-alt \
+                $(META_DIR)/opcode-pseudocode-c \
+                $(META_DIR)/operands \
+                $(META_DIR)/registers \
+                $(META_DIR)/types
 
 # libtlsf
 TLSF_SRCS =     $(SRC_DIR)/tlsf/tlsf.cc \
