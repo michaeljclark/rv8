@@ -11,6 +11,7 @@ namespace riscv {
 
 	union f32_bits {
 		f32 f;
+		u32 u;
 		struct {
 		#if _BYTE_ORDER == _LITTLE_ENDIAN
 			u32 man  : 23;
@@ -43,6 +44,7 @@ namespace riscv {
 
 	union f64_bits {
 		f64 f;
+		u64 u;
 		struct {
 		#if _BYTE_ORDER == _LITTLE_ENDIAN
 			u64 man  : 52;
@@ -54,6 +56,15 @@ namespace riscv {
 			u64 man  : 52;
 		#endif
 		} r;
+		struct {
+		#if _BYTE_ORDER == _LITTLE_ENDIAN
+			u32 d1;
+			u32 d0;
+		#else
+			u32 d0;
+			u32 d1;
+		#endif
+		} w;
 	};
 
 	struct f64_type {
