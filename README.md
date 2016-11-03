@@ -96,6 +96,7 @@ References
 - [Virtual IO Device Specification](http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.html)
 - [Standard C++](https://isocpp.org/std/the-standard/)
 - [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
+- [AMD64 System V Application Binary Interface](http://refspecs.linuxfoundation.org/elf/x86-64-abi-0.99.pdf)
 - [ELF Handling for Thread-Local Storage](https://www.akkadia.org/drepper/tls.pdf)
 - [DWARF Debugging Information Format Version 4](http://dwarfstd.org/doc/DWARF4.pdf)
 - [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
