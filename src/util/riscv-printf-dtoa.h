@@ -145,10 +145,10 @@ namespace riscv {
 		/* get FLT_ROUNDS round mode and fegetround() override */
 		int rm = FLT_ROUNDS;
 		switch (fegetround()) {
-			case FE_TOWARDZERO:	rm = 0; break;
+			case FE_TOWARDZERO: rm = 0; break;
 			case FE_TONEAREST:  rm = 1; break;
-			case FE_UPWARD:	    rm = 2; break;
-			case FE_DOWNWARD:	rm = 3; break;
+			case FE_UPWARD:     rm = 2; break;
+			case FE_DOWNWARD:   rm = 3; break;
 		}
 		if (*sign) {
 			if (rm == FE_UPWARD) rm = FE_TOWARDZERO;
