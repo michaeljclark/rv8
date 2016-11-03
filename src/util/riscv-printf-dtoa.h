@@ -69,13 +69,6 @@ THIS SOFTWARE.
 
 namespace riscv {
 
-	/* configuration */
-
-	#define Honor_FLT_ROUNDS
-	#define Check_FLT_ROUNDS
-	#define Trust_FLT_ROUNDS
-	#define ROUND_BIASED
-
 	/* f64_bits union access */
 
 	inline u32& word0(f64_bits *x) { return x->w.d0; }
@@ -129,59 +122,42 @@ namespace riscv {
 		f64_bits d, d2, eps;
 		double ds;
 		std::string s;
-	#ifdef Honor_FLT_ROUNDS /*{*/
-		int Rounding;
-	#ifdef Trust_FLT_ROUNDS /*{{ only define this if FLT_ROUNDS really works! */
-		Rounding = FLT_ROUNDS;
-	#else /*}{*/
-		Rounding = 1;
-		switch (fegetround()) {
-			case FE_TOWARDZERO:	Rounding = 0; break;
-			case FE_UPWARD:	Rounding = 2; break;
-			case FE_DOWNWARD:	Rounding = 3;
-		}
-	#endif /*}}*/
-	#endif /*}*/
 
+		/* check for 0, Infinity or NaN */
 		d.f = d0;
-		if (word0(&d) & Sign_bit) {
-			/* set sign for everything, including 0's and NaNs */
-			*sign = 1;
-			word0(&d) &= ~Sign_bit;	/* clear sign bit */
-		}
-		else {
-			*sign = 0;
-		}
-
-		if ((word0(&d) & Exp_mask) == Exp_mask)
-			{
-			/* Infinity or NaN */
-			*decpt = std::numeric_limits<int>::max();
-			if (!word1(&d) && !(word0(&d) & 0xfffff)) {
+		if (d.r.exp == f64_type::exp_inf) {
+			if (d.r.man == 0) {
+				*decpt = std::numeric_limits<int>::max();
 				return "Infinity";
+			} else {
+				*decpt = std::numeric_limits<int>::max();
+				return "NaN";
 			}
-			return "NaN";
-		}
-		if (!dval(&d)) {
+		} else if (d.r.exp == f64_type::exp_denorm && d.r.man == 0) {
 			*decpt = 1;
 			return "0";
 		}
 
-	#ifdef Honor_FLT_ROUNDS
-		if (Rounding >= 2) {
-			if (*sign) {
-				Rounding = Rounding == 2 ? 0 : 2;
-			}
-			else {
-				if (Rounding != 2) {
-					Rounding = 0;
-				}
-			}
+		/* read and clear sign bit */
+		*sign = d.r.sign;
+		d.r.sign = 0;
+
+		/* get FLT_ROUNDS round mode and fegetround() override */
+		int rm = FLT_ROUNDS;
+		switch (fegetround()) {
+			case FE_TOWARDZERO:	rm = 0; break;
+			case FE_TONEAREST:  rm = 1; break;
+			case FE_UPWARD:	    rm = 2; break;
+			case FE_DOWNWARD:	rm = 3; break;
 		}
-	#endif
+		if (*sign) {
+			if (rm == FE_UPWARD) rm = FE_TOWARDZERO;
+		} else {
+			if (rm == FE_DOWNWARD) rm = FE_TOWARDZERO;
+		}
 
 		b = d2b(dval(&d), &be, &bbits);
-		if (( i = (int)(word0(&d) >> Exp_shift & (Exp_mask>>Exp_shift)) )!=0) {
+		if ((i = d.r.exp) != 0) {
 			dval(&d2) = dval(&d);
 			word0(&d2) &= Frac_mask;
 			word0(&d2) |= Exp_1;
@@ -251,22 +227,24 @@ namespace riscv {
 			b5 = -k;
 			s5 = 0;
 		}
-		if (mode < 0 || mode > 9)
+
+		/* validate mode */
+		if (mode < 0 || mode > 9) {
 			mode = 0;
+		}
 
-	#ifdef Check_FLT_ROUNDS
-		try_quick = Rounding == 1;
-	#else
-		try_quick = 1;
-	#endif
+		/* try floating point digit generation when round nearest */
+		try_quick = (rm == FE_TONEAREST);
 
+		/* disable floating point digit generation for modes > 5 */
 		if (mode > 5) {
 			mode -= 4;
 			try_quick = 0;
 		}
+
+		/* check whether we can use Steele & White method */
 		leftright = 1;
-		ilim = ilim1 = -1;	/* Values for cases 0 and 1; done here to */
-					/* silence erroneous "gcc -Wall" warning. */
+		ilim = ilim1 = -1;
 		switch(mode) {
 			case 0:
 			case 1:
@@ -294,15 +272,13 @@ namespace riscv {
 				}
 		}
 
-	#ifdef Honor_FLT_ROUNDS
-		if (mode > 1 && Rounding != 1) {
+		/* disable Steele & White method if not round nearest */
+		if (mode > 1 && rm != FE_TONEAREST) {
 			leftright = 0;
 		}
-	#endif
 
+		/* Try to get by with floating-point arithmetic. */
 		if (ilim >= 0 && ilim <= Quick_max && try_quick) {
-
-			/* Try to get by with floating-point arithmetic. */
 
 			i = 0;
 			dval(&d2) = dval(&d);
@@ -359,8 +335,7 @@ namespace riscv {
 			}
 			if (leftright) {
 				/* Use Steele & White method of only
-				 * generating digits needed.
-				 */
+				 * generating digits needed. */
 				dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
 				for(i = 0;;) {
 					L = dval(&d);
@@ -402,7 +377,7 @@ namespace riscv {
 					}
 				}
 			}
-	 fast_failed:
+	fast_failed:
 	 		s.clear();
 			dval(&d) = dval(&d2);
 			k = k0;
@@ -410,7 +385,6 @@ namespace riscv {
 		}
 
 		/* Do we have a "small" integer? */
-
 		if (be >= 0 && k <= Int_max) {
 			/* Yes. */
 			ds = tens[k];
@@ -424,33 +398,25 @@ namespace riscv {
 			for(i = 1;; i++, dval(&d) *= 10.) {
 				L = (int)(dval(&d) / ds);
 				dval(&d) -= L*ds;
-	#ifdef Check_FLT_ROUNDS
-				/* If FLT_ROUNDS == 2, L will usually be high by 1 */
+				/* If rm == FE_UPWARD, L will usually be high by 1 */
 				if (dval(&d) < 0) {
 					L--;
 					dval(&d) += ds;
 				}
-	#endif
 				s.push_back('0' + (int)L);
 				if (!dval(&d)) {
 					break;
 				}
 				if (i == ilim) {
-	#ifdef Honor_FLT_ROUNDS
 					if (mode > 1)
-					switch(Rounding) {
-						case 0: goto ret1;
-						case 2: goto bump_up;
+					switch (rm) {
+						case FE_TOWARDZERO: goto ret1;
+						case FE_UPWARD: goto bump_up;
 					}
-	#endif
 					dval(&d) += dval(&d);
-	#ifdef ROUND_BIASED
 					if (dval(&d) >= ds)
-	#else
-					if (dval(&d) > ds || (dval(&d) == ds && L & 1))
-	#endif
 					{
-	 bump_up:
+	bump_up:
 	 					while(s.back() == '9') {
 	 						s.pop_back();
 	 						if (s.size() == 0) {
@@ -504,13 +470,8 @@ namespace riscv {
 		}
 
 		/* Check for special case that d is a normalized power of 2. */
-
 		spec_case = 0;
-		if ((mode < 2 || leftright)
-	#ifdef Honor_FLT_ROUNDS
-				&& Rounding == 1
-	#endif
-					) {
+		if ((mode < 2 || leftright) && rm == FE_TONEAREST) {
 			if (!word1(&d) && !(word0(&d) & Bndry_mask)
 				&& word0(&d) & (Exp_mask & ~Exp_msk1) )
 			{
@@ -562,11 +523,11 @@ namespace riscv {
 		if (ilim <= 0 && (mode == 3 || mode == 5)) {
 			if (ilim < 0 || cmp(b,S = multadd(S,5,0)) <= 0) {
 				/* no digits, fcvt style */
-	 no_digits:
+	no_digits:
 				k = -1 - ndigits;
 				goto ret;
 			}
-	 one_digit:
+	one_digit:
 			s.push_back('1');
 			k++;
 			goto ret;
@@ -595,80 +556,54 @@ namespace riscv {
 				delta = diff(S, mhi);
 				j1 = delta->sign ? 1 : cmp(b, delta);
 				Bfree(delta);
-	#ifndef ROUND_BIASED
-				if (j1 == 0 && mode != 1 && !(word1(&d) & 1)
-	#ifdef Honor_FLT_ROUNDS
-					&& Rounding >= 1
-	#endif
-									   ) {
-					if (dig == '9')
-						goto round_9_up;
-					if (j > 0)
-						dig++;
-					s.push_back(dig);
-					goto ret;
-				}
-	#endif
-				if (j < 0 || (j == 0 && mode != 1
-	#ifndef ROUND_BIASED
-								&& !(word1(&d) & 1)
-	#endif
-						)) {
+				if (j < 0 || (j == 0 && mode != 1)) {
 					if (!b->x[0] && b->wds <= 1) {
 						goto accept_dig;
 					}
-	#ifdef Honor_FLT_ROUNDS
 					if (mode > 1) {
-						switch(Rounding) {
-							case 0: goto accept_dig;
-							case 2: goto keep_dig;
+						switch (rm) {
+							case FE_TOWARDZERO: goto accept_dig;
+							case FE_UPWARD: goto keep_dig;
 						}
 					}
-	#endif /*Honor_FLT_ROUNDS*/
 					if (j1 > 0) {
 						b = lshift(b, 1);
 						j1 = cmp(b, S);
-	#ifdef ROUND_BIASED
-						if (j1 >= 0 /*)*/
-	#else
-						if ((j1 > 0 || (j1 == 0 && dig & 1))
-	#endif
-						&& dig++ == '9')
+						if (j1 >= 0 && dig++ == '9') {
 							goto round_9_up;
+						}
 					}
-	 accept_dig:
+	accept_dig:
 					s.push_back(dig);
 					goto ret;
 				}
 				if (j1 > 0) {
-	#ifdef Honor_FLT_ROUNDS
-					if (!Rounding)
+					if (!rm)
 						goto accept_dig;
-	#endif
 					if (dig == '9') { /* possible if i == 1 */
-	 round_9_up:
+	round_9_up:
 						s.push_back('9');
 						goto roundoff;
 					}
 					s.push_back(dig + 1);
 					goto ret;
 				}
-	#ifdef Honor_FLT_ROUNDS
-	 keep_dig:
-	#endif
+	keep_dig:
 				s.push_back(dig);
-				if (i == ilim)
+				if (i == ilim) {
 					break;
+				}
 				b = multadd(b, 10, 0);
-				if (mlo == mhi)
+				if (mlo == mhi) {
 					mlo = mhi = multadd(mhi, 10, 0);
+				}
 				else {
 					mlo = multadd(mlo, 10, 0);
 					mhi = multadd(mhi, 10, 0);
-					}
 				}
 			}
-		else
+		}
+		else {
 			for(i = 1;; i++) {
 				s.push_back(dig = quorem(b,S) + '0');
 				if (!b->x[0] && b->wds <= 1) {
@@ -678,24 +613,17 @@ namespace riscv {
 					break;
 				b = multadd(b, 10, 0);
 			}
+		}
 
 		/* Round off last digit */
-
-	#ifdef Honor_FLT_ROUNDS
-		switch(Rounding) {
-		  case 0: goto trimzeros;
-		  case 2: goto roundoff;
-		  }
-	#endif
+		switch (rm) {
+			case FE_TOWARDZERO: goto trimzeros;
+			case FE_UPWARD: goto roundoff;
+		}
 		b = lshift(b, 1);
 		j = cmp(b, S);
-	#ifdef ROUND_BIASED
-		if (j >= 0)
-	#else
-		if (j > 0 || (j == 0 && dig & 1))
-	#endif
-			{
-	 roundoff:
+		if (j >= 0) {
+	roundoff:
 			while(s.back() == '9') {
 				s.pop_back();
 				if (s.size() == 0) {
@@ -707,14 +635,12 @@ namespace riscv {
 			s.back()++;
 		}
 		else {
-	#ifdef Honor_FLT_ROUNDS
-	 trimzeros:
-	#endif
+	trimzeros:
 			while(s.back() == '0') {
 				s.pop_back();
 			}
 		}
-	 ret:
+	ret:
 		Bfree(S);
 		if (mhi) {
 			if (mlo && mlo != mhi) {
@@ -722,7 +648,7 @@ namespace riscv {
 			}
 			Bfree(mhi);
 		}
-	 ret1:
+	ret1:
 		Bfree(b);
 		*decpt = k + 1;
 		return s;

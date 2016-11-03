@@ -37,12 +37,13 @@ void test_hdtoa(double val)
 	printf("%a\n", val);
 }
 
-void test_dtoa(double val)
+void test_dtoa(double val, int ndigits)
 {
+	char buf[64];
 	int sign, exp;
-	std::string res = dtoa(val, 3, 12, &exp, &sign);
-	printf("%s\n", res.c_str());
-	printf("%17f\n", val);
+	std::string res = dtoa(val, 3, ndigits, &exp, &sign);
+	sprintf(buf, "%%-%d.%df%%%ds%%s\n", ndigits+10, ndigits, 17-ndigits);
+	printf(buf, val, "", res.c_str());
 }
 
 void test_itoa(intmax_t val)
@@ -70,12 +71,25 @@ int main()
 	test_hdtoa(1024.6725);
 	test_hdtoa(-1.0 / 1024);
 	test_hdtoa(3.14159265358979323846);
+	test_hdtoa(3.14159265358979323846e100);
 
-	test_dtoa(1024);
-	test_dtoa(1024.6725);
-	test_dtoa(-1.0 / 1024);
-	test_dtoa(3.14159265358979323846);
-	test_dtoa(3.14159265358979323846e100);
+	test_dtoa(0, 6);
+	test_dtoa(NAN, 6);
+	test_dtoa(INFINITY, 6);
+	test_dtoa(1024, 6);
+	test_dtoa(1024, 12);
+	test_dtoa(1024, 17);
+	test_dtoa(1024.6725, 6);
+	test_dtoa(1024.6725, 12);
+	test_dtoa(1024.6725, 17);
+	test_dtoa(-1.0 / 1024, 6);
+	test_dtoa(-1.0 / 1024, 12);
+	test_dtoa(-1.0 / 1024, 17);
+	test_dtoa(3.14159265358979323846, 6);
+	test_dtoa(3.14159265358979323846, 12);
+	test_dtoa(3.14159265358979323846, 17);
+
+	test_dtoa(3.14159265358979323846e300, 1);
 
 	test_itoa(768);
 	test_itoa(4294967296ULL);
