@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cassert>
 #include <cmath>
+#include <cctype>
+#include <cwchar>
 #include <climits>
 #include <cfloat>
 #include <cfenv>
@@ -23,7 +25,9 @@
 #include "riscv-printf-itoa.h"
 #include "riscv-printf-dtoa.h"
 #include "riscv-printf-hdtoa.h"
-#include "riscv-printf-format.h"
+#include "riscv-printf-types.h"
+#include "riscv-printf-io.h"
+#include "riscv-printf-pack.h"
 
 using namespace riscv;
 
@@ -53,26 +57,18 @@ void test_itoa(intmax_t val)
 	printf("%llu\n", (u64)val);
 }
 
-int main()
+void test_itoa()
 {
-	printf("%2$s world %1$p\n", (void*)-1, "Hello");
-	printf("%c %d %u %f\n", '!', 123, 0U, 1.1f);
+	printf("// every pair of lines should match\n");
+	test_itoa(768);
+	test_itoa(4294967296ULL);
+	test_itoa(18446744073709551615ULL);
+}
 
-	std::string buf;
-	sprintf(buf, "%0$2s world %0$1p\n", (void*)-1, "Hello");
-	sprintf(buf, "%c %d %u %f\n", '!', 123, 0U, 1.1f);
-
-	std::string b("B");
-	sprintf(buf, "%s\n", std::string("A"));
-	sprintf(buf, "%s\n", b);
-	sprintf(buf, "%s\n", std::to_string(123));
-
-	test_hdtoa(1024);
-	test_hdtoa(1024.6725);
-	test_hdtoa(-1.0 / 1024);
-	test_hdtoa(3.14159265358979323846);
-	test_hdtoa(3.14159265358979323846e100);
-
+void test_dtoa()
+{
+	printf("// generated digits of precision should match\n");
+	printf("// sign, leading and trailing zeros do not match\n");
 	test_dtoa(0, 6);
 	test_dtoa(NAN, 6);
 	test_dtoa(INFINITY, 6);
@@ -85,15 +81,62 @@ int main()
 	test_dtoa(-1.0 / 1024, 6);
 	test_dtoa(-1.0 / 1024, 12);
 	test_dtoa(-1.0 / 1024, 17);
-	test_dtoa(3.14159265358979323846, 6);
-	test_dtoa(3.14159265358979323846, 12);
-	test_dtoa(3.14159265358979323846, 17);
+	test_dtoa(3.141592653589793, 6);
+	test_dtoa(3.141592653589793, 12);
+	test_dtoa(3.141592653589793, 17);
 
-	test_dtoa(3.14159265358979323846e300, 1);
+	test_dtoa(3.141592653589793e300, 1);
+}
 
-	test_itoa(768);
-	test_itoa(4294967296ULL);
-	test_itoa(18446744073709551615ULL);
+void test_hdtoa()
+{
+	printf("// every pair of lines should match\n");
+	test_hdtoa(1024);
+	test_hdtoa(1024.6725);
+	test_hdtoa(-1.0 / 1024);
+	test_hdtoa(3.141592653589793);
+	test_hdtoa(3.141592653589793e100);
+}
+
+#define test_printf(fmt, x...) \
+	buf.clear(); \
+	printf(fmt, x); \
+	sprintf(buf, fmt, x); \
+	printf("%s", buf.c_str());
+
+void test_sprintf()
+{
+	std::string buf;
+
+	printf("// every pair of lines should match\n");
+
+	// sprintf test
+	test_printf("%s world %p\n", "Hello", (void*)-1);
+	test_printf("%-20s %d %u %f\n", "No pad", 123, 0U, 1.1f);
+	test_printf("%-20s %8d %u %9f\n", "Right pad", 123, 0U, 1.1f);
+	test_printf("%-20s %-8d %u %9f\n", "Left pad", 123, 0U, 1.1f);
+	test_printf("%-20s %08d %u %17f\n", "Zero pad", 123, 0U, 1.1f);
+	test_printf("%-20s %a\n", "Hex Float", 3.141592653589793);
+	test_printf("%-20s %17f\n", "Double 17f", 3.141592653589793);
+	test_printf("%-20s %17.15f\n", "Double 17.15f", 3.141592653589793);
+
+	// sprintf append test
+	buf.clear();
+	std::string b("B");
+	sprintf(buf, "%s", std::string("a"));
+	sprintf(buf, "%s", b);
+	sprintf(buf, "%c", 'c');
+	sprintf(buf, "%s", std::to_string(123));
+	printf("%s\n", buf.c_str());
+	printf("aBc123\n");
+}
+
+int main()
+{
+	test_itoa();
+	test_dtoa();
+	test_hdtoa();
+	test_sprintf();
 
 	return 0;
 }

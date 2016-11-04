@@ -1,9 +1,9 @@
 //
-//  riscv-printf-format.h
+//  riscv-printf-pack.h
 //
 
-#ifndef riscv_printf_format_h
-#define riscv_printf_format_h
+#ifndef riscv_printf_pack_h
+#define riscv_printf_pack_h
 
 namespace riscv {
 
@@ -18,87 +18,23 @@ namespace riscv {
 	 * - appends to buffer to obviate the need for stringstream
 	 * - presently uses std::string for buffering
 	 *
+	 * The follow types are handled:
+	 *
+	 *   C strings       - printf style C string formatting
+	 *   std::string     - has a simpler argument format
+	 *   double (dtoa)   - printf style double formatting
+	 *   double (hdtoa)  - printf style double hex formatting
+	 *   uint   (itoa)   - printf style integer formatting
+	 *
 	 * It is intended that all occurances of snprintf, printf and
 	 * and std::stringstream will use this implementation
 	 */
 
 	template <typename... Params>
-	inline int sprintf(std::string &buf, const char* fmt, Params&&... params);
+	inline int sprintf(std::string &buf, std::string &fmt, Params&&... params);
 
 
-	/* arg types */
-
-	enum arg_type : unsigned char {
-		arg_type_ptr,
-		arg_type_cstr,
-		arg_type_sstr,
-		arg_type_char,
-		arg_type_sint,
-		arg_type_uint,
-		arg_type_dbl
-	};
-
-	/* holder */
-
-	union type_holder {
-		const void*        ptr;
-		const char*        cstr;
-		std::string*       sstr;
-		signed long long   sll;
-		unsigned long long ull;
-		double             dbl;
-	};
-
-	/* format function */
-
-	int
-	__sprintf(std::string &buf, const char* fmt0,
-		const arg_type *at, const type_holder *th,
-		const int elem)
-	{
-		/*
-		 * sprintf workalike 
-		 *
-		 *   C strings       - printf style C string formatting
-		 *   std::string     - has a simpler argument format
-		 *   double (dtoa)   - printf style double formatting
-		 *   double (hdtoa)  - printf style double hex formatting
-		 *   uint   (itoa)   - printf style integer formatting
-		 *   std::chrono     - RFC2616 style date formatting
-		 *
-		 * TODO - implement format parser and substitution
-		 */
-
-		printf("fmt=%s", fmt0);
-		for (int i=0; i < elem; i++) {
-			switch (at[i]) {
-				case arg_type_ptr:
-					printf("[%d]=0x%llx\n", i, th[i].ull);
-					break;
-				case arg_type_cstr:
-					printf("[%d]=\"%s\"\n", i, th[i].cstr);
-					break;
-				case arg_type_sstr:
-					printf("[%d]=\"%s\"\n", i, th[i].sstr->c_str());
-					break;
-				case arg_type_char:
-					printf("[%d]='%c'\n",   i, (char)th[i].sll);
-					break;
-				case arg_type_sint:
-					printf("[%d]=%lld\n",   i, th[i].sll);
-					break;
-				case arg_type_uint:
-					printf("[%d]=%llu\n",   i, th[i].ull);
-					break;
-				case arg_type_dbl:
-					printf("[%d]=%f\n",     i, th[i].dbl);
-					break;
-			}
-		}
-		return 0;
-	}
-
-	/* type boxing templates */
+	/* type boxing */
 
 	template<typename T>
 	inline typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value,void>::type
@@ -147,23 +83,23 @@ namespace riscv {
 		tb.cstr = v;
 	};
 
-	/* variadic template parameter packing */
+	/* parameter packing */
 
 	template<typename BT, typename TB>
-	inline int sprintf(std::string &buf, const char* fmt, BT &bt, TB &tb, const int elem)
+	inline int sprintf(std::string &buf, std::string &fmt, BT &bt, TB &tb, const int elem)
 	{
-		return __sprintf(buf, fmt, bt.data(), tb.data(), elem);
+		return io_printf(buf, fmt, bt.data(), tb.data(), elem);
 	}
 
 	template<typename BT, typename TB, typename T, typename... Params>
-	inline int sprintf(std::string &buf, const char* fmt, BT &bt, TB &tb, const int elem, T value, Params&&... params)
+	inline int sprintf(std::string &buf, std::string &fmt, BT &bt, TB &tb, const int elem, T value, Params&&... params)
 	{
 		box_type(bt[elem], tb[elem], value);
 		return sprintf(buf, fmt, bt, tb, elem + 1, std::forward<Params>(params)...);
 	}
 
 	template <typename... Params>
-	inline int sprintf(std::string &buf, const char* fmt, Params&&... params)
+	inline int sprintf(std::string &buf, std::string fmt, Params&&... params)
 	{
 		std::array<arg_type, sizeof...(Params)> bt;
 		std::array<type_holder, sizeof...(Params)> tb;
