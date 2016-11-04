@@ -52,7 +52,7 @@ void test_dtoa(double val, int ndigits)
 
 void test_itoa(intmax_t val)
 {
-	std::string res = itoa(val, 10, hex_digits, 0, 0, 0);
+	std::string res = itoa(val, 10, hex_digits);
 	printf("%s\n", res.c_str());
 	printf("%llu\n", (u64)val);
 }

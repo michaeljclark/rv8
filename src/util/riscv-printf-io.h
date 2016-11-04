@@ -612,7 +612,7 @@ namespace riscv
 					if (ival != 0 || prec != 0 ||
 					    (flags & ALT && base == 8))
 					{
-						cbuf = itoa(ival, base, xdigs, 0, 0, nullptr);
+						cbuf = itoa(ival, base, xdigs);
 					}
 					size = cbuf.size();
 					break;

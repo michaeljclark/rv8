@@ -44,8 +44,7 @@ namespace riscv {
 
 	constexpr int to_char(int n) { return '0' + n; }
 
-	std::string itoa(u64 val, int base, const char *xdigs, 
-		int needgrp, char thousep, const char *grp)
+	std::string itoa(u64 val, int base, const char *xdigs)
 	{
 		std::vector<char> s;
 		intmax_t sval;
@@ -67,22 +66,6 @@ namespace riscv {
 			do {
 				s.push_back(to_char(sval % 10));
 				ndig++;
-				/*
-				 * If (*grp == CHAR_MAX) then no more grouping
-				 * should be performed.
-				 */
-				if (needgrp && *grp != CHAR_MAX && ndig == *grp
-						&& sval > 9) {
-					s.push_back(thousep);
-					ndig = 0;
-					/*
-					 * If (*(grp+1) == '\0') then we have to
-					 * use *grp character (last grouping rule)
-					 * for all next cases
-					 */
-					if (*(grp+1) != '\0')
-						grp++;
-				}
 				sval /= 10;
 			} while (sval != 0);
 			break;
