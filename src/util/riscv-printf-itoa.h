@@ -46,40 +46,30 @@ namespace riscv {
 
 	std::string itoa(u64 val, int base, const char *xdigs)
 	{
-		std::vector<char> s;
-		intmax_t sval;
-		int ndig;
+		std::string s;
 
 		switch (base) {
 		case 10:
 			if (val < 10) {
-				s.push_back(to_char(val % 10));
-				return std::string(s.rbegin(), s.rend());
+				s.insert(s.begin(), to_char(val % 10));
+				return s;
 			}
-			ndig = 0;
-			if (val > INTMAX_MAX) {
-				s.push_back(to_char(val % 10));
-				ndig++;
-				sval = val / 10;
-			} else
-				sval = val;
 			do {
-				s.push_back(to_char(sval % 10));
-				ndig++;
-				sval /= 10;
-			} while (sval != 0);
+				s.insert(s.begin(), to_char(val % 10));
+				val /= 10;
+			} while (val != 0);
 			break;
 
 		case 8:
 			do {
-				s.push_back(to_char(val & 7));
+				s.insert(s.begin(), to_char(val & 7));
 				val >>= 3;
 			} while (val);
 			break;
 
 		case 16:
 			do {
-				s.push_back(xdigs[val & 15]);
+				s.insert(s.begin(), xdigs[val & 15]);
 				val >>= 4;
 			} while (val);
 			break;
@@ -87,7 +77,7 @@ namespace riscv {
 		default:
 			abort();
 		}
-		return std::string(s.rbegin(), s.rend());
+		return s;
 	}
 
 }
