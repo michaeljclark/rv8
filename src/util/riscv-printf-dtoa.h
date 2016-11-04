@@ -82,7 +82,7 @@ namespace riscv {
 	 /*	Arguments ndigits, decpt, sign are similar to those
 		of ecvt and fcvt; trailing zeros are suppressed from
 		the returned string.  If d is +-Infinity or NaN,
-		then *decpt is set to std::numeric_limits<int>::max().
+		then *decpt is set to INT_MAX.
 
 		mode:
 			0 ==> shortest string that yields d when read in
@@ -127,10 +127,10 @@ namespace riscv {
 		d.f = d0;
 		if (d.r.exp == f64_type::exp_inf) {
 			if (d.r.man == 0) {
-				*decpt = std::numeric_limits<int>::max();
+				*decpt = INT_MAX;
 				return "Infinity";
 			} else {
-				*decpt = std::numeric_limits<int>::max();
+				*decpt = INT_MAX;
 				return "NaN";
 			}
 		} else if (d.r.exp == f64_type::exp_denorm && d.r.man == 0) {
