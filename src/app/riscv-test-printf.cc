@@ -26,7 +26,7 @@
 #include "riscv-printf-dtoa.h"
 #include "riscv-printf-hdtoa.h"
 #include "riscv-printf-types.h"
-#include "riscv-printf-io.h"
+#include "riscv-printf-fmt.h"
 #include "riscv-printf-pack.h"
 
 using namespace riscv;

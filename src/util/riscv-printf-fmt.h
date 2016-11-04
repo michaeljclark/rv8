@@ -119,7 +119,7 @@ namespace riscv
 	{
 		char *p, *t;
 		char expbuf[MAXEXPDIG];
-		
+
 		p = p0;
 		*p++ = fmtch;
 		if (expo < 0) {
