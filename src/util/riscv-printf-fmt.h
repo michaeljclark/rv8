@@ -162,7 +162,6 @@ namespace riscv
 	 *
 	 * NOTES:
 	 *
-	 * - TODO dtoaresult memleak
 	 * - long double is not supported
 	 * - locales and grouping are not supported
 	 * - position arguments of the form *nn$ are not supported
