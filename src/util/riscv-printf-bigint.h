@@ -513,40 +513,6 @@ ret_d:
 		return b;
 	}
 
-	char* rv_alloc(int i)
-	{
-		int j, k, *r;
-
-		j = sizeof(u32);
-		for(k = 0; (int)(sizeof(Bigint) - sizeof(u32) - sizeof(int)) + j <= i; j <<= 1) {
-			k++;
-		}
-		r = (int*)Balloc(k);
-		*r = k;
-		return (char *)(r+1);
-	}
-
-	char* nrv_alloc(const char *s, char **rve, int n)
-	{
-		char *rv, *t;
-
-		t = rv = rv_alloc(n);
-		while((*t = *s++) !=0) {
-			t++;
-		}
-		if (rve) {
-			*rve = t;
-		}
-		return rv;
-	}
-
-	void freedtoa(char *s)
-	{
-		Bigint *b = (Bigint *)((int *)s - 1);
-		b->maxwds = 1 << (b->k = *(int*)b);
-		Bfree(b);
-	}
-
 	int quorem(Bigint *b, Bigint *S)
 	{
 		int n;
