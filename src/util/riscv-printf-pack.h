@@ -24,10 +24,7 @@ namespace riscv {
 	 *   std::string     - has a simpler argument format
 	 *   double (dtoa)   - printf style double formatting
 	 *   double (hdtoa)  - printf style double hex formatting
-	 *   uint   (itoa)   - printf style integer formatting
-	 *
-	 * It is intended that all occurances of snprintf, printf and
-	 * and std::stringstream will use this implementation
+	 *   integer (itoa)  - printf style integer formatting
 	 */
 
 	template <typename... Params>
