@@ -1,9 +1,9 @@
 //
-//  riscv-printf-pack.h
+//  riscv-printf-args.h
 //
 
-#ifndef riscv_printf_pack_h
-#define riscv_printf_pack_h
+#ifndef riscv_printf_args_h
+#define riscv_printf_args_h
 
 namespace riscv {
 
