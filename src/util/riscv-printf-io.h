@@ -408,7 +408,7 @@ namespace riscv
 						mbstate_t mbs;
 						size_t mbseqlen;
 						memset(&mbs, 0, sizeof(mbs));
-						char ubuf[8];
+						char ubuf[8] = {0};
 						mbseqlen = wcrtomb(ubuf, (wchar_t)cval, &mbs);
 						if (mbseqlen == (size_t)-1) {
 							goto error;

@@ -43,7 +43,7 @@ void test_hdtoa(double val)
 
 void test_dtoa(double val, int ndigits)
 {
-	char buf[64];
+	char buf[64] = {0};
 	int sign, exp;
 	std::string res = dtoa(val, 3, ndigits, &exp, &sign);
 	sprintf(buf, "%%-%d.%df%%%ds%%s\n", ndigits+10, ndigits, 17-ndigits);
