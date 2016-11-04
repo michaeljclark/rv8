@@ -1,9 +1,9 @@
 //
-//  riscv-printf-io.h
+//  riscv-printf-fmt.h
 //
 
-#ifndef riscv_printf_io_h
-#define riscv_printf_io_h
+#ifndef riscv_printf_fmt_h
+#define riscv_printf_fmt_h
 
 namespace riscv
 {
