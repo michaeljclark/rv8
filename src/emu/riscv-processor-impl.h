@@ -139,11 +139,13 @@ namespace riscv {
 				operand_data++;
 			}
 
-			std::stringstream ss;
+			std::string operands;
 			for (auto i = ops.begin(); i != ops.end(); i++) {
-				ss << (i == ops.begin() ? "(" : ", ") << *i << (i == ops.end() - 1 ? ")" : "");
+				operands.append((i == ops.begin() ? "(" : ", "));
+				operands.append(*i);
+				operands.append((i == ops.end() - 1 ? ")" : ""));
 			}
-			return ss.str();
+			return operands;
 		}
 
 		void print_log(decode_type &dec, inst_t inst)

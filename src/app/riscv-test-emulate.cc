@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <deque>
@@ -299,11 +298,11 @@ struct riscv_emulator
 
 		// print seed initial seed state
 		if (proc.log & proc_log_memory) {
-			std::stringstream ss;
+			std::string seed_str;
 			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
-				ss << format_string("%016llx", *(u64*)(seed + i));
+				seed_str.append(format_string("%016llx", *(u64*)(seed + i)));
 			}
-			debug("seed: %s", ss.str().c_str());
+			debug("seed: %s", seed_str.c_str());
 		}
 
 		// randomize the integer registers
