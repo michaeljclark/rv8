@@ -21,6 +21,18 @@ using namespace riscv;
 const int TIME_ITERATIONS = 16;
 
 template <typename T>
+static inline std::string to_binary_string(T val)
+{
+    const int bits = sizeof(T) << 3;
+    char buf[bits+1];
+    for (int i = 0; i < bits; ++i) {
+        buf[bits-i-1] = val & T(1)<<i ? '1' : '0';
+    }
+    buf[bits] = '\0';
+    return buf;
+}
+
+template <typename T>
 void test_limits(const char* min_chk, const char* max_chk)
 {
 	const char* print_fmt_signed = "%s %-24s %s=%-20lld (0x%016llx) chk=%-24s\n";
