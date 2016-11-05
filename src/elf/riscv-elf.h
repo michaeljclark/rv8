@@ -564,7 +564,7 @@ enum {
 	R_RISCV_GPREL_S = 48             /* 32, 11:0  PC-relative reference         %gprel(symbol)       S-Type (sb,sh,sw,fsw,fsd) */
 };
 
-// RISC-V EHdr e_flags
+// RISC-V Ehdr e_flags
 
 enum {
 	EF_RISCV_RVC = 1,               /* Indicates that the executable contains RVC compressed code ('C' extension) */
