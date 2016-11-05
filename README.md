@@ -136,11 +136,10 @@ The following table shows the RISC-V Meta libraries:
 functions, single inheritance, operator overloading, variadiac templates and
 template based static polymorphism. RTTI and exceptions are *disallowed*.
 C++ virtual functions are *disallowed* in nano, micro and mini.
-C++ virtual functions are currently present in `src/gen` but will be removed
-when static polymorphism is implemented for generators (virtual functions are
-discouraged). The use of stringstream is temporarily permitted in `src/gen`,
-`src/model` and `src/util` (mini and macro) until a variadic template based
-string formatter has been implemented.
+C++ virtual functions are currently used in `src/gen` but will be removed
+when static polymorphism is implemented (virtual functions are discouraged).
+The use of stringstream is temporarily permitted in `src/gen` until it has
+been replaced with with variadic template based string formatter in `src/fmt`.
 
 Tools
 -----------------
