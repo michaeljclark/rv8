@@ -3,23 +3,30 @@
 //
 
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <cassert>
 #include <cinttypes>
-#include <cstdarg>
 #include <csignal>
 #include <csetjmp>
 #include <cerrno>
 #include <cmath>
+#include <cctype>
+#include <cwchar>
+#include <climits>
+#include <cfloat>
 #include <cfenv>
+#include <limits>
+#include <array>
+#include <string>
+#include <vector>
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <string>
-#include <vector>
 #include <deque>
 #include <map>
 #include <thread>
+#include <type_traits>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -29,6 +36,12 @@
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
+#include "riscv-args.h"
+#include "riscv-bigint.h"
+#include "riscv-itoa.h"
+#include "riscv-dtoa.h"
+#include "riscv-hdtoa.h"
+#include "riscv-fmt.h"
 #include "riscv-bits.h"
 #include "riscv-sha512.h"
 #include "riscv-format.h"

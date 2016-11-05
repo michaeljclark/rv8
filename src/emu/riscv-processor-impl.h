@@ -65,13 +65,13 @@ namespace riscv {
 
 		std::string format_inst(inst_t inst)
 		{
-			char buf[20];
+			std::string buf;
 			switch (inst_length(inst)) {
-				case 2:  snprintf(buf, sizeof(buf), "%04llx    ", inst); break;
-				case 4:  snprintf(buf, sizeof(buf), "%08llx", inst); break;
-				case 6:  snprintf(buf, sizeof(buf), "%012llx", inst); break;
-				case 8:  snprintf(buf, sizeof(buf), "%016llx", inst); break;
-				default: snprintf(buf, sizeof(buf), "(invalid)"); break;
+				case 2:  sprintf(buf, "%04llx    ", inst); break;
+				case 4:  sprintf(buf, "%08llx", inst); break;
+				case 6:  sprintf(buf, "%012llx", inst); break;
+				case 8:  sprintf(buf, "%016llx", inst); break;
+				default: sprintf(buf, "(invalid)"); break;
 			}
 			return buf;
 		}
@@ -93,31 +93,29 @@ namespace riscv {
 		std::string format_operands(T &dec)
 		{
 			size_t reg;
-			char buf[256];
+			std::string op;
 			std::vector<std::string> ops;
 			const riscv_operand_data *operand_data = riscv_inst_operand_data[dec.op];
 			while (operand_data->type != riscv_type_none) {
-				std::string op;
+				op.clear();
 				switch (operand_data->type) {
 					case riscv_type_ireg:
 						reg = regnum(dec, operand_data->operand_name);
-						op += riscv_ireg_name_sym[reg];
-						op += "=";
-						snprintf(buf, sizeof(buf), riscv_type_primitives[operand_data->primitive].format,
+						sprintf(op, "%s=", riscv_ireg_name_sym[reg]);
+						sprintf(op,
+							riscv_type_primitives[operand_data->primitive].format,
 							P::ireg[reg].r.xu.val);
-						op += buf;
 						ops.push_back(op);
 						break;
 					case riscv_type_freg:
 						reg = regnum(dec, operand_data->operand_name);
-						op += riscv_freg_name_sym[reg];
-						op += "=";
+						sprintf(op, "%s=", riscv_freg_name_sym[reg]);
 						// show hex value for +/-{inf|subnorm|nan}
 						if (operand_data->primitive == riscv_primitive_f64 ?
 							(f64_classify(P::freg[reg].r.d.val) & 0b1110100101) :
 							(f32_classify(P::freg[reg].r.s.val) & 0b1110100101))
 						{
-							snprintf(buf, sizeof(buf),
+							sprintf(op,
 								operand_data->primitive == riscv_primitive_f64 ?
 								"%.17g[%016llx]" : "%.9g[%08llx]",
 								operand_data->primitive == riscv_primitive_f64 ?
@@ -125,13 +123,12 @@ namespace riscv {
 								operand_data->primitive == riscv_primitive_f64 ?
 								P::freg[reg].r.lu.val : P::freg[reg].r.wu.val);
 						} else {
-							snprintf(buf, sizeof(buf),
+							sprintf(op,
 								operand_data->primitive == riscv_primitive_f64 ?
 								"%.17g" : "%.9g",
 								operand_data->primitive == riscv_primitive_f64 ?
 								P::freg[reg].r.d.val : P::freg[reg].r.s.val);
 						}
-						op += buf;
 						ops.push_back(op);
 						break;
 					default: break;
