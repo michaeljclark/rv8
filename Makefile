@@ -36,6 +36,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/crypto \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
+                -I$(TOP_DIR)/src/fmt \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \

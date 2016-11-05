@@ -1,9 +1,9 @@
 //
-//  riscv-printf-dtoa.h
+//  riscv-dtoa.h
 //
 
-#ifndef riscv_printf_dtoa_h
-#define riscv_printf_dtoa_h
+#ifndef riscv_dtoa_h
+#define riscv_dtoa_h
 
 /****************************************************************
 
@@ -63,17 +63,17 @@ THIS SOFTWARE.
  *	   guarantee that the floating-point calculation has given
  *	   the correctly rounded result.  For k requested digits and
  *	   "uniformly" distributed input, the probability is
- *	   something like 10^(k-15) that we must resort to the u32
+ *	   something like 10^(k-15) that we must resort to the unsigned int
  *	   calculation.
  */
 
 namespace riscv {
 
-	/* f64_bits union access */
+	/* double_bits union access */
 
-	inline u32& word0(f64_bits *x) { return x->w.d0; }
-	inline u32& word1(f64_bits *x) { return x->w.d1; }
-	inline f64& dval(f64_bits *x) { return x->f; }
+	inline unsigned int& word0(double_bits *x) { return x->w.d0; }
+	inline unsigned int& word1(double_bits *x) { return x->w.d1; }
+	inline double& dval(double_bits *x) { return x->f; }
 
 	/* dtoa - convert double to ASCII string */
 
@@ -117,15 +117,15 @@ namespace riscv {
 			spec_case, try_quick;
 		int L;
 		int denorm;
-		u32 x;
+		unsigned int x;
 		Bigint *b, *b1, *delta, *mlo, *mhi, *S;
-		f64_bits d, d2, eps;
+		double_bits d, d2, eps;
 		double ds;
 		std::string s;
 
 		/* check for 0, Infinity or NaN */
 		d.f = d0;
-		if (d.r.exp == f64_type::exp_inf) {
+		if (d.r.exp == double_type::exp_inf) {
 			if (d.r.man == 0) {
 				*decpt = INT_MAX;
 				return "Infinity";
@@ -133,7 +133,7 @@ namespace riscv {
 				*decpt = INT_MAX;
 				return "NaN";
 			}
-		} else if (d.r.exp == f64_type::exp_denorm && d.r.man == 0) {
+		} else if (d.r.exp == double_type::exp_denorm && d.r.man == 0) {
 			*decpt = 1;
 			return "0";
 		}

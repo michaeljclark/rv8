@@ -1,9 +1,9 @@
 //
-//  riscv-printf-hdtoa.h
+//  riscv-hdtoa.h
 //
 
-#ifndef riscv_printf_hdtoa_h
-#define riscv_printf_hdtoa_h
+#ifndef riscv_hdtoa_h
+#define riscv_hdtoa_h
 
 /*-
  * Copyright (c) 2004-2008 David Schultz <das@FreeBSD.ORG>
@@ -60,37 +60,32 @@ namespace riscv {
 
 	std::string hdtoa(double d, const char *xdigs, int ndigits, int *decpt, int *sign)
 	{
-		static const int dbl_adj = f64_type::exp_max - 2 + (f64_type::man_digits - 1) % 4;
-		static const int sigfigs = (f64_type::man_digits + 3) / 4 + 1;
+		static const int dbl_adj = double_type::exp_max - 2 + (double_type::man_digits - 1) % 4;
+		static const int sigfigs = (double_type::man_digits + 3) / 4 + 1;
 		static const float one[] = { 1.0f, -1.0f };
 
-		f64_bits v{ .f = d };
+		double_bits v{ .f = d };
 		std::string s;
 		int bufsize;
-		u64 man;
+		unsigned long long man;
 
 		*sign = v.r.sign;
 
-		switch (f64_classify(d)) {
-		case riscv_fclass_neg_norm:
-		case riscv_fclass_pos_norm:
+		switch (std::fpclassify(d)) {
+		case FP_NORMAL:
 			*decpt = v.r.exp - dbl_adj;
 			break;
-		case riscv_fclass_neg_zero:
-		case riscv_fclass_pos_zero:
+		case FP_ZERO:
 			*decpt = 1;
 			return "0";
-		case riscv_fclass_neg_subnorm:
-		case riscv_fclass_pos_subnorm:
+		case FP_SUBNORMAL:
 			v.f *= 0x1p514;
 			*decpt = v.r.exp - (514 + dbl_adj);
 			break;
-		case riscv_fclass_neg_inf:
-		case riscv_fclass_pos_inf:
+		case FP_INFINITE:
 			*decpt = std::numeric_limits<int>::max();
 			return "Infinity";
-		case riscv_fclass_quiet_nan:
-		case riscv_fclass_signaling_nan:
+		case FP_NAN:
 			*decpt = std::numeric_limits<int>::max();
 			return "NaN";
 		}
@@ -109,7 +104,7 @@ namespace riscv {
 		/* Round to the desired number of digits. */
 		if (sigfigs > ndigits && ndigits > 0) {
 			float redux = one[v.r.sign];
-			int offset = 4 * ndigits + f64_type::exp_max - 4 - (f64_type::man_digits);
+			int offset = 4 * ndigits + double_type::exp_max - 4 - (double_type::man_digits);
 			v.r.exp = offset;
 			v.f += redux;
 			v.f -= redux;
@@ -119,7 +114,7 @@ namespace riscv {
 		man = v.r.man;
 		s.push_back('1');
 		for (int i = 1; i < bufsize; i++) {
-			s.push_back(xdigs[(man >> (f64_type::man_size - 4)) & 0xf]);
+			s.push_back(xdigs[(man >> (double_type::man_size - 4)) & 0xf]);
 			man = man << 4;
 		}
 

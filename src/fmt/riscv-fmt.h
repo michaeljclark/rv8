@@ -1,9 +1,9 @@
 //
-//  riscv-printf-fmt.h
+//  riscv-fmt.h
 //
 
-#ifndef riscv_printf_fmt_h
-#define riscv_printf_fmt_h
+#ifndef riscv_fmt_h
+#define riscv_fmt_h
 
 /*-
  * portions from freebsd/lib/libc/stdio/vfprintf.c
@@ -12,8 +12,10 @@
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
- * This code is derived from software contributed to Berkeley by
- * Chris Torek.
+ * Portions of this software were developed by David Chisnall
+ * under sponsorship from the FreeBSD Foundation.
+ *
+ * Portions of this software were contributed to Berkeley by Chris Torek.
  *
  * Copyright (c) 2011 The FreeBSD Foundation
  * All rights reserved.
@@ -45,8 +47,8 @@
  * SUCH DAMAGE.
  */
 
-namespace riscv
-{
+namespace riscv {
+
 	/* Flags used during conversion. */
 	enum {
 		ALT =           0x001,          /* alternate form */
@@ -155,8 +157,6 @@ namespace riscv
 
 	/*
 	 * io_printf
-	 *
-	 * derived from freebsd/lib/libc/vfprintf.c
 	 *
 	 * BSD style string formatter using bounded STL std::string container.
 	 * Arguments are typed and boxed using variadiac templates.
@@ -365,7 +365,7 @@ namespace riscv
 				case 'd':
 				case 'i':
 					if (!args.get_int(ival)) goto error;
-					if ((s64)ival < 0) {
+					if ((signed long long)ival < 0) {
 						ival = -ival;
 						sign = '-';
 					}

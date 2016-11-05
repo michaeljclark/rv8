@@ -17,17 +17,13 @@
 #include <vector>
 #include <type_traits>
 
-#include "riscv-endian.h"
 #include "riscv-types.h"
-#include "riscv-meta.h"
-#include "riscv-fpu.h"
-#include "riscv-printf-bigint.h"
-#include "riscv-printf-itoa.h"
-#include "riscv-printf-dtoa.h"
-#include "riscv-printf-hdtoa.h"
-#include "riscv-printf-types.h"
-#include "riscv-printf-fmt.h"
-#include "riscv-printf-args.h"
+#include "riscv-args.h"
+#include "riscv-bigint.h"
+#include "riscv-itoa.h"
+#include "riscv-dtoa.h"
+#include "riscv-hdtoa.h"
+#include "riscv-fmt.h"
 
 using namespace riscv;
 

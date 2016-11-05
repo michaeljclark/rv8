@@ -114,6 +114,7 @@ Project Structure
 |`src/asm`|Assembler metadata library|
 |`src/elf`|ELF parser library|
 |`src/emu`|ISA emulator headers|
+|`src/fmt`|String formatting header library|
 |`src/model`|ISA metamodel library|
 |`src/util`|Miscellaneous utilities library|
 |`doc/pdf`|Generated documentation|

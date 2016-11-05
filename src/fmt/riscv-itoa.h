@@ -1,9 +1,9 @@
 //
-//  riscv-printf-itoa.h
+//  riscv-itoa.h
 //
 
-#ifndef riscv_printf_itoa_h
-#define riscv_printf_itoa_h
+#ifndef riscv_itoa_h
+#define riscv_itoa_h
 
 /*-
  * Copyright (c) 2005 Poul-Henning Kamp
@@ -44,7 +44,7 @@ namespace riscv {
 
 	constexpr int to_char(int n) { return '0' + n; }
 
-	std::string itoa(u64 val, int base, const char *xdigs)
+	std::string itoa(unsigned long long val, int base, const char *xdigs)
 	{
 		std::string s;
 

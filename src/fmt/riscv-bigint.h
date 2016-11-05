@@ -1,9 +1,9 @@
 //
-//  riscv-printf-bigint.h
+//  riscv-bigint.h
 //
 
-#ifndef riscv_printf_bigint_h
-#define riscv_printf_bigint_h
+#ifndef riscv_bigint_h
+#define riscv_bigint_h
 
 /****************************************************************
 
@@ -42,9 +42,9 @@ namespace riscv {
 	Bigint* Balloc(int k);
 	void Bcopy(Bigint *x, Bigint *y);
 	void Bfree(Bigint *v);
-	int lo0bits(u32 *y);
+	int lo0bits(unsigned int *y);
 	Bigint* multadd(Bigint *b, int m, int a);
-	int hi0bits(u32 x);
+	int hi0bits(unsigned int x);
 	Bigint* i2b(int i);
 	Bigint* mult(Bigint *a, Bigint *b);
 	Bigint* pow5mult(Bigint *b, int k);
@@ -104,7 +104,7 @@ namespace riscv {
 
 	struct Bigint {
 		int k, maxwds, sign, wds;
-		u32 x[1];
+		unsigned int x[1];
 	};
 
 	/* bigint functions */
@@ -112,7 +112,7 @@ namespace riscv {
 	Bigint* Balloc(int k)
 	{
 		int x = 1 << k;
-		Bigint *rv = (Bigint *)malloc(sizeof(Bigint) + (x-1)*sizeof(u32));
+		Bigint *rv = (Bigint *)malloc(sizeof(Bigint) + (x-1)*sizeof(unsigned int));
 		rv->k = k;
 		rv->maxwds = x;
 		rv->sign = rv->wds = 0;
@@ -121,7 +121,7 @@ namespace riscv {
 
 	void Bcopy(Bigint *x, Bigint *y)
 	{
-		memcpy(&x->sign, &y->sign, y->wds*sizeof(u32) + 2 * sizeof(int));
+		memcpy(&x->sign, &y->sign, y->wds*sizeof(unsigned int) + 2 * sizeof(int));
 	}
 
 	void Bfree(Bigint *v)
@@ -129,10 +129,10 @@ namespace riscv {
 		free((void*)v);
 	}
 
-	int lo0bits(u32 *y)
+	int lo0bits(unsigned int *y)
 	{
 		int k;
-		u32 x = *y;
+		unsigned int x = *y;
 
 		if (x & 7) {
 			if (x & 1) {
@@ -176,8 +176,8 @@ namespace riscv {
 	Bigint* multadd(Bigint *b, int m, int a)
 	{
 		int i, wds;
-		u32 *x;
-		u64 carry, y;
+		unsigned int *x;
+		unsigned long long carry, y;
 		Bigint *b1;
 
 		wds = b->wds;
@@ -185,7 +185,7 @@ namespace riscv {
 		i = 0;
 		carry = a;
 		do {
-			y = *x * (u64)m + carry;
+			y = *x * (unsigned long long)m + carry;
 			carry = y >> 32;
 			*x++ = y & 0xffffffffUL;
 		} while(++i < wds);
@@ -202,7 +202,7 @@ namespace riscv {
 		return b;
 	}
 
-	int hi0bits(u32 x)
+	int hi0bits(unsigned int x)
 	{
 		int k = 0;
 
@@ -245,9 +245,9 @@ namespace riscv {
 	{
 		Bigint *c;
 		int k, wa, wb, wc;
-		u32 *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
-		u32 y;
-		u64 carry, z;
+		unsigned int *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
+		unsigned int y;
+		unsigned long long carry, z;
 
 		if (a->wds < b->wds) {
 			c = a;
@@ -276,7 +276,7 @@ namespace riscv {
 				xc = xc0;
 				carry = 0;
 				do {
-					z = *x++ * (u64)y + *xc + carry;
+					z = *x++ * (unsigned long long)y + *xc + carry;
 					carry = z >> 32;
 					*xc++ = z & 0xffffffffUL;
 				} while(x < xae);
@@ -326,7 +326,7 @@ namespace riscv {
 	{
 		int i, k1, n, n1;
 		Bigint *b1;
-		u32 *x, *x1, *xe, z;
+		unsigned int *x, *x1, *xe, z;
 
 		n = k >> kshift;
 		k1 = b->k;
@@ -362,7 +362,7 @@ namespace riscv {
 
 	int cmp(Bigint *a, Bigint *b)
 	{
-		u32 *xa, *xa0, *xb, *xb0;
+		unsigned int *xa, *xa0, *xb, *xb0;
 		int i, j;
 
 		i = a->wds;
@@ -391,8 +391,8 @@ namespace riscv {
 	{
 		Bigint *c;
 		int i, wa, wb;
-		u32 *xa, *xae, *xb, *xbe, *xc;
-		u64 borrow, y;
+		unsigned int *xa, *xae, *xb, *xbe, *xc;
+		unsigned long long borrow, y;
 
 		i = cmp(a,b);
 		if (!i) {
@@ -421,7 +421,7 @@ namespace riscv {
 		xc = c->x;
 		borrow = 0;
 		do {
-			y = (u64)*xa++ - *xb++ - borrow;
+			y = (unsigned long long)*xa++ - *xb++ - borrow;
 			borrow = y >> 32 & 1UL;
 			*xc++ = y & 0xffffffffUL;
 		} while(xb < xbe);
@@ -439,10 +439,10 @@ namespace riscv {
 
 	double b2d(Bigint *a, int *e)
 	{
-		u32 *xa, *xa0, w, y, z;
+		unsigned int *xa, *xa0, w, y, z;
 		int k;
-		f64_bits v;
-		u64 d0, d1;
+		double_bits v;
+		unsigned long long d0, d1;
 
 		xa0 = a->x;
 		xa = xa0 + a->wds;
@@ -475,9 +475,9 @@ ret_d:
 		Bigint *b;
 		int i;
 		int de, k;
-		u32 *x, y, z;
-		f64_bits v{ .f = dd };
-		u64 d0 = v.u >> 32, d1 = v.u & ((1ULL<<32)-1);
+		unsigned int *x, y, z;
+		double_bits v{ .f = dd };
+		unsigned long long d0 = v.u >> 32, d1 = v.u & ((1ULL<<32)-1);
 
 		b = Balloc(1);
 		x = b->x;
@@ -516,8 +516,8 @@ ret_d:
 	int quorem(Bigint *b, Bigint *S)
 	{
 		int n;
-		u32 *bx, *bxe, q, *sx, *sxe;
-		u64 borrow, carry, y, ys;
+		unsigned int *bx, *bxe, q, *sx, *sxe;
+		unsigned long long borrow, carry, y, ys;
 
 		n = S->wds;
 		assert(b->wds <= n);
@@ -534,7 +534,7 @@ ret_d:
 			borrow = 0;
 			carry = 0;
 			do {
-				ys = *sx++ * (u64)q + carry;
+				ys = *sx++ * (unsigned long long)q + carry;
 				carry = ys >> 32;
 				y = *bx - (ys & 0xffffffffUL) - borrow;
 				borrow = y >> 32 & 1UL;
