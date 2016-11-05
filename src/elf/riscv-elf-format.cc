@@ -37,6 +37,18 @@ const char* elf_ei_data_name(int v)
 	};
 }
 
+const std::string elf_e_flags_name(int v)
+{
+	std::string s;
+	std::vector<std::string> vec;
+	if (v & EF_RISCV_RVC) vec.push_back("RVC");
+	for (auto vi = vec.begin(); vi != vec.end(); vi++) {
+		if (vi != vec.begin()) s.append(",");
+		s.append(*vi);
+	}
+	return s;
+}
+
 const char* elf_e_type_name(int v)
 {
 	switch (v) {
@@ -244,6 +256,7 @@ void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 	printf("%sFile       %s%s\n", colorize("legend"), colorize("reset"), elf.filename.c_str());
 	printf("%sClass      %s%s\n", colorize("legend"), colorize("reset"), elf_ei_class_name(elf.ei_class));
 	printf("%sMachine    %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
+	printf("%sFlags      %s%s\n", colorize("legend"), colorize("reset"), elf_e_flags_name(elf.ehdr.e_flags).c_str());
 	printf("%sType       %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
 	printf("%sData       %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
 	printf("%sEntryAddr  %s0x%-16llx\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);

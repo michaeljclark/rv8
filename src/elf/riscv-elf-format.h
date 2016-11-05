@@ -10,6 +10,7 @@ typedef std::function<const char*(const char *type)> elf_symbol_colorize_fn;
 const char* elf_null_symbol_colorize(const char *type);
 const char* elf_ei_class_name(int v);
 const char* elf_ei_data_name(int v);
+const std::string elf_e_flags_name(int v);
 const char* elf_e_type_name(int v);
 const char* elf_e_machine_name(int v);
 const char* elf_p_type_name(int v);
