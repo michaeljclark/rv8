@@ -154,15 +154,6 @@ namespace riscv {
 		UX           uepc;            /* User Exception Program Counter */
 		UX           ucause;          /* User Cause Register */
 		UX           ubadaddr;        /* User Bad Address Register */
-		u64          mhcycle_delta;   /* Machine Hypervisor Number of Cycles Delta */
-		u64          mscycle_delta;   /* Machine Supervisor Number of Cycles Delta */
-		u64          mucycle_delta;   /* Machine User Number of Cycles Delta */
-		u64          mhtime_delta;    /* Machine Hypervisor Time Delta */
-		u64          mstime_delta;    /* Machine Supervisor Time Delta */
-		u64          mutime_delta;    /* Machine User Time Delta */
-		u64          mhinstret_delta; /* Machine Hypervisor Number of Instructions Retired Delta */
-		u64          msinstret_delta; /* Machine Supervisor Number of Instructions Retired Delta */
-		u64          muinstret_delta; /* Machine User Number of Instructions Retired Delta */
 
 		processor_priv() : processor_type(), pdid(0), mode(riscv_mode_M) {}
 	};
