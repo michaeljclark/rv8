@@ -13,8 +13,11 @@
 #include <deque>
 #include <map>
 
+#include "riscv-types.h"
 #include "riscv-config-parser.h"
 #include "riscv-config.h"
+
+using namespace riscv;
 
 int main(int argc, const char * argv[])
 {
@@ -23,7 +26,7 @@ int main(int argc, const char * argv[])
 		exit(1);
 	}
 
-	riscv_config cfg;
+	config cfg;
 	cfg.read(argv[1]);
 
 	printf("%s", cfg.to_string().c_str());
