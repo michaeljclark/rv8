@@ -36,7 +36,7 @@
 
 using namespace riscv;
 
-bool config::parse_value(std::string valstr, u64 &val)
+bool config::parse_scalar(std::string valstr, scalar_t &val)
 {
 	char *endptr = nullptr;
 	valstr = replace(valstr, "_", "");
@@ -54,11 +54,11 @@ bool config::parse_address_range(std::string valstr, address_range_ptr range)
 {
 	auto range_comps = split(valstr, ":");
 	if (range_comps.size() == 1) {
-		if (!parse_value(range_comps[0], range->start)) return false;
+		if (!parse_scalar(range_comps[0], range->start)) return false;
 		range->end = range->start;
 	} else if (range_comps.size() == 2) {
-		if (!parse_value(range_comps[0], range->start)) return false;
-		if (!parse_value(range_comps[1], range->end)) return false;
+		if (!parse_scalar(range_comps[0], range->start)) return false;
+		if (!parse_scalar(range_comps[1], range->end)) return false;
 	} else {
 		return false;
 	}
@@ -71,8 +71,8 @@ std::string config::address_range_to_string(address_range_list &addr_list)
 	sprintf(s, "@");
 	for (auto &addr : addr_list) {
 		sprintf(s, " ");
-		if (addr->start == addr->end) sprintf(s, "0x%llx", addr->start);
-		else sprintf(s, "0x%lx:0x%lx", addr->start, addr->end);
+		if (addr->start == addr->end) sprintf(s, "0x%x", addr->start);
+		else sprintf(s, "0x%x:0x%x", addr->start, addr->end);
 	}
 	sprintf(s, ";");
 	return s;
@@ -232,7 +232,7 @@ void config::config_plic()
 	}};
 
 	config_fn_map["plic.ndevs"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], plic_list.back()->ndevs)) {
+		if (!parse_scalar(line[1], plic_list.back()->ndevs)) {
 			panic("config: invalid ndevs value: plic \"%s\": %s",
 				plic_list.back()->interface.c_str(), line[1].c_str());
 		}
@@ -266,13 +266,13 @@ void config::config_plic()
 
 	block_start_fn_map["plic.#"] = {1, 1, [&] (config_line &line) {
 		auto plic_node = std::make_shared<riscv::plic_node>();
-		parse_value(line[0], plic_node->node_id);
+		parse_scalar(line[0], plic_node->node_id);
 		plic_list.back()->node_list.push_back(plic_node);
 	}};
 
 	block_start_fn_map["plic.#.#"] = {1, 1, [&] (config_line &line) {
 		auto plic_hart = std::make_shared<riscv::plic_hart>();
-		parse_value(line[0], plic_hart->hart_id);
+		parse_scalar(line[0], plic_hart->hart_id);
 		plic_list.back()->node_list.back()->hart_list.push_back(plic_hart);
 	}};
 
@@ -375,8 +375,8 @@ void config::config_pcie()
 	config_fn_map["pcie.bus.bus"] = {2, 2, [&] (config_line &line) {
 		auto comps = split(line[1], ":");
 		if (comps.size() != 2 ||
-			!parse_value(comps[0], pcie_list.back()->bus_list.back()->bus_pair.first) ||
-			!parse_value(comps[1], pcie_list.back()->bus_list.back()->bus_pair.second)) {
+			!parse_scalar(comps[0], pcie_list.back()->bus_list.back()->bus_pair.first) ||
+			!parse_scalar(comps[1], pcie_list.back()->bus_list.back()->bus_pair.second)) {
 			panic("config: invalid bus spec: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -401,7 +401,7 @@ void config::config_pcie()
 	}};
 
 	config_fn_map["pcie.bridge.bus"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], pcie_list.back()->bridge_list.back()->bus_id)) {
+		if (!parse_scalar(line[1], pcie_list.back()->bridge_list.back()->bus_id)) {
 			panic("config: invalid bridge bus number: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -409,7 +409,7 @@ void config::config_pcie()
 	}};
 
 	config_fn_map["pcie.bridge.irq"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], pcie_list.back()->bridge_list.back()->irq_id)) {
+		if (!parse_scalar(line[1], pcie_list.back()->bridge_list.back()->irq_id)) {
 			panic("config: invalid bridge irq number: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -428,7 +428,7 @@ void config::config_leds()
 	}};
 
 	config_fn_map["leds.ngpio"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], leds_list.back()->ngpio)) {
+		if (!parse_scalar(line[1], leds_list.back()->ngpio)) {
 			panic("config: invalid ngpio value: leds \"%s\": %s",
 				leds_list.back()->interface.c_str(), line[1].c_str());
 		}
@@ -468,7 +468,7 @@ void config::config_ram()
 
 	block_start_fn_map["ram.#"] = {1, 1, [&] (config_line &line) {
 		auto ram_node = std::make_shared<riscv::ram_node>();
-		parse_value(line[0], ram_node->node_id);
+		parse_scalar(line[0], ram_node->node_id);
 		ram_list.back()->node_list.push_back(ram_node);
 	}};
 
@@ -507,13 +507,13 @@ void config::config_core()
 
 	block_start_fn_map["core.#"] = {1, 1, [&] (config_line &line) {
 		auto core_node = std::make_shared<riscv::core_node>();
-		parse_value(line[0], core_node->node_id);
+		parse_scalar(line[0], core_node->node_id);
 		core_list.back()->node_list.push_back(core_node);
 	}};
 
 	block_start_fn_map["core.#.#"] = {1, 1, [&] (config_line &line) {
 		auto core_hart = std::make_shared<riscv::core_hart>();
-		parse_value(line[0], core_hart->hart_id);
+		parse_scalar(line[0], core_hart->hart_id);
 		core_list.back()->node_list.back()->hart_list.push_back(core_hart);
 	}};
 
@@ -522,7 +522,7 @@ void config::config_core()
 	}};
 
 	config_fn_map["core.#.#.timecmp"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], core_list.back()->node_list.back()->hart_list.back()->timecmp)) {
+		if (!parse_scalar(line[1], core_list.back()->node_list.back()->hart_list.back()->timecmp)) {
 			panic("config: invalid timecmp value: core node id %u: hart id %u: %s",
 				core_list.back()->node_list.back()->node_id,
 				core_list.back()->node_list.back()->hart_list.back()->hart_id,
@@ -531,7 +531,7 @@ void config::config_core()
 	}};
 
 	config_fn_map["core.#.#.ipi"] = {2, 2, [&] (config_line &line) {
-		if (!parse_value(line[1], core_list.back()->node_list.back()->hart_list.back()->ipi)) {
+		if (!parse_scalar(line[1], core_list.back()->node_list.back()->hart_list.back()->ipi)) {
 			panic("config: invalid ipi value: core node id %u: hart id %u: %s",
 				core_list.back()->node_list.back()->node_id,
 				core_list.back()->node_list.back()->hart_list.back()->hart_id,
@@ -553,7 +553,7 @@ void config::output_plic(std::string &s)
 		sprintf(s,
 			"plic {\n"
 			"\tinterface %s;\n"
-			"\tndevs %llu;\n",
+			"\tndevs %u;\n",
 			plic->interface, plic->ndevs);
 		if (plic->priority) {
 			sprintf(s, "\tpriority { %s };\n",
@@ -564,9 +564,9 @@ void config::output_plic(std::string &s)
 				address_range_to_string(plic->pending->addr_list));
 		}
 		for (auto &node : plic->node_list) {
-			sprintf(s, "\t%llu {\n", node->node_id);
+			sprintf(s, "\t%u {\n", node->node_id);
 			for (auto &hart : node->hart_list) {
-				sprintf(s, "\t\t%llu {\n", hart->hart_id);
+				sprintf(s, "\t\t%u {\n", hart->hart_id);
 				for (auto &mode : hart->mode_list) {
 					sprintf(s,
 						"\t\t\t%s {\n"
@@ -594,7 +594,7 @@ void config::output_pcie(std::string &s)
 			sprintf(s,
 				"\tbus {\n"
 				"\t\t%s\n"
-				"\t\tbus %llu:%llu;\n"
+				"\t\tbus %u:%u;\n"
 				"\t};\n",
 				address_range_to_string(bus->addr_list),
 				bus->bus_pair.first,
@@ -604,8 +604,8 @@ void config::output_pcie(std::string &s)
 			sprintf(s,
 				"\tbridge {\n"
 				"\t\t%s\n"
-				"\t\tbus %llu;\n"
-				"\t\tirq %llu;\n"
+				"\t\tbus %u;\n"
+				"\t\tirq %u;\n"
 				"\t};\n",
 				address_range_to_string(bridge->addr_list),
 				bridge->bus_id,
@@ -621,7 +621,7 @@ void config::output_leds(std::string &s)
 		sprintf(s,
 			"leds {\n"
 			"\tinterface %s;\n"
-			"\tngpio %llu;\n"
+			"\tngpio %u;\n"
 			"\t%s\n};\n",
 			leds->interface, leds->ngpio,
 			address_range_to_string(leds->addr_list));
@@ -644,7 +644,7 @@ void config::output_ram(std::string &s)
 	for (auto &ram : ram_list) {
 		sprintf(s, "ram {\n");
 		for (auto &ram_node : ram->node_list) {
-			sprintf(s, "\t%llu { %s };\n",
+			sprintf(s, "\t%u { %s };\n",
 				ram_node->node_id,
 				address_range_to_string(ram_node->addr_list));
 		}
@@ -665,13 +665,13 @@ void config::output_core(std::string &s)
 	for (auto &core : core_list) {
 		sprintf(s, "core {\n");
 		for (auto &core_node : core->node_list) {
-			sprintf(s, "\t%llu {\n", core_node->node_id);
+			sprintf(s, "\t%u {\n", core_node->node_id);
 			for (auto &core_hart : core_node->hart_list) {
 				sprintf(s,
-					"\t\t%llu {\n"
+					"\t\t%u {\n"
 					"\t\t\tisa     %s;\n"
-					"\t\t\ttimecmp 0x%llx;\n"
-					"\t\t\tipi     0x%llx;\n"
+					"\t\t\ttimecmp 0x%x;\n"
+					"\t\t\tipi     0x%x;\n"
 					"\t\t};\n",
 					core_hart->hart_id, core_hart->isa,
 					core_hart->timecmp, core_hart->ipi);

@@ -7,6 +7,8 @@
 
 namespace riscv {
 
+	typedef s64 scalar_t;
+
 	/* Generic configuration model */
 
 	struct config;
@@ -95,8 +97,8 @@ namespace riscv {
 
 	struct address_range
 	{
-		u64 start;
-		u64 end;
+		addr_t start;
+		addr_t end;
 	};
 
 	struct platform
@@ -108,7 +110,7 @@ namespace riscv {
 	struct plic
 	{
 		std::string interface;
-		u64 ndevs;
+		scalar_t ndevs;
 		plic_priority_ptr priority;
 		plic_pending_ptr pending;
 		plic_node_list node_list;
@@ -126,13 +128,13 @@ namespace riscv {
 
 	struct plic_node
 	{
-		u64 node_id;
+		scalar_t node_id;
 		plic_hart_list hart_list;
 	};
 
 	struct plic_hart
 	{
-		u64 hart_id;
+		scalar_t hart_id;
 		plic_mode_list mode_list;
 	};
 
@@ -153,20 +155,20 @@ namespace riscv {
 	struct pcie_bus
 	{
 		address_range_list addr_list;
-		std::pair<u64,u64> bus_pair;
+		std::pair<scalar_t,scalar_t> bus_pair;
 	};
 
 	struct pcie_bridge
 	{
 		address_range_list addr_list;
-		u64 bus_id;
-		u64 irq_id;
+		scalar_t bus_id;
+		scalar_t irq_id;
 	};
 
 	struct leds
 	{
 		std::string interface;
-		u64 ngpio;
+		scalar_t ngpio;
 		address_range_list addr_list;
 	};
 
@@ -182,7 +184,7 @@ namespace riscv {
 
 	struct ram_node
 	{
-		u64 node_id;
+		scalar_t node_id;
 		address_range_list addr_list;
 	};
 
@@ -198,16 +200,16 @@ namespace riscv {
 
 	struct core_node
 	{
-		u64 node_id;
+		scalar_t node_id;
 		core_hart_list hart_list;
 	};
 
 	struct core_hart
 	{
-		u64 hart_id;
+		scalar_t hart_id;
 		std::string isa;
-		u64 timecmp;
-		u64 ipi;
+		addr_t timecmp;
+		addr_t ipi;
 	};
 
 	struct config : config_parser
@@ -231,7 +233,7 @@ namespace riscv {
 		uart_list_t          uart_list;
 		core_list_t          core_list;
 
-		static bool parse_value(std::string valstr, u64 &val);
+		static bool parse_scalar(std::string valstr, scalar_t &val);
 		static bool parse_address_range(std::string valstr, address_range_ptr range);
 		static std::string address_range_to_string(address_range_list &addr_list);
 
@@ -255,8 +257,8 @@ namespace riscv {
 				return true;
 			}
 			if (prefix.size() > 0) {
-				u64 num;
-				if (parse_value(key, num)) {
+				scalar_t num;
+				if (parse_scalar(key, num)) {
 					std::string block_key = prefix.back() + ".#";
 					it = map.find(block_key);
 					if (it != map.end()) {
