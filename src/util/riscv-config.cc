@@ -32,16 +32,11 @@
 #include "riscv-config-parser.h"
 #include "riscv-config.h"
 #include "riscv-types.h"
-#include "riscv-args.h"
-#include "riscv-bigint.h"
-#include "riscv-itoa.h"
-#include "riscv-dtoa.h"
-#include "riscv-hdtoa.h"
 #include "riscv-fmt.h"
 
 using namespace riscv;
 
-bool riscv::config::parse_value(std::string valstr, u64 &val)
+bool config::parse_value(std::string valstr, u64 &val)
 {
 	char *endptr = nullptr;
 	valstr = replace(valstr, "_", "");
@@ -55,7 +50,7 @@ bool riscv::config::parse_value(std::string valstr, u64 &val)
 	return (*endptr == '\0');
 }
 
-bool riscv::config::parse_address_range(std::string valstr, address_range_ptr range)
+bool config::parse_address_range(std::string valstr, address_range_ptr range)
 {
 	auto range_comps = split(valstr, ":");
 	if (range_comps.size() == 1) {
@@ -70,7 +65,7 @@ bool riscv::config::parse_address_range(std::string valstr, address_range_ptr ra
 	return true;
 }
 
-std::string riscv::config::address_range_to_string(address_range_list &addr_list)
+std::string config::address_range_to_string(address_range_list &addr_list)
 {
 	std::string s;
 	sprintf(s, "@");
@@ -83,7 +78,7 @@ std::string riscv::config::address_range_to_string(address_range_list &addr_list
 	return s;
 }
 
-riscv::config::config()
+config::config()
 {
 	config_platform();
 	config_plic();
@@ -95,7 +90,7 @@ riscv::config::config()
 	config_core();
 }
 
-std::string riscv::config::to_string()
+std::string config::to_string()
 {
 	std::string s;
 	output_platform(s);
@@ -109,7 +104,7 @@ std::string riscv::config::to_string()
 	return s;
 }
 
-void riscv::config::read(std::string filename)
+void config::read(std::string filename)
 {
 	FILE *fp;
 	struct stat statbuf;
@@ -137,12 +132,12 @@ void riscv::config::read(std::string filename)
 	fclose(fp);
 }
 
-void riscv::config::symbol(const char *value, size_t vlen)
+void config::symbol(const char *value, size_t vlen)
 {
 	line.push_back(std::string(value, vlen));
 }
 
-void riscv::config::start_block()
+void config::start_block()
 {
 	config_line block_line = line;
 	
@@ -165,7 +160,7 @@ void riscv::config::start_block()
 	}
 }
 
-void riscv::config::end_block()
+void config::end_block()
 {
 	// look up  block record
 	block_record rec;
@@ -179,7 +174,7 @@ void riscv::config::end_block()
 	}
 }
 
-void riscv::config::end_statement()
+void config::end_statement()
 {
 	if (line.size() > 0)
 	{
@@ -202,11 +197,11 @@ void riscv::config::end_statement()
 	line.clear();
 }
 
-void riscv::config::config_done()
+void config::config_done()
 {
 }
 
-void riscv::config::config_platform()
+void config::config_platform()
 {
 	block_start_fn_map["platform"] = {1, 1, [&] (config_line &line) {
 		if (platform) panic("config must contain \"platform\" block");
@@ -226,7 +221,7 @@ void riscv::config::config_platform()
 	}};
 }
 
-void riscv::config::config_plic()
+void config::config_plic()
 {
 	block_start_fn_map["plic"] = {1, 1, [&] (config_line &line) {
 		plic_list.push_back(std::make_shared<riscv::plic>());
@@ -350,7 +345,7 @@ void riscv::config::config_plic()
 	}};
 }
 
-void riscv::config::config_pcie()
+void config::config_pcie()
 {
 	block_start_fn_map["pcie"] = {1, 1, [&] (config_line &line) {
 		pcie_list.push_back(std::make_shared<riscv::pcie>());
@@ -422,7 +417,7 @@ void riscv::config::config_pcie()
 	}};
 }
 
-void riscv::config::config_leds()
+void config::config_leds()
 {
 	block_start_fn_map["leds"] = {1, 1, [&] (config_line &line) {
 		leds_list.push_back(std::make_shared<riscv::leds>());
@@ -449,7 +444,7 @@ void riscv::config::config_leds()
 	}};
 }
 
-void riscv::config::config_rtc()
+void config::config_rtc()
 {
 	block_start_fn_map["rtc"] = {1, 1, [&] (config_line &line) {
 		rtc_list.push_back(std::make_shared<riscv::rtc>());
@@ -465,7 +460,7 @@ void riscv::config::config_rtc()
 	}};
 }
 
-void riscv::config::config_ram()
+void config::config_ram()
 {
 	block_start_fn_map["ram"] = {1, 1, [&] (config_line &line) {
 		ram_list.push_back(std::make_shared<riscv::ram>());
@@ -488,7 +483,7 @@ void riscv::config::config_ram()
 	}};
 }
 
-void riscv::config::config_uart()
+void config::config_uart()
 {
 	block_start_fn_map["uart"] = {1, 1, [&] (config_line &line) {
 		uart_list.push_back(std::make_shared<riscv::uart>());
@@ -504,7 +499,7 @@ void riscv::config::config_uart()
 	}};
 }
 
-void riscv::config::config_core()
+void config::config_core()
 {
 	block_start_fn_map["core"] = {1, 1, [&] (config_line &line) {
 		core_list.push_back(std::make_shared<riscv::core>());
@@ -545,14 +540,14 @@ void riscv::config::config_core()
 	}};
 }
 
-void riscv::config::output_platform(std::string &s)
+void config::output_platform(std::string &s)
 {
 	if (!platform) panic("config must contain \"platform\" block");
 	sprintf(s, "platform {\n\tvendor %s;\n\tarch   %s;\n};\n",
 		platform->vendor, platform->arch);
 }
 
-void riscv::config::output_plic(std::string &s)
+void config::output_plic(std::string &s)
 {
 	for (auto &plic : plic_list) {
 		sprintf(s,
@@ -590,7 +585,7 @@ void riscv::config::output_plic(std::string &s)
 	}
 }
 
-void riscv::config::output_pcie(std::string &s)
+void config::output_pcie(std::string &s)
 {
 	for (auto &pcie : pcie_list) {
 		sprintf(s, "pcie {\n\tinterface %s;\n",
@@ -620,7 +615,7 @@ void riscv::config::output_pcie(std::string &s)
 	}
 }
 
-void riscv::config::output_leds(std::string &s)
+void config::output_leds(std::string &s)
 {
 	for (auto &leds : leds_list) {
 		sprintf(s,
@@ -633,7 +628,7 @@ void riscv::config::output_leds(std::string &s)
 	}
 }
 
-void riscv::config::output_rtc(std::string &s)
+void config::output_rtc(std::string &s)
 {
 	for (auto &rtc : rtc_list) {
 		sprintf(s,
@@ -644,7 +639,7 @@ void riscv::config::output_rtc(std::string &s)
 	}
 }
 
-void riscv::config::output_ram(std::string &s)
+void config::output_ram(std::string &s)
 {
 	for (auto &ram : ram_list) {
 		sprintf(s, "ram {\n");
@@ -657,7 +652,7 @@ void riscv::config::output_ram(std::string &s)
 	}
 }
 
-void riscv::config::output_uart(std::string &s)
+void config::output_uart(std::string &s)
 {
 	for (auto &uart : uart_list) {
 		sprintf(s, "uart {\n\t%s\n};\n",
@@ -665,7 +660,7 @@ void riscv::config::output_uart(std::string &s)
 	}
 }
 
-void riscv::config::output_core(std::string &s)
+void config::output_core(std::string &s)
 {
 	for (auto &core : core_list) {
 		sprintf(s, "core {\n");

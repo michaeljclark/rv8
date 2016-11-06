@@ -57,7 +57,7 @@ using namespace riscv;
 
 %% write data;
 
-bool riscv::config_parser::parse(const char *buffer, size_t len)
+bool config_parser::parse(const char *buffer, size_t len)
 {
 	int cs = config_parser_en_main;
 

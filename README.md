@@ -114,7 +114,8 @@ Project Structure
 |`src/asm`|Assembler metadata library|
 |`src/elf`|ELF parser library|
 |`src/emu`|ISA emulator headers|
-|`src/fmt`|String formatting header library|
+|`src/fmt`|String formatting library|
+|`src/mem`|Memory allocator library|
 |`src/model`|ISA metamodel library|
 |`src/util`|Miscellaneous utilities library|
 |`doc/pdf`|Generated documentation|
@@ -126,11 +127,12 @@ The following table shows the RISC-V Meta libraries:
 
 |Name|Description|Scale|
 |:---|:----------|-----|
-|libriscv_asm.a|disassembly formatting|micro|
+|libriscv_asm.a|Disassembly formatting|micro|
 |libriscv_elf.a|ELF parser|micro|
-|libriscv_meta.a|instruction set metadata|nano|
-|libriscv_model.a|instruction set metamodel|macro|
-|libriscv_util.a|utility functions for tools|mini|
+|libriscv_fmt.a|String formatting|micro|
+|libriscv_meta.a|Instruction set metadata|nano|
+|libriscv_model.a|Instruction set metamodel|macro|
+|libriscv_util.a|Utility functions for tools|mini|
 
 > The project code idiom is a subset of C++14 with STL, C struct with member
 functions, single inheritance, operator overloading, variadiac templates and

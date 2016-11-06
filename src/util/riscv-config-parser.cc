@@ -114,7 +114,7 @@ static const int config_parser_en_main = 11;
 
 #line 59 "src/util/riscv-config-parser.rl"
 
-bool riscv::config_parser::parse(const char *buffer, size_t len)
+bool config_parser::parse(const char *buffer, size_t len)
 {
 	int cs = config_parser_en_main;
 

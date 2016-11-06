@@ -157,11 +157,11 @@ RV_META_DATA =  $(META_DIR)/codecs \
                 $(META_DIR)/registers \
                 $(META_DIR)/types
 
-# libtlsf
-TLSF_SRCS =     $(SRC_DIR)/tlsf/tlsf.cc \
-                $(SRC_DIR)/tlsf/tlsf-init.cc
-TLSF_OBJS =     $(call src_objs, $(TLSF_SRCS))
-TLSF_LIB =      $(LIB_DIR)/libtlsf.a
+# libdlmalloc
+DLMALLOC_SRCS = $(SRC_DIR)/mem/dlmalloc.cc \
+                $(SRC_DIR)/mem/osmorecore.cc
+DLMALLOC_OBJS = $(call src_objs, $(DLMALLOC_SRCS))
+DLMALLOC_LIB =  $(LIB_DIR)/libdlmalloc.a
 
 # libriscv_util
 RV_UTIL_SRCS =  $(SRC_DIR)/util/riscv-base64.cc \
@@ -207,6 +207,15 @@ RV_ELF_SRCS =   $(SRC_DIR)/elf/riscv-elf.cc \
                 $(SRC_DIR)/elf/riscv-elf-format.cc
 RV_ELF_OBJS =   $(call src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
+
+# libriscv_fmt
+RV_FMT_SRCS =   $(SRC_DIR)/fmt/riscv-bigint.cc \
+                $(SRC_DIR)/fmt/riscv-dtoa.cc \
+                $(SRC_DIR)/fmt/riscv-hdtoa.cc \
+                $(SRC_DIR)/fmt/riscv-itoa.cc \
+                $(SRC_DIR)/fmt/riscv-fmt.cc
+RV_FMT_OBJS =   $(call src_objs, $(RV_FMT_SRCS))
+RV_FMT_LIB =    $(LIB_DIR)/libriscv_fmt.a
 
 # generated files
 RV_OPANDS_HDR = $(SRC_DIR)/asm/riscv-operands.h
@@ -304,6 +313,7 @@ TEST_RAND_BIN = $(BIN_DIR)/riscv-test-rand
 # source and binaries
 ALL_SRCS = $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
+           $(RV_FMT_SRCS) \
            $(RV_GEN_SRCS) \
            $(RV_META_SRC) \
            $(RV_MODEL_SRC) \
@@ -459,6 +469,10 @@ $(RV_ELF_LIB): $(RV_ELF_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
+$(RV_FMT_LIB): $(RV_FMT_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 $(RV_MODEL_LIB): $(RV_MODEL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
@@ -471,7 +485,7 @@ $(RV_UTIL_LIB): $(RV_UTIL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
-$(TLSF_LIB): $(TLSF_OBJS)
+$(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
@@ -497,13 +511,13 @@ $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB)
+$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB) $(RV_FMT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(TLSF_LIB)
+$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) $(DEBUG_FLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
@@ -525,7 +539,7 @@ $(TEST_OPERATORS_BIN): $(TEST_OPERATORS_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_UTIL_LIB)
+$(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_FMT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

@@ -36,11 +36,6 @@
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
-#include "riscv-args.h"
-#include "riscv-bigint.h"
-#include "riscv-itoa.h"
-#include "riscv-dtoa.h"
-#include "riscv-hdtoa.h"
 #include "riscv-fmt.h"
 #include "riscv-bits.h"
 #include "riscv-sha512.h"
@@ -49,6 +44,8 @@
 #include "riscv-util.h"
 #include "riscv-host.h"
 #include "riscv-cmdline.h"
+#include "riscv-config-parser.h"
+#include "riscv-config.h"
 #include "riscv-codec.h"
 #include "riscv-elf.h"
 #include "riscv-elf-file.h"
@@ -117,13 +114,18 @@ struct riscv_emulator
 	*/
 
 	elf_file elf;
-	std::string filename;
+	std::string elf_filename;
+	config cfg;
+	std::string config_filename;
+	host_cpu &cpu;
 	int proc_logs = 0;
 	bool priv_mode = false;
 	bool help_or_error = false;
 	uint64_t initial_seed = 0;
 	int ext = rv_isa_imafdc;
-	host_cpu &cpu;
+
+	std::vector<std::string> host_cmdline;
+	std::vector<std::string> host_env;
 
 	static const int inst_step = 1000000; /* Number of instructions executes in step call */
 
@@ -229,10 +231,13 @@ struct riscv_emulator
 		}
 	}
 
-	void parse_commandline(int argc, const char *argv[])
+	void parse_commandline(int argc, const char* argv[], const char* envp[])
 	{
 		cmdline_option options[] =
 		{
+			{ "-c", "--config", cmdline_arg_type_string,
+				"Configuration strung",
+				[&](std::string s) { config_filename = s; return true; } },
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
@@ -278,7 +283,7 @@ struct riscv_emulator
 		auto result = cmdline_option::process_options(options, argc, argv);
 		if (!result.second) {
 			help_or_error = true;
-		} else if (result.first.size() != 1) {
+		} else if (result.first.size() < 1) {
 			printf("%s: wrong number of arguments\n", argv[0]);
 			help_or_error = true;
 		}
@@ -289,10 +294,24 @@ struct riscv_emulator
 			exit(9);
 		}
 
-		filename = result.first[0];
+		/* get command line options */
+		elf_filename = result.first[0];
+		for (size_t i = 1; i < result.first.size(); i++) {
+			host_cmdline.push_back(result.first[i]);
+		}
+
+		/* get environment */
+		for (const char** env = envp; *env != 0; env++) {
+			host_env.push_back(*env);    
+		}
+
+		/* read config */
+		if (config_filename.size() > 0) {
+			cfg.read(config_filename);
+		}
 
 		/* load ELF (headers only) */
-		elf.load(filename, true);
+		elf.load(elf_filename, true);
 	}
 
 	template <typename P>
@@ -355,7 +374,7 @@ struct riscv_emulator
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
-				map_load_segment_mmu(proc, filename.c_str(), phdr);
+				map_load_segment_mmu(proc, elf_filename.c_str(), phdr);
 			}
 		}
 
@@ -396,7 +415,7 @@ struct riscv_emulator
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
-				map_load_segment_user(proc, filename.c_str(), phdr);
+				map_load_segment_user(proc, elf_filename.c_str(), phdr);
 			}
 		}
 
@@ -486,10 +505,10 @@ struct riscv_emulator
 
 /* program main */
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[], const char* envp[])
 {
 	riscv_emulator emulator;
-	emulator.parse_commandline(argc, argv);
+	emulator.parse_commandline(argc, argv, envp);
 	emulator.exec();
 	return 0;
 }
