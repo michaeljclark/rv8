@@ -56,15 +56,6 @@ namespace riscv {
 			u64 man  : 52;
 		#endif
 		} r;
-		struct {
-		#if _BYTE_ORDER == _LITTLE_ENDIAN
-			u32 d1;
-			u32 d0;
-		#else
-			u32 d0;
-			u32 d1;
-		#endif
-		} w;
 	};
 
 	struct f64_type {
