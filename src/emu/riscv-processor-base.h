@@ -171,7 +171,7 @@ namespace riscv {
 		UX           fcsr;            /* Floating-Point Control and Status Register */
 
 		processor_base() : pc(0), ireg(), freg(),
-			node_id(0), hart_id(0), log(0), lr(-1), badaddr(0), env(),
+			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 	};
 
