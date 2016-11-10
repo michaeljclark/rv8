@@ -83,9 +83,9 @@ int main(int argc, char *argv[])
 	// test that invalid_ppn is returned for (VA=0x10000, ASID=0)
 	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == nullptr);
 
-	// add RAM to the MMU emulation
-	mmu.mem.add_ram(0x0, /*1GB*/0x40000000LL);
+	// add RAM to the MMU emulation (exclude zero page)
+	mmu.mem.add_ram(0x1000, /*1GB*/0x40000000LL - 0x1000);
 
 	// look up the User Virtual Address for a Machine Physical Adress
-	assert(mmu.mem.mpa_to_uva(0x1000) == mmu.mem.segments.front().uva + 0x1000LL);
+	assert(mmu.mem.mpa_to_uva(0x1000) == mmu.mem.segments.front().uva + 0x0LL);
 }
