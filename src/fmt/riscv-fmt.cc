@@ -143,14 +143,17 @@ static int exponent(char *p0, int expo, int fmtch)
  * io_printf
  *
  * BSD style string formatter using bounded STL std::string container.
- * Arguments are typed and boxed using variadiac templates.
+ * Arguments are typed and boxed using a variadiac template.
  *
  * NOTES:
  *
  * - long double is not supported
  * - locales and grouping are not supported
  * - position arguments of the form *nn$ are not supported
- * - 'S' format for wchar_t strings is not supported
+ * - 'C' format for wchar_t characters are not supported
+ * - 'S' format for wchar_t strings are not supported
+ * - 'O', D', 'U', 'X' or 'L' to represent long types are not supported
+ * - 'hjlqtz' width modifiers are ignored as type is captured
  * - 'n' format to write back length to a variable is not supported
  */
 
@@ -259,8 +262,7 @@ rsw:	switch (ch) {
 				sign = '+';
 				goto rflag;
 			case '\'':
-				flags |= GROUPING;
-				goto rflag;
+				goto error;
 			case '.':
 				ch = *fi++;
 				/* position arguments of the form *nn$ are not supported */
@@ -290,62 +292,30 @@ rsw:	switch (ch) {
 				goto rsw;
 	#ifndef NO_FLOATING_POINT
 			case 'L':
-				flags |= LONGDBL;
-				goto rflag;
+				goto error;
 	#endif
 			case 'h':
-				if (flags & SHORTINT) {
-					flags &= ~SHORTINT;
-					flags |= CHARINT;
-				} else {
-					flags |= SHORTINT;
-				}
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 'j':
-				flags |= INTMAXT;
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 'l':
-				if (flags & LONGINT) {
-					flags &= ~LONGINT;
-					flags |= LLONGINT;
-				} else {
-					flags |= LONGINT;
-				}
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 'q':
-				flags |= LLONGINT;	/* not necessarily */
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 't':
-				flags |= PTRDIFFT;
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 'z':
-				flags |= SIZET;
-				goto rflag;
+				/* ignored */ goto rflag;
 			case 'C':
-				flags |= LONGINT;
-				/*FALLTHROUGH*/
+				goto error;
 			case 'c':
 				if (!args.get_char(cval)) goto error;
-				if (flags & LONGINT) {
-					mbstate_t mbs;
-					size_t mbseqlen;
-					memset(&mbs, 0, sizeof(mbs));
-					char ubuf[8] = {0};
-					mbseqlen = wcrtomb(ubuf, (wchar_t)cval, &mbs);
-					if (mbseqlen == (size_t)-1) {
-						goto error;
-					}
-					size = (int)mbseqlen;
-					cbuf = ubuf;
-				} else {
-					cbuf.push_back(cval);
-					size = 1;
-				}
+				cbuf.push_back(cval);
+				size = 1;
 				sign = '\0';
 				break;
 			case 'D':
-				flags |= LONGINT;
-				/*FALLTHROUGH*/
+				goto error;
 			case 'd':
 			case 'i':
 				if (!args.get_int(ival)) goto error;
@@ -464,8 +434,7 @@ rsw:	switch (ch) {
 				break;
 	#endif /* !NO_FLOATING_POINT */
 			case 'O':
-				flags |= LONGINT;
-				/*FALLTHROUGH*/
+				goto error;
 			case 'o':
 				if (!args.get_int(ival)) goto error;
 				base = 8;
@@ -481,27 +450,25 @@ rsw:	switch (ch) {
 				if (!args.get_int(ival)) goto error;
 				base = 16;
 				xdigs = xdigs_lower;
-				flags = flags | INTMAXT;
 				ox[1] = 'x';
 				goto nosign;
+			case 'S':
+				goto error;
 			case 's':
 				if (!args.get_str(cbuf)) goto error;
 				size = (prec >= 0) ? std::min((int)cbuf.size(), prec) : cbuf.size();
 				sign = '\0';
 				break;
 			case 'U':
-				flags |= LONGINT;
-				/*FALLTHROUGH*/
+				goto error;
 			case 'u':
 				if (!args.get_int(ival)) goto error;
 				base = 10;
 				goto nosign;
 			case 'X':
-				xdigs = xdigs_upper;
-				goto hex;
+				goto error;
 			case 'x':
 				xdigs = xdigs_lower;
-	hex:
 				if (!args.get_int(ival)) goto error;
 				base = 16;
 				/* leading 0x/X only if non-zero */
@@ -509,7 +476,6 @@ rsw:	switch (ch) {
 					ox[1] = ch;
 				}
 
-				flags &= ~GROUPING;
 				/* unsigned conversions */
 	nosign:		sign = '\0';
 				/*-

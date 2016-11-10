@@ -71,18 +71,8 @@ namespace riscv {
 	enum {
 		ALT =           0x001,          /* alternate form */
 		LADJUST =       0x004,          /* left adjustment */
-		LONGDBL =       0x008,          /* long double */
-		LONGINT =       0x010,          /* long integer */
-		LLONGINT =      0x020,          /* long long integer */
-		SHORTINT =      0x040,          /* short integer */
 		ZEROPAD =       0x080,          /* zero (as opposed to blank) pad */
 		FPT =           0x100,          /* Floating point number */
-		GROUPING =      0x200,          /* use grouping ("'" flag) */
-		                                /* C99 additional size modifiers: */
-		SIZET =         0x400,          /* size_t */
-		PTRDIFFT =      0x800,          /* ptrdiff_t */
-		INTMAXT =       0x1000,         /* intmax_t */
-		CHARINT =       0x2000          /* print char using int format */
 	};
 
 	/* fmt constants */
