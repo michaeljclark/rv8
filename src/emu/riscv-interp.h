@@ -776,7 +776,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_addiw:
 			if (rvi) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = s32(s32(proc.ireg[dec.rs1]) + sx(dec.imm));
+				if (dec.rd > 0) proc.ireg[dec.rd] = s32(sx(proc.ireg[dec.rs1]) + sx(dec.imm));
 			};
 			break;
 		case riscv_op_slliw:
