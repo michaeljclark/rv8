@@ -14,8 +14,6 @@ namespace riscv {
 		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
-		static const addr_t illegal_address = addr_t(0);
-
 		/* MMU properties */
 
 		tlb_type       l1_dtlb;     /* L1 Data TLB */

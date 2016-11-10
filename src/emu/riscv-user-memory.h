@@ -77,7 +77,7 @@ namespace riscv {
 					return seg.uva + (mpa - seg.mpa);
 				}
 			}
-			return -1;
+			return illegal_address;
 		}
 
 	};

@@ -48,6 +48,10 @@ namespace riscv {
 	typedef u32                label_t;
 	typedef u32                opcode_t;
 
+	enum : addr_t {
+		illegal_address = 0
+	};
+
 	struct __s128
 	{
 		union {
