@@ -7,8 +7,6 @@
 
 namespace riscv {
 
-	typedef s64 scalar_t;
-
 	/* Generic configuration model */
 
 	struct config;
@@ -110,7 +108,7 @@ namespace riscv {
 	struct plic
 	{
 		std::string interface;
-		scalar_t ndevs;
+		integral_t ndevs;
 		plic_priority_ptr priority;
 		plic_pending_ptr pending;
 		plic_node_list node_list;
@@ -128,13 +126,13 @@ namespace riscv {
 
 	struct plic_node
 	{
-		scalar_t node_id;
+		integral_t node_id;
 		plic_hart_list hart_list;
 	};
 
 	struct plic_hart
 	{
-		scalar_t hart_id;
+		integral_t hart_id;
 		plic_mode_list mode_list;
 	};
 
@@ -155,20 +153,20 @@ namespace riscv {
 	struct pcie_bus
 	{
 		address_range_list addr_list;
-		std::pair<scalar_t,scalar_t> bus_pair;
+		std::pair<integral_t,integral_t> bus_pair;
 	};
 
 	struct pcie_bridge
 	{
 		address_range_list addr_list;
-		scalar_t bus_id;
-		scalar_t irq_id;
+		integral_t bus_id;
+		integral_t irq_id;
 	};
 
 	struct leds
 	{
 		std::string interface;
-		scalar_t ngpio;
+		integral_t ngpio;
 		address_range_list addr_list;
 	};
 
@@ -184,7 +182,7 @@ namespace riscv {
 
 	struct ram_node
 	{
-		scalar_t node_id;
+		integral_t node_id;
 		address_range_list addr_list;
 	};
 
@@ -200,13 +198,13 @@ namespace riscv {
 
 	struct core_node
 	{
-		scalar_t node_id;
+		integral_t node_id;
 		core_hart_list hart_list;
 	};
 
 	struct core_hart
 	{
-		scalar_t hart_id;
+		integral_t hart_id;
 		std::string isa;
 		addr_t timecmp;
 		addr_t ipi;
@@ -233,7 +231,7 @@ namespace riscv {
 		uart_list_t          uart_list;
 		core_list_t          core_list;
 
-		static bool parse_scalar(std::string valstr, scalar_t &val);
+		static bool parse_scalar(std::string valstr, integral_t &val);
 		static bool parse_address_range(std::string valstr, address_range_ptr range);
 		static std::string address_range_to_string(address_range_list &addr_list);
 
@@ -257,7 +255,7 @@ namespace riscv {
 				return true;
 			}
 			if (prefix.size() > 0) {
-				scalar_t num;
+				integral_t num;
 				if (parse_scalar(key, num)) {
 					std::string block_key = prefix.back() + ".#";
 					it = map.find(block_key);

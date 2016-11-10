@@ -36,7 +36,7 @@
 
 using namespace riscv;
 
-bool config::parse_scalar(std::string valstr, scalar_t &val)
+bool config::parse_scalar(std::string valstr, integral_t &val)
 {
 	char *endptr = nullptr;
 	valstr = replace(valstr, "_", "");
