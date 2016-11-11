@@ -529,9 +529,9 @@ enum {
 	R_RISCV_NONE = 0,                /* xx,       None                         */
 	R_RISCV_32 = 1,                  /* 32,       Runtime relocation                                 word32 = S + A */
 	R_RISCV_64 = 2,                  /* 64,       Runtime relocation                                 word64 = S + A */
-	R_RISCV_RELATIVE = 3,            /* 32,       Runtime relocation                                 word(32|64) = B + A */
-	R_RISCV_COPY = 4,                /* 0,        Runtime relocation                                 ;must be in executable; not allowed in shared library */
-	R_RISCV_JUMP_SLOT = 5,           /* 64,       Runtime relocation                                 word(32|64) = S ;handled by PLT unless LD_BIND_NOW */
+	R_RISCV_RELATIVE = 3,            /* 32,       Runtime relocation                                 wordclass = B + A */
+	R_RISCV_COPY = 4,                /* 0,        Runtime relocation                                 none ;must be in executable; not allowed in shared library */
+	R_RISCV_JUMP_SLOT = 5,           /* 64,       Runtime relocation                                 wordclass = S ;handled by PLT unless LD_BIND_NOW */
 	R_RISCV_TLS_DTPMOD32 = 6,        /* 32,       TLS relocation                                     word32 = S->TLSINDEX */
 	R_RISCV_TLS_DTPMOD64 = 7,        /* 64,       TLS relocation                                     word64 = S->TLSINDEX */
 	R_RISCV_TLS_DTPREL32 = 8,        /* 32,       TLS relocation                                     word32 = TLS + S + A - TLS_TP_OFFSET */
