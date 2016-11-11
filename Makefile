@@ -42,7 +42,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/tlsf \
                 -I$(TOP_DIR)/src/util
-OPT_FLAGS =     -O3
+OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations
 CPPFLAGS =
