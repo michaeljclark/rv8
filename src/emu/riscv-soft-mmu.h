@@ -236,7 +236,7 @@ namespace riscv {
 				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
 
 			switch (op) {
-				case op_fetch: proc.raise(riscv_cause_fault_load, va);
+				case op_fetch: proc.raise(riscv_cause_fault_fetch, va);
 				case op_load:  proc.raise(riscv_cause_fault_load, va);
 				case op_store: proc.raise(riscv_cause_fault_store, va);
 			}
