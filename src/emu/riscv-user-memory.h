@@ -77,6 +77,9 @@ namespace riscv {
 					return seg.uva + (mpa - seg.mpa);
 				}
 			}
+
+			/* NOTE we could longjmp here to avoid using 0 as a sentinel for illegal address */
+
 			return illegal_address;
 		}
 

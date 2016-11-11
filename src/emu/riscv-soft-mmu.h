@@ -223,6 +223,8 @@ namespace riscv {
 			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
 				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
 
+			/* NOTE we could longjmp here to avoid using 0 as a sentinel for illegal address */
+
 			return illegal_address;
 		}
 	};
