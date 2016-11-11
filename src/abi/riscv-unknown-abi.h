@@ -18,7 +18,7 @@ namespace riscv {
 		 * LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static
 		 */
 
-		enum : UX {
+		enum : addr_t {
 			memory_top = 0x40000000
 		};
 
@@ -33,9 +33,11 @@ namespace riscv {
 			return riscv::inst_fetch(pc, pc_offset);
 		}
 
+		/* Note: in this simple proxy MMU model, stores beyond memory top wrap */
+
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
-			val = UX(*(T*)addr_t(va));
+			val = UX(*(T*)addr_t(va & (memory_top - 1)));
 		}
 
 		template <typename P, typename T> void store(P &proc, UX va, T val)
