@@ -48,15 +48,15 @@ fence.i    ""
 
 ld         "s64 t; mmu.load<s64>(rs1 + imm, t); rd = t"                            # rd = sx(*(s64*)ptr(rs1 + imm))
 sd         "mmu.store<s64>(rs1 + imm, s64(rs2))"                                   # *(u64*)ptr(rs1 + imm) = rs2
-addiw      "rd = s32(sx(rs1) + sx(imm))"
+addiw      "rd = s32(s32(rs1) + sx(imm))"                                          # clang-bug: "rd = s32(rs1) + imm"
 slliw      "rd = s32(u32(rs1) << imm)"
 srliw      "rd = s32(u32(rs1) >> imm)"
 sraiw      "rd = s32(rs1) >> imm"
-addw       "rd = s32(sx(rs1) + sx(rs2))"
-subw       "rd = s32(sx(rs1) - sx(rs2))"
+addw       "rd = s32(sx(rs1) + sx(rs2))"                                           # clang-bug: "rd = s32(rs1) + s32(rs2)"
+subw       "rd = s32(sx(rs1) - sx(rs2))"                                           # clang-bug: "rd = s32(rs1) + s32(rs2)"
 sllw       "rd = s32(u32(rs1) << (rs2 & 0b11111))"
 srlw       "rd = s32(u32(rs1) >> (rs2 & 0b11111))"
-sraw       "rd = s32(rs1) >> (rs2 & 0b11111)"
+sraw       "rd = s32(s32(rs1) >> (rs2 & 0b11111))"
 
 # RV32M    "RV32M Standard Extension for Integer Multiply and Divide"
 
