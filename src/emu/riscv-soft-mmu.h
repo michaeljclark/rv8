@@ -117,16 +117,6 @@ namespace riscv {
 					case riscv_vm_mbare:
 						pa = va;
 						break;
-					case riscv_vm_mbb:
-						if (va < proc.mbound) {
-							pa = va + proc.mbase;
-						}
-						break;
-					case riscv_vm_mbid:
-						if (va < (inst_fetch ? proc.mibound : proc.mdbound)) {
-							pa = va + (inst_fetch ? proc.mibase : proc.mdbase);
-						}
-						break;
 					case riscv_vm_sv32:
 						pa = page_translate_addr<P,sv32>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
