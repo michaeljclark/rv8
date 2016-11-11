@@ -309,8 +309,8 @@ R mul(typename R::stype x, typename R::stype y)
 
 	U xs =    x < 0;
 	U ys =    y < 0;
-	U xu =    ~(xs - 1) ^ (x - xs);
-	U yu =    ~(ys - 1) ^ (y - ys);
+	U xu =    (~xs + 1) ^ (x - xs);
+	U yu =    (~ys + 1) ^ (y - ys);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
 	U y0 =    yu       & mask;
@@ -346,7 +346,7 @@ R mulsu(typename R::stype x, typename R::utype y)
 	const U   mask = (U(1) << qb) - 1;
 
 	U xs =    x < 0;
-	U xu =    ~(xs - 1) ^ (x - xs);
+	U xu =    (~xs + 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
 	U y0 =    y        & mask;
@@ -407,10 +407,10 @@ S mulh(S x, S y)
 
 	U xs =    x < 0;
 	U ys =    y < 0;
-	U xu =    ~(xs - 1) ^ (x - xs);
+	U xu =    (~xs + 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
-	U yu =    ~(ys - 1) ^ (y - ys);
+	U yu =    (~ys + 1) ^ (y - ys);
 	U y0 =    yu       & mask;
 	U y1 =    yu >> qb & mask;
 	U z0 =    x0 * y0;
@@ -441,7 +441,7 @@ S mulhsu(S x, U y)
 	const U   mask = (U(1) << qb) - 1;
 
 	U xs =    x < 0;
-	U xu =    ~(xs - 1) ^ (x - xs);
+	U xu =    (~xs + 1) ^ (x - xs);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
 	U y0 =    y        & mask;
