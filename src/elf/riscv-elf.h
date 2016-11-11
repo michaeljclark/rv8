@@ -514,7 +514,7 @@ enum {
 	R_X86_64_GOTOFF64 = 25,           /* word64 = S + A - GOT */
 	R_X86_64_GOTPC32 = 26,            /* word32 = GOT + A + P */
 	R_X86_64_SIZE32 = 32,             /* word32 = Z + A */
-	R_X86_64_SIZE64 = 33              /* word64 = Z + A */
+	R_X86_64_SIZE64 = 33,             /* word64 = Z + A */
 	R_X86_64_GOTPC32_TLSDESC = 34,    /* word32 */
 	R_X86_64_TLSDESC_CALL = 35,       /* none */
 	R_X86_64_TLSDESC = 36,            /* word64x2 */
