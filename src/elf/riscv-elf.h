@@ -466,19 +466,23 @@ typedef struct
 // x86-64 Relocation Types
 
 /*
+
+System V Application Binary Interface AMD64 Architecture Processor Supplement Draft 0.99.6
+
 - A Represents the addend used to compute the value of the relocatable field.
 - B Represents the base address at which a shared object has been loaded into memory
 	during execution. Generally, a shared object is built with a 0 base virtual
 	address, but the execution address will be different.
 - G Represents the offset into the global offset table at which the relocation entry’s
 	symbol will reside during execution.
-	GOT Represents the address of the global offset table.
+- GOT Represents the address of the global offset table.
 - L Represents the place (section offset or address) of the Procedure Linkage Table
 	entry for a symbol.
 - P Represents the place (section offset or address) of the storage unit being relocated
 	(computed using r_offset).
 - S Represents the value of the symbol whose index resides in the relocation entry.
 - Z Represents the size of the symbol whose index resides in the relocation entry.
+
 */
 
 enum {
