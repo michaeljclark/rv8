@@ -78,7 +78,7 @@ namespace riscv {
 				}
 			}
 
-			/* NOTE we could longjmp here to avoid using 0 as a sentinel for illegal address */
+			/* illegal_address (0) is never a valid user virtual address */
 
 			return illegal_address;
 		}

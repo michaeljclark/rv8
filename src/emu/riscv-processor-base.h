@@ -173,6 +173,12 @@ namespace riscv {
 		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
+
+		[[noreturn]] void raise(int cause, ux addr)
+		{
+			badaddr = addr;
+			longjmp(env, cause);
+		}
 	};
 
 	using processor_rv32imafd = processor_base<s32,u32,ireg_rv32,32,freg_fp64,32>;

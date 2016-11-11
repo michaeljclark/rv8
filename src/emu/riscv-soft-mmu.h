@@ -14,6 +14,12 @@ namespace riscv {
 		typedef PMA    pma_type;
 		typedef MEMORY memory_type;
 
+		enum mmu_op {
+			op_fetch,
+			op_load,
+			op_store
+		};
+
 		/* MMU properties */
 
 		tlb_type       l1_dtlb;     /* L1 Data TLB */
@@ -33,80 +39,83 @@ namespace riscv {
 			return pa == illegal_address;
 		}
 
-		// instruction fetch
+		/* instruction fetch */
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
+			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<u16>(pc))) {
-				proc.badaddr = pc;
-				longjmp(proc.env, riscv_cause_misaligned_fetch);
+				proc.raise(riscv_cause_misaligned_fetch, pc);
 			}
 
-			addr_t mpa = translate_addr<P,false>(proc, pc, tlb_ent);
-			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
+			/* translate to machine physical (raises exception on fault) */
+			addr_t mpa = translate_addr<P,op_fetch>(proc, pc, tlb_ent);
+
+			/* translate to user virtual (can return illegal_address) */
+			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* TODO: check tags, PMA, PTE, mode and alignment */
 
-			inst_t inst;
 			if (unlikely(illegal(uva))) {
-				proc.badaddr = pc;
-				longjmp(proc.env, riscv_cause_fault_fetch);
+				proc.raise(riscv_cause_fault_fetch, pc);
 			} else {
-				inst = riscv::inst_fetch(uva, pc_offset);
+				return riscv::inst_fetch(uva, pc_offset);
 			}
-
-			return inst;
 		}
 
-		// load
+		/* load */
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
+			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
-				proc.badaddr = va;
-				longjmp(proc.env, riscv_cause_misaligned_load);
+				proc.raise(riscv_cause_misaligned_load, va);
 			}
 
-			addr_t mpa = translate_addr(proc, va, tlb_ent);
-			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
+			/* translate to machine physical (raises exception on fault) */
+			addr_t mpa = translate_addr<P,op_load>(proc, va, tlb_ent);
+
+			/* translate to user virtual (can return illegal_address) */
+			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* TODO: check tags, PMA, PTE, mode and alignment */
 
 			if (unlikely(illegal(uva))) {
-				proc.badaddr = va;
-				longjmp(proc.env, riscv_cause_fault_load);
+				proc.raise(riscv_cause_fault_load, va);
 			} else {
 				val = *static_cast<T*>((void*)uva);
 			}
 		}
 
-		// store
+		/* store */
 		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
+			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
-				proc.badaddr = va;
-				longjmp(proc.env, riscv_cause_misaligned_store);
+				proc.raise(riscv_cause_misaligned_store, va);
 			}
 
-			addr_t mpa = translate_addr(proc, va, tlb_ent);
-			addr_t uva = unlikely(illegal(mpa)) ? mpa : mem.mpa_to_uva(mpa);
+			/* translate to machine physical (raises exception on fault) */
+			addr_t mpa = translate_addr<P,op_store>(proc, va, tlb_ent);
+
+			/* translate to user virtual (can return illegal_address) */
+			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* TODO: check tags, PMA, PTE, mode and alignment */
 
 			if (unlikely(illegal(uva))) {
-				proc.badaddr = va;
-				longjmp(proc.env, riscv_cause_fault_store);
+				proc.raise(riscv_cause_fault_store, va);
 			} else {
 				*static_cast<T*>((void*)uva) = val;
 			}
 		}
 
-		// translate address based on processor translation mode
-		template <typename P, bool inst_fetch = false> addr_t translate_addr(P &proc, UX va,
+		/* translate address based on processor translation mode */
+		template <typename P, mmu_op op> addr_t translate_addr(P &proc, UX va,
 			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			addr_t pa = illegal_address;
@@ -118,22 +127,25 @@ namespace riscv {
 						pa = va;
 						break;
 					case riscv_vm_sv32:
-						pa = page_translate_addr<P,sv32>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv32>(proc, va, op,
+							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 					case riscv_vm_sv39:
-						pa = page_translate_addr<P,sv39>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv39>(proc, va, op,
+							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 					case riscv_vm_sv48:
-						pa = page_translate_addr<P,sv48>(proc, va, inst_fetch ? l1_itlb : l1_dtlb, tlb_ent);
+						pa = page_translate_addr<P,sv48>(proc, va, op,
+							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 						break;
 				}
 			}
 			return pa;
 		}
 
-		// translate address using a TLB and a paged addressing mode
+		/* translate address using a TLB and a paged addressing mode */
 		template <typename P, typename PTM> addr_t page_translate_addr(
-			P &proc, UX va,
+			P &proc, UX va, mmu_op op,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent
 		)
 		{
@@ -141,14 +153,14 @@ namespace riscv {
 			if (tlb_ent) {
 				return (tlb_ent->ppn << page_shift) | (va & ~page_mask);
 			} else {
-				return page_translate_addr_tlb_miss<P,PTM>(proc, va, tlb, tlb_ent);
+				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
 			}
 		}
 
-		// translate address using a TLB and a paged addressing mode
-		// TLB miss slow path that invokes the page table walker
+		/* translate address using a TLB and a paged addressing mode
+		 * TLB miss slow path that invokes the page table walker */
 		template <typename P, typename PTM> addr_t page_translate_addr_tlb_miss(
-			P &proc, UX va,
+			P &proc, UX va, mmu_op op,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent
 		)
 		{
@@ -164,7 +176,7 @@ namespace riscv {
 			/* TODO: TLB statistics */
 
 			addr_t pa;
-			if ((pa = walk_page_table<P,PTM>(proc, va, tlb, tlb_ent, pte)) != illegal_address)
+			if ((pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent, pte)) != illegal_address)
 			{
 				/* Insert the virtual to physical mapping into the TLB */
 				tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
@@ -174,7 +186,7 @@ namespace riscv {
 		}
 
 		template <typename P, typename PTM> addr_t walk_page_table(
-			P &proc, UX va,
+			P &proc, UX va, mmu_op op,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent,
 			typename PTM::pte_type &pte
 		)
@@ -223,9 +235,13 @@ namespace riscv {
 			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
 				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
 
-			/* NOTE we could longjmp here to avoid using 0 as a sentinel for illegal address */
+			switch (op) {
+				case op_fetch: proc.raise(riscv_cause_fault_load, va);
+				case op_load:  proc.raise(riscv_cause_fault_load, va);
+				case op_store: proc.raise(riscv_cause_fault_store, va);
+			}
 
-			return illegal_address;
+			return illegal_address; /* not reached */
 		}
 	};
 
