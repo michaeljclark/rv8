@@ -44,8 +44,8 @@ namespace riscv {
 
 		U xs =    x < 0;
 		U ys =    y < 0;
-		U xu =    ~(xs - 1) ^ (x - xs);
-		U yu =    ~(ys - 1) ^ (y - ys);
+		U xu =    (~xs + 1) ^ (x - xs);
+		U yu =    (~ys + 1) ^ (y - ys);
 		U x0 =    xu       & mask;
 		U x1 =    xu >> qb & mask;
 		U y0 =    yu       & mask;
@@ -77,7 +77,7 @@ namespace riscv {
 		const U   mask = (U(1) << qb) - 1;
 
 		U xs =    x < 0;
-		U xu =    ~(xs - 1) ^ (x - xs);
+		U xu =    (~xs + 1) ^ (x - xs);
 		U x0 =    xu       & mask;
 		U x1 =    xu >> qb & mask;
 		U y0 =    y        & mask;
