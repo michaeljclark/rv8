@@ -260,6 +260,11 @@ PARSE_META_SRCS = $(SRC_DIR)/app/riscv-parse-meta.cc
 PARSE_META_OBJS = $(call src_objs, $(PARSE_META_SRCS))
 PARSE_META_BIN = $(BIN_DIR)/riscv-parse-meta
 
+# pte-util
+PTE_UTIL_SRCS = $(SRC_DIR)/app/riscv-pte-util.cc
+PTE_UTIL_OBJS = $(call src_objs, $(PTE_UTIL_SRCS))
+PTE_UTIL_BIN = $(BIN_DIR)/riscv-pte-util
+
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/riscv-test-bits.cc
 TEST_BITS_OBJS = $(call src_objs, $(TEST_BITS_SRCS))
@@ -323,6 +328,7 @@ ALL_SRCS = $(RV_ASM_SRCS) \
            $(HISTOGRAM_ELF_SRCS) \
            $(PARSE_ELF_SRCS) \
            $(PARSE_META_SRCS) \
+           $(PTE_UTIL_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
            $(TEST_EMULATE_SRCS) \
@@ -338,6 +344,7 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(HISTOGRAM_ELF_BIN) \
            $(PARSE_ELF_BIN) \
            $(PARSE_META_BIN) \
+           $(PTE_UTIL_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
            $(TEST_EMULATE_BIN) \
@@ -504,6 +511,10 @@ $(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_GEN_LIB) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(PTE_UTIL_BIN): $(PTE_UTIL_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
