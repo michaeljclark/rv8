@@ -424,7 +424,7 @@ namespace riscv {
 			if (dec.op == riscv_op_ebreak) {
 				print_csr_registers();
 				P::print_int_registers();
-				exit(1);
+				exit(0);
 			}
 
 			/* check {m,h,s}edeleg for cause and dispatch to {m,h,s,u}tvec */
