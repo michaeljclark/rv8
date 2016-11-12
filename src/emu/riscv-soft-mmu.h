@@ -39,6 +39,22 @@ namespace riscv {
 			return pa == illegal_address;
 		}
 
+
+		template <typename P> UX effective_mode(P &proc, mmu_op op)
+		{
+			/*
+			 * effective privilege mode for page translation is either the current
+			 * privilege mode (U or S) or M mode with MPRV set and the mode in MPP
+			 * (U or S). M mode instruction fetches are not page translated
+			 */
+			return ((proc.mode >= riscv_mode_M) &&
+				(proc.mstatus.r.mprv == 1) &&
+				(op != op_fetch) &&
+				(proc.mstatus.r.mpp <= riscv_mode_S))
+				? proc.mstatus.r.mpp
+				: proc.mode;
+		}
+
 		/* instruction fetch */
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
@@ -119,7 +135,7 @@ namespace riscv {
 			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			addr_t pa = illegal_address;
-			if (proc.mode == riscv_mode_M && (proc.mstatus.r.mprv == 0 || op == op_fetch)) {
+			if (effective_mode(proc, op) >= riscv_mode_M) {
 				pa = va;
 			} else {
 				switch (proc.mstatus.r.vm) {
