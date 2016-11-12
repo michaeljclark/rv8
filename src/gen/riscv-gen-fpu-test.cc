@@ -92,8 +92,13 @@ typedef double             f64;
 typedef signed long        sx;
 typedef unsigned long      ux;
 
+#define nan NAN
+#define nanf NAN
+#define inf INFINITY
+#define inff INFINITY
+
 #define FPU_IDENTITY(fn, args...) printf("\tFPU_ASSERT(%s, " fmt_res_##fn ", " fmt_arg_##fn ");\n", #fn, test_##fn(args), args)
-#define FPU_ASSERT(fn, result, args...) assert(test_##fn(args) == result)
+#define FPU_ASSERT(fn, result, args...) assert(isinf(result) ? isinf(test_##fn(args)) : isnan(result) ? isnan(test_##fn(args)) : test_##fn(args) == result)
 )C";
 
 	printf(kCHeader, "test-fpu-gen.h");
