@@ -67,6 +67,11 @@ CXXFLAGS +=    -I$(GPERFTOOL)/include/ -DENABLE_GPERFTOOL
 LDFLAGS +=     -L$(GPERFTOOL)/lib/ -lprofiler
 endif
 
+# silence nonsense gcc warning that clang does not implement
+ifeq ($(call check_opt,$(CXX),cc,-Werror=unknown-warning-option), 1)
+CFLAGS +=       -Wno-misleading-indentation
+endif
+
 # check if hardening is enabled. e.g. make enable_harden=1
 ifeq ($(enable_harden),1)
 # check if we can use stack protector
