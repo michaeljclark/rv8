@@ -53,7 +53,8 @@ PROGRAMS = \
 	$(BIN_DIR)/test-fpu-printf \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert \
-	$(BIN_DIR)/test-sieve
+	$(BIN_DIR)/test-sieve \
+	$(BIN_DIR)/test-sv39-1
 
 all: dirs $(PROGRAMS)
 
@@ -70,6 +71,7 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) $(BIN_DIR)/test-sieve
+	$(EMULATOR) -S -o -p $(BIN_DIR)/test-sv39-1
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-int-fib: $(OBJ_DIR)/test-int-fib.o ; $(CC) $(CFLAGS) $^ -o $@
@@ -96,8 +98,12 @@ $(BIN_DIR)/hello-world-libc-strip: $(BIN_DIR)/hello-world-libc ; $(STRIP) $^ -o 
 
 $(OBJ_DIR)/hello-world-abs.o: $(SRC_DIR)/hello-world-abs.S ; $(AS) $^ -o $@
 $(BIN_DIR)/hello-world-abs: $(OBJ_DIR)/hello-world-abs.o ; $(LD) $^ -o $@
+
 $(OBJ_DIR)/hello-world-pcrel.o: $(SRC_DIR)/hello-world-pcrel.S ; $(AS) $^ -o $@
 $(BIN_DIR)/hello-world-pcrel: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-sv39-1.o: $(SRC_DIR)/test-sv39-1.S ; $(AS) $^ -o $@
+$(BIN_DIR)/test-sv39-1: $(OBJ_DIR)/test-sv39-1.o ; $(LD) $^ -o $@
 
 $(BIN_DIR)/hello-world-pcrel-giga: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-nano: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
