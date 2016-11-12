@@ -119,7 +119,7 @@ namespace riscv {
 			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			addr_t pa = illegal_address;
-			if (proc.mode == riscv_mode_M && proc.mstatus.r.mprv == 0) {
+			if (proc.mode == riscv_mode_M && (proc.mstatus.r.mprv == 0 || op == op_fetch)) {
 				pa = va;
 			} else {
 				switch (proc.mstatus.r.vm) {
