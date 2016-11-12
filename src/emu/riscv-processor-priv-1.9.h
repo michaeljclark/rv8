@@ -336,6 +336,10 @@ namespace riscv {
 				case riscv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
 				case riscv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
 				case riscv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
+				case riscv_csr_mcycle:   P::set_csr(dec, riscv_mode_U, op, csr, P::cycle, value); break;
+				case riscv_csr_minstret: P::set_csr(dec, P::mode, op, csr, P::instret, value);    break;
+				case riscv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+				case riscv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case riscv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, hstatus_wmask, hstatus_rmask);                break;
 				case riscv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec, value);      break;

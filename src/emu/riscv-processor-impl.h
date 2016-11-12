@@ -220,6 +220,21 @@ namespace riscv {
 		}
 
 		template <typename D, typename R, typename V>
+		void set_csr_hi(D &dec, int mode, int op, int csr, R &reg, V value)
+		{
+			const int csr_mode = (csr >> 8) & 3, readonly = (csr >> 12) & 1;
+			if (dec.rd != riscv_ireg_x0) {
+				P::ireg[dec.rd] = (mode >= csr_mode) ? s32(u32(reg >> 32)) : 0;
+			}
+			if (readonly) return;
+			switch (op) {
+				case csr_rw: reg = (u64(value) << 32) | (reg & 0xffffffffU); break;
+				case csr_rs: if (value) reg |= (u64(value) << 32); break;
+				case csr_rc: if (value) reg &= ~(u64(value) << 32) | 0xffffffffU; break;
+			}
+		}
+
+		template <typename D, typename R, typename V>
 		void get_csr_hi(D &dec, int mode, int op, int csr, R &reg, V value)
 		{
 			const int csr_mode = (csr >> 8) & 3;
