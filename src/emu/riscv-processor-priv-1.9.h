@@ -412,7 +412,7 @@ namespace riscv {
 			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
 				riscv_cause_name_sym[cause],
 				addr_t(P::pc), addr_t(P::badaddr));
-			P::print_csr_registers();
+			print_csr_registers();
 			P::print_int_registers();
 			exit(1);
 		}
