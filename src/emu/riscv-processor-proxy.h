@@ -59,9 +59,10 @@ namespace riscv {
 			return 0; /* illegal instruction */
 		}
 
-		void trap(int cause)
+		void trap(typename P::decode_type &dec, int cause)
 		{
 			/* proxy processor unconditionally exits on trap */
+			if (P::log) P::print_log(dec, 0);
 			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
 				riscv_cause_name_sym[cause],
 				addr_t(P::pc), addr_t(P::badaddr));

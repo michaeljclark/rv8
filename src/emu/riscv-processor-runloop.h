@@ -117,7 +117,7 @@ namespace riscv {
 			// fault return path
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {
-				P::trap(cause);
+				P::trap(dec, cause);
 			}
 
 			// step the processor

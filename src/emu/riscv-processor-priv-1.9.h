@@ -400,7 +400,7 @@ namespace riscv {
 			return 0;
 		}
 
-		void trap(int cause)
+		void trap(typename P::decode_type &dec, int cause)
 		{
 			/*
 			 * TODO - setup processor state to execute fault handler
@@ -409,6 +409,7 @@ namespace riscv {
 			 * mode, medeleg, hedeleg, sedeleg, update mstatus, and one of
 			 * mepc, hepc or sepc, and set PC to one of mtvec, htvec or stvec.
 			 */
+			if (P::log) print_log(dec, 0);
 			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
 				riscv_cause_name_sym[cause],
 				addr_t(P::pc), addr_t(P::badaddr));
