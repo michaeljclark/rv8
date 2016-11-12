@@ -50,12 +50,12 @@ template <typename T> void typed_value_set(std::set<std::string> &values, const 
 	char buf[256];
 	snprintf(fmt, sizeof(fmt), "%s%s", primitive->c_fmt, primitive->c_suffix);
 	snprintf(buf, sizeof(buf), fmt, T(2)); values.insert(buf);
-	snprintf(buf, sizeof(buf), fmt, T(4)); values.insert(buf);
 	if (std::numeric_limits<T>::is_signed) {
 		snprintf(buf, sizeof(buf), fmt, T(-2)); values.insert(buf);
-		snprintf(buf, sizeof(buf), fmt, T(-4)); values.insert(buf);
 	}
 	if (std::numeric_limits<T>::is_iec559) {
+		values.insert("NAN");
+		values.insert("INFINITY");
 		snprintf(buf, sizeof(buf), fmt, T(0.5)); values.insert(buf);
 		snprintf(buf, sizeof(buf), fmt, T(0.25)); values.insert(buf);
 	}
