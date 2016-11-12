@@ -32,4 +32,5 @@ _start:
 .section .rodata
 .p2align 12
 sv39_pte_0:
-	.dword 0x20000017   # 0x0000 -> 0x8000_0000 flags=URWV
+	# riscv-pte-util sv39 0x80000000 URWV
+	.dword 0x20000017   # 0x0000 -> 0x8000_0000

@@ -34,13 +34,28 @@ namespace riscv {
 			return (va & (sizeof(T) - 1)) != 0;
 		}
 
-		constexpr bool illegal(addr_t pa)
+		template <typename P> constexpr bool access_fault(
+			P &proc, UX e_mode, addr_t pa, UX access_flag,
+			typename tlb_type::tlb_entry_t* tlb_ent)
 		{
-			return pa == illegal_address;
+			/*
+		     * U=1 flagged pages fault if effective translation mode is > U && PUM=1
+			 * U=0 flagged pages fault if effective translation mode is < S
+			 *
+			 * TODO: MXR needs to be implemented.
+			 */
+			return pa == illegal_address ||
+				(tlb_ent && (
+					!(tlb_ent->pteb & access_flag) ||
+					((tlb_ent->pteb & pte_flag_U) ?
+						e_mode > riscv_mode_U :
+						e_mode < riscv_mode_S && proc.mstatus.r.pum)
+				)
+				/* TODO check PMA, MXR */
+			);
 		}
 
-
-		template <typename P> UX effective_mode(P &proc, mmu_op op)
+		template <typename P> constexpr UX effective_mode(P &proc, mmu_op op)
 		{
 			/*
 			 * effective privilege mode for page translation is either the current
@@ -56,7 +71,8 @@ namespace riscv {
 		}
 
 		/* instruction fetch */
-		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
+		template <typename P, const mmu_op op = op_fetch>
+		inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
@@ -65,15 +81,17 @@ namespace riscv {
 				proc.raise(riscv_cause_misaligned_fetch, pc);
 			}
 
+			/* get effective translation mode */
+			UX e_mode = effective_mode(proc, op);
+
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op_fetch>(proc, pc, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, e_mode, pc, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
 
-			/* TODO: check tags, PMA, PTE, mode and alignment */
-
-			if (unlikely(illegal(uva))) {
+			/* Check PTE flags and effective mode */
+			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_X, tlb_ent))) {
 				proc.raise(riscv_cause_fault_fetch, pc);
 			} else {
 				return riscv::inst_fetch(uva, pc_offset);
@@ -81,7 +99,8 @@ namespace riscv {
 		}
 
 		/* load */
-		template <typename P, typename T> void load(P &proc, UX va, T &val)
+		template <typename P, typename T, const mmu_op op = op_load>
+		void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
@@ -90,15 +109,17 @@ namespace riscv {
 				proc.raise(riscv_cause_misaligned_load, va);
 			}
 
+			/* get effective translation mode */
+			UX e_mode = effective_mode(proc, op);
+
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op_load>(proc, va, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, e_mode, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
 
-			/* TODO: check tags, PMA, PTE, mode and alignment */
-
-			if (unlikely(illegal(uva))) {
+			/* Check PTE flags and effective mode */
+			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_R, tlb_ent))) {
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
 				val = *static_cast<T*>((void*)uva);
@@ -106,7 +127,8 @@ namespace riscv {
 		}
 
 		/* store */
-		template <typename P, typename T> void store(P &proc, UX va, T val)
+		template <typename P, typename T, const mmu_op op = op_store>
+		void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 
@@ -115,15 +137,17 @@ namespace riscv {
 				proc.raise(riscv_cause_misaligned_store, va);
 			}
 
+			/* get effective translation mode */
+			UX e_mode = effective_mode(proc, op);
+
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op_store>(proc, va, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, e_mode, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
 
-			/* TODO: check tags, PMA, PTE, mode and alignment */
-
-			if (unlikely(illegal(uva))) {
+			/* Check PTE flags and effective mode */
+			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_W, tlb_ent))) {
 				proc.raise(riscv_cause_fault_store, va);
 			} else {
 				*static_cast<T*>((void*)uva) = val;
@@ -131,11 +155,12 @@ namespace riscv {
 		}
 
 		/* translate address based on processor translation mode */
-		template <typename P, mmu_op op> addr_t translate_addr(P &proc, UX va,
+		template <typename P, mmu_op op> addr_t translate_addr(
+			P &proc, UX e_mode, UX va,
 			typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			addr_t pa = illegal_address;
-			if (effective_mode(proc, op) >= riscv_mode_M) {
+			if (e_mode >= riscv_mode_M) {
 				pa = va;
 			} else {
 				switch (proc.mstatus.r.vm) {
