@@ -53,7 +53,6 @@ PROGRAMS = \
 	$(BIN_DIR)/test-fpu-printf \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert \
-	$(BIN_DIR)/test-sieve \
 	$(BIN_DIR)/test-sv39-1
 
 all: dirs $(PROGRAMS)
@@ -70,7 +69,6 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-int-mul
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
-	$(EMULATOR) $(BIN_DIR)/test-sieve
 	$(EMULATOR) -S -o -p $(BIN_DIR)/test-sv39-1
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
@@ -88,9 +86,6 @@ $(BIN_DIR)/test-fpu-assert: $(OBJ_DIR)/test-fpu-assert.o ; $(CC) $(CFLAGS) $^ -o
 
 $(OBJ_DIR)/test-fpu-printf.o: $(SRC_DIR)/test-fpu-printf.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-fpu-printf: $(OBJ_DIR)/test-fpu-printf.o ; $(CC) $(CFLAGS) $^ -o $@
-
-$(OBJ_DIR)/test-sieve.o: $(SRC_DIR)/test-sieve.cc ; $(CXX) $(CXXFLAGS) -c $^ -o $@
-$(BIN_DIR)/test-sieve: $(OBJ_DIR)/test-sieve.o ; $(CXX) $(CXXFLAGS) $^ -o $@
 
 $(OBJ_DIR)/hello-world-libc.o: $(SRC_DIR)/hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/hello-world-libc: $(OBJ_DIR)/hello-world-libc.o ; $(CC) $(CFLAGS) $^ -o $@
