@@ -30,7 +30,7 @@ pcie {
   };
 };
 leds { interface gpio; ngpio 4; @ 0x48002000:0x48002003; };
-rtc { @ 0x2000; };
+rtc { @ 0x40000000; };
 ram { 0 { @ 0x80000000:0x8FFFFFFF; }; };
 uart { @ 0x48000000; };
 core { 0 { 0 { isa rv64imafdc; timecmp 0x40000008; ipi 0x40001000; }; }; };
