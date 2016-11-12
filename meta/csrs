@@ -118,3 +118,10 @@
 0x310  mrw  mucounteren "Machine interrupt-enable register"
 0x311  mrw  mscounteren "Supervisor-mode counter enable"
 0x312  mrw  mhcounteren "Hypervisor-mode counter enable"
+
+# Nonstandard
+0x780  mrw  mtohost     "IO to Host"
+0x781  mrw  mfromhost   "IO from Host"
+0x782  mrw  mreset      "Reset"
+0x783  mrw  mipi        "Inter Processor Interrupt"
+0x784  mrw  miobase     "IO Base"

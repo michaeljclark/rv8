@@ -304,6 +304,11 @@ enum riscv_csr
 	riscv_csr_mucounteren = 0x310,      /* Machine interrupt-enable register */
 	riscv_csr_mscounteren = 0x311,      /* Supervisor-mode counter enable */
 	riscv_csr_mhcounteren = 0x312,      /* Hypervisor-mode counter enable */
+	riscv_csr_mtohost = 0x780,          /* IO to Host */
+	riscv_csr_mfromhost = 0x781,        /* IO from Host */
+	riscv_csr_mreset = 0x782,           /* Reset */
+	riscv_csr_mipi = 0x783,             /* Inter Processor Interrupt */
+	riscv_csr_miobase = 0x784,          /* IO Base */
 };
 
 enum riscv_ireg_num
