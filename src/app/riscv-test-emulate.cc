@@ -379,7 +379,7 @@ struct riscv_emulator
 		}
 
 		/* Add 1GB RAM to the mmu (make this a command line option) */
-		proc.mmu.mem.add_ram(0x0, /*1GB*/0x40000000ULL);
+		proc.mmu.mem.add_ram(/*mpa*/0x80000000ULL, /*1GB*/0x40000000ULL);
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");
