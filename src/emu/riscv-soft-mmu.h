@@ -198,6 +198,8 @@ namespace riscv {
 			addr_t pte_uva;
 			int shift, level;
 
+			/* TODO: canonical address check */
+
 			/* walk the page table */
 			for (level = PTM::levels - 1; level >= 0; level--) {
 
