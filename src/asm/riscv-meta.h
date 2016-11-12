@@ -304,24 +304,6 @@ enum riscv_csr
 	riscv_csr_mucounteren = 0x310,      /* Machine interrupt-enable register */
 	riscv_csr_mscounteren = 0x311,      /* Supervisor-mode counter enable */
 	riscv_csr_mhcounteren = 0x312,      /* Hypervisor-mode counter enable */
-	riscv_csr_mucycle_delta = 0x700,    /* cycle counter delta */
-	riscv_csr_mutime_delta = 0x701,     /* time counter delta */
-	riscv_csr_muinstret_delta = 0x702,  /* time counter delta */
-	riscv_csr_mscycle_delta = 0x704,    /* cycle counter delta */
-	riscv_csr_mstime_delta = 0x705,     /* time counter delta */
-	riscv_csr_msinstret_delta = 0x706,  /* time counter delta */
-	riscv_csr_mhcycle_delta = 0x708,    /* cycle counter delta */
-	riscv_csr_mhtime_delta = 0x709,     /* time counter delta */
-	riscv_csr_mhinstret_delta = 0x70A,  /* time counter delta */
-	riscv_csr_mucycle_deltah = 0x780,   /* cycle counter delta */
-	riscv_csr_mutime_deltah = 0x781,    /* time counter delta */
-	riscv_csr_muinstret_deltah = 0x782, /* time counter delta */
-	riscv_csr_mscycle_deltah = 0x784,   /* cycle counter delta */
-	riscv_csr_mstime_deltah = 0x785,    /* time counter delta */
-	riscv_csr_msinstret_deltah = 0x786, /* time counter delta */
-	riscv_csr_mhcycle_deltah = 0x788,   /* cycle counter delta */
-	riscv_csr_mhtime_deltah = 0x789,    /* time counter delta */
-	riscv_csr_mhinstret_deltah = 0x78A, /* time counter delta */
 };
 
 enum riscv_ireg_num
