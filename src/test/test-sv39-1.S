@@ -14,7 +14,7 @@ _start:
 # setup mtvec
 1:	auipc   a0, %pcrel_hi(mtvec)       # load mtvec(hi)
 	addi    a0, a0, %pcrel_lo(1b)      # load mtvec(lo)
-	csrrw   zero, mtvec, sp
+	csrrw   zero, mtvec, a0
 
 # load sptbr
 1:	auipc   a0, %pcrel_hi(sv39_pte_0)  # load sv39_pte_0(hi)
@@ -52,18 +52,44 @@ _start:
 	bne     a1, a2, fail
 
 # success
+	ecall   # trap test
 	li      a0, 0
 	ebreak
 
 # failure
 fail:
+	ecall   # trap test
 	li      a0, 1
 	ebreak
 
-# trap vector
+# simple trap vector example
 mtvec:
-	csrrw sp, mscratch, sp
-	ebreak
+	csrrw   sp, mscratch, sp
+
+	# save several registers
+	sd      a0, 0(sp)
+	sd      a1, -8(sp)
+	sd      a2, -16(sp)
+	sd      a3, -24(sp)
+	sd      a4, -32(sp)
+	sd      a5, -40(sp)
+
+	# increment past the trapping instruction
+	csrrsi  a2, mepc, 0
+	addi    a2, a2, 4
+	csrrw   zero, mepc, a2
+
+	# restore several registers
+	ld      a0, 0(sp)
+	ld      a1, -8(sp)
+	ld      a2, -16(sp)
+	ld      a3, -24(sp)
+	ld      a4, -32(sp)
+	ld      a5, -40(sp)
+
+	# return
+	csrrw   sp, mscratch, sp
+	mret
 
 .section .rodata
 .p2align 12

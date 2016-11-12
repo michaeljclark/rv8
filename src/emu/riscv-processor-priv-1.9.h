@@ -319,7 +319,7 @@ namespace riscv {
 				case riscv_csr_mhartid:  P::get_csr(dec, P::mode, op, csr, P::mhartid, value);    break;
 				case riscv_csr_mstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, mstatus_wmask, mstatus_rmask);                break;
-				case riscv_csr_mtvec:    P::get_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
+				case riscv_csr_mtvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
 				case riscv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
 				case riscv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
 				case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
@@ -383,10 +383,20 @@ namespace riscv {
 			switch (dec.op) {
 				case riscv_op_ecall:     return 0; break;
 				case riscv_op_ebreak:    return 0; break;
-				case riscv_op_uret:      return 0; break;
-				case riscv_op_sret:      return 0; break;
-				case riscv_op_hret:      return 0; break;
-				case riscv_op_mret:      return 0; break;
+				case riscv_op_uret:
+					return P::uepc - P::pc;
+				case riscv_op_sret:
+					P::mode = P::mstatus.r.spp;
+					P::mstatus.r.spp = riscv_mode_U;
+					return P::sepc - P::pc;
+				case riscv_op_hret:
+					P::mode = P::mstatus.r.hpp;
+					P::mstatus.r.hpp = riscv_mode_U;
+					return P::hepc - P::pc;
+				case riscv_op_mret:
+					P::mode = P::mstatus.r.mpp;
+					P::mstatus.r.mpp = riscv_mode_U;
+					return P::mepc - P::pc;
 				case riscv_op_sfence_vm: return 0; break;
 				case riscv_op_wfi:       return 0; break;
 				case riscv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
@@ -402,20 +412,55 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
-			/*
-			 * TODO - setup processor state to execute fault handler
-			 *
-			 * NOTE: fault dispatch needs to be implemented. Check privilege
-			 * mode, medeleg, hedeleg, sedeleg, update mstatus, and one of
-			 * mepc, hepc or sepc, and set PC to one of mtvec, htvec or stvec.
-			 */
-			if (P::log) print_log(dec, 0);
-			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
-				riscv_cause_name_sym[cause],
-				addr_t(P::pc), addr_t(P::badaddr));
-			print_csr_registers();
-			P::print_int_registers();
-			exit(1);
+			/* log instruction and trap if logging is enabled */
+			if (P::log || dec.op == riscv_op_ebreak) {
+				print_log(dec, 0);
+				printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
+					riscv_cause_name_sym[cause],
+					addr_t(P::pc), addr_t(P::badaddr));
+			}
+
+			/* NOTE: ebreak is temporarily used to exit the interpreter */
+			if (dec.op == riscv_op_ebreak) {
+				print_csr_registers();
+				P::print_int_registers();
+				exit(1);
+			}
+
+			/* check {m,h,s}edeleg for cause and dispatch to {m,h,s,u}tvec */
+			typename P::ux deleg = 1 << cause;
+			if (P::medeleg & deleg) {
+				if (P::hedeleg & deleg) {
+					if (P::sedeleg & deleg) {
+						P::uepc = P::pc;
+						P::ucause = cause;
+						P::ubadaddr = P::badaddr;
+						P::mode = riscv_mode_U;
+						P::pc = P::utvec;
+					} else {
+						P::sepc = P::pc;
+						P::scause = cause;
+						P::sbadaddr = P::badaddr;
+						P::mstatus.r.spp = P::mode;
+						P::mode = riscv_mode_S;
+						P::pc = P::stvec;
+					}
+				} else {
+					P::hepc = P::pc;
+					P::hcause = cause;
+					P::hbadaddr = P::badaddr;
+					P::mstatus.r.hpp = P::mode;
+					P::mode = riscv_mode_S;
+					P::pc = P::htvec;
+				}
+			} else {
+				P::mepc = P::pc;
+				P::mcause = cause;
+				P::mbadaddr = P::badaddr;
+				P::mstatus.r.mpp = P::mode;
+				P::mode = riscv_mode_M;
+				P::pc = P::mtvec;
+			}
 		}
 	};
 
