@@ -232,7 +232,7 @@ namespace riscv {
 			}
 
 		out:
-			debug("walk_page_table va=%llx sptbr=%llx, level=%d ppn=%llx vpn=%llx pte=%llx: translation fault",
+			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d ppn=0x%llx vpn=0x%llx pte=0x%llx: translation fault",
 				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
 
 			switch (op) {
