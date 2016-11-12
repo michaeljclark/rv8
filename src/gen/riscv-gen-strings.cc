@@ -55,7 +55,7 @@ extern const char* riscv_inst_name_sym[];
 extern const char* riscv_operand_name_sym[];
 extern const char* riscv_operand_type_sym[];
 extern const char* riscv_csr_name_sym[];
-extern const char* riscv_fault_name_sym[];
+extern const char* riscv_cause_name_sym[];
 extern const char* riscv_intr_name_sym[];
 
 #ifdef __cplusplus
@@ -146,10 +146,10 @@ static void print_strings_cc(riscv_gen *gen)
 	printf("};\n\n");
 
 	// fault names
-	printf("const char* riscv_fault_name_sym[] = {\n");
+	printf("const char* riscv_cause_name_sym[] = {\n");
 	for (auto &en : gen->enums) {
-		if (en->group != "intr") continue;
-		printf("\t\"%s\"\n", en->name.c_str());
+		if (en->group != "cause") continue;
+		printf("\t\"%s\",\n", en->name.c_str());
 	}
 	printf("};\n\n");
 
@@ -157,7 +157,7 @@ static void print_strings_cc(riscv_gen *gen)
 	printf("const char* riscv_intr_name_sym[] = {\n");
 	for (auto &en : gen->enums) {
 		if (en->group != "intr") continue;
-		printf("\t\"%s\"\n", en->name.c_str());
+		printf("\t\"%s\",\n", en->name.c_str());
 	}
 	printf("};\n\n");
 }

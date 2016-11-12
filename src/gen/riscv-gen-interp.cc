@@ -131,7 +131,6 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "mmu.store<s64>(", "proc.mmu.template store<P,s64>(proc, ");
 			inst = replace(inst, "mmu.store<f32>(", "proc.mmu.template store<P,f32>(proc, ");
 			inst = replace(inst, "mmu.store<f64>(", "proc.mmu.template store<P,f64>(proc, ");
-			inst = replace(inst, "fault()", "proc.fault = 1");
 			inst = replace(inst, "frd", "FRD");
 			inst = replace(inst, "frs1", "FRS1");
 			inst = replace(inst, "frs2", "FRS2");

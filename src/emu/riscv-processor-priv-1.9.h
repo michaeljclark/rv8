@@ -400,7 +400,7 @@ namespace riscv {
 			return 0;
 		}
 
-		void fault(int cause)
+		void trap(int cause)
 		{
 			/*
 			 * TODO - setup processor state to execute fault handler
@@ -409,8 +409,9 @@ namespace riscv {
 			 * mode, medeleg, hedeleg, sedeleg, update mstatus, and one of
 			 * mepc, hepc or sepc, and set PC to one of mtvec, htvec or stvec.
 			 */
-			printf("FAULT    :%s [pc:%016llx badaddr:%016llx]\n",
-				riscv_fault_name_sym[cause], addr_t(P::pc), addr_t(P::badaddr));
+			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
+				riscv_cause_name_sym[cause],
+				addr_t(P::pc), addr_t(P::badaddr));
 			P::print_csr_registers();
 			P::print_int_registers();
 			exit(1);

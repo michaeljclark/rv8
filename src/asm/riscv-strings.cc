@@ -4513,33 +4513,33 @@ const char* riscv_csr_name_sym[] = {
 	nullptr,
 };
 
-const char* riscv_fault_name_sym[] = {
-	"u_software"
-	"s_software"
-	"h_software"
-	"m_software"
-	"u_timer"
-	"s_timer"
-	"h_timer"
-	"m_timer"
-	"u_external"
-	"s_external"
-	"h_external"
-	"m_external"
+const char* riscv_cause_name_sym[] = {
+	"misaligned_fetch",
+	"fault_fetch",
+	"illegal_instruction",
+	"breakpoint",
+	"misaligned_load",
+	"fault_load",
+	"misaligned_store",
+	"fault_store",
+	"user_ecall",
+	"supervisor_ecall",
+	"hypervisor_ecall",
+	"machine_ecall",
 };
 
 const char* riscv_intr_name_sym[] = {
-	"u_software"
-	"s_software"
-	"h_software"
-	"m_software"
-	"u_timer"
-	"s_timer"
-	"h_timer"
-	"m_timer"
-	"u_external"
-	"s_external"
-	"h_external"
-	"m_external"
+	"u_software",
+	"s_software",
+	"h_software",
+	"m_software",
+	"u_timer",
+	"s_timer",
+	"h_timer",
+	"m_timer",
+	"u_external",
+	"s_external",
+	"h_external",
+	"m_external",
 };
 

@@ -59,9 +59,14 @@ namespace riscv {
 			return 0; /* illegal instruction */
 		}
 
-		void fault(int cause)
+		void trap(int cause)
 		{
-			// proxy_mmu does not implement longjmp faults
+			/* proxy processor unconditionally exits on trap */
+			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
+				riscv_cause_name_sym[cause],
+				addr_t(P::pc), addr_t(P::badaddr));
+			P::print_csr_registers();
+			P::print_int_registers();
 			exit(1);
 		}
 	};

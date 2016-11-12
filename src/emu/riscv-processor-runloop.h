@@ -117,8 +117,7 @@ namespace riscv {
 			// fault return path
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {
-				// received fault from the MMU
-				P::fault(cause);
+				P::trap(cause);
 			}
 
 			// step the processor
@@ -140,19 +139,10 @@ namespace riscv {
 					P::cycle++;
 					P::instret++;
 				} else {
-					goto illegal_inst;
+					P::raise(riscv_cause_illegal_instruction, P::pc);
 				}
 			}
 			return true;
-
-	illegal_inst:
-			// TODO - issue Illegal instruction fault
-			if (P::log) P::print_log(dec, inst);
-			printf("FAULT    :%s\n",
-				riscv_fault_name_sym[riscv_cause_illegal_instruction]);
-			P::print_csr_registers();
-			P::print_int_registers();
-			exit(1);
 		}
 	};
 
