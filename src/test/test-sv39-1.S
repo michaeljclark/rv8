@@ -32,5 +32,4 @@ _start:
 .section .rodata
 .p2align 12
 sv39_pte_0:
-	.dword 0x0          # 0x0000 -> INVALID
-	.dword 0x20000017   # 0x1000 -> 0x8000_0000 flags=URWV
+	.dword 0x20000017   # 0x0000 -> 0x8000_0000 flags=URWV
