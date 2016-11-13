@@ -61,7 +61,7 @@ namespace riscv {
 			 * will result in a call to the fault(int cause) handler.
 			 */
 
-			printf("%-10s: %016llx\n", fault_name, fault_addr);
+			printf("%-9s:%016llx\n", fault_name, fault_addr);
 			P::print_csr_registers();
 			P::print_int_registers();
 			exit(1);
