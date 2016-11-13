@@ -34,24 +34,63 @@ namespace riscv {
 			return (va & (sizeof(T) - 1)) != 0;
 		}
 
-		template <typename P> constexpr bool access_fault(
-			P &proc, UX e_mode, addr_t pa, UX access_flag,
+		template <typename P> constexpr bool fetch_access_fault(
+			P &proc, UX e_mode, addr_t pa,
 			typename tlb_type::tlb_entry_t* tlb_ent)
 		{
 			/*
-		     * U=1 flagged pages fault if effective translation mode is > U && PUM=1
-			 * U=0 flagged pages fault if effective translation mode is < S
+			 * Checks for X=1
+		     * U=1 pages fault if effective translation mode is > U
+			 * U=0 pages fault if effective translation mode is < S
 			 *
-			 * TODO: MXR needs to be implemented.
+			 * MXR and PUM do not affect instruction fetches
 			 */
 			return pa == illegal_address ||
 				(tlb_ent && (
-					!(tlb_ent->pteb & access_flag) ||
+					!(tlb_ent->pteb & pte_flag_X) ||
 					((tlb_ent->pteb & pte_flag_U) ?
 						e_mode > riscv_mode_U :
-						e_mode < riscv_mode_S && proc.mstatus.r.pum)
+						e_mode < riscv_mode_S)
 				)
-				/* TODO check PMA, MXR */
+			);
+		}
+
+		template <typename P> constexpr bool load_access_fault(
+			P &proc, UX e_mode, addr_t pa,
+			typename tlb_type::tlb_entry_t* tlb_ent)
+		{
+			/*
+			 * Checks for R=1 or (X=1 and MXR=1)
+		     * U=1 pages fault if effective translation mode is > U && PUM=1
+			 * U=0 pages fault if effective translation mode is < S
+			 */
+			return pa == illegal_address ||
+				(tlb_ent && (
+					(!(tlb_ent->pteb & pte_flag_R) ||
+					 !(tlb_ent->pteb & pte_flag_X && proc.mstatus.r.mxr)) ||
+					((tlb_ent->pteb & pte_flag_U) ?
+						e_mode > riscv_mode_U && proc.mstatus.r.pum :
+						e_mode < riscv_mode_S)
+				)
+			);
+		}
+
+		template <typename P> constexpr bool store_access_fault(
+			P &proc, UX e_mode, addr_t pa,
+			typename tlb_type::tlb_entry_t* tlb_ent)
+		{
+			/*
+			 * Checks for W=1
+		     * U=1 pages fault if effective translation mode is > U && PUM=1
+			 * U=0 pages fault if effective translation mode is < S
+			 */
+			return pa == illegal_address ||
+				(tlb_ent && (
+					!(tlb_ent->pteb & pte_flag_W) ||
+					((tlb_ent->pteb & pte_flag_U) ?
+						e_mode > riscv_mode_U && proc.mstatus.r.pum :
+						e_mode < riscv_mode_S)
+				)
 			);
 		}
 
@@ -91,7 +130,7 @@ namespace riscv {
 			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_X, tlb_ent))) {
+			if (unlikely(fetch_access_fault(proc, e_mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_fetch, pc);
 			} else {
 				return riscv::inst_fetch(uva, pc_offset);
@@ -119,7 +158,7 @@ namespace riscv {
 			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_R, tlb_ent))) {
+			if (unlikely(load_access_fault(proc, e_mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
 				val = *static_cast<T*>((void*)uva);
@@ -147,7 +186,7 @@ namespace riscv {
 			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(access_fault(proc, e_mode, uva, pte_flag_W, tlb_ent))) {
+			if (unlikely(store_access_fault(proc, e_mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_store, va);
 			} else {
 				*static_cast<T*>((void*)uva) = val;
