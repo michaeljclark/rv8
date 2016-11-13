@@ -385,8 +385,12 @@ namespace riscv {
 
 		addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 			switch (dec.op) {
-				case riscv_op_ecall:     return 0; break;
-				case riscv_op_ebreak:    return 0; break;
+				case riscv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case riscv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case riscv_op_csrrc:     return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case riscv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
+				case riscv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
+				case riscv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 				case riscv_op_uret:
 					return P::uepc - P::pc;
 				case riscv_op_sret:
@@ -401,14 +405,13 @@ namespace riscv {
 					P::mode = P::mstatus.r.mpp;
 					P::mstatus.r.mpp = riscv_mode_U;
 					return P::mepc - P::pc;
-				case riscv_op_sfence_vm: return 0; break;
-				case riscv_op_wfi:       return 0; break;
-				case riscv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrc:     return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
-				case riscv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
-				case riscv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
+				case riscv_op_sfence_vm:
+					P::mmu.l1_itlb.flush(P::pdid);
+					P::mmu.l1_dtlb.flush(P::pdid);
+					return pc_offset;
+				case riscv_op_wfi:
+					/* NOP */
+					return pc_offset;
 				default: break;
 			}
 			return 0;

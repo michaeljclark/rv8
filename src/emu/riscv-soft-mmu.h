@@ -22,8 +22,8 @@ namespace riscv {
 
 		/* MMU properties */
 
-		tlb_type       l1_dtlb;     /* L1 Data TLB */
 		tlb_type       l1_itlb;     /* L1 Instruction TLB */
+		tlb_type       l1_dtlb;     /* L1 Data TLB */
 		pma_type       pma;         /* PMA table */
 		memory_type    mem;         /* memory device */
 
