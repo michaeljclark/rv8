@@ -231,6 +231,7 @@ namespace riscv {
 		{
 			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
+				/* BUG - tlb entry needs to contain the PTE level shift */
 				return (tlb_ent->ppn << page_shift) | (va & ~page_mask);
 			} else {
 				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
