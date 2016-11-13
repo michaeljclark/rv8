@@ -66,7 +66,7 @@ namespace riscv {
 			 */
 			return pa == illegal_address ||
 				(tlb_ent && (
-					(!(tlb_ent->pteb & pte_flag_R) ||
+					(!(tlb_ent->pteb & pte_flag_R) &&
 					 !(tlb_ent->pteb & pte_flag_X && proc.mstatus.r.mxr)) ||
 					((tlb_ent->pteb & pte_flag_U) ?
 						privilege_level > riscv_mode_U && proc.mstatus.r.pum :
