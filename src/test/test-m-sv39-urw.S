@@ -4,9 +4,10 @@ _start:
 
 # RAM is at 0x8000_0000 - 0xc000_0000
 
-# setup temporary stack at top of memory
-	li      sp, 0xbffffff8
-	csrrw   zero, mscratch, sp
+# setup mtvec
+1:	auipc   a0, %pcrel_hi(mtvec)       # load mtvec(hi)
+	addi    a0, a0, %pcrel_lo(1b)      # load mtvec(lo)
+	csrrw   zero, mtvec, a0
 
 # load sptbr
 1:	auipc   a0, %pcrel_hi(sv39_pte_0)  # load sv39_pte_0(hi)
@@ -32,6 +33,10 @@ _start:
 	li      a2, 0xcc
 	sb      a2, 0(a0)
 
+# read from 0x1000
+	lbu     a3, 0(a0)
+	bne     a2, a3, fail
+
 # set mstatus.MPRV=0 (disable M mode paging)
 	li      a1, 1
 	slli    a1, a1, 17
@@ -47,11 +52,15 @@ _start:
 	li      a0, 0
 	ebreak
 
-# failure
+# compare failure
 fail:
 	li      a0, 1
 	ebreak
 
+# trap failure
+mtvec:
+	li      a0, 1
+	ebreak
 
 .section .rodata
 .p2align 12
