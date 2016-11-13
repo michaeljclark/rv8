@@ -18,7 +18,8 @@ namespace riscv {
 		proc_log_csr_smode =       1<<5,       /* Log supervisor status and control registers */
 		proc_log_csr_umode =       1<<6,       /* Log user status and control registers */
 		proc_log_int_reg =         1<<7,       /* Log integer registers */
-		proc_log_no_pseudo =       1<<8,       /* Don't decode pseudoinstructions */
+		proc_log_trap =            1<<8,       /* Log processor traps */
+		proc_log_no_pseudo =       1<<9,       /* Don't decode pseudoinstructions */
 	};
 
 	/* Instruction Set Combinations */

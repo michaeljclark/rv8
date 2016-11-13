@@ -416,16 +416,18 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
+			/* TODO: ebreak is temporarily used to terminate the interpreter */
+			bool terminate = (dec.op == riscv_op_ebreak);
+
 			/* log instruction and trap if logging is enabled */
-			if (P::log || dec.op == riscv_op_ebreak) {
+			if ((P::log & proc_log_trap) || terminate) {
 				print_log(dec, 0);
 				printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
 					riscv_cause_name_sym[cause],
 					addr_t(P::pc), addr_t(P::badaddr));
 			}
 
-			/* NOTE: ebreak is temporarily used to exit the interpreter */
-			if (dec.op == riscv_op_ebreak) {
+			if (terminate) {
 				print_csr_registers();
 				P::print_int_registers();
 				exit(0);

@@ -8,7 +8,7 @@
 namespace riscv {
 
 	template <typename UX, typename TLB, typename PMA, typename MEMORY = user_memory<UX>>
-	struct mmu
+	struct mmu_soft
 	{
 		typedef TLB    tlb_type;
 		typedef PMA    pma_type;
@@ -334,8 +334,8 @@ namespace riscv {
 	typedef pma_table<u32,8> pma_table_rv32;
 	typedef pma_table<u64,8> pma_table_rv64;
 
-	using mmu_rv32 = mmu<u32,tlb_type_rv32,pma_table_rv32>;
-	using mmu_rv64 = mmu<u64,tlb_type_rv64,pma_table_rv64>;
+	using mmu_soft_rv32 = mmu_soft<u32,tlb_type_rv32,pma_table_rv32>;
+	using mmu_soft_rv64 = mmu_soft<u64,tlb_type_rv64,pma_table_rv64>;
 
 }
 

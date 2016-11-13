@@ -88,14 +88,14 @@ using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy<processor_rv
 
 /* Parameterized privileged soft-mmu processor models */
 
-using priv_emulator_rv32ima = processor_runloop<processor_privileged<processor_rv32ima_model<decode,processor_priv_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv32imac = processor_runloop<processor_privileged<processor_rv32imac_model<decode,processor_priv_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv32imafd = processor_runloop<processor_privileged<processor_rv32imafd_model<decode,processor_priv_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv32imafdc = processor_runloop<processor_privileged<processor_rv32imafdc_model<decode,processor_priv_rv32imafd,mmu_rv32>>>;
-using priv_emulator_rv64ima = processor_runloop<processor_privileged<processor_rv64ima_model<decode,processor_priv_rv64imafd,mmu_rv64>>>;
-using priv_emulator_rv64imac = processor_runloop<processor_privileged<processor_rv64imac_model<decode,processor_priv_rv64imafd,mmu_rv64>>>;
-using priv_emulator_rv64imafd = processor_runloop<processor_privileged<processor_rv64imafd_model<decode,processor_priv_rv64imafd,mmu_rv64>>>;
-using priv_emulator_rv64imafdc = processor_runloop<processor_privileged<processor_rv64imafdc_model<decode,processor_priv_rv64imafd,mmu_rv64>>>;
+using priv_emulator_rv32ima = processor_runloop<processor_privileged<processor_rv32ima_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
+using priv_emulator_rv32imac = processor_runloop<processor_privileged<processor_rv32imac_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
+using priv_emulator_rv32imafd = processor_runloop<processor_privileged<processor_rv32imafd_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
+using priv_emulator_rv32imafdc = processor_runloop<processor_privileged<processor_rv32imafdc_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
+using priv_emulator_rv64ima = processor_runloop<processor_privileged<processor_rv64ima_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
+using priv_emulator_rv64imac = processor_runloop<processor_privileged<processor_rv64imac_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
+using priv_emulator_rv64imafd = processor_runloop<processor_privileged<processor_rv64imafd_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
+using priv_emulator_rv64imafdc = processor_runloop<processor_privileged<processor_rv64imafdc_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
 
 /* RISC-V Emulator */
 
@@ -169,18 +169,19 @@ struct riscv_emulator
 		}
 
 		/* keep track of the mapped segment and set the stack_top */
-		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
+		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
 
+		/* log stack creation */
 		if (proc.log & proc_log_memory) {
 			debug("mmap sp  :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
 	}
 
-	/* Map ELF load segments into mmu address space */
+	/* Map ELF load segments into privileged MMU address space */
 	template <typename P>
-	void map_load_segment_mmu(P &proc, const char* filename, Elf64_Phdr &phdr)
+	void map_load_segment_priv(P &proc, const char* filename, Elf64_Phdr &phdr)
 	{
 		int fd = open(filename, O_RDONLY);
 		if (fd < 0) {
@@ -197,6 +198,7 @@ struct riscv_emulator
 		proc.mmu.mem.add_segment(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 
+		/* log elf load segment */
 		if (proc.log & proc_log_memory) {
 			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
@@ -204,7 +206,7 @@ struct riscv_emulator
 		}
 	}
 
-	/* Map ELF load segments into user address space */
+	/* Map ELF load segments into proxy MMU address space */
 	template <typename P>
 	void map_load_segment_user(P &proc, const char* filename, Elf64_Phdr &phdr)
 	{
@@ -219,11 +221,14 @@ struct riscv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		/* keep track of the mapped segment and set the heap_end */
-		proc.mmu.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+		/* add the loaded segment to the emulator mmu */
+		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
 		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
-		if (proc.mmu.heap_begin < seg_end) proc.mmu.heap_begin = proc.mmu.heap_end = seg_end;
+		if (proc.mmu.mem.heap_begin < seg_end) {
+			proc.mmu.mem.heap_begin = proc.mmu.mem.heap_end = seg_end;
+		}
 
+		/* log elf load segment */
 		if (proc.log & proc_log_memory) {
 			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
@@ -246,10 +251,10 @@ struct riscv_emulator
 				[&](std::string s) { return (priv_mode = true); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
-				[&](std::string s) { return (proc_logs |= proc_log_inst); } },
+				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap)); } },
 			{ "-o", "--log-operands", cmdline_arg_type_none,
 				"Log Instructions and Operands",
-				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_operands)); } },
+				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap | proc_log_operands)); } },
 			{ "-m", "--log-memory-map", cmdline_arg_type_none,
 				"Log Memory Map",
 				[&](std::string s) { return (proc_logs |= proc_log_memory); } },
@@ -268,6 +273,9 @@ struct riscv_emulator
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers (defaults to integer registers)",
 				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
+			{ "-t", "--log-traps", cmdline_arg_type_none,
+				"Log Traps)",
+				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
@@ -366,6 +374,7 @@ struct riscv_emulator
 		P proc;
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
+		proc.mmu.mem.log = (proc.log & proc_log_memory);
 
 		/* randomise integer register state with 512 bits of entropy */
 		seed_registers(proc, 512);
@@ -374,26 +383,32 @@ struct riscv_emulator
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
-				map_load_segment_mmu(proc, elf_filename.c_str(), phdr);
+				map_load_segment_priv(proc, elf_filename.c_str(), phdr);
 			}
 		}
 
 		/* Add 1GB RAM to the mmu (make this a command line option) */
 		proc.mmu.mem.add_ram(/*mpa*/0x80000000ULL, /*1GB*/0x40000000ULL);
 
-#if defined (ENABLE_GPERFTOOL)
-		ProfilerStart("test-emulate.out");
-#endif
+		/* TODO set up auxiliary vector, environment and command line at top of stack */
 
 		/* setup signal handlers */
 		proc.init();
 
 #if defined (ENABLE_GPERFTOOL)
-		ProfilerStop();
+		ProfilerStart("test-emulate.out");
 #endif
 
 		/* Step the CPU until it halts */
 		while(proc.step(inst_step));
+
+#if defined (ENABLE_GPERFTOOL)
+		ProfilerStop();
+#endif
+
+		/* Unmap memory segments */
+
+		/* TODO - unmap ELF ROM */
 	}
 
 	/* Start the execuatable with the given proxy processor template */
@@ -423,6 +438,8 @@ struct riscv_emulator
 		static const size_t stack_size = 0x00100000; // 1 MiB
 		map_stack(proc, P::mmu_type::memory_top, stack_size);
 
+		/* TODO set up auxiliary vector, environment and command line at top of stack */
+
 		/* setup signal handlers */
 		proc.init();
 
@@ -438,7 +455,7 @@ struct riscv_emulator
 #endif
 
 		/* Unmap memory segments */
-		for (auto &seg: proc.mmu.segments) {
+		for (auto &seg: proc.mmu.mem.segments) {
 			munmap(seg.first, seg.second);
 		}
 	}

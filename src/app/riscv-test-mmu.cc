@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	assert(sizeof(sv48_pte) == 8);
 
 	typedef tagged_tlb_rv64<128> tlb_type;
-	typedef mmu_rv64 mmu_type;
+	typedef mmu_soft_rv64 mmu_type;
 
 	printf("tlb_type::size                : %tu\n", tlb_type::size);
 	printf("tlb_type::key_size            : %tu\n", tlb_type::key_size);
