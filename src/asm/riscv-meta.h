@@ -234,10 +234,10 @@ enum riscv_csr
 	riscv_csr_uip = 0x044,              /* User interrupt pending */
 	riscv_csr_fflags = 0x001,           /* Floating-Point Accrued Exceptions */
 	riscv_csr_frm = 0x002,              /* Floating-Point Dynamic Rounding Mode */
-	riscv_csr_fcsr = 0x003,             /* Floating-Point Control and Status Register (frm + fflags) */
-	riscv_csr_cycle = 0xC00,            /* Cycle counter for RDCYCLE instruction */
-	riscv_csr_time = 0xC01,             /* Timer for RDTIME instruction */
-	riscv_csr_instret = 0xC02,          /* Instructions-retired counter for RDINSTRET instruction */
+	riscv_csr_fcsr = 0x003,             /* Floating-Point Control and Status (frm + fflags) */
+	riscv_csr_cycle = 0xC00,            /* Cycle counter (for RDCYCLE) */
+	riscv_csr_time = 0xC01,             /* Wall-clock time (for RDTIME) */
+	riscv_csr_instret = 0xC02,          /* Instructions-retired counter (for RDINSTRET) */
 	riscv_csr_cycleh = 0xC80,           /* Upper 32 bits of cycle, RV32I only */
 	riscv_csr_timeh = 0xC81,            /* Upper 32 bits of time, RV32I only */
 	riscv_csr_instreth = 0xC82,         /* Upper 32 bits of instret, RV32I only */
