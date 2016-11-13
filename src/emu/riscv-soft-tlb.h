@@ -24,7 +24,8 @@ namespace riscv {
 			asid_bits =   PARAM::asid_bits,
 			ppn_bits =    PARAM::ppn_bits,
 			vpn_bits =    (sizeof(UX) << 3) - page_shift,
-			pte_bits =    page_shift,
+			ptel_bits =   2,
+			pteb_bits =   page_shift - 2,
 			ppn_limit =   (1ULL<<ppn_bits)-1,
 			asid_limit =  (1ULL<<asid_bits)-1,
 			vpn_limit =   (1ULL<<vpn_bits)-1
@@ -38,7 +39,8 @@ namespace riscv {
 		UX      ppn  : ppn_bits;       /* Physical Page Number */
 		UX      asid : asid_bits;      /* Address Space Identifier */
 		UX      vpn  : vpn_bits;       /* Virtual Page Number */
-		UX      pteb : pte_bits;       /* PTE Bits */
+		UX      ptel : ptel_bits;      /* PTE Level */
+		UX      pteb : pteb_bits;      /* PTE Bits */
 		pdid_t  pdid;                  /* Protection Domain Identifier */
 		pma_t   pma;                   /* Physical Memory Attributes copy */
 
@@ -46,14 +48,16 @@ namespace riscv {
 			ppn(ppn_limit),
 			asid(asid_limit),
 			vpn(vpn_limit),
+			ptel(0),
 			pteb(0),
 			pdid(0),
 			pma(0) {}
 
-		tagged_tlb_entry(UX pdid, UX asid, UX vpn, UX pteb, UX ppn) :
+		tagged_tlb_entry(UX pdid, UX asid, UX vpn, UX ptel, UX pteb, UX ppn) :
 			ppn(ppn),
 			asid(asid),
 			vpn(vpn),
+			ptel(ptel),
 			pteb(pteb),
 			pdid(pdid),
 			pma(0) {}
@@ -117,12 +121,12 @@ namespace riscv {
 		}
 
 		// insert TLB entry for the given PDID + ASID + X:12[VA] + 11:0[PTE.bits] <- PPN]
-		tlb_entry_t* insert(UX pdid, UX asid, UX va, UX pteb, UX ppn)
+		tlb_entry_t* insert(UX pdid, UX asid, UX va, UX ptel, UX pteb, UX ppn)
 		{
 			UX vpn = va >> page_shift;
 			size_t i = vpn & mask;
 			// we are implicitly evicting an entry by overwriting it
-			tlb[i] = tlb_entry_t(pdid, asid, vpn, pteb, ppn);
+			tlb[i] = tlb_entry_t(pdid, asid, vpn, ptel, pteb, ppn);
 			return &tlb[i];
 		}
 	};

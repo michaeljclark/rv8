@@ -220,6 +220,13 @@ namespace riscv {
 			return pa;
 		}
 
+		template <typename PTM>
+		inline constexpr addr_t page_translate_offset(UX ppn, UX va, UX level)
+		{
+			const UX shift = PTM::bits * level + page_shift;
+			return (ppn << page_shift) + (va & ((1ULL << shift) - 1));
+		}
+
 		/* translate address using a TLB and a paged addressing mode */
 		template <typename P, typename PTM> addr_t page_translate_addr(
 			P &proc, UX va, mmu_op op,
@@ -228,8 +235,7 @@ namespace riscv {
 		{
 			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
-				/* BUG - tlb entry needs to contain the PTE level shift */
-				return (tlb_ent->ppn << page_shift) | (va & ~page_mask);
+				return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
 			} else {
 				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
 			}
@@ -253,12 +259,12 @@ namespace riscv {
 
 			/* TODO: TLB statistics */
 
-			addr_t pa;
-			if ((pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent, pte)) != illegal_address)
-			{
+			UX level;
+			addr_t pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent, pte, level);
+			if (pa != illegal_address) {
 				/* Insert the virtual to physical mapping into the TLB */
 				tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
-					va, pte.val.flags, pte.val.ppn);
+					va, level, pte.val.flags, pte.val.ppn);
 			}
 			return pa;
 		}
@@ -266,15 +272,14 @@ namespace riscv {
 		template <typename P, typename PTM> addr_t walk_page_table(
 			P &proc, UX va, mmu_op op,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent,
-			typename PTM::pte_type &pte
+			typename PTM::pte_type &pte, UX &level
 		)
 		{
 			typedef typename PTM::pte_type pte_type;
 
 			UX ppn = proc.sptbr & ((1ULL << tlb_type::ppn_bits) - 1);
-			UX vpn, pte_mpa;
+			UX vpn, pte_mpa, shift;
 			addr_t pte_uva;
-			int shift, level;
 
 			/* TODO: canonical address check */
 
@@ -298,10 +303,8 @@ namespace riscv {
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
 
-					/* Construct address (could be a megapage or gigapage translation) */
-					addr_t pa = (pte.val.ppn << page_shift) + (va & ((1ULL << shift) - 1));
-
-					return pa; /* translated physical address */
+					/* translate address taking into account PTE level */
+					return page_translate_offset<PTM>(pte.val.ppn, va, level);
 				}
 
 				/* step to the next entry */
