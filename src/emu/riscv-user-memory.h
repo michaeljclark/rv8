@@ -59,7 +59,7 @@ namespace riscv {
 				panic("memory: error: mmap: %s", strerror(errno));
 			}
 			add_segment(mpa, uintptr_t(addr), size,
-				pma_type_main | pma_prot_read | pma_prot_write);
+				pma_type_main | pma_prot_read | pma_prot_write | pma_prot_execute);
 		}
 
 		/* Unmap memory segments */
