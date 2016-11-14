@@ -48,6 +48,7 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-giga \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
+	$(BIN_DIR)/test-args \
 	$(BIN_DIR)/test-int-fib \
 	$(BIN_DIR)/test-int-mul \
 	$(BIN_DIR)/test-fpu-printf \
@@ -66,12 +67,16 @@ clean:
 test: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-pcrel
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
+	$(EMULATOR) $(BIN_DIR)/test-args Hello World
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-int-mul
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-ecall-trap
 	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-sv39-urw
+
+$(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-int-fib.o: $(SRC_DIR)/test-int-fib.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-int-fib: $(OBJ_DIR)/test-int-fib.o ; $(CC) $(CFLAGS) $^ -o $@

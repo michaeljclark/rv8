@@ -97,6 +97,25 @@ using priv_emulator_rv64imac = processor_runloop<processor_privileged<processor_
 using priv_emulator_rv64imafd = processor_runloop<processor_privileged<processor_rv64imafd_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
 using priv_emulator_rv64imafdc = processor_runloop<processor_privileged<processor_rv64imafdc_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
 
+
+/* environment variables */
+
+static const char* allowed_env_vars[] = {
+	"TERM=",
+	nullptr
+};
+
+static bool allow_env_var(const char *var)
+{
+	const char **envp = allowed_env_vars;
+	while (*envp != nullptr) {
+		if (strncmp(*envp, var, strlen(*envp)) == 0) return true;
+		envp++;
+	}
+	return false;
+}
+
+
 /* RISC-V Emulator */
 
 struct riscv_emulator
@@ -160,23 +179,101 @@ struct riscv_emulator
 
 	/* Map a single stack segment into user address space */
 	template <typename P>
-	void map_stack(P &proc, addr_t stack_top, addr_t stack_size)
+	void map_proxy_stack(P &proc, addr_t stack_top, size_t stack_size)
 	{
 		void *addr = mmap((void*)(stack_top - stack_size), stack_size,
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
-			panic("map_stack: error: mmap: %s", strerror(errno));
+			panic("map_proxy_stack: error: mmap: %s", strerror(errno));
 		}
 
 		/* keep track of the mapped segment and set the stack_top */
 		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
-		proc.ireg[riscv_ireg_sp] = stack_top - 0x8;
+		*(u64*)(stack_top - sizeof(u64)) = 0xfeedcafebabef00dULL;
+		proc.ireg[riscv_ireg_sp] = stack_top - sizeof(u64);
 
 		/* log stack creation */
 		if (proc.log & proc_log_memory) {
 			debug("mmap sp  :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
+	}
+
+	template <typename P>
+	void copy_to_proxy_stack(P &proc, addr_t stack_top, size_t stack_size, void *data, size_t len)
+	{
+		proc.ireg[riscv_ireg_sp] = proc.ireg[riscv_ireg_sp] - len;
+		if (size_t(stack_top - proc.ireg[riscv_ireg_sp]) > stack_size) {
+			panic("copy_to_proxy_stack: overflow: %d > %d",
+				stack_top - proc.ireg[riscv_ireg_sp], stack_size);
+		}
+		memcpy((void*)(uintptr_t)proc.ireg[riscv_ireg_sp].r.xu.val, data, len);
+	}
+
+	template <typename P>
+	void setup_proxy_stack(P &proc, addr_t stack_top, size_t stack_size)
+	{
+		/* set up auxiliary vector, environment and command line at top of stack */
+
+		/*
+			STACK TOP
+			env data
+			arg data
+			padding, align 16
+			auxv table, AT_NULL terminated
+			envp array, null terminated
+			argv pointer array, null terminated
+			argc <- stack pointer
+
+			enum {
+				AT_NULL = 0,         * end of auxiliary vector *
+				AT_BASE = 7,         * pointer to image base *
+			};
+
+			typedef struct {
+				Elf32_Word a_type;
+				Elf32_Word a_val;
+			} Elf32_auxv;
+
+			typedef struct {
+				Elf64_Word a_type;
+				Elf64_Word a_val;
+			} Elf64_auxv;
+		*/
+
+
+		/* add environment data to stack */
+		std::vector<typename P::ux> env_data;
+		for (auto &env : host_env) {
+			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)env.c_str(), env.size() + 1);
+			env_data.push_back(typename P::ux(proc.ireg[riscv_ireg_sp].r.xu.val));
+		}
+		env_data.push_back(0);
+
+		/* add command line data to stack */
+		std::vector<typename P::ux> arg_data;
+		for (auto &arg : host_cmdline) {
+			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)arg.c_str(), arg.size() + 1);
+			arg_data.push_back(typename P::ux(proc.ireg[riscv_ireg_sp].r.xu.val));
+		}
+		arg_data.push_back(0);
+
+		/* align stack to 16 bytes */
+		proc.ireg[riscv_ireg_sp] = proc.ireg[riscv_ireg_sp] & ~15;
+
+		/* TODO - Add auxiliary vector to stack */
+
+		/* add environment array to stack */
+		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)env_data.data(),
+			env_data.size() * sizeof(typename P::ux));
+
+		/* add command line array to stack */
+		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)arg_data.data(),
+			arg_data.size() * sizeof(typename P::ux));
+
+		/* add argc, argv, envp to stack */
+		typename P::ux argc = host_cmdline.size();
+		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)&argc, sizeof(argc));
 	}
 
 	/* Map ELF load segments into privileged MMU address space */
@@ -304,13 +401,15 @@ struct riscv_emulator
 
 		/* get command line options */
 		elf_filename = result.first[0];
-		for (size_t i = 1; i < result.first.size(); i++) {
+		for (size_t i = 0; i < result.first.size(); i++) {
 			host_cmdline.push_back(result.first[i]);
 		}
 
-		/* get environment */
+		/* filter host environment */
 		for (const char** env = envp; *env != 0; env++) {
-			host_env.push_back(*env);    
+			if (allow_env_var(*env)) {
+				host_env.push_back(*env);
+			}
 		}
 
 		/* read config */
@@ -390,7 +489,6 @@ struct riscv_emulator
 		/* Add 1GB RAM to the mmu (make this a command line option) */
 		proc.mmu.mem.add_ram(/*mpa*/0x80000000ULL, /*1GB*/0x40000000ULL);
 
-		/* TODO set up auxiliary vector, environment and command line at top of stack */
 
 		/* setup signal handlers */
 		proc.init();
@@ -436,9 +534,8 @@ struct riscv_emulator
 
 		/* Map a stack and set the stack pointer */
 		static const size_t stack_size = 0x00100000; // 1 MiB
-		map_stack(proc, P::mmu_type::memory_top, stack_size);
-
-		/* TODO set up auxiliary vector, environment and command line at top of stack */
+		map_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
+		setup_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
 
 		/* setup signal handlers */
 		proc.init();
