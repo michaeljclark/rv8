@@ -25,13 +25,24 @@ _start:
 mtvec:
 	csrrw   sp, mscratch, sp
 
+#ifdef __riscv32
 	# save several registers
+	sw      a0, 0(sp)
+	sw      a1, -4(sp)
+	sw      a2, -8(sp)
+	sw      a3, -12(sp)
+	sw      a4, -16(sp)
+	sw      a5, -20(sp)
+#endif
+
+#ifdef __riscv64
 	sd      a0, 0(sp)
 	sd      a1, -8(sp)
 	sd      a2, -16(sp)
 	sd      a3, -24(sp)
 	sd      a4, -32(sp)
 	sd      a5, -40(sp)
+#endif
 
 	# increment past the trapping instruction
 	csrrsi  a2, mepc, 0
@@ -39,12 +50,23 @@ mtvec:
 	csrrw   zero, mepc, a2
 
 	# restore several registers
+#ifdef __riscv32
+	lw      a0, 0(sp)
+	lw      a1, -4(sp)
+	lw      a2, -8(sp)
+	lw      a3, -12(sp)
+	lw      a4, -16(sp)
+	lw      a5, -20(sp)
+#endif
+
+#ifdef __riscv64
 	ld      a0, 0(sp)
 	ld      a1, -8(sp)
 	ld      a2, -16(sp)
 	ld      a3, -24(sp)
 	ld      a4, -32(sp)
 	ld      a5, -40(sp)
+#endif
 
 	# return
 	csrrw   sp, mscratch, sp
