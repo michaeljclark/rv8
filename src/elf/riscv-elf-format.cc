@@ -37,18 +37,6 @@ const char* elf_ei_data_name(int v)
 	};
 }
 
-const std::string elf_e_flags_name(int v)
-{
-	std::string s;
-	std::vector<std::string> vec;
-	if (v & EF_RISCV_RVC) vec.push_back("RVC");
-	for (auto vi = vec.begin(); vi != vec.end(); vi++) {
-		if (vi != vec.begin()) s.append(",");
-		s.append(*vi);
-	}
-	return s;
-}
-
 const char* elf_e_type_name(int v)
 {
 	switch (v) {
@@ -253,13 +241,21 @@ const std::string elf_sym_info(elf_file &elf, int i, elf_symbol_colorize_fn colo
 
 void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	printf("%sFile       %s%s\n", colorize("legend"), colorize("reset"), elf.filename.c_str());
-	printf("%sClass      %s%s\n", colorize("legend"), colorize("reset"), elf_ei_class_name(elf.ei_class));
-	printf("%sMachine    %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
-	printf("%sFlags      %s%s\n", colorize("legend"), colorize("reset"), elf_e_flags_name(elf.ehdr.e_flags).c_str());
-	printf("%sType       %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
-	printf("%sData       %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
-	printf("%sEntryAddr  %s0x%-16llx\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);
+	printf("%sFile                   %s%s\n", colorize("legend"), colorize("reset"), elf.filename.c_str());
+	printf("%sClass                  %s%s\n", colorize("legend"), colorize("reset"), elf_ei_class_name(elf.ei_class));
+	printf("%sData                   %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
+	printf("%sType                   %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
+	printf("%sMachine                %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
+}
+
+void elf_print_header_ext_info(elf_file &elf, elf_symbol_colorize_fn colorize)
+{
+	printf("%se_ident[EI_VERSION]    %s%d\n", colorize("legend"), colorize("reset"), (int)elf.ehdr.e_ident[EI_VERSION]);
+	printf("%se_ident[EI_OSABI]      %s%d\n", colorize("legend"), colorize("reset"), (int)elf.ehdr.e_ident[EI_OSABI]);
+	printf("%se_ident[EI_ABIVERSION] %s%d\n", colorize("legend"), colorize("reset"), (int)elf.ehdr.e_ident[EI_ABIVERSION]);
+	printf("%se_version              %s%d\n", colorize("legend"), colorize("reset"), (int)elf.ehdr.e_version);
+	printf("%se_flags                %s%d\n", colorize("legend"), colorize("reset"), (int)elf.ehdr.e_flags);
+	printf("%se_entry                %s0x%-16llx\n", colorize("legend"), colorize("reset"), elf.ehdr.e_entry);
 }
 
 void elf_print_section_headers(elf_file &elf, elf_symbol_colorize_fn colorize)

@@ -47,11 +47,12 @@ struct riscv_parse_elf
 
 	bool enable_color = false;
 	bool elf_header = false;
+	bool elf_header_ext = false;
 	bool section_headers = false;
 	bool program_headers = false;
 	bool symbol_table = false;
 	bool disassebly = false;
-	bool decode_pseudo = true;
+	bool decode_pseudo = false;
 	bool help_or_error = false;
 
 	const char* colorize(const char *type)
@@ -190,6 +191,9 @@ struct riscv_parse_elf
 			{ "-e", "--print-elf-header", cmdline_arg_type_none,
 				"Print ELF header",
 				[&](std::string s) { return (elf_header = true); } },
+			{ "-x", "--print-elf-header-ext", cmdline_arg_type_none,
+				"Print ELF header (extended)",
+				[&](std::string s) { return (elf_header = elf_header_ext = true); } },
 			{ "-s", "--print-section-headers", cmdline_arg_type_none,
 				"Print Section headers",
 				[&](std::string s) { return (section_headers = true); } },
@@ -202,9 +206,9 @@ struct riscv_parse_elf
 			{ "-d", "--print-disassembly", cmdline_arg_type_none,
 				"Print Disassembly",
 				[&](std::string s) { return (disassebly = true); } },
-			{ "-x", "--no-pseudo", cmdline_arg_type_none,
-				"Disable Pseudoinstructions",
-				[&](std::string s) { return !(decode_pseudo = false); } },
+			{ "-P", "--pseudo", cmdline_arg_type_none,
+				"Decode Pseudoinstructions",
+				[&](std::string s) { return (decode_pseudo = true); } },
 			{ "-a", "--print-all", cmdline_arg_type_none,
 				"Print All",
 				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = disassebly = true); } },
@@ -246,6 +250,9 @@ struct riscv_parse_elf
 		if (elf_header) {
 			print_heading("ELF Header");
 			elf_print_header_info(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+		}
+		if (elf_header_ext) {
+			elf_print_header_ext_info(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (section_headers) {
 			print_heading("Section Headers");
