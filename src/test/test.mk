@@ -55,7 +55,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert \
 	$(BIN_DIR)/test-m-ecall-trap \
-	$(BIN_DIR)/test-m-sv39-urw
+	$(BIN_DIR)/test-m-sv39
 
 all: dirs $(PROGRAMS)
 
@@ -73,7 +73,7 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-sv39-urw
+	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-sv39
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
@@ -107,8 +107,8 @@ $(BIN_DIR)/hello-world-pcrel: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) $^ -o $@
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
 
-$(OBJ_DIR)/test-m-sv39-urw.o: $(SRC_DIR)/test-m-sv39-urw.S ; $(CC) -c $^ -o $@
-$(BIN_DIR)/test-m-sv39-urw: $(OBJ_DIR)/test-m-sv39-urw.o ; $(LD) $^ -o $@
+$(OBJ_DIR)/test-m-sv39.o: $(SRC_DIR)/test-m-sv39.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-sv39: $(OBJ_DIR)/test-m-sv39.o ; $(LD) $^ -o $@
 
 $(BIN_DIR)/hello-world-pcrel-giga: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-nano: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@

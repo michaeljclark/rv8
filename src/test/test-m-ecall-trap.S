@@ -19,6 +19,8 @@ _start:
 # trap test
 	ecall
 	li      a0, 0
+
+# exit
 	ebreak
 
 # simple trap vector example
