@@ -576,7 +576,7 @@ enum {
 // RISC-V Ehdr e_flags
 
 enum {
-	EF_RISCV_RVC = 1,               /* Indicates that the executable contains RVC compressed code ('C' extension) */
+	EF_RISCV_EXT_MASK = 0x03ffffff, /* Processor extension mask from 'misa' CSR */
 };
 
 // Dynamic Flags
