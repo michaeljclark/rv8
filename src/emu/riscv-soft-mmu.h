@@ -94,21 +94,6 @@ namespace riscv {
 			);
 		}
 
-		template <typename P> constexpr UX effective_mode(P &proc, const mmu_op op)
-		{
-			/*
-			 * effective privilege mode for page translation is either the current
-			 * privilege mode (U or S) or M mode with MPRV set and the mode in MPP
-			 * (U or S). M mode instruction fetches are not page translated
-			 */
-			return ((proc.mode >= riscv_mode_M) &&
-				(proc.mstatus.r.mprv == 1) &&
-				(op != op_fetch) &&
-				(proc.mstatus.r.mpp <= riscv_mode_S))
-				? proc.mstatus.r.mpp
-				: proc.mode;
-		}
-
 		/* instruction fetch */
 		template <typename P, const mmu_op op = op_fetch>
 		inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
@@ -121,7 +106,7 @@ namespace riscv {
 			}
 
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op>(proc, proc.mode, pc, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
@@ -145,17 +130,14 @@ namespace riscv {
 				proc.raise(riscv_cause_misaligned_load, va);
 			}
 
-			/* get effective translation mode */
-			UX mode = effective_mode(proc, op);
-
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op>(proc, mode, va, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(load_access_fault(proc, mode, uva, tlb_ent))) {
+			if (unlikely(load_access_fault(proc, proc.mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
 				val = *static_cast<T*>((void*)uva);
@@ -173,30 +155,42 @@ namespace riscv {
 				proc.raise(riscv_cause_misaligned_store, va);
 			}
 
-			/* get effective translation mode */
-			UX mode = effective_mode(proc, op);
-
 			/* translate to machine physical (raises exception on fault) */
-			addr_t mpa = translate_addr<P,op>(proc, mode, va, tlb_ent);
+			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
 			addr_t uva = mem.mpa_to_uva(mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(store_access_fault(proc, mode, uva, tlb_ent))) {
+			if (unlikely(store_access_fault(proc, proc.mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_store, va);
 			} else {
 				*static_cast<T*>((void*)uva) = val;
 			}
 		}
 
+		template <typename P> constexpr UX effective_mode(P &proc, const mmu_op op)
+		{
+			/*
+			 * effective privilege mode for page translation is either the current
+			 * privilege mode (U or S) or M mode with MPRV set and the mode in MPP
+			 * (U or S). M mode instruction fetches are not page translated
+			 */
+			return ((proc.mode >= riscv_mode_M) &&
+				(proc.mstatus.r.mprv == 1) &&
+				(op != op_fetch) &&
+				(proc.mstatus.r.mpp <= riscv_mode_S))
+				? proc.mstatus.r.mpp
+				: proc.mode;
+		}
+
 		/* translate address based on processor translation mode */
 		template <typename P, mmu_op op> addr_t translate_addr(
-			P &proc, UX e_mode, UX va,
-			typename tlb_type::tlb_entry_t* &tlb_ent)
+			P &proc, UX va, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
+			UX effective_privilege_level = effective_mode(proc, op);
 			addr_t pa = illegal_address;
-			if (e_mode >= riscv_mode_M) {
+			if (effective_privilege_level >= riscv_mode_M) {
 				pa = va;
 			} else {
 				switch (proc.mstatus.r.vm) {

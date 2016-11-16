@@ -41,6 +41,26 @@ _start:
 	lbu     a3, 0(a0)
 	bne     a2, a3, fail
 
+# set mstatus.PUM=1 (enable M mode paging)
+	li      t0, 1
+	slli    t0, t0, 18
+	or      t1, t1, t0
+	csrrs   zero, mstatus, t1
+
+# read from 0x1000
+	lbu     a3, 0(a0)
+	bne     a2, a3, fail   # instruction should cause load fault
+
+# compare a7 to fault_load (5)
+	li      t0, 5
+	bne     a7, t0, fail
+
+# set mstatus.PUM=0 (Disable M mode Paging)
+	li      t1, 1
+	slli    t1, t1, 18
+	or      t0, t0, t1
+	csrrc   zero, mstatus, t0
+
 # set mstatus.MPRV=0 (Disable M mode Paging)
 	li      t1, 1
 	slli    t1, t1, 17
