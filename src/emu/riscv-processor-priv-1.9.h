@@ -410,7 +410,7 @@ namespace riscv {
 					P::mmu.l1_dtlb.flush(P::pdid);
 					return pc_offset;
 				case riscv_op_wfi:
-					/* NOP */
+					/* TODO - Halt the processor */
 					return pc_offset;
 				default: break;
 			}
