@@ -131,7 +131,7 @@
 /* OpenCL */
 #if defined (__OPENCL_VERSION__)
 #define _LITTLE_ENDIAN          1234
-#define __BIG_ENDIAN            4321
+#define _BIG_ENDIAN             4321
 #if defined (__ENDIAN_LITTLE__)
 #define _BYTE_ORDER             _LITTLE_ENDIAN
 #else
