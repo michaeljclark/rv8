@@ -365,12 +365,12 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmin_s:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) || std::isnan(proc.freg[dec.rs2].r.s.val) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fmax_s:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) || std::isnan(proc.freg[dec.rs2].r.s.val) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fsqrt_s:
@@ -415,7 +415,7 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmv_x_s:
 			if (rvf) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & 0x7fc00000) == 0x7fc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd > 0) proc.ireg[dec.rd] = std::isnan(proc.freg[dec.rs1].r.s.val) ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
 			};
 			break;
 		case riscv_op_fclass_s:
@@ -495,12 +495,12 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmin_d:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) || std::isnan(proc.freg[dec.rs2].r.d.val) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fmax_d:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) || std::isnan(proc.freg[dec.rs2].r.d.val) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fcvt_s_d:
@@ -1061,12 +1061,12 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmin_s:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val < proc.freg[dec.rs2].r.s.val) || std::isnan(proc.freg[dec.rs2].r.s.val) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fmax_s:
 			if (rvf) {
-				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) | ((proc.freg[dec.rs2].r.wu.val & 0x7fc00000) == 0x7fc00000) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
+				proc.freg[dec.rd].r.s.val = (proc.freg[dec.rs1].r.s.val > proc.freg[dec.rs2].r.s.val) || std::isnan(proc.freg[dec.rs2].r.s.val) ? proc.freg[dec.rs1].r.s.val : proc.freg[dec.rs2].r.s.val;
 			};
 			break;
 		case riscv_op_fsqrt_s:
@@ -1111,7 +1111,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmv_x_s:
 			if (rvf) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.wu.val & 0x7fc00000) == 0x7fc00000 ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
+				if (dec.rd > 0) proc.ireg[dec.rd] = std::isnan(proc.freg[dec.rs1].r.s.val) ? s32(0x7fc00000) : proc.freg[dec.rs1].r.w.val;
 			};
 			break;
 		case riscv_op_fclass_s:
@@ -1211,12 +1211,12 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmin_d:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val < proc.freg[dec.rs2].r.d.val) || std::isnan(proc.freg[dec.rs2].r.d.val) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fmax_d:
 			if (rvd) {
-				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) | ((proc.freg[dec.rs2].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
+				proc.freg[dec.rd].r.d.val = (proc.freg[dec.rs1].r.d.val > proc.freg[dec.rs2].r.d.val) || std::isnan(proc.freg[dec.rs2].r.d.val) ? proc.freg[dec.rs1].r.d.val : proc.freg[dec.rs2].r.d.val;
 			};
 			break;
 		case riscv_op_fcvt_s_d:
@@ -1286,7 +1286,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_fmv_x_d:
 			if (rvd) {
-				if (dec.rd > 0) proc.ireg[dec.rd] = (proc.freg[dec.rs1].r.lu.val & 0x7ff8000000000000ULL) == 0x7ff8000000000000ULL ? s64(0x7ff8000000000000ULL) : proc.freg[dec.rs1].r.l.val;
+				if (dec.rd > 0) proc.ireg[dec.rd] = std::isnan(proc.freg[dec.rs1].r.d.val) ? s64(0x7ff8000000000000ULL) : proc.freg[dec.rs1].r.l.val;
 			};
 			break;
 		case riscv_op_fcvt_d_l:

@@ -144,8 +144,8 @@ fdiv.s     "fenv_setrm(rm); f32(frd) = f32(frs1) / f32(frs2)"
 fsgnj.s    "u32(frd) = (u32(frs1) & u32(~(1U<<31))) | (u32(frs2) & u32(1U<<31))"
 fsgnjn.s   "u32(frd) = (u32(frs1) & u32(~(1U<<31))) | (~u32(frs2) & u32(1U<<31))"
 fsgnjx.s   "u32(frd) = u32(frs1) ^ (u32(frs2) & u32(1U<<31))"
-fmin.s     "f32(frd) = (f32(frs1) < f32(frs2)) | ((u32(frs2) & u32(f32(NAN))) == u32(f32(NAN))) ? f32(frs1) : f32(frs2)"
-fmax.s     "f32(frd) = (f32(frs1) > f32(frs2)) | ((u32(frs2) & u32(f32(NAN))) == u32(f32(NAN))) ? f32(frs1) : f32(frs2)"
+fmin.s     "f32(frd) = (f32(frs1) < f32(frs2)) || isnan(f32(frs2)) ? f32(frs1) : f32(frs2)"
+fmax.s     "f32(frd) = (f32(frs1) > f32(frs2)) || isnan(f32(frs2)) ? f32(frs1) : f32(frs2)"
 fsqrt.s    "fenv_setrm(rm); f32(frd) = riscv::f32_sqrt(f32(frs1))"
 fle.s      "rd = f32(frs1) <= f32(frs2)"
 flt.s      "rd = f32(frs1) < f32(frs2)"
@@ -154,7 +154,7 @@ fcvt.w.s   "fenv_setrm(rm); rd = riscv::fcvt_w(fcsr, f32(frs1))"                
 fcvt.wu.s  "fenv_setrm(rm); rd = riscv::fcvt_wu(fcsr, f32(frs1))"                  # s32(u32(f32(frs1)))
 fcvt.s.w   "fenv_setrm(rm); f32(frd) = f32(s32(rs1))"
 fcvt.s.wu  "fenv_setrm(rm); f32(frd) = f32(u32(rs1))"
-fmv.x.s    "rd = (u32(frs1) & u32(f32(NAN))) == u32(f32(NAN)) ? s32(u32(f32(NAN))) : s32(frs1)"    # s32(frs1)
+fmv.x.s    "rd = isnan(f32(frs1)) ? s32(u32(f32(NAN))) : s32(frs1)"    # s32(frs1)
 fclass.s   "rd = f32_classify(f32(frs1))"
 fmv.s.x    "u32(frd) = u32(rs1)"
 
@@ -180,8 +180,8 @@ fdiv.d     "fenv_setrm(rm); f64(frd) = f64(frs1) / f64(frs2)"
 fsgnj.d    "u64(frd) = (u64(frs1) & u64(~(1ULL<<63))) | (u64(frs2) & u64(1ULL<<63))"
 fsgnjn.d   "u64(frd) = (u64(frs1) & u64(~(1ULL<<63))) | (~u64(frs2) & u64(1ULL<<63))"
 fsgnjx.d   "u64(frd) = u64(frs1) ^ (u64(frs2) & u64(1ULL<<63))"
-fmin.d     "f64(frd) = (f64(frs1) < f64(frs2)) | ((u64(frs2) & u64(f64(NAN))) == u64(f64(NAN))) ? f64(frs1) : f64(frs2)"
-fmax.d     "f64(frd) = (f64(frs1) > f64(frs2)) | ((u64(frs2) & u64(f64(NAN))) == u64(f64(NAN))) ? f64(frs1) : f64(frs2)"
+fmin.d     "f64(frd) = (f64(frs1) < f64(frs2)) || isnan(f64(frs2)) ? f64(frs1) : f64(frs2)"
+fmax.d     "f64(frd) = (f64(frs1) > f64(frs2)) || isnan(f64(frs2)) ? f64(frs1) : f64(frs2)"
 fcvt.s.d   "fenv_setrm(rm); f32(frd) = f32(f64(frs1))"
 fcvt.d.s   "fenv_setrm(rm); f64(frd) = f64(f32(frs1))"
 fsqrt.d    "fenv_setrm(rm); f64(frd) = riscv::f64_sqrt(f64(frs1))"
@@ -198,7 +198,7 @@ fclass.d   "rd = f64_classify(f64(frs1))"
 
 fcvt.l.d   "fenv_setrm(rm); rd = riscv::fcvt_l(fcsr, f64(frs1))"                   # s64(f64(frs1))
 fcvt.lu.d  "fenv_setrm(rm); rd = riscv::fcvt_lu(fcsr, f64(frs1))"                  # s64(u64(f64(frs1)))
-fmv.x.d    "rd = (u64(frs1) & u64(f64(NAN))) == u64(f64(NAN)) ? s64(u64(f64(NAN))) : s64(frs1)"    # s64(frs1)
+fmv.x.d    "rd = isnan(f64(frs1)) ? s64(u64(f64(NAN))) : s64(frs1)"    # s64(frs1)
 fcvt.d.l   "fenv_setrm(rm); f64(frd) = f64(s64(rs1))"
 fcvt.d.lu  "fenv_setrm(rm); f64(frd) = f64(u64(rs1))"
 fmv.d.x    "u64(frd) = u64(rs1)"

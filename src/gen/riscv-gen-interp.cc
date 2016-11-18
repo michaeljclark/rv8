@@ -65,6 +65,7 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "length(inst)", "pc_offset");
 			inst = replace(inst, "u32(f32(NAN))", "0x7fc00000");
 			inst = replace(inst, "u64(f64(NAN))", "0x7ff8000000000000ULL");
+			inst = replace(inst, "isnan", "std::isnan");
 			inst = replace(inst, "sx(INT_MIN)", "std::numeric_limits<sx>::min()");
 			inst = replace(inst, "s32(INT_MIN)", "std::numeric_limits<s32>::min()");
 			inst = replace(inst, "s64(INT_MIN)", "std::numeric_limits<s64>::min()");
