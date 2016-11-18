@@ -7,6 +7,42 @@
 
 namespace riscv {
 
+#if defined __GNUC__ && defined __x86_64__ && defined __SSE__
+#define HAVE_SSE_MATH
+#endif
+
+#if !defined HAVE_SSE_MATH
+#undef USE_SSE_MATH
+#endif
+
+#if USE_SSE_MATH
+
+	/* i786 RISC-V Floating Point Emulation */
+
+	enum {
+		x86_mxcsr_EF_IE = 0x0001,   /* 0 : Invalid operation flag */
+		x86_mxcsr_EF_DE = 0x0002,   /* 1 : Denormal flag */
+		x86_mxcsr_EF_ZE = 0x0004,   /* 2 : Divide-by-zero flag */
+		x86_mxcsr_EF_OE = 0x0008,   /* 3 : Overflow flag */
+		x86_mxcsr_EF_UE = 0x0010,   /* 4 : Underflow flag */
+		x86_mxcsr_EF_PE = 0x0020,   /* 5 : Precision flag */
+		x86_mxcsr_DAZ   = 0x0040,   /* 6 : Denormals are zeros */
+		x86_mxcsr_EM_IM = 0x0080,   /* 7 : Invalid operation mask */
+		x86_mxcsr_EM_DM = 0x0100,   /* 8 : Denormal mask */
+		x86_mxcsr_EM_ZM = 0x0200,   /* 9 : Divide-by-zero mask */
+		x86_mxcsr_EM_OM = 0x0400,   /* 10: Overflow mask */
+		x86_mxcsr_EM_UM = 0x0800,   /* 11: Underflow mask */
+		x86_mxcsr_EM_PM = 0x1000,   /* 12: Precision mask */
+		x86_mxcsr_RC_RN = 0x0000,   /*     To nearest rounding mode */
+		x86_mxcsr_RC_DN = 0x2000,   /* 13: Toward negative infinity rounding mode */
+		x86_mxcsr_RC_UP = 0x4000,   /* 14: Toward positive infinity rounding mode */
+		x86_mxcsr_RC_RZ = 0x6000,   /*     Toward zero rounding mode */
+		x86_mxcsr_FZ    = 0x8000,   /* 15: Flush to zero */
+		x86_mxcsr_PUP   = 0x1F80    /* Power up state = (EM_PM | EM_UM | EM_OM | EM_ZM | EM_DM | EM_IM) */
+	};
+
+#endif
+
 	/* IEEE-754 Single-precision floating point */
 
 	union f32_bits {
@@ -73,17 +109,42 @@ namespace riscv {
 		};
 	};
 
+
+	inline void fenv_init()
+	{
+#if defined USE_SSE_MATH
+		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
+		/* switch off floating point exceptions */
+		x86_mxcsr_val |= (x86_mxcsr_EM_IM | x86_mxcsr_EM_DM | x86_mxcsr_EM_ZM | x86_mxcsr_EM_OM | x86_mxcsr_EM_UM | x86_mxcsr_EM_PM);
+		/* clear floating point exceptions */
+		x86_mxcsr_val &= ~(x86_mxcsr_EF_DE | x86_mxcsr_EF_PE | x86_mxcsr_EF_IE | x86_mxcsr_EF_OE | x86_mxcsr_EF_UE);
+		__builtin_ia32_ldmxcsr(x86_mxcsr_val);
+#else
+		/* clear floating point exceptions */
+		feclearexcept(FE_ALL_EXCEPT);
+#endif
+	}
+
 	/* get accrued exception flags (C11) */
 
 	template <typename T>
 	inline void fenv_getflags(T &fcsr)
 	{
+#if defined USE_SSE_MATH
+		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
+		if (x86_mxcsr_val & x86_mxcsr_EF_ZE) fcsr |= riscv_fcsr_DZ;
+		if (x86_mxcsr_val & x86_mxcsr_EF_PE) fcsr |= riscv_fcsr_NX;
+		if (x86_mxcsr_val & x86_mxcsr_EF_IE) fcsr |= riscv_fcsr_NV;
+		if (x86_mxcsr_val & x86_mxcsr_EF_OE) fcsr |= riscv_fcsr_OF;
+		if (x86_mxcsr_val & x86_mxcsr_EF_UE) fcsr |= riscv_fcsr_UF;
+#else
 		int flags = fetestexcept(FE_ALL_EXCEPT);
 		if (flags & FE_DIVBYZERO) fcsr |= riscv_fcsr_DZ;
 		if (flags & FE_INEXACT) fcsr |= riscv_fcsr_NX;
 		if (flags & FE_INVALID) fcsr |= riscv_fcsr_NV;
 		if (flags & FE_OVERFLOW) fcsr |= riscv_fcsr_OF;
 		if (flags & FE_UNDERFLOW) fcsr |= riscv_fcsr_UF;
+#endif
 	}
 
 	/* clear accrued exception flags (C11) */
@@ -91,6 +152,16 @@ namespace riscv {
 	template <typename T>
 	inline void fenv_clearflags(T &fcsr)
 	{
+#if defined USE_SSE_MATH
+		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
+		x86_mxcsr_val &= ~(x86_mxcsr_EF_DE | x86_mxcsr_EF_PE | x86_mxcsr_EF_IE | x86_mxcsr_EF_OE | x86_mxcsr_EF_UE);
+		if (!(fcsr & riscv_fcsr_DZ)) x86_mxcsr_val |= x86_mxcsr_EF_DE;
+		if (!(fcsr & riscv_fcsr_NX)) x86_mxcsr_val |= x86_mxcsr_EF_PE;
+		if (!(fcsr & riscv_fcsr_NV)) x86_mxcsr_val |= x86_mxcsr_EF_IE;
+		if (!(fcsr & riscv_fcsr_OF)) x86_mxcsr_val |= x86_mxcsr_EF_OE;
+		if (!(fcsr & riscv_fcsr_UF)) x86_mxcsr_val |= x86_mxcsr_EF_UE;
+		__builtin_ia32_ldmxcsr(x86_mxcsr_val);
+#else
 		int flags = 0;
 		if (!(fcsr & riscv_fcsr_DZ)) flags |= FE_DIVBYZERO;
 		if (!(fcsr & riscv_fcsr_NX)) flags |= FE_INEXACT;
@@ -98,12 +169,25 @@ namespace riscv {
 		if (!(fcsr & riscv_fcsr_OF)) flags |= FE_OVERFLOW;
 		if (!(fcsr & riscv_fcsr_UF)) flags |= FE_UNDERFLOW;
 		feclearexcept(flags);
+#endif
 	}
 
 	/* set round mode (C11) */
 
 	inline void fenv_setrm(int rm)
 	{
+#if defined USE_SSE_MATH
+		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
+		x86_mxcsr_val &= ~x86_mxcsr_RC_RZ;
+		switch (rm) {
+			case riscv_rm_rne: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
+			case riscv_rm_rtz: x86_mxcsr_val |= x86_mxcsr_RC_RZ; break;
+			case riscv_rm_rdn: x86_mxcsr_val |= x86_mxcsr_RC_DN; break;
+			case riscv_rm_rup: x86_mxcsr_val |= x86_mxcsr_RC_UP; break;
+			case riscv_rm_rmm: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
+		}
+		__builtin_ia32_ldmxcsr(x86_mxcsr_val);
+#else
 		if (rm == 0b111) return;
 		switch (rm) {
 			case riscv_rm_rne: fesetround(FE_TONEAREST); /* ties to Even */ break;
@@ -112,6 +196,7 @@ namespace riscv {
 			case riscv_rm_rup: fesetround(FE_UPWARD); break;
 			case riscv_rm_rmm: fesetround(FE_TONEAREST); /* ties to Max Magnitude */ break;
 		}
+#endif
 	}
 
 	/* convert single or double to signed word (32-bit) */

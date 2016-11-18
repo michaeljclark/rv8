@@ -466,8 +466,8 @@ struct riscv_emulator
 	template <typename P>
 	void start_priv()
 	{
-		/* clear floating point exceptions */
-		feclearexcept(FE_ALL_EXCEPT);
+		/* setup floating point exception mask */
+		fenv_init();
 
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
@@ -513,8 +513,8 @@ struct riscv_emulator
 	template <typename P>
 	void start_proxy()
 	{
-		/* clear floating point exceptions */
-		feclearexcept(FE_ALL_EXCEPT);
+		/* setup floating point exception mask */
+		fenv_init();
 
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
