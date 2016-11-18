@@ -579,6 +579,7 @@ rsw:	switch (ch) {
 					prec += expt;
 				} else {
 					io_print_and_pad(buf, cbuf, expt, zeroes);
+					expt = std::min((int)cbuf.size(), expt);
 					cbuf.erase(cbuf.begin(), cbuf.begin() + expt);
 					if (prec || flags & ALT) {
 						io_print(buf, decimal_point, decpt_len);
