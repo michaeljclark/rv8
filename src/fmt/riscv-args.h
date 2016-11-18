@@ -247,7 +247,11 @@ namespace riscv {
 	template<typename BT, typename TB>
 	inline int sprintf(std::string &buf, std::string &fmt, BT &bt, TB &tb, const int elem)
 	{
-		return io_printf(buf, fmt, bt.data(), tb.data(), elem);
+		std::fexcept_t flags;
+		fegetexceptflag(&flags, FE_ALL_EXCEPT);
+		int len = io_printf(buf, fmt, bt.data(), tb.data(), elem);
+		fesetexceptflag(&flags, FE_ALL_EXCEPT);
+		return len;
 	}
 
 	template<typename BT, typename TB, typename T, typename... Params>
