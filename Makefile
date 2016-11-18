@@ -136,6 +136,7 @@ endif
 SRC_DIR =       src
 BUILD_DIR =     build
 META_DIR =      meta
+ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
 BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
 OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
@@ -193,6 +194,7 @@ RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 # libriscv_gen
 RV_GEN_HDR =    $(SRC_DIR)/gen/riscv-gen.h
 RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen.cc \
+                $(SRC_DIR)/gen/riscv-gen-cc.cc \
                 $(SRC_DIR)/gen/riscv-gen-constraints.cc \
                 $(SRC_DIR)/gen/riscv-gen-fpu-test.cc \
                 $(SRC_DIR)/gen/riscv-gen-interp.cc \
@@ -234,7 +236,9 @@ RV_STR_HDR =    $(SRC_DIR)/asm/riscv-strings.h
 RV_STR_SRC =    $(SRC_DIR)/asm/riscv-strings.cc
 RV_INTERP_HDR = $(SRC_DIR)/emu/riscv-interp.h
 RV_FPU_HDR =    $(SRC_DIR)/test/test-fpu-gen.h
-RV_FPU_SRC =    $(SRC_DIR)/test/test-fpu-gen.c
+RV_FPU_GEN =    $(SRC_DIR)/test/test-fpu-gen.c
+TEST_CC_SRC =   $(SRC_DIR)/app/riscv-test-cc.cc
+TEST_CC_ASM =   $(ASM_DIR)/riscv-test-cc.s
 
 # libriscv_asm
 RV_ASM_SRCS =   $(SRC_DIR)/asm/riscv-disasm.cc \
@@ -361,9 +365,12 @@ BINARIES = $(COMPRESS_ELF_BIN) \
            $(TEST_PRINTF_BIN) \
            $(TEST_RAND_BIN)
 
+ASSEMBLY = $(TEST_CC_ASM)
+
+
 # build rules
 
-all: $(PARSE_META_BIN) meta $(BINARIES)
+all: $(PARSE_META_BIN) meta $(BINARIES) $(ASSEMBLY)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
@@ -429,7 +436,8 @@ parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(PARSE_META_BIN) $(1) -r $(M
 
 meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
-	$(RV_FPU_HDR) $(RV_FPU_SRC) $(RV_INTERP_HDR) $(RV_CONSTR_HDR)
+	$(RV_FPU_HDR) $(RV_FPU_GEN) $(RV_INTERP_HDR) $(RV_CONSTR_HDR) \
+	$(TEST_CC_SRC)
 
 $(RV_OPANDS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-A,$@))
@@ -458,7 +466,7 @@ $(RV_STR_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
 $(RV_FPU_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -FH,$@))
 
-$(RV_FPU_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_FPU_GEN): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -FC,$@))
 
 $(RV_INTERP_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
@@ -466,6 +474,9 @@ $(RV_INTERP_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 
 $(RV_CONSTR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-XC,$@))
+
+$(TEST_CC_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+	$(call cmd, META $@, $(call parse_meta,-CC,$@))
 
 # lib targets
 
@@ -562,6 +573,10 @@ $(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_FMT_LIB)
 $(TEST_RAND_BIN): $(TEST_RAND_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_CC_ASM): $(TEST_CC_SRC)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, CXXASM $@, $(CXX) -fno-omit-frame-pointer $(CXXFLAGS) $^ -S -o $@)
 
 # build recipes
 ifdef V
