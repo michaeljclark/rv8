@@ -109,12 +109,18 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
-			addr_t uva = mem.mpa_to_uva(mpa);
+			memory_segment<UX> *seg = nullptr;
+			addr_t uva = mem.mpa_to_seg(seg, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(fetch_access_fault(proc, proc.mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_fetch, pc);
 			} else {
+				/* TODO - check we have a memory segment as we access the
+				   user virtual address directly. Instruction fetch code
+				   could be changed to use the segment load interface.
+				   Trying to execute instructions on an MMIO device could
+				   cause the emulator to SIGSEGV. */
 				return riscv::inst_fetch(uva, pc_offset);
 			}
 		}
@@ -134,13 +140,14 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
-			addr_t uva = mem.mpa_to_uva(mpa);
+			memory_segment<UX> *seg = nullptr;
+			addr_t uva = mem.mpa_to_seg(seg, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(load_access_fault(proc, proc.mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
-				val = *static_cast<T*>((void*)uva);
+				seg->load(uva, val);
 			}
 		}
 
@@ -159,13 +166,14 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (can return illegal_address) */
-			addr_t uva = mem.mpa_to_uva(mpa);
+			memory_segment<UX> *seg = nullptr;
+			addr_t uva = mem.mpa_to_seg(seg, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(store_access_fault(proc, proc.mode, uva, tlb_ent))) {
 				proc.raise(riscv_cause_fault_store, va);
 			} else {
-				*static_cast<T*>((void*)uva) = val;
+				seg->store(uva, val);
 			}
 		}
 
@@ -286,9 +294,10 @@ namespace riscv {
 				pte_mpa = ppn + vpn * sizeof(pte_type);
 
 				/* map the ppn into the host address space */
-				pte_uva = mem.mpa_to_uva(pte_mpa);
+				memory_segment<UX> *seg = nullptr;
+				pte_uva = mem.mpa_to_seg(seg, pte_mpa);
 				if (pte_uva == illegal_address) goto out;
-				pte = *(pte_type*)pte_uva;
+				seg->load(pte_uva, pte);
 
 				/* If pte.v = 0, or if pte.r = 0 and pte.w = 1, raise an access exception */
 				if (((~pte.val.flags >> pte_shift_V) |

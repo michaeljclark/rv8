@@ -63,6 +63,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-assert \
 	$(BIN_DIR)/test-m-ecall-trap \
+	$(BIN_DIR)/test-m-mmio \
 	$(BIN_DIR)/test-m-sv39
 
 all: dirs $(ASSEMBLY) $(PROGRAMS)
@@ -82,8 +83,9 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-yes 11
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-no 11
-	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -o -p $(BIN_DIR)/test-m-sv39
+	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-ecall-trap
+	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-mmio
+	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-sv39
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
@@ -125,6 +127,9 @@ $(BIN_DIR)/hello-world-pcrel: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-m-mmio.o: $(SRC_DIR)/test-m-mmio.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-mmio: $(OBJ_DIR)/test-m-mmio.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-sv39.o: $(SRC_DIR)/test-m-sv39.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-sv39: $(OBJ_DIR)/test-m-sv39.o ; $(LD) $^ -o $@

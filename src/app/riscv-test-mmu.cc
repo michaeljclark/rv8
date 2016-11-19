@@ -13,6 +13,7 @@
 #include <cerrno>
 #include <cassert>
 #include <string>
+#include <memory>
 #include <vector>
 #include <map>
 
@@ -87,5 +88,5 @@ int main(int argc, char *argv[])
 	mmu.mem.add_ram(0x1000, /*1GB*/0x40000000LL - 0x1000);
 
 	// look up the User Virtual Address for a Machine Physical Adress
-	assert(mmu.mem.mpa_to_uva(0x1000) == mmu.mem.segments.front().uva + 0x0LL);
+	assert(mmu.mem.mpa_to_uva(0x1000) == mmu.mem.segments.front()->uva + 0x0LL);
 }

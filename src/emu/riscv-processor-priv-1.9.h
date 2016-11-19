@@ -161,6 +161,27 @@ namespace riscv {
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
 	using processor_priv_rv64imafd = processor_priv<s64,u64,ireg_rv64,32,freg_fp64,32>;
 
+	/* PLIC MMIO segment */
+
+	template <typename UX>
+	struct plic_mmio_driver : memory_segment<UX>
+	{
+		plic_mmio_driver() :
+			memory_segment<UX>(0x40000000, 0x1000, 0x1000,
+				pma_type_io | pma_prot_read | pma_prot_write) {}
+		~plic_mmio_driver() {}
+
+		void load_8 (UX va, u8  &val) { printf("plic_mmio:0x%llx -> ?\n", addr_t(va)); }
+		void load_16(UX va, u16 &val) { printf("plic_mmio:0x%llx -> ?\n", addr_t(va)); }
+		void load_32(UX va, u32 &val) { printf("plic_mmio:0x%llx -> ?\n", addr_t(va)); }
+		void load_64(UX va, u64 &val) { printf("plic_mmio:0x%llx -> ?\n", addr_t(va)); }
+
+		void store_8 (UX va, u8  val) { printf("plic_mmio:0x%llx <- 0x%02hhx\n", addr_t(va), val); }
+		void store_16(UX va, u16 val) { printf("plic_mmio:0x%llx <- 0x%04hx\n", addr_t(va), val); }
+		void store_32(UX va, u32 val) { printf("plic_mmio:0x%llx <- 0x%08x\n", addr_t(va), val); }
+		void store_64(UX va, u64 val) { printf("plic_mmio:0x%llx <- 0x%016llx\n", addr_t(va), val); }
+	};
+
 	/* Processor privileged ISA emulator with soft-mmu */
 
 	template <typename P>
@@ -168,7 +189,11 @@ namespace riscv {
 	{
 		void priv_init()
 		{
-			P::misa = P::misa_default; // set initial value for misa register
+			/* set initial value for misa register */
+			P::misa = P::misa_default;
+
+			/* Add the PLIC MMIO device to the mmu */
+			P::mmu.mem.add_segment(std::make_shared<plic_mmio_driver<typename P::ux>>());
 		}
 
 		void print_csr_registers()

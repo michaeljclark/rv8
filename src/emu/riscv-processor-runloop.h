@@ -32,23 +32,11 @@ namespace riscv {
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
 			static_cast<processor_runloop<P>*>
-				(processor_fault::current)->signal_dispatch
-					(info->si_signo, (addr_t)info->si_addr);
+				(processor_fault::current)->signal_dispatch(signum, info);
 		}
 
-		[[noreturn]] void signal_dispatch(int signum, addr_t fault_addr)
+		[[noreturn]] void signal_dispatch(int signum, siginfo_t *info)
 		{
-			// get signal name
-			const char* fault_name;
-			switch (signum) {
-				case SIGBUS: fault_name = "SIGBUS"; break;
-				case SIGSEGV: fault_name = "SIGSEGV"; break;
-				case SIGTERM: fault_name = "SIGTERM"; break;
-				case SIGQUIT: fault_name = "SIGQUIT"; break;
-				case SIGINT: fault_name = "SIGINT"; break;
-				default: fault_name = "FAULT";
-			}
-
 			/*
 			 * NOTE: processor_proxy with the proxy_mmu is not able to
 			 * recover enough information from a SIGSEGV to issue faults.
@@ -61,7 +49,17 @@ namespace riscv {
 			 * will result in a call to the fault(int cause) handler.
 			 */
 
-			printf("%-9s:%016llx\n", fault_name, fault_addr);
+			const char* signal_name;
+			switch (signum) {
+				case SIGTERM: signal_name = "SIGTERM"; break;
+				case SIGQUIT: signal_name = "SIGQUIT"; break;
+				case SIGINT: signal_name = "SIGINT"; break;
+				case SIGHUP: signal_name = "SIGHUP"; break;
+				case SIGSEGV: signal_name = "SIGSEGV"; break;
+				default: signal_name = "FAULT";
+			}
+
+			printf("%-9s:%016llx\n", signal_name, (addr_t)info->si_addr);
 			P::print_csr_registers();
 			P::print_int_registers();
 			exit(1);
@@ -72,7 +70,9 @@ namespace riscv {
 			// block signals before so we don't deadlock in signal handlers
 			sigset_t set;
 			sigemptyset(&set);
+			sigaddset(&set, SIGSEGV);
 			sigaddset(&set, SIGTERM);
+			sigaddset(&set, SIGQUIT);
 			sigaddset(&set, SIGINT);
 			sigaddset(&set, SIGHUP);
 			if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
@@ -90,19 +90,19 @@ namespace riscv {
 			memset(&sigaction_handler, 0, sizeof(sigaction_handler));
 			sigaction_handler.sa_sigaction = &processor_runloop<P>::signal_handler;
 			sigaction_handler.sa_flags = SA_SIGINFO;
-			sigaction(SIGBUS, &sigaction_handler, nullptr);
 			sigaction(SIGSEGV, &sigaction_handler, nullptr);
 			sigaction(SIGTERM, &sigaction_handler, nullptr);
 			sigaction(SIGQUIT, &sigaction_handler, nullptr);
 			sigaction(SIGINT, &sigaction_handler, nullptr);
+			sigaction(SIGHUP, &sigaction_handler, nullptr);
 			processor_fault::current = this;
 
-			// unblock signals
+			/* unblock signals */
 			if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
 				panic("can't set thread signal mask: %s", strerror(errno));
 			}
 
-			// call privileged init
+			/* call privileged init */
 			P::priv_init();
 		}
 
@@ -114,13 +114,13 @@ namespace riscv {
 			addr_t pc_offset, new_offset;
 			P::time = cpu_cycle_clock();
 
-			// fault return path
+			/* trap return path */
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {
 				P::trap(dec, cause);
 			}
 
-			// step the processor
+			/* step the processor */
 			while (i < count) {
 				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				inst_t inst_cache_key = inst % inst_cache_size;

@@ -291,16 +291,16 @@ struct riscv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		/* add the loaded segment to the emulator mmu */
-		proc.mmu.mem.add_segment(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
-			pma_type_main | elf_pma_flags(phdr.p_flags));
-
-		/* log elf load segment */
+		/* log elf load segment virtual address range */
 		if (proc.log & proc_log_memory) {
 			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
+
+		/* add the mmap to the emulator soft_mmu */
+		proc.mmu.mem.add_mmap(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
+			pma_type_main | elf_pma_flags(phdr.p_flags));
 	}
 
 	/* Map ELF load segments into proxy MMU address space */
@@ -318,18 +318,18 @@ struct riscv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		/* add the loaded segment to the emulator mmu */
-		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
-		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
-		if (proc.mmu.mem.heap_begin < seg_end) {
-			proc.mmu.mem.heap_begin = proc.mmu.mem.heap_end = seg_end;
-		}
-
-		/* log elf load segment */
+		/* log elf load segment virtual address range */
 		if (proc.log & proc_log_memory) {
 			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
+		}
+
+		/* add the mmap to the emulator proxy_mmu */
+		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
+		if (proc.mmu.mem.heap_begin < seg_end) {
+			proc.mmu.mem.heap_begin = proc.mmu.mem.heap_end = seg_end;
 		}
 	}
 
@@ -425,17 +425,17 @@ struct riscv_emulator
 	void seed_registers(P &proc, size_t n)
 	{
 		sha512_ctx_t sha512;
-		u8 seed[SHA512_OUTPUT_BYTES]; /* 512-bits random seed */
+		u8 seed[SHA512_OUTPUT_BYTES];   /* 512-bits random seed */
 		u8 random[SHA512_OUTPUT_BYTES]; /* 512-bits hash output */
 
-		// if 64-bit initial seed is specified, repeat seed 8 times in the seed buffer
-		// if no initial seed is specified then fill the seed buffer with 512-bits of random
+		/* if 64-bit initial seed is specified, repeat seed 8 times in the seed buffer
+		   if no initial seed is specified then fill the seed buffer with 512-bits of random */
 		for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
 			*(u64*)(seed + i) = initial_seed ? initial_seed
 				: (((u64)cpu.get_random_seed()) << 32) | (u64)cpu.get_random_seed() ;
 		}
 
-		// print seed initial seed state
+		/* Log initial seed state */
 		if (proc.log & proc_log_memory) {
 			std::string seed_str;
 			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
@@ -444,11 +444,11 @@ struct riscv_emulator
 			debug("seed: %s", seed_str.c_str());
 		}
 
-		// randomize the integer registers
+		/* Randomize the integer registers */
 		size_t rand_bytes = 0;
 		std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
 		for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
-			// on buffer exhaustion sha-512 hash the seed and xor the hash back into the seed
+			/* on buffer exhaustion sha-512 hash the seed and xor the hash back into the seed */
 			if ((rand_bytes & (SHA512_OUTPUT_BYTES - 1)) == 0) {
 				sha512_init(&sha512);
 				sha512_update(&sha512, seed, SHA512_OUTPUT_BYTES);
@@ -486,11 +486,10 @@ struct riscv_emulator
 			}
 		}
 
-		/* Add 1GB RAM to the mmu (make this a command line option) */
-		proc.mmu.mem.add_ram(/*mpa*/0x80000000ULL, /*1GB*/0x40000000ULL);
+		/* Add 1GB RAM to the mmu (TODO - read from config string) */
+		proc.mmu.mem.add_ram(/*mpa=2GiB*/ 0x80000000ULL, /*size=1GiB*/ 0x40000000ULL);
 
-
-		/* setup signal handlers */
+		/* Initialize interpreter */
 		proc.init();
 
 #if defined (ENABLE_GPERFTOOL)
@@ -537,7 +536,7 @@ struct riscv_emulator
 		map_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
 		setup_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
 
-		/* setup signal handlers */
+		/* Initialize interpreter */
 		proc.init();
 
 #if defined (ENABLE_GPERFTOOL)
