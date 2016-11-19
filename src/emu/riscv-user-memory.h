@@ -11,11 +11,11 @@ namespace riscv {
 	struct memory_segment
 	{
 		UX mpa;         /* machine physical address (emulator address domain) */
-		intptr_t uva;   /* user virtual address     (process address domain) */
+		addr_t uva;     /* user virtual address     (process address domain) */
 		size_t size;    /* segment size */
 		uint32_t flags; /* segment PMA flags */
 
-		memory_segment(UX mpa, intptr_t uva, size_t size, UX flags) :
+		memory_segment(UX mpa, addr_t uva, size_t size, UX flags) :
 			mpa(mpa), uva(uva), size(size), flags(flags) {}
 
 		virtual ~memory_segment() {}
@@ -54,7 +54,7 @@ namespace riscv {
 	template <typename UX>
 	struct mmap_memory_segment : memory_segment<UX>
 	{
-		mmap_memory_segment(UX mpa, intptr_t uva, size_t size, UX flags) :
+		mmap_memory_segment(UX mpa, addr_t uva, size_t size, UX flags) :
 			memory_segment<UX>(mpa, uva, size, flags) {}
 
 		~mmap_memory_segment()
@@ -92,10 +92,9 @@ namespace riscv {
 		{
 			segments.push_back(seg);
 			if (log) {
-				debug("     mpa :%016" PRIxPTR "-%016" PRIxPTR 
-					 " (0x%" PRIxPTR "-0x%" PRIxPTR ") %s%s%s%s%s",
-					(uintptr_t)seg->mpa, (uintptr_t)seg->mpa + seg->size,
-					(uintptr_t)seg->uva, (uintptr_t)seg->uva + seg->size,
+				debug("     mpa :%016llx-%016llx (0x%llx-0x%llx) %s%s%s%s%s",
+					(u64)seg->mpa, (u64)seg->mpa + seg->size,
+					(u64)seg->uva, (u64)seg->uva + seg->size,
 					(seg->flags & pma_type_io) ? "+IO" : "",
 					(seg->flags & pma_type_main) ? "+MAIN" : "",
 					(seg->flags & pma_prot_read) ? "+R" : "",
@@ -128,20 +127,7 @@ namespace riscv {
 		}
 
 		/* convert machine physical address to user virtual address */
-		intptr_t mpa_to_uva(UX mpa)
-		{
-			for (auto &seg : segments) {
-				if (mpa >= seg->mpa && mpa < seg->mpa + seg->size) {
-					return seg->uva + (mpa - seg->mpa);
-				}
-			}
-
-			/* illegal_address (0) is never a valid user virtual address */
-			return illegal_address;
-		}
-
-		/* convert machine physical address to user virtual address */
-		intptr_t mpa_to_seg(memory_segment<UX>* &out_seg, UX mpa)
+		addr_t mpa_to_uva(memory_segment<UX>* &out_seg, UX mpa)
 		{
 			for (auto &seg : segments) {
 				if (mpa >= seg->mpa && mpa < seg->mpa + seg->size) {
@@ -149,9 +135,7 @@ namespace riscv {
 					return seg->uva + (mpa - seg->mpa);
 				}
 			}
-
-			/* illegal_address (0) is never a valid user virtual address */
-			return illegal_address;
+			return 0;
 		}
 
 	};

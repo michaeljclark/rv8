@@ -39,14 +39,15 @@ namespace riscv {
 		{
 			/*
 			 * NOTE: processor_proxy with the proxy_mmu is not able to
-			 * recover enough information from a SIGSEGV to issue faults.
+			 * recover enough information from SIGSEGV to issue a trap.
 			 *
 			 * SIGSEGV is a fatal error, and in the proxy_mmu which uses
 			 * the process virtual address space, it can be caused by the
 			 * interpreter referencing unmapped memory (however proxy_mmu
-			 * does mask stores to below < 1GB). processor_privileged MMU
-			 * uses longjmp to communicate memory access faults which
-			 * will result in a call to the fault(int cause) handler.
+			 * masks all loads and stores below < 1GB).
+			 *
+			 * processor_priv MMU uses longjmp to communicate access
+			 * faults which will result in a call to the trap handler.
 			 */
 
 			const char* signal_name;

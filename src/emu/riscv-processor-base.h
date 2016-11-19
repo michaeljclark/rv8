@@ -176,8 +176,9 @@ namespace riscv {
 
 		[[noreturn]] void raise(int cause, ux addr)
 		{
+			/* setjmp cannot return zero so 0x100 is added to cause */
 			badaddr = addr;
-			longjmp(env, cause);
+			longjmp(env, cause + 0x100);
 		}
 	};
 

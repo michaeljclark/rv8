@@ -45,7 +45,7 @@ namespace riscv {
 			 *
 			 * MXR and PUM do not affect instruction fetches
 			 */
-			return pa == illegal_address ||
+			return
 				(tlb_ent && (
 					!(tlb_ent->pteb & pte_flag_X) ||
 					((tlb_ent->pteb & pte_flag_U) ?
@@ -64,7 +64,7 @@ namespace riscv {
 			 * U=1 pages fault if effective translation privilevel level is > U && PUM=1
 			 * U=0 pages fault if effective translation privilevel level is < S
 			 */
-			return pa == illegal_address ||
+			return
 				(tlb_ent && (
 					(!(tlb_ent->pteb & pte_flag_R) &&
 					 !(tlb_ent->pteb & pte_flag_X && proc.mstatus.r.mxr)) ||
@@ -84,7 +84,7 @@ namespace riscv {
 			 * U=1 pages fault if effective translation priv_level is > U && PUM=1
 			 * U=0 pages fault if effective translation priv_level is < S
 			 */
-			return pa == illegal_address ||
+			return
 				(tlb_ent && (
 					!(tlb_ent->pteb & pte_flag_W) ||
 					((tlb_ent->pteb & pte_flag_U) ?
@@ -99,6 +99,7 @@ namespace riscv {
 		inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			memory_segment<UX> *segment = nullptr;
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<u16>(pc))) {
@@ -108,20 +109,37 @@ namespace riscv {
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
 
-			/* translate to user virtual (can return illegal_address) */
-			memory_segment<UX> *seg = nullptr;
-			addr_t uva = mem.mpa_to_seg(seg, mpa);
+			/* translate to user virtual (null segment indicates no mapping) */
+			addr_t uva = mem.mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(fetch_access_fault(proc, proc.mode, uva, tlb_ent))) {
+			if (unlikely(!segment || fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
+			{
 				proc.raise(riscv_cause_fault_fetch, pc);
 			} else {
-				/* TODO - check we have a memory segment as we access the
-				   user virtual address directly. Instruction fetch code
-				   could be changed to use the segment load interface.
-				   Trying to execute instructions on an MMIO device could
-				   cause the emulator to SIGSEGV. */
-				return riscv::inst_fetch(uva, pc_offset);
+				/* fetch instruction using memory segment interface */
+				inst_t inst;
+				u32 inst_32;
+				segment->load(uva, inst_32);
+				inst = htole32(inst_32);
+				if ((inst & 0b11) != 0b11) {
+					inst &= 0xffff; // mask to 16-bits
+					pc_offset = 2;
+				} else if ((inst & 0b11100) != 0b11100) {
+					pc_offset = 4;
+				} else if ((inst & 0b111111) == 0b011111) {
+					u16 inst_16;
+					segment->load(uva + 4, inst_16);
+					inst |= inst_t(htole16(inst_16)) << 32;
+					pc_offset = 6;
+				} else if ((inst & 0b1111111) == 0b0111111) {
+					segment->load(uva + 4, inst_32);
+					inst |= inst_t(htole32(inst_32)) << 32;
+					pc_offset = 8;
+				} else {
+					pc_offset = inst = 0; /* illegal instruction */
+				}
+				return inst;
 			}
 		}
 
@@ -130,6 +148,7 @@ namespace riscv {
 		void load(P &proc, UX va, T &val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			memory_segment<UX> *segment = nullptr;
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
@@ -139,15 +158,15 @@ namespace riscv {
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
-			/* translate to user virtual (can return illegal_address) */
-			memory_segment<UX> *seg = nullptr;
-			addr_t uva = mem.mpa_to_seg(seg, mpa);
+			/* translate to user virtual (null segment indicates no mapping) */
+			addr_t uva = mem.mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(load_access_fault(proc, proc.mode, uva, tlb_ent))) {
+			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
+			{
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
-				seg->load(uva, val);
+				segment->load(uva, val);
 			}
 		}
 
@@ -156,6 +175,7 @@ namespace riscv {
 		void store(P &proc, UX va, T val)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			memory_segment<UX> *segment = nullptr;
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
@@ -165,15 +185,15 @@ namespace riscv {
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
-			/* translate to user virtual (can return illegal_address) */
-			memory_segment<UX> *seg = nullptr;
-			addr_t uva = mem.mpa_to_seg(seg, mpa);
+			/* translate to user virtual (null segment indicates no mapping) */
+			addr_t uva = mem.mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
-			if (unlikely(store_access_fault(proc, proc.mode, uva, tlb_ent))) {
+			if (unlikely(!segment || store_access_fault(proc, proc.mode, uva, tlb_ent)))
+			{
 				proc.raise(riscv_cause_fault_store, va);
 			} else {
-				seg->store(uva, val);
+				segment->store(uva, val);
 			}
 		}
 
@@ -197,29 +217,26 @@ namespace riscv {
 			P &proc, UX va, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			UX effective_privilege_level = effective_mode(proc, op);
-			addr_t pa = illegal_address;
 			if (effective_privilege_level >= riscv_mode_M) {
-				pa = va;
+				return va;
 			} else {
 				switch (proc.mstatus.r.vm) {
 					case riscv_vm_mbare:
-						pa = va;
-						break;
+						return va;
 					case riscv_vm_sv32:
-						pa = page_translate_addr<P,sv32>(proc, va, op,
+						return page_translate_addr<P,sv32>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
-						break;
 					case riscv_vm_sv39:
-						pa = page_translate_addr<P,sv39>(proc, va, op,
+						return page_translate_addr<P,sv39>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
-						break;
 					case riscv_vm_sv48:
-						pa = page_translate_addr<P,sv48>(proc, va, op,
+						return page_translate_addr<P,sv48>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
-						break;
+					default:
+						panic("unsupported vm mode");
 				}
 			}
-			return pa;
+			return 0; /* not reached */
 		}
 
 		template <typename PTM>
@@ -257,17 +274,19 @@ namespace riscv {
 			 * Can be solved by adding a secondary TLB with larger scoped entries.
 			 */
 
+			UX level;
 			typename PTM::pte_type pte;
 
 			/* TODO: TLB statistics */
 
-			UX level;
+			/* Walk the page table to find a leaf PTE entry
+			 * (access fault is raised if leaf PTE is not found) */
 			addr_t pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent, pte, level);
-			if (pa != illegal_address) {
-				/* Insert the virtual to physical mapping into the TLB */
-				tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
-					va, level, pte.val.flags, pte.val.ppn);
-			}
+
+			/* Insert the virtual to physical mapping into the TLB */
+			tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
+				va, level, pte.val.flags, pte.val.ppn);
+
 			return pa;
 		}
 
@@ -294,10 +313,10 @@ namespace riscv {
 				pte_mpa = ppn + vpn * sizeof(pte_type);
 
 				/* map the ppn into the host address space */
-				memory_segment<UX> *seg = nullptr;
-				pte_uva = mem.mpa_to_seg(seg, pte_mpa);
-				if (pte_uva == illegal_address) goto out;
-				seg->load(pte_uva, pte);
+				memory_segment<UX> *segment = nullptr;
+				pte_uva = mem.mpa_to_uva(segment, pte_mpa);
+				if (!segment) goto out;
+				segment->load(pte_uva, pte);
 
 				/* If pte.v = 0, or if pte.r = 0 and pte.w = 1, raise an access exception */
 				if (((~pte.val.flags >> pte_shift_V) |
@@ -327,7 +346,7 @@ namespace riscv {
 				case op_store: proc.raise(riscv_cause_fault_store, va);
 			}
 
-			return illegal_address; /* not reached */
+			return 0; /* not reached */
 		}
 	};
 

@@ -61,6 +61,10 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
+			/* setjmp cannot return zero so 0x100 is added to cause */
+			if (cause < 0x100) panic("invalid trap cause");
+			else cause -= 0x100;
+
 			/* proxy processor unconditionally exits on trap */
 			P::print_log(dec, 0);
 			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",

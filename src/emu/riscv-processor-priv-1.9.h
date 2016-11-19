@@ -434,6 +434,10 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
+			/* setjmp cannot return zero so 0x100 is added to cause */
+			if (cause < 0x100) panic("invalid trap cause");
+			else cause -= 0x100;
+
 			/* TODO: ebreak is temporarily used to terminate the interpreter */
 			bool terminate = (dec.op == riscv_op_ebreak);
 
