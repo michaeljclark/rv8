@@ -14,12 +14,17 @@ namespace riscv {
 	{
 		typedef typename P::ux UX;
 
+		enum {
+			total_size = sizeof(u64) * 2
+		};
+
 		P &proc;
 
-		/* TODO - implement TIME state */
+		u64 mtime;
+		u64 mtimecmp;
 
 		time_mmio_device(P &proc, UX mpa) :
-			memory_segment<UX>(mpa, /*uva*/0, /*size*/0x1000,
+			memory_segment<UX>(mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
 
 		void load_8 (UX va, u8  &val) { printf("time_mmio:0x%04llx -> 0\n", addr_t(va)); val = 0; }
