@@ -20,8 +20,12 @@ namespace riscv {
 
 		P &proc;
 
+		/* Time registers */
+
 		u64 mtime;
 		u64 mtimecmp;
+
+		/* TODO implement TIME MMIO access and timer interrupts */
 
 		time_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>(mpa, /*uva*/0, /*size*/total_size,

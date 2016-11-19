@@ -16,6 +16,8 @@ namespace riscv {
 
 		P &proc;
 
+		/* UART Registers */
+
 		struct {
 			u8 RBR; /* (R  [0]) Recieve Buffer Register        */
 			u8 THR; /* (W  [0]) Transmit Holding Register      */
@@ -32,6 +34,8 @@ namespace riscv {
 		} regs;
 
 		/* Register MMIO offsets in brackets (Based on 16550)  */
+
+		/* TODO implement UART MMIO access and functionality */
 
 		uart_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>(mpa, /*uva*/0, /*size*/8,

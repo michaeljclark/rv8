@@ -29,9 +29,13 @@ namespace riscv {
 
 		P &proc;
 
+		/* PLIC registers */
+
 		UX pending[irq_words];
 		UX enabled[irq_words];
 		UX priority[priority_words];
+
+		/* TODO implement PLIC MMIO access and functionality */
 
 		plic_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>(mpa, /*uva*/0, /*size*/total_size,
