@@ -95,14 +95,16 @@ namespace riscv
 
 	inline size_t inst_length(inst_t inst)
 	{
-		// instruction length coding
+		/* NOTE: supports maximum instruction size of 64-bits */
 
-		//      aa - 16 bit aa != 11
-		//   bbb11 - 32 bit bbb != 111
-		//  011111 - 48 bit
-		// 0111111 - 64 bit
+		/* instruction length coding
+		 *
+		 *      aa - 16 bit aa != 11
+		 *   bbb11 - 32 bit bbb != 111
+		 *  011111 - 48 bit
+		 * 0111111 - 64 bit
+		 */
 
-		// NOTE: currenttly supports maximum of 64-bit
 		return (inst &      0b11) != 0b11      ? 2
 			 : (inst &   0b11100) != 0b11100   ? 4
 			 : (inst &  0b111111) == 0b011111  ? 6
@@ -114,9 +116,9 @@ namespace riscv
 
 	inline inst_t inst_fetch(addr_t addr, addr_t &pc_offset)
 	{
-		// NOTE: currently supports maximum instruction size of 64-bits
+		/* NOTE: supports maximum instruction size of 64-bits */
 
-		// optimistically read 32-bit instruction
+		/* optimistically read 32-bit instruction */
 		inst_t inst = htole32(*(uint32_t*)addr);
 		if ((inst & 0b11) != 0b11) {
 			inst &= 0xffff; // mask to 16-bits
