@@ -371,7 +371,7 @@ struct riscv_emulator
 				"Log Registers (defaults to integer registers)",
 				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
 			{ "-t", "--log-traps", cmdline_arg_type_none,
-				"Log Traps)",
+				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
