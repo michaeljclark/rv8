@@ -1,7 +1,39 @@
-ELF Relocations
-====================
+ELF
+========
 
 _work in progress_
+
+Notes on RISC-V ELF mapping (unofficial).
+
+
+## ELF Headers
+
+The following is a list of ELF header fields and potential RISC-V mappings.
+
+### e_ident[EI_DATA]
+
+- ELFDATA2LSB for little-endian
+- ELFDATA2MSB for big-endian (not applicable to RISC-V)
+
+### e_flags
+
+MISA could potentially be stored in `e_flags` i.e. `-march` compiler flags. This is similar to SPARC.
+
+- EF_RISCV_EXT_MASK = 0x03ffffff /* Processor extension mask from 'misa' CSR */
+	
+ARM is using e_flags (`EF_ARM_BE8` and `EF_ARM_LE8`) for endianness but this should be in `e_ident[EI_DATA]`.
+
+ARM is using e_flags for ABI version (`EF_ARM_EABIMASK`) but this should be in `e_ident[EI_OSABI]` and/or `e_ident[EI_ABIVERSION]`
+
+### e_ident[EI_OSABI]
+
+- ELFOSABI_SYSV = 0  
+
+### e_ident[EI_ABIVERSION]
+
+- RVABI_HARD = 0
+- RVABI_V1 = 1 (soft float via library dispatch, 64-bit fill in function on RV32)
+
 
 ## Address calculation
 
