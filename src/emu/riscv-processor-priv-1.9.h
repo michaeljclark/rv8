@@ -166,23 +166,26 @@ namespace riscv {
 	struct processor_privileged : P
 	{
 		std::shared_ptr<time_mmio_device<processor_privileged>> device_time;
-		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
+		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
+		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
 
 		void priv_init()
 		{
 			/* set initial value for misa register */
 			P::misa = P::misa_default;
 
-			/* create TIME, UART and PLIC devices */
+			/* create TIME, MIPI, PLIC and UART devices */
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
-			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40001000);
+			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
+			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000);
 
-			/* Add TIME, UART and PLIC devices to the mmu */
+			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem.add_segment(device_time);
-			P::mmu.mem.add_segment(device_uart);
+			P::mmu.mem.add_segment(device_mipi);
 			P::mmu.mem.add_segment(device_plic);
+			P::mmu.mem.add_segment(device_uart);
 		}
 
 		void print_csr_registers()
@@ -509,6 +512,46 @@ namespace riscv {
 					P::mip.r.meip = 1;
 				}
 			}
+
+			/* service interprocessor interrupts */
+
+			bool ipi_pending = device_mipi->ipi_pending(P::hart_id);
+			if (P::mstatus.r.mie && ipi_pending) {
+				if (P::mideleg & (1 << riscv_intr_m_external)) {
+					if (P::hideleg & (1 << riscv_intr_h_external)) {
+						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
+							P::uepc = P::pc;
+							P::ucause = riscv_intr_u_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+							P::mstatus.r.hpp = P::mode;
+							P::mode = riscv_mode_U;
+							P::pc = P::utvec;
+							P::mip.r.usip = 1;
+						} else if (P::mie.r.ssie) {
+							P::sepc = P::pc;
+							P::scause = riscv_intr_s_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+							P::mstatus.r.hpp = P::mode;
+							P::mode = riscv_mode_S;
+							P::pc = P::stvec;
+							P::mip.r.ssip = 1;
+						}
+					} else if (P::mie.r.hsie) {
+						P::hepc = P::pc;
+						P::hcause = riscv_intr_h_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+						P::mstatus.r.hpp = P::mode;
+						P::mode = riscv_mode_H;
+						P::pc = P::htvec;
+						P::mip.r.hsip = 1;
+					}
+				} else if (P::mie.r.msie) {
+					P::mepc = P::pc;
+					P::mcause = riscv_intr_m_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+					P::mstatus.r.mpp = P::mode;
+					P::mode = riscv_mode_M;
+					P::pc = P::mtvec;
+					P::mip.r.msip = 1;
+				}
+			}
+
 		}
 
 		void trap(typename P::decode_type &dec, int cause)
