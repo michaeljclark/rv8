@@ -488,8 +488,8 @@ namespace riscv {
 		{
 			/* service timer interrupts if enabled */
 
-			device_time->mtime = P::time;
-			if (P::mstatus.r.mie && device_time->mtime >= device_time->mtimecmp) {
+			bool timer_pending = device_time->timer_pending(P::time);
+			if (P::mstatus.r.mie && timer_pending) {
 				if (P::mideleg & (1 << riscv_intr_m_timer)) {
 					if (P::hideleg & (1 << riscv_intr_h_timer)) {
 						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {

@@ -31,6 +31,14 @@ namespace riscv {
 			memory_segment<UX>("TIME", mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
 
+		/* Timer interface */
+
+		bool timer_pending(UX time)
+		{
+			mtime = time;
+			return mtime >= mtimecmp;
+		}
+
 		/* Timer MMIO */
 
 		void load_8 (UX va, u8  &val)
