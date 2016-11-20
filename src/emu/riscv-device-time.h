@@ -71,12 +71,16 @@ namespace riscv {
 
 		void store_8 (UX va, u8  val)
 		{
-			if (proc.log & proc_log_mmio) printf("time_mmio:0x%04llx <- invalid\n", addr_t(va));
+			if (proc.log & proc_log_mmio) {
+				printf("time_mmio:0x%04llx <- invalid\n", addr_t(va));
+			}
 		}
 
 		void store_16(UX va, u16 val)
 		{
-			if (proc.log & proc_log_mmio) printf("time_mmio:0x%04llx <- invalid\n", addr_t(va));
+			if (proc.log & proc_log_mmio) {
+				printf("time_mmio:0x%04llx <- invalid\n", addr_t(va));
+			}
 		}
 
 		void store_32(UX va, u32 val)
