@@ -1,0 +1,5 @@
+platform { vendor meta; arch anarch; };
+ram { 0 { @ 0x80000000:0xBFFFFFFF; }; };
+rtc { @ 0x40000000; };
+uart { @ 0x40003000; };
+core { 0 { 0 { isa rv64imafdc; timecmp 0x40000008; ipi 0x40001000; }; }; };

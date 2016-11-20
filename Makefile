@@ -40,6 +40,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
+                -I$(TOP_DIR)/src/rom \
                 -I$(TOP_DIR)/src/tlsf \
                 -I$(TOP_DIR)/src/util
 OPT_FLAGS =     -O3 -fwrapv
@@ -384,6 +385,12 @@ doc/tex/riscv-instructions.tex: $(PARSE_META_BIN) ; @mkdir -p doc/tex
 	$(PARSE_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
 doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/pdf
 	( cd doc/tex && texi2pdf -o ../pdf/riscv-instructions.pdf riscv-instructions.tex )
+
+# rom
+
+ROM_MK =        src/rom/rom.mk
+
+rom: ; $(MAKE) -f $(ROM_MK) all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
 
 # tests
 
