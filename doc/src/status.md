@@ -10,7 +10,7 @@ RV64IMAFDC               | Complete
 Floating Point           | Testing (NaN and RM)
 ABI Proxy Model          | Implement more syscalls
 Soft MMU Model           | Testing (MPRV, PUM, MXR)
-Privilege 1.9 Paging     | Testing (PTE.RWXUV,sv32,sv39,sv48) TODO (PTE.DAG)
+Privilege 1.9 Paging     | Testing (sv{32,39,48},PTE.DARWXUV)
 Privilege 1.9 Timer      | Testing
 Privilege 1.9 PLIC       | Testing
 Privilege 1.9 Interrupts | Testing (Revisit {m,h,s,u}{t,e,s}ip delivery)

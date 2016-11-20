@@ -13,10 +13,15 @@ _start:
 # test load and store to RW page
 #
 
-# load sptbr
+# copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_rw)  # load sv39_pte_rw(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_rw(lo)
-	csrrw   zero, sptbr, t0
+	li      t1, 0x80000000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+
+# load sptbr ppn
+	csrrw   zero, sptbr, t1
 	sfence.vm
 
 # set mstatus.VM=sv39
@@ -80,10 +85,15 @@ _start:
 # test a store fault on R page
 #
 
-# load sptbr
+# copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_r)   # load sv39_pte_r(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_r(lo)
-	csrrw   zero, sptbr, t0
+	li      t1, 0x80000000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+
+# load sptbr ppn
+	csrrw   zero, sptbr, t1
 	sfence.vm
 
 # set mstatus.MPRV=1 (enable M mode paging)
@@ -105,15 +115,39 @@ _start:
 	lbu     a3, 0(a0)
 	bne     a2, a3, fail
 
+# set mstatus.MPRV=0 (Disable M mode Paging)
+	li      t1, 1
+	slli    t1, t1, 17
+	or      t0, t0, t1
+	csrrc   zero, mstatus, t0
+
+# check PTE accessed and dirty bits are set
+	li      t1, 0x80000000
+	ld      t2, 0(t1)
+	li      t3, 192
+	and     t4, t3, t2
+	bne     t4, t3, fail
+
 #
 # test a load fault on X page
 #
 
-# load sptbr
+# copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_x)   # load sv39_pte_x(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_x(lo)
-	csrrw   zero, sptbr, t0
+	li      t1, 0x80000000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+
+# load sptbr ppn
+	csrrw   zero, sptbr, t1
 	sfence.vm
+
+# set mstatus.MPRV=1 (enable M mode paging)
+	li      t0, 1
+	slli    t0, t0, 17
+	or      t1, t1, t0
+	csrrs   zero, mstatus, t1
 
 # read from 0x1000
 	lbu     a3, 0(a0)   # instruction should cause load fault
@@ -135,6 +169,20 @@ _start:
 # compare a7 to (0)
 	li      t0, 0
 	bne     a7, t0, fail
+
+# set mstatus.MPRV=0 (Disable M mode Paging)
+	li      t1, 1
+	slli    t1, t1, 17
+	or      t0, t0, t1
+	csrrc   zero, mstatus, t0
+
+# check PTE accessed bit is set
+	li      t1, 0x80000000
+	ld      t2, 0(t1)
+	li      t3, 192
+	and     t4, t3, t2
+	li      t3, 64
+	bne     t4, t3, fail
 
 # success
 	li      a0, 0

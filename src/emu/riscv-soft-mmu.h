@@ -254,8 +254,9 @@ namespace riscv {
 		{
 			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
-				// TODO: we can't update PTE flags due to tests with read-only PTEs
-				// update_pte_flags<PTM>(op, tlb_ent->uva); /* accessed and dirty flags */
+				/* update PTE accessed and dirty flags */
+				update_pte_flags<PTM>(op, tlb_ent->uva);
+				
 				return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
 			} else {
 				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
@@ -338,8 +339,8 @@ namespace riscv {
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
 
-					// TODO: we can't update PTE flags due to tests with read-only PTEs
-					// update_pte_flags<PTM>(op, pte_uva); /* accessed and dirty flags */
+					/* update PTE accessed and dirty flags */
+					update_pte_flags<PTM>(op, pte_uva);
 
 					/* translate address taking into account PTE level */
 					return page_translate_offset<PTM>(pte.val.ppn, va, level);
