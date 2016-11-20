@@ -47,15 +47,15 @@ namespace riscv {
 			pending[irq >> word_shift] |= (1ULL << (irq & (bits_per_word-1)));
 		}
 
-		void load_8 (UX va, u8  &val) { printf("plic_mmio:0x%04llx -> 0\n", addr_t(va)); val = 0; }
-		void load_16(UX va, u16 &val) { printf("plic_mmio:0x%04llx -> 0\n", addr_t(va)); val = 0; }
-		void load_32(UX va, u32 &val) { printf("plic_mmio:0x%04llx -> 0\n", addr_t(va)); val = 0; }
-		void load_64(UX va, u64 &val) { printf("plic_mmio:0x%04llx -> 0\n", addr_t(va)); val = 0; }
+		void load_8 (UX va, u8  &val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
+		void load_16(UX va, u16 &val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
+		void load_32(UX va, u32 &val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
+		void load_64(UX va, u64 &val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
 
-		void store_8 (UX va, u8  val) { printf("plic_mmio:0x%04llx <- 0x%02hhx\n", addr_t(va), val); }
-		void store_16(UX va, u16 val) { printf("plic_mmio:0x%04llx <- 0x%04hx\n", addr_t(va), val); }
-		void store_32(UX va, u32 val) { printf("plic_mmio:0x%04llx <- 0x%04x\n", addr_t(va), val); }
-		void store_64(UX va, u64 val) { printf("plic_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val); }
+		void store_8 (UX va, u8  val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx <- invalid\n", addr_t(va)); }
+		void store_16(UX va, u16 val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx <- invalid\n", addr_t(va)); }
+		void store_32(UX va, u32 val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx <- invalid\n", addr_t(va)); }
+		void store_64(UX va, u64 val) { if (proc.log & proc_log_mmio) printf("plic_mmio:0x%04llx <- invalid\n", addr_t(va)); }
 	};
 
 }
