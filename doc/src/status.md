@@ -11,7 +11,7 @@ ABI Proxy Model          | More syscalls required
 Soft MMU Model           | Testing
 Privilege 1.9 Paging     | Complete
 Privilege 1.9 Timer      | Complete
-Privilege 1.9 PLIC       | In progress
+Privilege 1.9 PLIC       | Testing
 Privilege 1.9 PMAs       | In progress
 MMIO UART                | In progress
 VirtIO Input             | Not Started
