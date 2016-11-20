@@ -20,10 +20,9 @@ namespace riscv {
 			bits_per_word = sizeof(UX) << 3,
 			word_shift = ctz_pow2(bits_per_word),
 			irq_words = num_irqs / bits_per_word,
-			priority_words = (num_irqs / bits_per_word) * priority_bits,
 			pending_size = sizeof(UX) * irq_words,
 			enabled_size = sizeof(UX) * irq_words,
-			priority_size = sizeof(UX) * priority_words,
+			priority_size = sizeof(UX) * irq_words * priority_bits,
 			total_size = pending_size + enabled_size + priority_size
 		};
 
