@@ -515,7 +515,7 @@ namespace riscv {
 					P::hcause = cause;
 					P::hbadaddr = P::badaddr;
 					P::mstatus.r.hpp = P::mode;
-					P::mode = riscv_mode_S;
+					P::mode = riscv_mode_H;
 					P::pc = P::htvec;
 				}
 			} else {
