@@ -106,6 +106,7 @@ namespace riscv {
 
 		UX           pdid;            /* Protection Domain Identifier */
 		UX           mode;            /* Privileged Mode */
+		UX           resetvec;        /* Reset vector */
 
 		/* Privileged Control and Status Registers */
 
@@ -154,7 +155,7 @@ namespace riscv {
 		UX           ucause;          /* User Cause Register */
 		UX           ubadaddr;        /* User Bad Address Register */
 
-		processor_priv() : processor_type(), pdid(0), mode(riscv_mode_M) {}
+		processor_priv() : processor_type(), pdid(0), mode(riscv_mode_M), resetvec(0x1000) {}
 	};
 
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
@@ -170,7 +171,7 @@ namespace riscv {
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
 		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
 
-		void priv_init()
+		void init()
 		{
 			/* set initial value for misa register */
 			P::misa = P::misa_default;
@@ -641,6 +642,17 @@ namespace riscv {
 				mtrap(cause, false);
 			}
 		}
+
+		void reset()
+		{
+			P::mode = riscv_mode_M;
+			P::mstatus.r.vm = riscv_vm_mbare;
+			P::mstatus.r.mprv = 0;
+			P::mstatus.r.mie = 0;
+			P::mcause = 0;
+			P::pc = P::resetvec;
+		}
+
 	};
 
 }

@@ -12,7 +12,7 @@ namespace riscv {
 	template <typename P>
 	struct processor_proxy : P
 	{
-		void priv_init() {}
+		void init() {}
 
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 		{

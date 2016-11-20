@@ -103,8 +103,8 @@ namespace riscv {
 				panic("can't set thread signal mask: %s", strerror(errno));
 			}
 
-			/* call privileged init */
-			P::priv_init();
+			/* processor initialization */
+			P::init();
 		}
 
 		bool step(size_t count)
