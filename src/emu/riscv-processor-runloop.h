@@ -37,6 +37,9 @@ namespace riscv {
 
 		[[noreturn]] void signal_dispatch(int signum, siginfo_t *info)
 		{
+			/* let the processor try to handle the signal first */
+			P::signal(signum, info);
+
 			/*
 			 * NOTE: processor_proxy with the proxy_mmu is not able to
 			 * recover enough information from SIGSEGV to issue a trap.

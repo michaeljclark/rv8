@@ -79,6 +79,12 @@ namespace riscv {
 			P::print_int_registers();
 			exit(1);
 		}
+
+		void signal(int signum, siginfo_t *info)
+		{
+			/* does nothing */
+		}
+
 	};
 
 }

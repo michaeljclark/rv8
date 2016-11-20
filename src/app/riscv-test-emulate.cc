@@ -65,6 +65,7 @@
 #include "riscv-processor-model.h"
 #include "riscv-unknown-abi.h"
 #include "riscv-processor-proxy.h"
+#include "riscv-device-boot.h"
 #include "riscv-device-time.h"
 #include "riscv-device-mipi.h"
 #include "riscv-device-plic.h"

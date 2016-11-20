@@ -166,6 +166,7 @@ namespace riscv {
 	template <typename P>
 	struct processor_privileged : P
 	{
+		std::shared_ptr<boot_mmio_device<processor_privileged>> device_boot;
 		std::shared_ptr<time_mmio_device<processor_privileged>> device_time;
 		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
@@ -177,12 +178,14 @@ namespace riscv {
 			P::misa = P::misa_default;
 
 			/* create TIME, MIPI, PLIC and UART devices */
+			device_boot = std::make_shared<boot_mmio_device<processor_privileged>>(*this, 0x1000);
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
 			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
 			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
+			P::mmu.mem.add_segment(device_boot);
 			P::mmu.mem.add_segment(device_time);
 			P::mmu.mem.add_segment(device_mipi);
 			P::mmu.mem.add_segment(device_plic);
@@ -570,6 +573,9 @@ namespace riscv {
 			if (cause < 0x100) panic("invalid trap cause");
 			else cause -= 0x100;
 
+			/* check for reset */
+			if (cause == 0x1000) return;
+
 			/* translate causes that we catch as illegal instructions */
 			if (cause == riscv_cause_illegal_instruction) {
 				switch (dec.op) {
@@ -640,6 +646,15 @@ namespace riscv {
 			} else {
 				if (set_badaddr) P::mbadaddr = P::badaddr;
 				mtrap(cause, false);
+			}
+		}
+
+		void signal(int signum, siginfo_t *info)
+		{
+			if (signum == SIGHUP) {
+				typename P::ux epc = P::pc;
+				reset();
+				P::raise(0x1000, epc);
 			}
 		}
 
