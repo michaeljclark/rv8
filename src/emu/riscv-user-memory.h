@@ -10,13 +10,14 @@ namespace riscv {
 	template <typename UX>
 	struct memory_segment
 	{
-		UX mpa;         /* machine physical address (emulator address domain) */
-		addr_t uva;     /* user virtual address     (process address domain) */
-		size_t size;    /* segment size */
-		uint32_t flags; /* segment PMA flags */
+		const char *name; /* segment name */
+		UX mpa;           /* segment machine physical address (guest) */
+		addr_t uva;       /* segment user virtual address     (host) */
+		size_t size;      /* segment size */
+		uint32_t flags;   /* segment PMA flags */
 
-		memory_segment(UX mpa, addr_t uva, size_t size, UX flags) :
-			mpa(mpa), uva(uva), size(size), flags(flags) {}
+		memory_segment(const char *name, UX mpa, addr_t uva, size_t size, UX flags) :
+			name(name), mpa(mpa), uva(uva), size(size), flags(flags) {}
 
 		virtual ~memory_segment() {}
 
@@ -54,8 +55,8 @@ namespace riscv {
 	template <typename UX>
 	struct mmap_memory_segment : memory_segment<UX>
 	{
-		mmap_memory_segment(UX mpa, addr_t uva, size_t size, UX flags) :
-			memory_segment<UX>(mpa, uva, size, flags) {}
+		mmap_memory_segment(const char*name, UX mpa, addr_t uva, size_t size, UX flags) :
+			memory_segment<UX>(name, mpa, uva, size, flags) {}
 
 		~mmap_memory_segment()
 		{
@@ -92,8 +93,8 @@ namespace riscv {
 		{
 			segments.push_back(seg);
 			if (log) {
-				debug("     mpa :%016llx-%016llx (0x%llx-0x%llx) %s%s%s%s%s",
-					(u64)seg->mpa, (u64)seg->mpa + seg->size,
+				debug("     mpa :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
+					(u64)seg->mpa, (u64)seg->mpa + seg->size, seg->name,
 					(u64)seg->uva, (u64)seg->uva + seg->size,
 					(seg->flags & pma_type_io) ? "+IO" : "",
 					(seg->flags & pma_type_main) ? "+MAIN" : "",
@@ -105,7 +106,7 @@ namespace riscv {
 
 		void add_mmap(UX mpa, intptr_t uva, size_t size, UX flags)
 		{
-			add_segment(std::make_shared<mmap_memory_segment<UX>>(mpa, uva, size, flags));
+			add_segment(std::make_shared<mmap_memory_segment<UX>>("ROM0", mpa, uva, size, flags));
 		}
 
 		/* mmap new main memory segment using fixed user physical address and size */
@@ -116,7 +117,7 @@ namespace riscv {
 			if (addr == MAP_FAILED) {
 				panic("memory: error: mmap: %s", strerror(errno));
 			}
-			add_segment(std::make_shared<mmap_memory_segment<UX>>(mpa, uintptr_t(addr), size,
+			add_segment(std::make_shared<mmap_memory_segment<UX>>("RAM0", mpa, uintptr_t(addr), size,
 				pma_type_main | pma_prot_read | pma_prot_write | pma_prot_execute));
 		}
 

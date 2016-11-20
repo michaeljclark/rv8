@@ -40,7 +40,7 @@ namespace riscv {
 		/* UART constructor */
 
 		uart_mmio_device(P &proc, UX mpa) :
-			memory_segment<UX>(mpa, /*uva*/0, /*size*/8,
+			memory_segment<UX>("UART", mpa, /*uva*/0, /*size*/8,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
 
 		/* TODO implement UART MMIO access and functionality */
