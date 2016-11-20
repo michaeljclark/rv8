@@ -20,6 +20,7 @@ VirtIO Net               | Not Started
 VirtIO Block             | Not Started
 Disassembler             | Mostly complete
 Disassembler (pseudos)   | TODO LA,LI term detection
+i786 Floating Point      | Begun mapping to MXCSR
 i786 Simple bintrans     | Exploratory stage
 i786 Optimizing bintrans | Exploratory stage
 i786 Shadow paging       | Exploratory stage
