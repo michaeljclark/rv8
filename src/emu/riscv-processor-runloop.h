@@ -115,6 +115,9 @@ namespace riscv {
 			addr_t pc_offset, new_offset;
 			P::time = cpu_cycle_clock();
 
+			/* service devices and interrupts */
+			P::service();
+
 			/* trap return path */
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {

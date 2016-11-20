@@ -59,6 +59,11 @@ namespace riscv {
 			return 0; /* illegal instruction */
 		}
 
+		void service()
+		{
+
+		}
+
 		void trap(typename P::decode_type &dec, int cause)
 		{
 			/* setjmp cannot return zero so 0x100 is added to cause */
