@@ -61,7 +61,7 @@ namespace riscv {
 		{
 			val = (va < total_size) ? *(as_u8() + va) : 0;
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx -> 0x%02hhx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx -> 0x%02hhx\n", addr_t(va), val);
 			}
 		}
 
@@ -69,7 +69,7 @@ namespace riscv {
 		{
 			val = (va < total_size - 1) ? *(as_u16() + (va>>1)) : 0;
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx -> 0x%04hx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx -> 0x%04hx\n", addr_t(va), val);
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace riscv {
 		{
 			val = (va < total_size - 3) ? *(as_u32() + (va>>2)) : 0;
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
 			}
 		}
 
@@ -85,14 +85,14 @@ namespace riscv {
 		{
 			val = (va < total_size - 7) ? *(as_u64() + (va>>3)) : 0;
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx -> 0x%016llx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx -> 0x%016llx\n", addr_t(va), val);
 			}
 		}
 
 		void store_8 (UX va, u8  val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx <- 0x%02hhx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx <- 0x%02hhx\n", addr_t(va), val);
 			}
 			if (va < total_size) *(as_u8() + va) = val;
 		}
@@ -100,7 +100,7 @@ namespace riscv {
 		void store_16(UX va, u16 val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx <- 0x%04hx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx <- 0x%04hx\n", addr_t(va), val);
 			}
 			if (va < total_size - 1) *(as_u16() + (va>>1)) = val;
 		}
@@ -108,7 +108,7 @@ namespace riscv {
 		void store_32(UX va, u32 val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
 			}
 			if (va < total_size - 3) *(as_u32() + (va>>2)) = val;
 		}
@@ -116,7 +116,7 @@ namespace riscv {
 		void store_64(UX va, u64 val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("time_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
+				printf("mipi_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
 			}
 			if (va < total_size - 7) *(as_u64() + (va>>3)) = val;
 		}
