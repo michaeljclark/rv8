@@ -55,13 +55,14 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-args \
+	$(BIN_DIR)/test-fpu-gen \
+	$(BIN_DIR)/test-fpu-printf \
+	$(BIN_DIR)/test-fpu-assert \
+	$(BIN_DIR)/test-infinite-loop \
 	$(BIN_DIR)/test-int-fib \
 	$(BIN_DIR)/test-int-mul \
 	$(BIN_DIR)/test-jump-tables-yes \
 	$(BIN_DIR)/test-jump-tables-no \
-	$(BIN_DIR)/test-fpu-printf \
-	$(BIN_DIR)/test-fpu-gen \
-	$(BIN_DIR)/test-fpu-assert \
 	$(BIN_DIR)/test-m-ecall-trap \
 	$(BIN_DIR)/test-m-sv39 \
 	$(BIN_DIR)/test-m-mmio-timer
@@ -124,6 +125,9 @@ $(BIN_DIR)/hello-world-abs: $(OBJ_DIR)/hello-world-abs.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/hello-world-pcrel.o: $(SRC_DIR)/hello-world-pcrel.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/hello-world-pcrel: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-infinite-loop.o: $(SRC_DIR)/test-infinite-loop.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-infinite-loop: $(OBJ_DIR)/test-infinite-loop.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
