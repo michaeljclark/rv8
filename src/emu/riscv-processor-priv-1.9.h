@@ -445,7 +445,6 @@ namespace riscv {
 			P::mstatus.r.uie = 0;
 			P::mode = riscv_mode_U;
 			P::pc = P::utvec;
-			if (interrupt) P::mip.r.utip = 1;
 		}
 
 		void strap(typename P::ux cause, bool interrupt)
@@ -457,7 +456,6 @@ namespace riscv {
 			P::mstatus.r.sie = 0;
 			P::mode = riscv_mode_S;
 			P::pc = P::stvec;
-			if (interrupt) P::mip.r.stip = 1;
 		}
 
 		void htrap(typename P::ux cause, bool interrupt)
@@ -469,7 +467,6 @@ namespace riscv {
 			P::mstatus.r.hie = 0;
 			P::mode = riscv_mode_H;
 			P::pc = P::htvec;
-			if (interrupt) P::mip.r.htip = 1;
 		}
 
 		void mtrap(typename P::ux cause, bool interrupt)
@@ -481,7 +478,6 @@ namespace riscv {
 			P::mstatus.r.mie = 0;
 			P::mode = riscv_mode_M;
 			P::pc = P::mtvec;
-			if (interrupt) P::mip.r.mtip = 1;
 		}
 
 		void isr()
@@ -493,14 +489,18 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_timer)) {
 					if (P::hideleg & (1 << riscv_intr_h_timer)) {
 						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {
+							P::mip.r.utip = 1;
 							utrap(riscv_intr_u_timer, true);
 						} else if (P::mie.r.stie) {
+							P::mip.r.stip = 1;
 							strap(riscv_intr_s_timer, true);
 						}
 					} else if (P::mie.r.htie) {
+						P::mip.r.htip = 1;
 						htrap(riscv_intr_h_timer, true);
 					}
 				} else if (P::mie.r.mtie) {
+					P::mip.r.mtip = 1;
 					mtrap(riscv_intr_m_timer, true);
 				}
 			}
@@ -512,14 +512,18 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_external)) {
 					if (P::hideleg & (1 << riscv_intr_h_external)) {
 						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
+							P::mip.r.ueip = 1;
 							utrap(riscv_intr_u_external, true);
 						} else if (P::mie.r.seie) {
+							P::mip.r.seip = 1;
 							strap(riscv_intr_s_external, true);
 						}
 					} else if (P::mie.r.heie) {
+						P::mip.r.heip = 1;
 						htrap(riscv_intr_h_external, true);
 					}
 				} else if (P::mie.r.meie) {
+					P::mip.r.meip = 1;
 					mtrap(riscv_intr_m_external, true);
 				}
 			}
@@ -531,14 +535,18 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_software)) {
 					if (P::hideleg & (1 << riscv_intr_h_software)) {
 						if (P::sideleg & (1 << riscv_intr_s_software) && P::mie.r.ueie) {
+							P::mip.r.usip = 1;
 							utrap(riscv_intr_u_software, true);
 						} else if (P::mie.r.ssie) {
+							P::mip.r.ssip = 1;
 							strap(riscv_intr_s_software, true);
 						}
 					} else if (P::mie.r.hsie) {
+						P::mip.r.hsip = 1;
 						htrap(riscv_intr_h_software, true);
 					}
 				} else if (P::mie.r.msie) {
+					P::mip.r.msip = 1;
 					mtrap(riscv_intr_m_software, true);
 				}
 			}
@@ -551,6 +559,7 @@ namespace riscv {
 			if (cause < 0x100) panic("invalid trap cause");
 			else cause -= 0x100;
 
+			/* translate causes that we catch as illegal instructions */
 			if (cause == riscv_cause_illegal_instruction) {
 				switch (dec.op) {
 					case riscv_op_ebreak:
@@ -586,12 +595,14 @@ namespace riscv {
 					addr_t(P::pc), addr_t(P::badaddr));
 			}
 
+			/* if reqeusted, terminate and dump register state */
 			if (terminate) {
 				print_csr_registers();
 				P::print_int_registers();
 				exit(0);
 			}
 
+			/* only set badaddr for load, store or fetch faults */
 			bool set_badaddr =
 				(cause == riscv_cause_misaligned_fetch) ||
 				(cause == riscv_cause_misaligned_load) ||
