@@ -475,7 +475,7 @@ namespace riscv {
 		void interrupt_M(typename P::ux cause)
 		{
 			P::mepc = P::pc;
-			P::mcause = riscv_intr_m_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+			P::mcause = cause & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 			P::mstatus.r.mpp = P::mode;
 			P::mstatus.r.mpie = P::mstatus.r.mie;
 			P::mstatus.r.mie = 0;
