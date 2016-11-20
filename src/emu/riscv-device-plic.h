@@ -35,11 +35,13 @@ namespace riscv {
 		UX enabled[irq_words];
 		UX priority[priority_words];
 
-		/* TODO implement PLIC MMIO access and functionality */
+		/* PLIC constructor */
 
 		plic_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>(mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
+
+		/* TODO implement PLIC MMIO access and functionality */
 
 		void signal_irq(UX irq)
 		{

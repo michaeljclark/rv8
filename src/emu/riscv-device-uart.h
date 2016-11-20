@@ -16,7 +16,11 @@ namespace riscv {
 
 		P &proc;
 
-		/* UART Registers */
+		/*
+		 * UART Registers
+		 *
+		 * Register MMIO offsets in brackets (Based on 16550)
+		 */
 
 		struct {
 			u8 RBR; /* (R  [0]) Recieve Buffer Register        */
@@ -33,13 +37,13 @@ namespace riscv {
 			u8 DLM; /* (RW [0]) Divisor Latch MSB (LCR.DLAB=1) */
 		} regs;
 
-		/* Register MMIO offsets in brackets (Based on 16550)  */
-
-		/* TODO implement UART MMIO access and functionality */
+		/* UART constructor */
 
 		uart_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>(mpa, /*uva*/0, /*size*/8,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
+
+		/* TODO implement UART MMIO access and functionality */
 
 		void load_8 (UX va, u8  &val) { if (proc.log & proc_log_mmio) printf("uart_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
 		void load_16(UX va, u16 &val) { if (proc.log & proc_log_mmio) printf("uart_mmio:0x%04llx -> invalid\n", addr_t(va)); val = 0; }
