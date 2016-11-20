@@ -9,8 +9,7 @@ RV32IMAFDC               | Complete
 RV64IMAFDC               | Complete
 ABI Proxy Model          | More syscalls required
 Soft MMU Model           | Testing (MPRV, PUM, MXR)
-Sofe MMU PTEs            | Testing (PTE.RWXUV,sv32,sv39,sv48) TODO (PTE.DA)
-Privilege 1.9 Paging     | Complete
+Privilege 1.9 Paging     | Testing (PTE.RWXUV,sv32,sv39,sv48) TODO (PTE.DAG)
 Privilege 1.9 Timer      | Complete
 Privilege 1.9 PLIC       | Testing
 Privilege 1.9 PMAs       | In progress
