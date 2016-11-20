@@ -59,7 +59,7 @@ namespace riscv {
 			return 0; /* illegal instruction */
 		}
 
-		void service()
+		void isr()
 		{
 
 		}

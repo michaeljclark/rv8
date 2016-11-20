@@ -437,54 +437,54 @@ namespace riscv {
 			return 0;
 		}
 
-		void interrupt_U(typename P::ux cause)
+		void utrap(typename P::ux cause, bool interrupt)
 		{
 			P::uepc = P::pc;
-			P::ucause = cause & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+			P::ucause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.upie = P::mstatus.r.uie;
 			P::mstatus.r.uie = 0;
 			P::mode = riscv_mode_U;
 			P::pc = P::utvec;
-			P::mip.r.utip = 1;
+			if (interrupt) P::mip.r.utip = 1;
 		}
 
-		void interrupt_S(typename P::ux cause)
+		void strap(typename P::ux cause, bool interrupt)
 		{
 			P::sepc = P::pc;
-			P::scause = cause & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+			P::scause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.spp = P::mode;
 			P::mstatus.r.spie = P::mstatus.r.sie;
 			P::mstatus.r.sie = 0;
 			P::mode = riscv_mode_S;
 			P::pc = P::stvec;
-			P::mip.r.stip = 1;
+			if (interrupt) P::mip.r.stip = 1;
 		}
 
-		void interrupt_H(typename P::ux cause)
+		void htrap(typename P::ux cause, bool interrupt)
 		{
 			P::hepc = P::pc;
-			P::hcause = cause & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+			P::hcause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.hpp = P::mode;
 			P::mstatus.r.hpie = P::mstatus.r.hie;
 			P::mstatus.r.hie = 0;
 			P::mode = riscv_mode_H;
 			P::pc = P::htvec;
-			P::mip.r.htip = 1;
+			if (interrupt) P::mip.r.htip = 1;
 		}
 
-		void interrupt_M(typename P::ux cause)
+		void mtrap(typename P::ux cause, bool interrupt)
 		{
 			P::mepc = P::pc;
-			P::mcause = cause & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
+			P::mcause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.mpp = P::mode;
 			P::mstatus.r.mpie = P::mstatus.r.mie;
 			P::mstatus.r.mie = 0;
 			P::mode = riscv_mode_M;
 			P::pc = P::mtvec;
-			P::mip.r.mtip = 1;
+			if (interrupt) P::mip.r.mtip = 1;
 		}
 
-		void service()
+		void isr()
 		{
 			/* service timer interrupts if enabled */
 
@@ -493,15 +493,15 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_timer)) {
 					if (P::hideleg & (1 << riscv_intr_h_timer)) {
 						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {
-							interrupt_U(riscv_intr_u_timer);
+							utrap(riscv_intr_u_timer, true);
 						} else if (P::mie.r.stie) {
-							interrupt_S(riscv_intr_s_timer);
+							strap(riscv_intr_s_timer, true);
 						}
 					} else if (P::mie.r.htie) {
-						interrupt_H(riscv_intr_h_timer);
+						htrap(riscv_intr_h_timer, true);
 					}
 				} else if (P::mie.r.mtie) {
-					interrupt_M(riscv_intr_m_timer);
+					mtrap(riscv_intr_m_timer, true);
 				}
 			}
 
@@ -512,15 +512,15 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_external)) {
 					if (P::hideleg & (1 << riscv_intr_h_external)) {
 						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
-							interrupt_U(riscv_intr_u_external);
+							utrap(riscv_intr_u_external, true);
 						} else if (P::mie.r.seie) {
-							interrupt_S(riscv_intr_s_external);
+							strap(riscv_intr_s_external, true);
 						}
 					} else if (P::mie.r.heie) {
-						interrupt_H(riscv_intr_h_external);
+						htrap(riscv_intr_h_external, true);
 					}
 				} else if (P::mie.r.meie) {
-					interrupt_M(riscv_intr_m_external);
+					mtrap(riscv_intr_m_external, true);
 				}
 			}
 
@@ -531,15 +531,15 @@ namespace riscv {
 				if (P::mideleg & (1 << riscv_intr_m_software)) {
 					if (P::hideleg & (1 << riscv_intr_h_software)) {
 						if (P::sideleg & (1 << riscv_intr_s_software) && P::mie.r.ueie) {
-							interrupt_U(riscv_intr_u_software);
+							utrap(riscv_intr_u_software, true);
 						} else if (P::mie.r.ssie) {
-							interrupt_S(riscv_intr_s_software);
+							strap(riscv_intr_s_software, true);
 						}
 					} else if (P::mie.r.hsie) {
-						interrupt_H(riscv_intr_h_software);
+						htrap(riscv_intr_h_software, true);
 					}
 				} else if (P::mie.r.msie) {
-					interrupt_M(riscv_intr_m_software);
+					mtrap(riscv_intr_m_software, true);
 				}
 			}
 
@@ -605,42 +605,19 @@ namespace riscv {
 			if (P::medeleg & deleg) {
 				if (P::hedeleg & deleg) {
 					if (P::sedeleg & deleg) {
-						P::uepc = P::pc;
-						P::ucause = cause;
 						if (set_badaddr) P::ubadaddr = P::badaddr;
-						P::mstatus.r.upie = P::mstatus.r.uie;
-						P::mstatus.r.uie = 0;
-						P::mode = riscv_mode_U;
-						P::pc = P::utvec;
+						utrap(cause, false);
 					} else {
-						P::sepc = P::pc;
-						P::scause = cause;
 						if (set_badaddr) P::sbadaddr = P::badaddr;
-						P::mstatus.r.spp = P::mode;
-						P::mstatus.r.spie = P::mstatus.r.sie;
-						P::mstatus.r.sie = 0;
-						P::mode = riscv_mode_S;
-						P::pc = P::stvec;
+						strap(cause, false);
 					}
 				} else {
-					P::hepc = P::pc;
-					P::hcause = cause;
 					if (set_badaddr) P::hbadaddr = P::badaddr;
-					P::mstatus.r.hpp = P::mode;
-					P::mstatus.r.hpie = P::mstatus.r.hie;
-					P::mstatus.r.hie = 0;
-					P::mode = riscv_mode_H;
-					P::pc = P::htvec;
+					htrap(cause, false);
 				}
 			} else {
-				P::mepc = P::pc;
-				P::mcause = cause;
 				if (set_badaddr) P::mbadaddr = P::badaddr;
-				P::mstatus.r.mpp = P::mode;
-				P::mstatus.r.mpie = P::mstatus.r.mie;
-				P::mstatus.r.mie = 0;
-				P::mode = riscv_mode_M;
-				P::pc = P::mtvec;
+				mtrap(cause, false);
 			}
 		}
 	};

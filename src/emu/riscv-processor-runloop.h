@@ -115,8 +115,8 @@ namespace riscv {
 			addr_t pc_offset, new_offset;
 			P::time = cpu_cycle_clock();
 
-			/* service devices and interrupts */
-			P::service();
+			/* interrupt service routine */
+			P::isr();
 
 			/* trap return path */
 			int cause;
