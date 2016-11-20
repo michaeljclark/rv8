@@ -187,13 +187,13 @@ namespace riscv {
 
 		void print_csr_registers()
 		{
-			printf("%s %s %s\n", format_reg("misa",      P::misa).c_str(),
-			                     format_reg("pdid",      P::pdid).c_str(),
+			printf("%s %s\n",    format_reg("pdid",      P::pdid).c_str(),
 			                     format_reg("mode",      P::mode).c_str());
 			printf("%s %s %s\n", format_reg("mvendorid", P::mvendorid).c_str(),
 			                     format_reg("marchid",   P::marchid).c_str(),
 			                     format_reg("mimpid",    P::mimpid).c_str());
-			printf("%s %s\n",    format_reg("mhartid",   P::mhartid).c_str(),
+			printf("%s %s %s\n", format_reg("misa",      P::misa).c_str(),
+			                     format_reg("mhartid",   P::mhartid).c_str(),
 			                     format_reg("mstatus",   P::mstatus).c_str());
 			printf("%s %s %s\n", format_reg("medeleg",   P::medeleg).c_str(),
 			                     format_reg("mideleg",   P::mideleg).c_str(),
