@@ -120,7 +120,6 @@ namespace riscv {
 		UX           mideleg;         /* Machine Interrupt Delegation Mask (enum riscv_intr) */
 		ip<UX>       mip;             /* Machine Interrupt Pending Register */
 		ie<UX>       mie;             /* Machine Interrupt Enable Register */
-		u64          mtimecmp;        /* Machine Timer Compare Register */
 		counten<UX>  mhcounteren;     /* Hypervisor Counter-enable Register */
 		counten<UX>  mscounteren;     /* Supervisor Counter-enable Register */
 		counten<UX>  mucounteren;     /* User Counter-enable Register */
@@ -194,9 +193,8 @@ namespace riscv {
 			printf("%s %s %s\n", format_reg("mvendorid", P::mvendorid).c_str(),
 			                     format_reg("marchid",   P::marchid).c_str(),
 			                     format_reg("mimpid",    P::mimpid).c_str());
-			printf("%s %s %s\n", format_reg("mhartid",   P::mhartid).c_str(),
-			                     format_reg("mstatus",   P::mstatus).c_str(),
-			                     format_reg("mtimecmp",  P::mtimecmp).c_str());
+			printf("%s %s\n",    format_reg("mhartid",   P::mhartid).c_str(),
+			                     format_reg("mstatus",   P::mstatus).c_str());
 			printf("%s %s %s\n", format_reg("medeleg",   P::medeleg).c_str(),
 			                     format_reg("mideleg",   P::mideleg).c_str(),
 			                     format_reg("mip",       P::mip).c_str());
@@ -435,6 +433,9 @@ namespace riscv {
 		void service()
 		{
 			/* service timer interrupts if enabled */
+
+			/* NOTE ambiguity with {m,h,s,u}tie and timer interrupt delegation */
+
 			device_time->mtime = P::time;
 			if (P::mstatus.r.mie && P::mie.r.mtie && device_time->mtimecmp > device_time->mtime) {
 				if (P::mideleg & (1 << riscv_intr_m_timer)) {
@@ -445,12 +446,14 @@ namespace riscv {
 							P::mstatus.r.hpp = P::mode;
 							P::mode = riscv_mode_U;
 							P::pc = P::htvec;
+							P::mip.r.utip = 1;
 						} else {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 							P::mstatus.r.hpp = P::mode;
 							P::mode = riscv_mode_S;
 							P::pc = P::htvec;
+							P::mip.r.stip = 1;
 						}
 					} else {
 						P::hepc = P::pc;
@@ -458,6 +461,7 @@ namespace riscv {
 						P::mstatus.r.hpp = P::mode;
 						P::mode = riscv_mode_H;
 						P::pc = P::htvec;
+						P::mip.r.htip = 1;
 					}
 				} else {
 					P::mepc = P::pc;
@@ -465,6 +469,7 @@ namespace riscv {
 					P::mstatus.r.mpp = P::mode;
 					P::mode = riscv_mode_M;
 					P::pc = P::mtvec;
+					P::mip.r.mtip = 1;
 				}
 			}
 		}

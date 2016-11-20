@@ -142,6 +142,7 @@ namespace riscv {
 					P::pc += new_offset;
 					P::cycle++;
 					P::instret++;
+					i++;
 				} else {
 					P::raise(riscv_cause_illegal_instruction, P::pc);
 				}
