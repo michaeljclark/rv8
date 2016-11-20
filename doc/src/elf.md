@@ -20,8 +20,8 @@ The following is a list of ELF header fields and potential RISC-V mappings.
 MISA could potentially be stored in `e_flags` i.e. `-march` compiler flags.
 This would be similar to the SPARC ELF Headers.
 
-- EF_RISCV_EXT_MASK = 0x03ffffff /* Processor extension mask from 'misa' CSR */
-	
+- EF_RISCV_EXT_MASK = 0x03ffffff (Processor extension mask from `misa` CSR)
+
 ARM is using e_flags (`EF_ARM_BE8` and `EF_ARM_LE8`) for endianness but this
 should be in `e_ident[EI_DATA]`. ARM is using e_flags for ABI version
 (`EF_ARM_EABIMASK`) but this should be in `e_ident[EI_OSABI]` and/or
