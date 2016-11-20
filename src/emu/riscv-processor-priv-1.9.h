@@ -440,7 +440,7 @@ namespace riscv {
 		void utrap(typename P::ux cause, bool interrupt)
 		{
 			P::uepc = P::pc;
-			P::ucause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
+			P::ucause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.upie = P::mstatus.r.uie;
 			P::mstatus.r.uie = 0;
 			P::mode = riscv_mode_U;
@@ -450,7 +450,7 @@ namespace riscv {
 		void strap(typename P::ux cause, bool interrupt)
 		{
 			P::sepc = P::pc;
-			P::scause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
+			P::scause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.spp = P::mode;
 			P::mstatus.r.spie = P::mstatus.r.sie;
 			P::mstatus.r.sie = 0;
@@ -461,7 +461,7 @@ namespace riscv {
 		void htrap(typename P::ux cause, bool interrupt)
 		{
 			P::hepc = P::pc;
-			P::hcause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
+			P::hcause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.hpp = P::mode;
 			P::mstatus.r.hpie = P::mstatus.r.hie;
 			P::mstatus.r.hie = 0;
@@ -472,7 +472,7 @@ namespace riscv {
 		void mtrap(typename P::ux cause, bool interrupt)
 		{
 			P::mepc = P::pc;
-			P::mcause = cause & (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
+			P::mcause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.mpp = P::mode;
 			P::mstatus.r.mpie = P::mstatus.r.mie;
 			P::mstatus.r.mie = 0;
