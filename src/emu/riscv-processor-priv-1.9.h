@@ -437,17 +437,17 @@ namespace riscv {
 			/* NOTE ambiguity with {m,h,s,u}tie and timer interrupt delegation */
 
 			device_time->mtime = P::time;
-			if (P::mstatus.r.mie && P::mie.r.mtie && device_time->mtimecmp > device_time->mtime) {
+			if (P::mstatus.r.mie && device_time->mtime >= device_time->mtimecmp) {
 				if (P::mideleg & (1 << riscv_intr_m_timer)) {
 					if (P::hideleg & (1 << riscv_intr_h_timer)) {
-						if (P::sideleg & (1 << riscv_intr_s_timer)) {
+						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {
 							P::uepc = P::pc;
 							P::ucause = riscv_intr_u_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 							P::mstatus.r.hpp = P::mode;
 							P::mode = riscv_mode_U;
 							P::pc = P::htvec;
 							P::mip.r.utip = 1;
-						} else {
+						} else if (P::mie.r.stie) {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 							P::mstatus.r.hpp = P::mode;
@@ -455,7 +455,7 @@ namespace riscv {
 							P::pc = P::htvec;
 							P::mip.r.stip = 1;
 						}
-					} else {
+					} else if (P::mie.r.htie) {
 						P::hepc = P::pc;
 						P::hcause = riscv_intr_h_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 						P::mstatus.r.hpp = P::mode;
@@ -463,7 +463,7 @@ namespace riscv {
 						P::pc = P::htvec;
 						P::mip.r.htip = 1;
 					}
-				} else {
+				} else if (P::mie.r.mtie) {
 					P::mepc = P::pc;
 					P::mcause = riscv_intr_m_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 					P::mstatus.r.mpp = P::mode;

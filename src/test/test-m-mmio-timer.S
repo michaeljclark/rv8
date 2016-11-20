@@ -33,7 +33,7 @@ _start:
 	ld      a1, 0(a0)
 
 # write to mtimecmp
-	li      t0, 100000000000
+	li      t0, 1000000000
 	add     a1, a1, t0
 	sd      a1, 8(a0)
 
