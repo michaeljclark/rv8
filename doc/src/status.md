@@ -19,12 +19,14 @@ VirtIO Framebuffer       | Not Started
 VirtIO Net               | Not Started
 VirtIO Block             | Not Started
 Disassembler             | Mostly complete
-Disassembler (pseudos)   | TODO LA,LI term detection
+Disassembler (pseudos)   | Requires LA,LI term detection
+Disassembler (objdump)   | Option compatibility not started
 i786 Floating Point      | Begun mapping to MXCSR
 i786 Simple bintrans     | Exploratory stage
 i786 Optimizing bintrans | Exploratory stage
 i786 Shadow paging       | Exploratory stage
 RVC Compressor           | In progress
+Boot Protocol            | To document ELF Auxv AT_BASE Proposal
 Assembler                | Started documenting
 ELF                      | Started documenting
 RV128                    | Proposal
