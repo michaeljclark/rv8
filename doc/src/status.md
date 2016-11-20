@@ -22,6 +22,7 @@ Disassembler             | Mostly complete
 Disassembler (pseudos)   | TODO LA,LI term detection
 i786 Simple bintrans     | Exploratory stage
 i786 Optimizing bintrans | Exploratory stage
+i786 Shadow paging       | Exploratory stage
 RVC Compressor           | In progress
 Assembler                | Started documenting
 ELF                      | Started documenting
