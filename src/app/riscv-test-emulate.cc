@@ -197,7 +197,7 @@ struct riscv_emulator
 
 		/* log stack creation */
 		if (proc.log & proc_log_memory) {
-			debug("mmap sp  :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
+			debug("mmap-sp  :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 				(stack_top - stack_size), stack_top);
 		}
 	}
@@ -296,7 +296,7 @@ struct riscv_emulator
 
 		/* log elf load segment virtual address range */
 		if (proc.log & proc_log_memory) {
-			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
+			debug("mmap-elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
@@ -323,7 +323,7 @@ struct riscv_emulator
 
 		/* log elf load segment virtual address range */
 		if (proc.log & proc_log_memory) {
-			debug("mmap elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
+			debug("mmap-elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
 				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}

@@ -93,7 +93,7 @@ namespace riscv {
 		{
 			segments.push_back(seg);
 			if (log) {
-				debug("     mpa :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
+				debug("soft-mmu :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
 					(u64)seg->mpa, (u64)seg->mpa + seg->size, seg->name,
 					(u64)seg->uva, (u64)seg->uva + seg->size,
 					(seg->flags & pma_type_io) ? "+IO" : "",
