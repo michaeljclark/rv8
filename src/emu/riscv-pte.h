@@ -66,6 +66,7 @@ namespace riscv {
 		typedef sv32_va  va_type;
 		typedef sv32_pa  pa_type;
 		typedef sv32_pte pte_type;
+		typedef u32      size_type;
 	};
 
 	/* sv39 */
@@ -106,6 +107,7 @@ namespace riscv {
 		typedef sv39_va  va_type;
 		typedef sv39_pa  pa_type;
 		typedef sv39_pte pte_type;
+		typedef u64      size_type;
 	};
 
 	/* sv48 */
@@ -146,6 +148,7 @@ namespace riscv {
 		typedef sv48_va  va_type;
 		typedef sv48_pa  pa_type;
 		typedef sv48_pte pte_type;
+		typedef u64      size_type;
 	};
 
 }

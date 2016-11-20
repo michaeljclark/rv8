@@ -254,6 +254,8 @@ namespace riscv {
 		{
 			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
+				// TODO: we can't update PTE flags due to tests with read-only PTEs
+				// update_pte_flags<PTM>(op, tlb_ent->uva); /* accessed and dirty flags */
 				return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
 			} else {
 				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
@@ -264,8 +266,7 @@ namespace riscv {
 		 * TLB miss slow path that invokes the page table walker */
 		template <typename P, typename PTM> addr_t page_translate_addr_tlb_miss(
 			P &proc, UX va, mmu_op op,
-			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent
-		)
+			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			/*
 			 * The simple direct mapped TLB implementation currently maps page_size
@@ -274,33 +275,45 @@ namespace riscv {
 			 * Can be solved by adding a secondary TLB with larger scoped entries.
 			 */
 
-			UX level;
 			typename PTM::pte_type pte;
+			addr_t pte_uva;
+			UX level;
 
 			/* TODO: TLB statistics */
 
 			/* Walk the page table to find a leaf PTE entry
 			 * (access fault is raised if leaf PTE is not found) */
-			addr_t pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent, pte, level);
+			addr_t pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent,
+				pte, pte_uva, level);
 
 			/* Insert the virtual to physical mapping into the TLB */
 			tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
-				va, level, pte.val.flags, pte.val.ppn);
+				va, level, pte.val.flags, pte.val.ppn, pte_uva);
 
 			return pa;
 		}
 
+		/* update PTE accessed and dirty */
+		template <typename PTM> void update_pte_flags(mmu_op op, addr_t pte_uva)
+		{
+			typedef typename PTM::pte_type pte_type;
+			pte_type &pte = *(pte_type*)pte_uva;
+			UX update_flags = (op == op_store ? (pte_flag_D | pte_flag_A) : pte_flag_A);
+			if (pte.val.flags != (pte.val.flags | update_flags)) {
+				pte.val.flags |= update_flags;
+			}
+		}
+
+		/* walk the page table to find a PTE for a given virtual address */
 		template <typename P, typename PTM> addr_t walk_page_table(
 			P &proc, UX va, mmu_op op,
 			tlb_type &tlb, typename tlb_type::tlb_entry_t* &tlb_ent,
-			typename PTM::pte_type &pte, UX &level
-		)
+			typename PTM::pte_type &pte, addr_t &pte_uva, UX &level)
 		{
 			typedef typename PTM::pte_type pte_type;
 
 			UX ppn = proc.sptbr & ((1ULL << tlb_type::ppn_bits) - 1);
 			UX vpn, pte_mpa, shift;
-			addr_t pte_uva;
 
 			/* TODO: canonical address check */
 
@@ -324,6 +337,9 @@ namespace riscv {
 
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
+
+					// TODO: we can't update PTE flags due to tests with read-only PTEs
+					// update_pte_flags<PTM>(op, pte_uva); /* accessed and dirty flags */
 
 					/* translate address taking into account PTE level */
 					return page_translate_offset<PTM>(pte.val.ppn, va, level);
