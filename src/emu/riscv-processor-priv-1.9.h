@@ -480,6 +480,30 @@ namespace riscv {
 			if (cause < 0x100) panic("invalid trap cause");
 			else cause -= 0x100;
 
+			if (cause == riscv_cause_illegal_instruction) {
+				switch (dec.op) {
+					case riscv_op_ebreak:
+						cause = riscv_cause_breakpoint;
+						break;
+					case riscv_op_ecall:
+						switch (P::mode) {
+							case riscv_mode_U:
+								cause = riscv_cause_user_ecall;
+								break;
+							case riscv_mode_S:
+								cause = riscv_cause_supervisor_ecall;
+								break;
+							case riscv_mode_H:
+								cause = riscv_cause_hypervisor_ecall;
+								break;
+							case riscv_mode_M:
+								cause = riscv_cause_machine_ecall;
+								break;
+						}
+						break;
+				}
+			}
+
 			/* TODO: ebreak is temporarily used to terminate the interpreter */
 			bool terminate = (dec.op == riscv_op_ebreak);
 
