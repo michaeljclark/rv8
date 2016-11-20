@@ -307,6 +307,12 @@ namespace riscv {
 			const typename P::ux si_mask       = 0b001100110011;
 			const typename P::ux ui_mask       = 0b000100010001;
 
+			/*
+			 * {m,h,s,u}tvec
+			 */
+			const typename P::ux tvec_rmask    = typename P::ux(-1);
+			const typename P::ux tvec_wmask    = typename P::ux(-1) << 2;
+
 			switch (csr) {
 				case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
@@ -335,7 +341,8 @@ namespace riscv {
 				case riscv_csr_mhartid:  P::get_csr(dec, P::mode, op, csr, P::mhartid, value);    break;
 				case riscv_csr_mstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, mstatus_wmask, mstatus_rmask);                break;
-				case riscv_csr_mtvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec, value);      break;
+				case riscv_csr_mtvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec,
+					                         value, tvec_rmask, tvec_wmask);                      break;
 				case riscv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
 				case riscv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
 				case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
@@ -358,7 +365,8 @@ namespace riscv {
 				case riscv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case riscv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, hstatus_wmask, hstatus_rmask);                break;
-				case riscv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec, value);      break;
+				case riscv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec,
+					                         value, tvec_rmask, tvec_wmask);                      break;
 				case riscv_csr_hedeleg:  P::set_csr(dec, P::mode, op, csr, P::hedeleg, value);    break;
 				case riscv_csr_hideleg:  P::set_csr(dec, P::mode, op, csr, P::hideleg, value);    break;
 				case riscv_csr_hip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
@@ -371,7 +379,8 @@ namespace riscv {
 				case riscv_csr_hbadaddr: P::set_csr(dec, P::mode, op, csr, P::hbadaddr, value);   break;
 				case riscv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, sstatus_wmask, sstatus_rmask);                break;
-				case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value);      break;
+				case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec,
+					                         value, tvec_rmask, tvec_wmask);                      break;
 				case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::sedeleg, value);    break;
 				case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::sideleg, value);    break;
 				case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
@@ -385,7 +394,8 @@ namespace riscv {
 				case riscv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
 				case riscv_csr_ustatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, ustatus_wmask, ustatus_rmask);                break;
-				case riscv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value);      break;
+				case riscv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::utvec,
+					                         value, tvec_rmask, tvec_wmask);                      break;
 				case riscv_csr_uip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
 				                             value, ui_mask, ui_mask);                            break;
 				case riscv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
