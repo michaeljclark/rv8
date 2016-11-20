@@ -408,18 +408,22 @@ namespace riscv {
 				case riscv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
 				case riscv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 				case riscv_op_uret:
+					P::mstatus.r.uie = P::mstatus.r.upie;
 					return P::uepc - P::pc;
 				case riscv_op_sret:
 					P::mode = P::mstatus.r.spp;
 					P::mstatus.r.spp = riscv_mode_U;
+					P::mstatus.r.sie = P::mstatus.r.spie;
 					return P::sepc - P::pc;
 				case riscv_op_hret:
 					P::mode = P::mstatus.r.hpp;
 					P::mstatus.r.hpp = riscv_mode_U;
+					P::mstatus.r.hie = P::mstatus.r.hpie;
 					return P::hepc - P::pc;
 				case riscv_op_mret:
 					P::mode = P::mstatus.r.mpp;
 					P::mstatus.r.mpp = riscv_mode_U;
+					P::mstatus.r.mie = P::mstatus.r.mpie;
 					return P::mepc - P::pc;
 				case riscv_op_sfence_vm:
 					P::mmu.l1_itlb.flush(P::pdid);
@@ -444,14 +448,17 @@ namespace riscv {
 						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {
 							P::uepc = P::pc;
 							P::ucause = riscv_intr_u_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.upie = P::mstatus.r.uie;
+							P::mstatus.r.uie = 0;
 							P::mode = riscv_mode_U;
 							P::pc = P::utvec;
 							P::mip.r.utip = 1;
 						} else if (P::mie.r.stie) {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.spp = P::mode;
+							P::mstatus.r.spie = P::mstatus.r.sie;
+							P::mstatus.r.sie = 0;
 							P::mode = riscv_mode_S;
 							P::pc = P::stvec;
 							P::mip.r.stip = 1;
@@ -460,6 +467,8 @@ namespace riscv {
 						P::hepc = P::pc;
 						P::hcause = riscv_intr_h_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 						P::mstatus.r.hpp = P::mode;
+						P::mstatus.r.hpie = P::mstatus.r.hie;
+						P::mstatus.r.hie = 0;
 						P::mode = riscv_mode_H;
 						P::pc = P::htvec;
 						P::mip.r.htip = 1;
@@ -468,6 +477,8 @@ namespace riscv {
 					P::mepc = P::pc;
 					P::mcause = riscv_intr_m_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 					P::mstatus.r.mpp = P::mode;
+					P::mstatus.r.mpie = P::mstatus.r.mie;
+					P::mstatus.r.mie = 0;
 					P::mode = riscv_mode_M;
 					P::pc = P::mtvec;
 					P::mip.r.mtip = 1;
@@ -483,14 +494,17 @@ namespace riscv {
 						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
 							P::uepc = P::pc;
 							P::ucause = riscv_intr_u_external & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.upie = P::mstatus.r.uie;
+							P::mstatus.r.uie = 0;
 							P::mode = riscv_mode_U;
 							P::pc = P::utvec;
 							P::mip.r.ueip = 1;
 						} else if (P::mie.r.seie) {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_external & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.spp = P::mode;
+							P::mstatus.r.spie = P::mstatus.r.sie;
+							P::mstatus.r.sie = 0;
 							P::mode = riscv_mode_S;
 							P::pc = P::stvec;
 							P::mip.r.seip = 1;
@@ -499,6 +513,8 @@ namespace riscv {
 						P::hepc = P::pc;
 						P::hcause = riscv_intr_h_external & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 						P::mstatus.r.hpp = P::mode;
+						P::mstatus.r.hpie = P::mstatus.r.hie;
+						P::mstatus.r.hie = 0;
 						P::mode = riscv_mode_H;
 						P::pc = P::htvec;
 						P::mip.r.heip = 1;
@@ -507,6 +523,8 @@ namespace riscv {
 					P::mepc = P::pc;
 					P::mcause = riscv_intr_m_external & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 					P::mstatus.r.mpp = P::mode;
+					P::mstatus.r.mpie = P::mstatus.r.mie;
+					P::mstatus.r.mie = 0;
 					P::mode = riscv_mode_M;
 					P::pc = P::mtvec;
 					P::mip.r.meip = 1;
@@ -522,14 +540,17 @@ namespace riscv {
 						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
 							P::uepc = P::pc;
 							P::ucause = riscv_intr_u_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.upie = P::mstatus.r.uie;
+							P::mstatus.r.uie = 0;
 							P::mode = riscv_mode_U;
 							P::pc = P::utvec;
 							P::mip.r.usip = 1;
 						} else if (P::mie.r.ssie) {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
-							P::mstatus.r.hpp = P::mode;
+							P::mstatus.r.spp = P::mode;
+							P::mstatus.r.spie = P::mstatus.r.sie;
+							P::mstatus.r.sie = 0;
 							P::mode = riscv_mode_S;
 							P::pc = P::stvec;
 							P::mip.r.ssip = 1;
@@ -538,6 +559,8 @@ namespace riscv {
 						P::hepc = P::pc;
 						P::hcause = riscv_intr_h_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 						P::mstatus.r.hpp = P::mode;
+						P::mstatus.r.hpie = P::mstatus.r.hie;
+						P::mstatus.r.hie = 0;
 						P::mode = riscv_mode_H;
 						P::pc = P::htvec;
 						P::mip.r.hsip = 1;
@@ -546,6 +569,8 @@ namespace riscv {
 					P::mepc = P::pc;
 					P::mcause = riscv_intr_m_software & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 					P::mstatus.r.mpp = P::mode;
+					P::mstatus.r.mpie = P::mstatus.r.mie;
+					P::mstatus.r.mie = 0;
 					P::mode = riscv_mode_M;
 					P::pc = P::mtvec;
 					P::mip.r.msip = 1;
@@ -617,6 +642,8 @@ namespace riscv {
 						P::uepc = P::pc;
 						P::ucause = cause;
 						if (set_badaddr) P::ubadaddr = P::badaddr;
+						P::mstatus.r.upie = P::mstatus.r.uie;
+						P::mstatus.r.uie = 0;
 						P::mode = riscv_mode_U;
 						P::pc = P::utvec;
 					} else {
@@ -624,6 +651,8 @@ namespace riscv {
 						P::scause = cause;
 						if (set_badaddr) P::sbadaddr = P::badaddr;
 						P::mstatus.r.spp = P::mode;
+						P::mstatus.r.spie = P::mstatus.r.sie;
+						P::mstatus.r.sie = 0;
 						P::mode = riscv_mode_S;
 						P::pc = P::stvec;
 					}
@@ -632,6 +661,8 @@ namespace riscv {
 					P::hcause = cause;
 					if (set_badaddr) P::hbadaddr = P::badaddr;
 					P::mstatus.r.hpp = P::mode;
+					P::mstatus.r.hpie = P::mstatus.r.hie;
+					P::mstatus.r.hie = 0;
 					P::mode = riscv_mode_H;
 					P::pc = P::htvec;
 				}
@@ -640,6 +671,8 @@ namespace riscv {
 				P::mcause = cause;
 				if (set_badaddr) P::mbadaddr = P::badaddr;
 				P::mstatus.r.mpp = P::mode;
+				P::mstatus.r.mpie = P::mstatus.r.mie;
+				P::mstatus.r.mie = 0;
 				P::mode = riscv_mode_M;
 				P::pc = P::mtvec;
 			}
