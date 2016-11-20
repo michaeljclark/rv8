@@ -492,6 +492,14 @@ namespace riscv {
 				exit(0);
 			}
 
+			bool set_badaddr =
+				(cause == riscv_cause_misaligned_fetch) ||
+				(cause == riscv_cause_misaligned_load) ||
+				(cause == riscv_cause_misaligned_store) ||
+				(cause == riscv_cause_fault_fetch) ||
+				(cause == riscv_cause_fault_load) ||
+				(cause == riscv_cause_fault_store);
+
 			/* check {m,h,s}edeleg for cause and dispatch to {m,h,s,u}tvec */
 			typename P::ux deleg = 1 << cause;
 			if (P::medeleg & deleg) {
@@ -499,13 +507,13 @@ namespace riscv {
 					if (P::sedeleg & deleg) {
 						P::uepc = P::pc;
 						P::ucause = cause;
-						P::ubadaddr = P::badaddr;
+						if (set_badaddr) P::ubadaddr = P::badaddr;
 						P::mode = riscv_mode_U;
 						P::pc = P::utvec;
 					} else {
 						P::sepc = P::pc;
 						P::scause = cause;
-						P::sbadaddr = P::badaddr;
+						if (set_badaddr) P::sbadaddr = P::badaddr;
 						P::mstatus.r.spp = P::mode;
 						P::mode = riscv_mode_S;
 						P::pc = P::stvec;
@@ -513,7 +521,7 @@ namespace riscv {
 				} else {
 					P::hepc = P::pc;
 					P::hcause = cause;
-					P::hbadaddr = P::badaddr;
+					if (set_badaddr) P::hbadaddr = P::badaddr;
 					P::mstatus.r.hpp = P::mode;
 					P::mode = riscv_mode_H;
 					P::pc = P::htvec;
@@ -521,7 +529,7 @@ namespace riscv {
 			} else {
 				P::mepc = P::pc;
 				P::mcause = cause;
-				P::mbadaddr = P::badaddr;
+				if (set_badaddr) P::mbadaddr = P::badaddr;
 				P::mstatus.r.mpp = P::mode;
 				P::mode = riscv_mode_M;
 				P::pc = P::mtvec;
