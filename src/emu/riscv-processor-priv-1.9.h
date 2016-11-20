@@ -445,14 +445,14 @@ namespace riscv {
 							P::ucause = riscv_intr_u_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 							P::mstatus.r.hpp = P::mode;
 							P::mode = riscv_mode_U;
-							P::pc = P::htvec;
+							P::pc = P::utvec;
 							P::mip.r.utip = 1;
 						} else if (P::mie.r.stie) {
 							P::sepc = P::pc;
 							P::scause = riscv_intr_s_timer & (1ULL << (P::xlen - 1)); /* set sign bit for interrupts */
 							P::mstatus.r.hpp = P::mode;
 							P::mode = riscv_mode_S;
-							P::pc = P::htvec;
+							P::pc = P::stvec;
 							P::mip.r.stip = 1;
 						}
 					} else if (P::mie.r.htie) {
