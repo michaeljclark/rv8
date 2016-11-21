@@ -29,7 +29,7 @@ namespace riscv {
 		boot_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>("BOOT", mpa, /*uva*/0,
 				/*size*/build_riscv64_unknown_elf_bin_boot_rom_bin_len,
-				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
+				pma_type_main | pma_prot_read), proc(proc) {}
 
 		/* BOOT MMIO */
 
