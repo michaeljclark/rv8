@@ -73,7 +73,7 @@ namespace riscv {
 				priority1_offset(priority0_offset + priority0_length),
 				priority1_length(irq_words * sizeof(u32)),
 				enabled_offset(priority1_offset + priority1_length),
-				enabled_length(irq_words * num_nodes * num_harts * sizeof(u32)),
+				enabled_length(enabled_words * sizeof(u32)),
 				pending{},
 				priority0{},
 				priority1{},
