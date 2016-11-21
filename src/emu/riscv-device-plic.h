@@ -9,43 +9,75 @@ namespace riscv {
 
 	/* PLIC MMIO device */
 
-	template <typename P, const int NUM_IRQS = 64>
+	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 4, const int NUM_HARTS = 64>
 	struct plic_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
 
 		enum {
-			num_irqs = NUM_IRQS,
 			priority_bits = 2,
-			bits_per_word = sizeof(UX) << 3,
+			bits_per_word = sizeof(u32) << 3,
 			word_shift = ctz_pow2(bits_per_word),
-			irq_words = num_irqs / bits_per_word,
-			pending_size = sizeof(UX) * irq_words,
-			enabled_size = sizeof(UX) * irq_words,
-			priority_size = sizeof(UX) * irq_words * priority_bits,
-			total_size = pending_size + enabled_size + priority_size
+			irq_words = NUM_IRQS / bits_per_word,
+			pending_size = sizeof(u32) * irq_words,
+			priority_size = sizeof(u32) * irq_words * priority_bits,
+			enabled_words = irq_words * NUM_NODES * NUM_HARTS,
+			enabled_size = sizeof(u32) * enabled_words,
+			total_size = 12 * sizeof(u32) + pending_size + priority_size + enabled_size
 		};
 
 		P &proc;
 
-		/* PLIC registers */
+		/* PLIC config registers */
 
-		UX pending[irq_words];
-		UX enabled[irq_words];
-		UX priority0[irq_words];
-		UX priority1[irq_words];
+		u32 num_irqs;
+		u32 num_nodes;
+		u32 num_harts;
+		u32 num_priorities;
+		u32 pending_offset;
+		u32 pending_length;
+		u32 priority0_offset;
+		u32 priority0_length;
+		u32 priority1_offset;
+		u32 priority1_length;
+		u32 enabled_offset;
+		u32 enabled_length;
 
-		constexpr u8* as_u8() { return (u8*)&pending[0]; }
-		constexpr u16* as_u16() { return (u16*)&pending[0]; }
-		constexpr u32* as_u32() { return (u32*)&pending[0]; }
-		constexpr u64* as_u64() { return (u64*)&pending[0]; }
+		/* PLIC data registers */
+
+		u32 pending[irq_words];
+		u32 priority0[irq_words];
+		u32 priority1[irq_words];
+		u32 enabled[enabled_words];
+
+		/* PLIC data access */
+
+		constexpr u8* as_u8() { return (u8*)&num_irqs; }
+		constexpr u16* as_u16() { return (u16*)&num_irqs; }
+		constexpr u32* as_u32() { return (u32*)&num_irqs; }
+		constexpr u64* as_u64() { return (u64*)&num_irqs; }
 
 		/* PLIC constructor */
 
 		plic_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>("PLIC", mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write), proc(proc),
-				pending{}, enabled{}, priority0{}, priority1{} {}
+				num_irqs(NUM_IRQS),
+				num_nodes(NUM_NODES),
+				num_harts(NUM_HARTS),
+				num_priorities(4),
+				pending_offset(12 * sizeof(u32)),
+				pending_length(irq_words * sizeof(u32)),
+				priority0_offset(pending_offset + pending_length),
+				priority0_length(irq_words * sizeof(u32)),
+				priority1_offset(priority0_offset + priority0_length),
+				priority1_length(irq_words * sizeof(u32)),
+				enabled_offset(priority1_offset + priority1_length),
+				enabled_length(irq_words * num_nodes * num_harts * sizeof(u32)),
+				pending{},
+				priority0{},
+				priority1{},
+				enabled{} {}
 
 		/* PLIC interface */
 
@@ -55,7 +87,7 @@ namespace riscv {
 			pending[irq >> word_shift] |= (1ULL << (irq & (bits_per_word-1)));
 		}
 
-		bool irq_pending(UX mode)
+		bool irq_pending(UX mode, UX node_id, UX hart_id)
 		{
 			/*
 			 * implements 4 priority levels using 2 bits ([p0][p1])
@@ -69,22 +101,26 @@ namespace riscv {
 			switch (mode) {
 				case 0:
 					for (size_t i = 0; i < irq_words; i++) {
-						is_pending |= (pending[i] & enabled[i]);
+						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
+						is_pending |= (pending[i] & enabled[en_off + i]);
 					}
 					break;
 				case 1:
 					for (size_t i = 0; i < irq_words; i++) {
-						is_pending |= (pending[i] & enabled[i] & (priority0[i] | priority1[i]));
+						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
+						is_pending |= (pending[i] & enabled[en_off + i] & (priority0[i] | priority1[i]));
 					}
 					break;
 				case 2:
 					for (size_t i = 0; i < irq_words; i++) {
-						is_pending |= (pending[i] & enabled[i] & priority0[i]);
+						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
+						is_pending |= (pending[i] & enabled[en_off + i] & priority0[i]);
 					}
 					break;
 				case 3:
 					for (size_t i = 0; i < irq_words; i++) {
-						is_pending |= (pending[i] & enabled[i] & priority0[i] & priority1[i]);
+						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
+						is_pending |= (pending[i] & enabled[en_off + i] & priority0[i] & priority1[i]);
 					}
 					break;
 			}
@@ -130,7 +166,7 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%02hhx\n", addr_t(va), val);
 			}
-			if (va < total_size) *(as_u8() + va) = val;
+			if (va >= pending_offset && va < total_size) *(as_u8() + va) = val;
 		}
 
 		void store_16(UX va, u16 val)
@@ -138,7 +174,7 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%04hx\n", addr_t(va), val);
 			}
-			if (va < total_size - 1) *(as_u16() + (va>>1)) = val;
+			if (va >= pending_offset && va < total_size - 1) *(as_u16() + (va>>1)) = val;
 		}
 
 		void store_32(UX va, u32 val)
@@ -146,7 +182,7 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
 			}
-			if (va < total_size - 3) *(as_u32() + (va>>2)) = val;
+			if (va >= pending_offset && va < total_size - 3) *(as_u32() + (va>>2)) = val;
 		}
 
 		void store_64(UX va, u64 val)
@@ -154,7 +190,7 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
 			}
-			if (va < total_size - 7) *(as_u64() + (va>>3)) = val;
+			if (va >= pending_offset && va < total_size - 7) *(as_u64() + (va>>3)) = val;
 		}
 
 	};

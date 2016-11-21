@@ -521,7 +521,7 @@ namespace riscv {
 
 			/* service external interrupts */
 
-			bool irq_pending = device_plic->irq_pending(P::mode);
+			bool irq_pending = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
 			if (P::mstatus.r.mie && irq_pending) {
 				if (P::mideleg & (1 << riscv_intr_m_external)) {
 					if (P::hideleg & (1 << riscv_intr_h_external)) {
