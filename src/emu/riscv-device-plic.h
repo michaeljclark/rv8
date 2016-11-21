@@ -9,7 +9,7 @@ namespace riscv {
 
 	/* PLIC MMIO device */
 
-	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 4, const int NUM_HARTS = 64>
+	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 1, const int NUM_HARTS = 4>
 	struct plic_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
@@ -77,7 +77,8 @@ namespace riscv {
 				pending{},
 				priority0{},
 				priority1{},
-				enabled{} {}
+				enabled{}
+			{}
 
 		/* PLIC interface */
 
@@ -98,28 +99,25 @@ namespace riscv {
 			 * lowest  U (00,01,10,11)
 			 */
 			UX is_pending = 0;
+			UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
 			switch (mode) {
 				case 0:
 					for (size_t i = 0; i < irq_words; i++) {
-						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
 						is_pending |= (pending[i] & enabled[en_off + i]);
 					}
 					break;
 				case 1:
 					for (size_t i = 0; i < irq_words; i++) {
-						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
 						is_pending |= (pending[i] & enabled[en_off + i] & (priority0[i] | priority1[i]));
 					}
 					break;
 				case 2:
 					for (size_t i = 0; i < irq_words; i++) {
-						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
 						is_pending |= (pending[i] & enabled[en_off + i] & priority0[i]);
 					}
 					break;
 				case 3:
 					for (size_t i = 0; i < irq_words; i++) {
-						UX en_off = (node_id * NUM_NODES * NUM_HARTS) + (hart_id * NUM_HARTS);
 						is_pending |= (pending[i] & enabled[en_off + i] & priority0[i] & priority1[i]);
 					}
 					break;
