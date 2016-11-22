@@ -96,7 +96,7 @@ namespace riscv {
 		__u128(u64 lo) : r{ .d = { .lo = lo, .hi = 0 } } {}
 		__u128(u64 hi, u64 lo) : r{ .d = { .lo = lo, .hi = hi } } {}
 		#else
-		__s128(u64 lo) : r{ .d = { .hi = 0, .lo = lo } } {}
+		__u128(u64 lo) : r{ .d = { .hi = 0, .lo = lo } } {}
 		__u128(u64 hi, u64 lo) : r{ .d = { .hi = hi, .lo = lo } } {}
 		#endif
 	};
