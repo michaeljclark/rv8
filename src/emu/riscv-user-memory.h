@@ -21,15 +21,45 @@ namespace riscv {
 
 		virtual ~memory_segment() {}
 
-		virtual void load_8 (UX va, u8  &val) = 0;
-		virtual void load_16(UX va, u16 &val) = 0;
-		virtual void load_32(UX va, u32 &val) = 0;
-		virtual void load_64(UX va, u64 &val) = 0;
+		virtual void load_8(UX va, u8 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+		}
 
-		virtual void store_8 (UX va, u8  val) = 0;
-		virtual void store_16(UX va, u16 val) = 0;
-		virtual void store_32(UX va, u32 val) = 0;
-		virtual void store_64(UX va, u64 val) = 0;
+		virtual void load_16(UX va, u16 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+		}
+
+		virtual void load_32(UX va, u32 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+		}
+
+		virtual void load_64(UX va, u64 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+		}
+
+		virtual void store_8 (UX va, u8  val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+		}
+
+		virtual void store_16(UX va, u16 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+		}
+
+		virtual void store_32(UX va, u32 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+		}
+
+		virtual void store_64(UX va, u64 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+		}
 
 		template <typename T>
 		constexpr void load(UX va, T &val)

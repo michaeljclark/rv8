@@ -182,7 +182,7 @@ namespace riscv {
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
 			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
-			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000);
+			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000, device_plic, 3);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem.add_segment(device_boot);
@@ -444,7 +444,7 @@ namespace riscv {
 					P::mmu.l1_dtlb.flush(P::pdid);
 					return pc_offset;
 				case riscv_op_wfi:
-					/* TODO - Halt the processor */
+					std::this_thread::yield();
 					return pc_offset;
 				default: break;
 			}
@@ -494,9 +494,21 @@ namespace riscv {
 			P::pc = P::mtvec;
 		}
 
+		void print_device_registers()
+		{
+			device_time->print_registers();
+			device_mipi->print_registers();
+			device_plic->print_registers();
+			device_uart->print_registers();
+		}
+
 		void isr()
 		{
-			/* service external interrupts */
+			/* service all external devices connected to the PLIC */
+
+			device_uart->service();
+
+			/* service external interrupts from the PLIC if enabled */
 
 			bool irq_pending = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
 			if (P::mstatus.r.mie && irq_pending) {
@@ -628,6 +640,7 @@ namespace riscv {
 			if (terminate) {
 				print_csr_registers();
 				P::print_int_registers();
+				device_uart->shutdown();
 				exit(0);
 			}
 
@@ -667,6 +680,13 @@ namespace riscv {
 				typename P::ux epc = P::pc;
 				reset();
 				P::raise(0x1000, epc);
+			} else {
+				if (signum == SIGUSR1) {
+					print_device_registers();
+				}
+				/* currently we exit on all other signals
+				   so we can perform cleanup here (shutdown devices) */
+				device_uart->shutdown();
 			}
 		}
 

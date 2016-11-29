@@ -55,11 +55,12 @@ namespace riscv {
 
 			const char* signal_name;
 			switch (signum) {
+				case SIGSEGV: signal_name = "SIGSEGV"; break;
 				case SIGTERM: signal_name = "SIGTERM"; break;
 				case SIGQUIT: signal_name = "SIGQUIT"; break;
 				case SIGINT: signal_name = "SIGINT"; break;
 				case SIGHUP: signal_name = "SIGHUP"; break;
-				case SIGSEGV: signal_name = "SIGSEGV"; break;
+				case SIGUSR1: signal_name = "SIGUSR1"; break;
 				default: signal_name = "FAULT";
 			}
 
@@ -79,6 +80,7 @@ namespace riscv {
 			sigaddset(&set, SIGQUIT);
 			sigaddset(&set, SIGINT);
 			sigaddset(&set, SIGHUP);
+			sigaddset(&set, SIGUSR1);
 			if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
 				panic("can't set thread signal mask: %s", strerror(errno));
 			}
@@ -99,6 +101,7 @@ namespace riscv {
 			sigaction(SIGQUIT, &sigaction_handler, nullptr);
 			sigaction(SIGINT, &sigaction_handler, nullptr);
 			sigaction(SIGHUP, &sigaction_handler, nullptr);
+			sigaction(SIGUSR1, &sigaction_handler, nullptr);
 			processor_fault::current = this;
 
 			/* unblock signals */

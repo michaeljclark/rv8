@@ -1,0 +1,76 @@
+.section .text
+.globl _start
+_start:
+
+# RAM is at 0x8000_0000 - 0xc000_0000
+# mtime is at 0x4000_0000
+# mtimecmp is at 0x4000_0008
+
+# setup trap stack at top of memory
+	li      sp, 0xbffffff8
+	csrrw   zero, mscratch, sp
+
+# setup stack 1MB below top of memory
+	li      sp, 0xbfeffff8
+
+# setup mtvec
+1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
+	addi    t0, t0, %pcrel_lo(1b)       # load mtvec(lo)
+	csrrw   zero, mtvec, t0
+
+# set mstatus.MIE=1 (enable M mode interrupt)
+	li      t0, 1
+	slli    t0, t0, 3
+	csrrs   zero, mstatus, t0
+
+# set mie.MEIE=1 (enable M mode external interrupts)
+	li      t0, 1
+	slli    t0, t0, 11
+	csrrs   zero, mie, t0
+
+# enable IRQ 3 in the PLIC for node_id=0, hart_id=0
+	li      a3, 8           # irq3
+	li      a0, 0x40002000
+	lw      a1, 24(a0)      # priority0 offset
+	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
+	sw		a3, 0(a2)       # store priority0 word to PLIC
+	lw      a1, 32(a0)      # priority1 offset
+	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
+	sw		a3, 0(a2)       # store priority1 word to PLIC
+	lw		a1, 40(a0)      # enabled offset
+	add     a2, a0, a1      # enabled node_id=0, hart_id=0
+	sw		a3, 0(a2)       # store enabled word to PLIC
+
+# write to uart
+	li      a0, 0x40003000
+	li      a1, 0x65
+	sb      a1, 0(a0)
+	li      a1, 0x63
+	sb      a1, 0(a0)
+	li      a1, 0x68
+	sb      a1, 0(a0)
+	li      a1, 0x6f
+	sb      a1, 0(a0)
+	li      a1, 0x0a
+	sb      a1, 0(a0)
+
+# loop
+loop:
+	wfi
+	j loop
+
+
+# break on interrupt
+mtvec:
+# echo character from uart
+	li      a0, 0x40003000
+	lb      a1, 0(a0)
+	sb      a1, 0(a0)
+
+# disable pending interrupt in the PLIC
+	li      a0, 0x40002000
+	lw      a1, 16(a0)      # pending offset
+	add     a2, a0, a1      # pending node_id=0, hart_id=0
+	li      a3, 0
+	sw		a3, 0(a2)       # store pending word to PLIC
+	mret                    # return to faulting instruction

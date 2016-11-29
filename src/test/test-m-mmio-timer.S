@@ -19,13 +19,11 @@ _start:
 	csrrw   zero, mtvec, t0
 
 # set mstatus.MIE=1 (enable M mode interrupt)
-	li      t0, 1
-	slli    t0, t0, 3
+	li      t0, 8
 	csrrs   zero, mstatus, t0
 
 # set mie.MTIE=1 (enable M mode timer interrupts)
-	li      t0, 1
-	slli    t0, t0, 7
+	li      t0, 128
 	csrrs   zero, mie, t0
 
 # read from mtime

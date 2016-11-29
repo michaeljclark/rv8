@@ -43,6 +43,15 @@ namespace riscv {
 
 		/* MIPI interface */
 
+		void print_registers()
+		{
+			std::string hart_bstr;
+			for (ssize_t i = hart_words - 1; i >= 0; --i) {
+				hart_bstr += to_binary(hart[i]);
+			}
+			debug("mipi_mmio:hart             0b%s", hart_bstr.c_str());
+		}
+
 		void signal_ipi(UX hart_id)
 		{
 			hart_id &= (num_harts-1);

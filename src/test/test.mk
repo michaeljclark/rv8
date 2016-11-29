@@ -65,7 +65,8 @@ PROGRAMS = \
 	$(BIN_DIR)/test-jump-tables-no \
 	$(BIN_DIR)/test-m-ecall-trap \
 	$(BIN_DIR)/test-m-sv39 \
-	$(BIN_DIR)/test-m-mmio-timer
+	$(BIN_DIR)/test-m-mmio-timer \
+	$(BIN_DIR)/test-m-mmio-uart
 
 all: dirs $(ASSEMBLY) $(PROGRAMS)
 
@@ -134,6 +135,9 @@ $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-mmio-timer.o: $(SRC_DIR)/test-m-mmio-timer.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-mmio-timer: $(OBJ_DIR)/test-m-mmio-timer.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-m-mmio-uart.o: $(SRC_DIR)/test-m-mmio-uart.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-mmio-uart: $(OBJ_DIR)/test-m-mmio-uart.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-sv39.o: $(SRC_DIR)/test-m-sv39.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-sv39: $(OBJ_DIR)/test-m-sv39.o ; $(LD) $^ -o $@

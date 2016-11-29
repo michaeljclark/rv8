@@ -26,16 +26,19 @@ _start:
 
 # set mstatus.VM=sv39
 	csrrsi  t1, mstatus, 0
-	li      t0, 9
+	li      t0, 9        # VM.val
 	slli    t0, t0, 24
-	or      t1, t1, t0
+	li      t2, 15       # VM.mask
+	slli    t2, t2, 24
+	neg     t2, t2
+	and     t1, t1, t2   # & mask
+	or      t1, t1, t0   # | val
 	csrrw   zero, mstatus, t1
 
 # set mstatus.MPRV=1 (enable M mode paging)
 	li      t0, 1
 	slli    t0, t0, 17
-	or      t1, t1, t0
-	csrrs   zero, mstatus, t1
+	csrrs   zero, mstatus, t0
 
 # write 0xff to 0x1000
 	li      a0, 0x1000
@@ -49,8 +52,7 @@ _start:
 # set mstatus.PUM=1 (enable M mode paging)
 	li      t0, 1
 	slli    t0, t0, 18
-	or      t1, t1, t0
-	csrrs   zero, mstatus, t1
+	csrrs   zero, mstatus, t0
 
 # read from 0x1000
 	lbu     a3, 0(a0)
@@ -146,8 +148,7 @@ _start:
 # set mstatus.MPRV=1 (enable M mode paging)
 	li      t0, 1
 	slli    t0, t0, 17
-	or      t1, t1, t0
-	csrrs   zero, mstatus, t1
+	csrrs   zero, mstatus, t0
 
 # read from 0x1000
 	lbu     a3, 0(a0)   # instruction should cause load fault
@@ -159,8 +160,7 @@ _start:
 # set mstatus.MXR=1 (Mmake eXecute Readable)
 	li      t0, 1
 	slli    t0, t0, 19
-	or      t1, t1, t0
-	csrrs   zero, mstatus, t1
+	csrrs   zero, mstatus, t0
 
 # read from 0x1000
 	li      a7, 0
@@ -171,9 +171,8 @@ _start:
 	bne     a7, t0, fail
 
 # set mstatus.MPRV=0 (Disable M mode Paging)
-	li      t1, 1
-	slli    t1, t1, 17
-	or      t0, t0, t1
+	li      t0, 1
+	slli    t0, t0, 17
 	csrrc   zero, mstatus, t0
 
 # check PTE accessed bit is set

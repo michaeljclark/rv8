@@ -26,13 +26,17 @@
 #include <deque>
 #include <map>
 #include <thread>
+#include <atomic>
 #include <type_traits>
 
+#include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <termios.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
@@ -65,6 +69,7 @@
 #include "riscv-processor-model.h"
 #include "riscv-unknown-abi.h"
 #include "riscv-processor-proxy.h"
+#include "riscv-queue.h"
 #include "riscv-device-boot.h"
 #include "riscv-device-time.h"
 #include "riscv-device-mipi.h"
@@ -151,7 +156,7 @@ struct riscv_emulator
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
 
-	static const int inst_step = 1000000; /* Number of instructions executes in step call */
+	static const int inst_step = 100000; /* Number of instructions executes in step call */
 
 	riscv_emulator() : cpu(host_cpu::get_instance()) {}
 

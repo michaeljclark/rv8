@@ -29,9 +29,16 @@ namespace riscv {
 
 		time_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>("TIME", mpa, /*uva*/0, /*size*/total_size,
-				pma_type_io | pma_prot_read | pma_prot_write), proc(proc) {}
+				pma_type_io | pma_prot_read | pma_prot_write),
+			proc(proc) {}
 
 		/* Timer interface */
+
+		void print_registers()
+		{
+			debug("time_mmio:mtime            %llu", mtime);
+			debug("time_mmio:mtimecmp         %llu", mtimecmp);
+		}
 
 		bool timer_pending(UX time)
 		{
