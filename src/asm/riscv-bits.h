@@ -111,7 +111,7 @@ namespace riscv {
 
 	/* extend bit at position b to the most significant bit  */
 	template <typename T>
-	static inline _bits_u32 bitextend(T val, int b)
+	static inline T bitextend(T val, int b)
 	{
 		T mask = 1U << (b - 1);
 		val = val & ((1U << b) - 1);
