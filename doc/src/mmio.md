@@ -128,7 +128,9 @@ lowest   | U    | (00,01,10,11)
 
 ## UART MMIO Layout
 
-The UART MMIO layout is based on a 16550.
+The UART MMIO layout is based on the 16550. See
+[Serial UART information](https://www.lammertbies.nl/comm/info/serial-uart.html)
+for more information.
 
 Example UART device at offset `0x40003000`.
 
@@ -136,15 +138,15 @@ Example UART device at offset `0x40003000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | u8   | rbr              | Recieve Buffer Register
-0                | u8   | thr              | Transmit Holding Register
-1                | u8   | ier              | Interrupt Enable Register
-2                | u8   | iir              | Interrupt Identity Register
-2                | u8   | fcr              | FIFO Control Register
-3                | u8   | lcr              | Line Control Register
-4                | u8   | mcr              | MODEM Control Register
-5                | u8   | lsr              | Line Status Register
-6                | u8   | msr              | MODEM Status Register
-7                | u8   | scr              | Scratch Register
-0                | u8   | dll              | Divisor Latch LSB (LCR.DLAB=1)
-1                | u8   | dlm              | Divisor Latch MSB (LCR.DLAB=1)
+0                | u8   | rbr              | (R) Recieve Buffer Register
+0                | u8   | thr              | (W) Transmit Holding Register
+1                | u8   | ier              | (RW) Interrupt Enable Register
+2                | u8   | iir              | (R) Interrupt Identity Register
+2                | u8   | fcr              | (W) FIFO Control Register
+3                | u8   | lcr              | (RW) Line Control Register
+4                | u8   | mcr              | (RW) MODEM Control Register
+5                | u8   | lsr              | (RW) Line Status Register
+6                | u8   | msr              | (RW) MODEM Status Register
+7                | u8   | scr              | (RW) Scratch Register
+0                | u8   | dll              | (RW) Divisor Latch LSB (LCR.DLAB=1)
+1                | u8   | dlm              | (RW) Divisor Latch MSB (LCR.DLAB=1)
