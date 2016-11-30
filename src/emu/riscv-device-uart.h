@@ -270,8 +270,7 @@ namespace riscv {
 
 		void service()
 		{
-			/* TODO - check for IER_ERBDA bit */
-			if (console->has_char()) {
+			if ((com.ier & IER_ERBDA) && console->has_char()) {
 				plic->signal_irq(irq);
 			}
 		}

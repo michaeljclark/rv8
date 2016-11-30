@@ -41,8 +41,12 @@ _start:
 	add     a2, a0, a1      # enabled node_id=0, hart_id=0
 	sw		a3, 0(a2)       # store enabled word to PLIC
 
-# write to uart
+# program uart to raise interrupts on recieved data
 	li      a0, 0x40003000
+	li      a1, 1           # Load IER_ERBDA bit
+	sb      a1, 1(a0)       # Set IER_ERBDA bit in IER register
+
+# write 'echo\n' to uart
 	li      a1, 0x65
 	sb      a1, 0(a0)
 	li      a1, 0x63
