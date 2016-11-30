@@ -46,17 +46,15 @@ _start:
 	li      a1, 1           # Load IER_ERBDA bit
 	sb      a1, 1(a0)       # Set IER_ERBDA bit in IER register
 
-# write 'echo\n' to uart
-	li      a1, 0x65
-	sb      a1, 0(a0)
-	li      a1, 0x63
-	sb      a1, 0(a0)
-	li      a1, 0x68
-	sb      a1, 0(a0)
-	li      a1, 0x6f
-	sb      a1, 0(a0)
-	li      a1, 0x0a
-	sb      a1, 0(a0)
+# write msg to uart
+1:	auipc   a1, %pcrel_hi(msg)    # load msg(hi)
+	addi    a1, a1, %pcrel_lo(1b)  # load msg(lo)
+print:
+	lb      t0, 0(a1)
+	beqz    t0, loop
+	sb      t0, 0(a0)
+	addi    a1, a1, 1
+	j       print
 
 # loop
 loop:
@@ -78,3 +76,7 @@ mtvec:
 	li      a3, 0
 	sw		a3, 0(a2)       # store pending word to PLIC
 	mret                    # return to faulting instruction
+
+.section .rodata
+msg:
+        .string "RISC-V UART echo demo v0.0.0\n$ "
