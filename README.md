@@ -10,17 +10,14 @@ Version : (under version control)
 About
 -------------
 
-RISC-V Meta is a suite of tools that operate on RISC-V ISA (Instruction
-Set Architecture) Metadata. The RISC-V Meta tools can generate RISC-V
-instruction opcode maps, C headers and source containing instruction
-set metadata, instruction decoders, disassemblers, JIT encoders,
-instruction interpreters and LaTeX documentation.
+RISC-V Meta is a suite of tools that operate on RISC-V ISA Metadata.
 
-The suite contains simple decoupled libraries including an ELF parser, a
-functional metadata based RISC-V disassembler (`riscv-parse-elf`), an
-extensible source generator (`riscv-parse-meta`), an RVC compressor /
-decompressor (`riscv-compress-elf`) plus library routines and tools for
-generating statistics on RISC-V ELF executables (`riscv-histogram-elf`).
+The suite contains simple decoupled libraries and command line tools
+for creating instruction opcode maps, C headers and source containing
+instruction set metadata, instruction decoders, JIT encoders, LaTeX
+documentation, a functional metadata based RISC-V disassembler, a
+histogram tool for generating statistics on RISC-V ELF executables
+and a RISC-V simulator with proxy syscall and privileged modes.
 
 RISC-V Meta is the starting point for a RISC-V binary translation and
 security sandboxing investigation.
@@ -150,11 +147,9 @@ The following table shows the RISC-V Meta tools:
 
 |Name|Description|
 |:---|:----------|
-|riscv-parse-meta|generates source, headers and documentation|
-|riscv-parse-elf|ELF parser and disassmbler tool|
-|riscv-compress-elf|ELF compressor tool (work in progress)|
-|riscv-histogram-elf|ELF histogram tool|
-|riscv-test-emulate|Emulator Proof of Concept|
+|rv-meta|Source, headers and documentation generator|
+|rv-bin|ELF dump, disassmble, compress and histogram tool|
+|rv-sim|ISA Emulator Proof of Concept|
 
 Dependencies
 -----------------
@@ -162,7 +157,7 @@ Dependencies
 - gmake
 - gcc-5.4 or clang-3.4
 - ragel (required to regenerate config grammar)
-- riscv-gnu-toolchain (required for `make test-emulate`)
+- riscv-gnu-toolchain (required for `make test-sim`)
 - Note: Set RISCV environment variable to point to toolchain
 
 Supported Platforms
@@ -184,15 +179,18 @@ To output a LaTeX opcode tex: ```make latex```
 
 To output a LaTeX opcode pdf: ```make pdf```
 
-To run the proof of concept emulator: ```make test-emulate```
+To run the proof of concept emulator: ```make test-sim```
 
-Parse ELF Utility
+To install to /usr/local/bin: ```make && sudo make install```
+
+ELF Dump Utility
 -----------------------------
 
-Parse ELF usage command line options:
+ELF Dump usage command line options:
 
 ```
-usage: riscv-parse-elf [<options>] <elf_file>
+$ rv-bin dump -h
+usage: dump [<options>] <elf_file>
                        --color, -c            Enable Color
             --print-elf-header, -e            Print ELF header
        --print-section-headers, -s            Print Section headers
@@ -209,7 +207,7 @@ To run the ELF parser and disassembler:
 ```
 # Requires RISC-V GNU Compiler Toolchain to build tests
 make test-build-rv64
-./build/darwin_x86_64/bin/riscv-parse-elf -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
+rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 ```
 
 Parse Meta Utility
@@ -218,7 +216,8 @@ Parse Meta Utility
 Parse Meta usage command line options:
 
 ```
-usage: riscv-parse-meta [<options>]
+$ rv-meta -h
+usage: rv-meta [<options>]
                         --help, -h            Show help
                   --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
                     --read-isa, -r <string>   Read instruction set metadata from directory
@@ -247,25 +246,25 @@ usage: riscv-parse-meta [<options>]
 To print a colour opcode map for the RV32IMA ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV32IMA -m -c -r meta
+rv-meta -I RV32IMA -m -c -r meta
 ```
 
 To print a colour opcode map for the RV64IMAFDS ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV64IMAFDS -m -c -r meta
+rv-meta -I RV64IMAFDS -m -c -r meta
 ```
 
 To output LaTeX for the RV32C ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV32C -l -r meta
+rv-meta -I RV32C -l -r meta
 ```
 
 To output LaTeX for the RV64G ISA subset:
 
 ```
-./build/darwin_x86_64/bin/riscv-parse-meta -I RV64G -l -r meta
+rv-meta -I RV64G -l -r meta
 ```
 
 RISC-V Test Emulator
@@ -274,17 +273,21 @@ RISC-V Test Emulator
 Emulator command line options:
 
 ```
-usage: riscv-test-emulate [<options>] <elf_file>
+$ rv-sim -h
+usage: rv-sim [<options>] <elf_file>
+                      --config, -c <string>   Configuration strung
                          --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
                   --privileged, -p            Privileged ISA Emulation
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
-              --log-memory-map, -m            Log Memory Map
+                    --log-mmio, -O            Log Memory Mapped IO
+              --log-memory-map, -m            Log Memory Map Information
                --log-mmode-csr, -M            Log Machine Control and Status Registers
                --log-hmode-csr, -H            Log Hypervisor Control and Status Registers
                --log-smode-csr, -S            Log Supervisor Control and Status Registers
                --log-umode-csr, -U            Log User Control and Status Registers
                --log-registers, -r            Log Registers (defaults to integer registers)
+                   --log-traps, -t            Log Traps
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
@@ -293,7 +296,7 @@ usage: riscv-test-emulate [<options>] <elf_file>
 To run the simple Hello World program:
 
 ```
-build/darwin_x86_64/bin/riscv-test-emulate build/riscv64-unknown-elf/bin/hello-world-libc
+riscv-sim build/riscv64-unknown-elf/bin/hello-world-libc
 ```
 
 RISC-V ELF Histogram Utility
@@ -302,7 +305,8 @@ RISC-V ELF Histogram Utility
 ELF Histogram usage command line options:
 
 ```
-usage: riscv-histogram-elf [<options>] <elf_file>
+$ rv-bin histogram -h
+usage: histogram [<options>] <elf_file>
                         --help, -h            Show help
                         --char, -c <string>   Character to use in bars
                         --bars, -b            Print bars next to counts
@@ -316,5 +320,10 @@ usage: riscv-histogram-elf [<options>] <elf_file>
 To print the top 20 instructions in a RISC-V ELF binary:
 
 ```
-./build/darwin_x86_64/bin/riscv-histogram-elf -b -c █ linux/vmlinux | head -20
+rv-bin histogram -I -b -c █ linux/vmlinux | head -20
+
+To print the top 20 registers in a RISC-V ELF binary:
+
+```
+rv-bin histogram -R -b -c █ linux/vmlinux | head -20
 ```

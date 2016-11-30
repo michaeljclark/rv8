@@ -188,7 +188,7 @@ struct riscv_histogram_elf
 		auto result = cmdline_option::process_options(options, argc, argv);
 		if (!result.second) {
 			help_or_error = true;
-		} else if (result.first.size() != 1 || !(inst_histogram || regs_histogram)) {
+		} else if ((result.first.size() != 1 || !(inst_histogram || regs_histogram)) && !help_or_error) {
 			printf("%s: wrong number of arguments\n", argv[0]);
 			help_or_error = true;
 		}
@@ -210,7 +210,7 @@ struct riscv_histogram_elf
 	}
 };
 
-int main(int argc, const char *argv[])
+int rv_histogram_main(int argc, const char *argv[])
 {
 	riscv_histogram_elf elf_histogram;
 	elf_histogram.parse_commandline(argc, argv);

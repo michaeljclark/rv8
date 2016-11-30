@@ -401,7 +401,7 @@ struct riscv_emulator
 		auto result = cmdline_option::process_options(options, argc, argv);
 		if (!result.second) {
 			help_or_error = true;
-		} else if (result.first.size() < 1) {
+		} else if (result.first.size() < 1 && !help_or_error) {
 			printf("%s: wrong number of arguments\n", argv[0]);
 			help_or_error = true;
 		}

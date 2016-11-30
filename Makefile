@@ -41,7 +41,6 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
-                -I$(TOP_DIR)/src/tlsf \
                 -I$(TOP_DIR)/src/util
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
@@ -194,8 +193,7 @@ RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 
 # libriscv_gen
 RV_GEN_HDR =    $(SRC_DIR)/gen/riscv-gen.h
-RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen.cc \
-                $(SRC_DIR)/gen/riscv-gen-cc.cc \
+RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen-cc.cc \
                 $(SRC_DIR)/gen/riscv-gen-constraints.cc \
                 $(SRC_DIR)/gen/riscv-gen-fpu-test.cc \
                 $(SRC_DIR)/gen/riscv-gen-interp.cc \
@@ -250,80 +248,69 @@ RV_ASM_SRCS =   $(SRC_DIR)/asm/riscv-disasm.cc \
 RV_ASM_OBJS =   $(call src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
-# compress-elf
-COMPRESS_ELF_SRCS = $(SRC_DIR)/app/riscv-compress-elf.cc
-COMPRESS_ELF_OBJS = $(call src_objs, $(COMPRESS_ELF_SRCS))
-COMPRESS_ELF_BIN = $(BIN_DIR)/riscv-compress-elf
+# rv-meta
+RV_META_SRCS =  $(SRC_DIR)/app/riscv-meta.cc
+RV_META_OBJS =  $(call src_objs, $(RV_META_SRCS))
+RV_META_BIN =   $(BIN_DIR)/rv-meta
 
-# histogram-elf
-HISTOGRAM_ELF_SRCS = $(SRC_DIR)/app/riscv-histogram-elf.cc
-HISTOGRAM_ELF_OBJS = $(call src_objs, $(HISTOGRAM_ELF_SRCS))
-HISTOGRAM_ELF_BIN = $(BIN_DIR)/riscv-histogram-elf
+# rv-bin
+RV_BIN_SRCS =   $(SRC_DIR)/app/riscv-compress.cc \
+                $(SRC_DIR)/app/riscv-dump.cc \
+                $(SRC_DIR)/app/riscv-histogram.cc \
+                $(SRC_DIR)/app/riscv-pte.cc \
+                $(SRC_DIR)/app/riscv-bin.cc
+RV_BIN_OBJS =   $(call src_objs, $(RV_BIN_SRCS))
+RV_BIN_BIN =    $(BIN_DIR)/rv-bin
 
-# parse-elf
-PARSE_ELF_SRCS = $(SRC_DIR)/app/riscv-parse-elf.cc
-PARSE_ELF_OBJS = $(call src_objs, $(PARSE_ELF_SRCS))
-PARSE_ELF_BIN = $(BIN_DIR)/riscv-parse-elf
-
-# parse-meta
-PARSE_META_SRCS = $(SRC_DIR)/app/riscv-parse-meta.cc
-PARSE_META_OBJS = $(call src_objs, $(PARSE_META_SRCS))
-PARSE_META_BIN = $(BIN_DIR)/riscv-parse-meta
-
-# pte-util
-PTE_UTIL_SRCS = $(SRC_DIR)/app/riscv-pte-util.cc
-PTE_UTIL_OBJS = $(call src_objs, $(PTE_UTIL_SRCS))
-PTE_UTIL_BIN = $(BIN_DIR)/riscv-pte-util
+# rv-sim
+RV_SIM_SRCS =     $(SRC_DIR)/app/riscv-sim.cc
+RV_SIM_OBJS =     $(call src_objs, $(RV_SIM_SRCS))
+RV_SIM_BIN =      $(BIN_DIR)/rv-sim
 
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/riscv-test-bits.cc
 TEST_BITS_OBJS = $(call src_objs, $(TEST_BITS_SRCS))
-TEST_BITS_BIN = $(BIN_DIR)/riscv-test-bits
+TEST_BITS_BIN =  $(BIN_DIR)/riscv-test-bits
 
 # test-config
 TEST_CONFIG_SRCS = $(SRC_DIR)/app/riscv-test-config.cc
 TEST_CONFIG_OBJS = $(call src_objs, $(TEST_CONFIG_SRCS))
-TEST_CONFIG_BIN = $(BIN_DIR)/riscv-test-config
-
-# test-emulate
-TEST_EMULATE_SRCS = $(SRC_DIR)/app/riscv-test-emulate.cc
-TEST_EMULATE_OBJS = $(call src_objs, $(TEST_EMULATE_SRCS))
-TEST_EMULATE_BIN = $(BIN_DIR)/riscv-test-emulate
+TEST_CONFIG_BIN =  $(BIN_DIR)/riscv-test-config
 
 # test-encoder
 TEST_ENCODER_SRCS = $(SRC_DIR)/app/riscv-test-encoder.cc
 TEST_ENCODER_OBJS = $(call src_objs, $(TEST_ENCODER_SRCS))
-TEST_ENCODER_BIN = $(BIN_DIR)/riscv-test-encoder
+TEST_ENCODER_BIN =  $(BIN_DIR)/riscv-test-encoder
 
 # test-endian
 TEST_ENDIAN_SRCS = $(SRC_DIR)/app/riscv-test-endian.cc
 TEST_ENDIAN_OBJS = $(call src_objs, $(TEST_ENDIAN_SRCS))
-TEST_ENDIAN_BIN = $(BIN_DIR)/riscv-test-endian
+TEST_ENDIAN_BIN =  $(BIN_DIR)/riscv-test-endian
 
 # test-mmu
 TEST_MMU_SRCS = $(SRC_DIR)/app/riscv-test-mmu.cc
 TEST_MMU_OBJS = $(call src_objs, $(TEST_MMU_SRCS))
-TEST_MMU_BIN = $(BIN_DIR)/riscv-test-mmu
+TEST_MMU_BIN =  $(BIN_DIR)/riscv-test-mmu
 
 # test-mul
 TEST_MUL_SRCS = $(SRC_DIR)/app/riscv-test-mul.cc
 TEST_MUL_OBJS = $(call src_objs, $(TEST_MUL_SRCS))
-TEST_MUL_BIN = $(BIN_DIR)/riscv-test-mul
+TEST_MUL_BIN =  $(BIN_DIR)/riscv-test-mul
 
 # test-operators
 TEST_OPERATORS_SRCS = $(SRC_DIR)/app/riscv-test-operators.cc
 TEST_OPERATORS_OBJS = $(call src_objs, $(TEST_OPERATORS_SRCS))
-TEST_OPERATORS_BIN = $(BIN_DIR)/riscv-test-operators
+TEST_OPERATORS_BIN =  $(BIN_DIR)/riscv-test-operators
 
 # test-printf
 TEST_PRINTF_SRCS = $(SRC_DIR)/app/riscv-test-printf.cc
 TEST_PRINTF_OBJS = $(call src_objs, $(TEST_PRINTF_SRCS))
-TEST_PRINTF_BIN = $(BIN_DIR)/riscv-test-printf
+TEST_PRINTF_BIN =  $(BIN_DIR)/riscv-test-printf
 
 # test-rand
 TEST_RAND_SRCS = $(SRC_DIR)/app/riscv-test-rand.cc
 TEST_RAND_OBJS = $(call src_objs, $(TEST_RAND_SRCS))
-TEST_RAND_BIN = $(BIN_DIR)/riscv-test-rand
+TEST_RAND_BIN =  $(BIN_DIR)/riscv-test-rand
 
 # source and binaries
 ALL_SRCS = $(RV_ASM_SRCS) \
@@ -334,14 +321,11 @@ ALL_SRCS = $(RV_ASM_SRCS) \
            $(RV_MODEL_SRC) \
            $(RV_STR_SRC) \
            $(RV_UTIL_SRCS) \
-           $(COMPRESS_ELF_SRCS) \
-           $(HISTOGRAM_ELF_SRCS) \
-           $(PARSE_ELF_SRCS) \
-           $(PARSE_META_SRCS) \
-           $(PTE_UTIL_SRCS) \
+           $(RV_BIN_SRCS) \
+           $(RV_META_SRCS) \
+           $(RV_SIM_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
-           $(TEST_EMULATE_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_MMU_SRCS) \
@@ -350,14 +334,11 @@ ALL_SRCS = $(RV_ASM_SRCS) \
            $(TEST_PRINTF_SRCS) \
            $(TEST_RAND_SRCS)
 
-BINARIES = $(COMPRESS_ELF_BIN) \
-           $(HISTOGRAM_ELF_BIN) \
-           $(PARSE_ELF_BIN) \
-           $(PARSE_META_BIN) \
-           $(PTE_UTIL_BIN) \
+BINARIES = $(RV_META_BIN) \
+           $(RV_BIN_BIN) \
+           $(RV_SIM_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
-           $(TEST_EMULATE_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
            $(TEST_MMU_BIN) \
@@ -368,10 +349,9 @@ BINARIES = $(COMPRESS_ELF_BIN) \
 
 ASSEMBLY = $(TEST_CC_ASM)
 
-
 # build rules
 
-all: $(PARSE_META_BIN) meta $(BINARIES) $(ASSEMBLY)
+all: $(RV_META_BIN) meta $(BINARIES) $(ASSEMBLY)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
@@ -380,9 +360,9 @@ dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir
 
 latex: doc/tex/riscv-instructions.tex
 pdf: doc/pdf/riscv-instructions.pdf
-map: all ; @$(PARSE_META_BIN) -c -m -r $(META_DIR)
-doc/tex/riscv-instructions.tex: $(PARSE_META_BIN) ; @mkdir -p doc/tex
-	$(PARSE_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
+map: all ; @$(RV_META_BIN) -c -m -r $(META_DIR)
+doc/tex/riscv-instructions.tex: $(RV_META_BIN) ; @mkdir -p doc/tex
+	$(RV_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
 doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/pdf
 	( cd doc/tex && texi2pdf -o ../pdf/riscv-instructions.pdf riscv-instructions.tex )
 
@@ -402,33 +382,42 @@ TEST_RV32C =    ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
 
 qemu-tests:
 	( cd riscv-qemu-tests && make )
-	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(BIN_DIR)/riscv-test-emulate run )
+	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run )
+
+test-emulate: ; @echo Please use make test-sim
 
 test-run: test-run-rv64
-test-emulate: test-emulate-rv64
+test-sim: test-sim-rv64
 
 test-run-all: ; $(MAKE) -j1 test-run-rv64 test-run-rvc64 test-run-rv32 test-run-rvc32
-test-emulate-all: ; $(MAKE) -j1 test-emulate-rv64 test-emulate-rvc64 test-emulate-rv32 test-emulate-rvc32
+test-sim-all: ; $(MAKE) -j1 sim-rv64 sim-rvc64 sim-rv32 sim-rvc32
 
 test-build-rv64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64)
 test-run-rv64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64)
-test-emulate-rv64: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64) EMULATOR=$(TEST_EMULATE_BIN)
+test-sim-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV64) EMULATOR=$(RV_SIM_BIN)
 
 test-build-rvc64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64C)
 test-run-rvc64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64C)
-test-emulate-rvc64: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64C) EMULATOR=$(TEST_EMULATE_BIN)
+test-sim-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV64C) EMULATOR=$(RV_SIM_BIN)
 
 test-build-rv32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32)
 test-run-rv32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32)
-test-emulate-rv32: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32) EMULATOR=$(TEST_EMULATE_BIN)
+test-sim-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV32) EMULATOR=$(RV_SIM_BIN)
 
 test-build-rvc32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32C)
 test-run-rvc32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32C)
-test-emulate-rvc32: $(TEST_EMULATE_BIN) ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32C) EMULATOR=$(TEST_EMULATE_BIN)
+test-sim-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV32C) EMULATOR=$(RV_SIM_BIN)
 
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
 danger: ; @echo Please do not make danger
+
+# install
+
+install:
+	install $(RV_META_BIN) /usr/local/bin/rv-meta
+	install $(RV_BIN_BIN) /usr/local/bin/rv-bin
+	install $(RV_SIM_BIN) /usr/local/bin/rv-sim
 
 # metadata targets
 
@@ -439,50 +428,50 @@ danger: ; @echo Please do not make danger
 # newer than the output files and these targets will get called each time
 # make is run as the timestamps are not updated unless the output differs.
 
-parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(PARSE_META_BIN) $(1) -r $(META_DIR) > $$T; diff $$T $(2) > /dev/null || mv $$T $(2) ; rm -f $$T)
+parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(RV_META_BIN) $(1) -r $(META_DIR) > $$T; diff $$T $(2) > /dev/null || mv $$T $(2) ; rm -f $$T)
 
 meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
 	$(RV_FPU_HDR) $(RV_FPU_GEN) $(RV_INTERP_HDR) $(RV_CONSTR_HDR) \
 	$(TEST_CC_SRC)
 
-$(RV_OPANDS_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_OPANDS_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-A,$@))
 
-$(RV_CODEC_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_CODEC_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-S,$@))
 
-$(RV_JIT_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_JIT_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-J,$@))
 
-$(RV_JIT_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_JIT_SRC): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-K,$@))
 
-$(RV_META_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_META_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-H,$@))
 
-$(RV_META_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_META_SRC): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-C,$@))
 
-$(RV_STR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_STR_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -SH,$@))
 
-$(RV_STR_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_STR_SRC): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -SC,$@))
 
-$(RV_FPU_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_FPU_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -FH,$@))
 
-$(RV_FPU_GEN): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_FPU_GEN): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-N -0 -FC,$@))
 
-$(RV_INTERP_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_INTERP_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-V,$@))
 
-$(RV_CONSTR_HDR): $(PARSE_META_BIN) $(RV_META_DATA)
+$(RV_CONSTR_HDR): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-XC,$@))
 
-$(TEST_CC_SRC): $(PARSE_META_BIN) $(RV_META_DATA)
+$(TEST_CC_SRC): $(RV_META_BIN) $(RV_META_DATA)
 	$(call cmd, META $@, $(call parse_meta,-CC,$@))
 
 # lib targets
@@ -521,23 +510,15 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 
 # binary targets
 
-$(COMPRESS_ELF_BIN): $(COMPRESS_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(HISTOGRAM_ELF_BIN): $(HISTOGRAM_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
+$(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(PARSE_ELF_BIN): $(PARSE_ELF_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(PARSE_META_BIN): $(PARSE_META_OBJS) $(RV_GEN_LIB) $(RV_MODEL_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(PTE_UTIL_BIN): $(PTE_UTIL_OBJS) $(RV_UTIL_LIB)
+$(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -546,10 +527,6 @@ $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB) $(RV_FMT_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(TEST_EMULATE_BIN): $(TEST_EMULATE_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

@@ -93,7 +93,7 @@ static u64 decode_pte(const char *ptemode, u64 pa, u32 flags)
 
 /* main */
 
-int main(int argc, const char *argv[])
+int rv_pte_main(int argc, const char *argv[])
 {
 	if (argc != 4) {
 		printf("usage: %s (sv32|sv39|sv48) <pa> <DAGUXWRV>\n", argv[0]);

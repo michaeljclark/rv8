@@ -605,18 +605,13 @@ struct riscv_compress_elf
 	}
 };
 
-int main(int argc, const char *argv[])
+int rv_compress_main(int argc, const char *argv[])
 {
 	printf("\n");
-	printf("riscv-elf-compress-0.0.0-alpha-0\n");
+	printf("rv-compress-0.0.0-alpha-0\n");
 	printf("\n");
-	printf("sizeof(decode) = %lu\n", sizeof(decode));
-	printf("sizeof(disasm) = %lu\n", sizeof(disasm));
-	printf("sizeof(spasm) = %lu\n", sizeof(spasm));
-
 	riscv_compress_elf elf_compress;
 	elf_compress.parse_commandline(argc, argv);
 	elf_compress.run();
-
 	return 0;
 }

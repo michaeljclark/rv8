@@ -208,3 +208,12 @@ void riscv_gen::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &o
 		generate_codec_node(node.val_decodes[val], node.val_opcodes[val]);
 	}
 }
+
+/* main */
+
+int main(int argc, const char *argv[])
+{
+	riscv_gen gen;
+	gen.generate(argc, argv);
+	exit(0);
+}

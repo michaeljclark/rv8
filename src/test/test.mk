@@ -85,6 +85,8 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-yes 11
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-no 11
+
+test-priv: test
 	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-ecall-trap
 	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-sv39
 	$(EMULATOR) -S -m -O -p $(BIN_DIR)/test-m-mmio-timer
