@@ -9,6 +9,7 @@ Lift and translate epimorphisms
 - Useless branch term (branch to next, branch to branch)
 - Spin term detection (unconditional jump to self)
 - Implicit Function continuation term (branch target)
+- Call lift - AUIPC,JALR and JAL relaxation
 - Function ABI lift - Epilog/Prolog detection
 - Stack spill term (translate into SSA form)
 - Rotate (sub/shift/shift/or) -,>>,<<,| -> >>>,<<<
