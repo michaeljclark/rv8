@@ -113,8 +113,8 @@ namespace riscv {
 	template <typename T>
 	static inline T bitextend(T val, int b)
 	{
-		T mask = 1U << (b - 1);
-		val = val & ((1U << b) - 1);
+		T mask = T(1) << (b - 1);
+		val = val & ((T(1) << b) - T(1));
 		return (val ^ mask) - mask;
 	}
 
