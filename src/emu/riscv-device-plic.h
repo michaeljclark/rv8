@@ -65,7 +65,7 @@ namespace riscv {
 		lowest   | U    | (00,01,10,11)
 	*/
 
-	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 1, const int NUM_HARTS = 4>
+	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 1, const int NUM_HARTS = 8>
 	struct plic_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
