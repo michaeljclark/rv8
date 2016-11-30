@@ -31,15 +31,15 @@ _start:
 # enable IRQ 3 in the PLIC for node_id=0, hart_id=0
 	li      a3, 8           # irq3
 	li      a0, 0x40002000
-	lw      a1, 24(a0)      # priority0 offset
+	lw      a1, 20(a0)      # priority0 offset
 	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
-	sw		a3, 0(a2)       # store priority0 word to PLIC
-	lw      a1, 32(a0)      # priority1 offset
+	sw      a3, 0(a2)       # store priority0 word to PLIC
+	lw      a1, 24(a0)      # priority1 offset
 	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
-	sw		a3, 0(a2)       # store priority1 word to PLIC
-	lw		a1, 40(a0)      # enabled offset
+	sw      a3, 0(a2)       # store priority1 word to PLIC
+	lw      a1, 28(a0)      # enabled offset
 	add     a2, a0, a1      # enabled node_id=0, hart_id=0
-	sw		a3, 0(a2)       # store enabled word to PLIC
+	sw      a3, 0(a2)       # store enabled word to PLIC
 
 # program uart to raise interrupts on recieved data
 	li      a0, 0x40003000
@@ -74,7 +74,7 @@ mtvec:
 	lw      a1, 16(a0)      # pending offset
 	add     a2, a0, a1      # pending node_id=0, hart_id=0
 	li      a3, 0
-	sw		a3, 0(a2)       # store pending word to PLIC
+	sw      a3, 0(a2)       # store pending word to PLIC
 	mret                    # return to faulting instruction
 
 .section .rodata

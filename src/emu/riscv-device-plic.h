@@ -19,20 +19,24 @@ namespace riscv {
 		8                u32    num_harts          NUM_HARTS
 		12               u32    num_priorities     4
 		16               u32    pending_offset     12 * sizeof(u32)
-		20               u32    pending_length     irq_words * sizeof(u32)
-		24               u32    priority0_offset   pending_offset + pending_length
-		28               u32    priority0_length   irq_words * sizeof(u32)
-		32               u32    priority1_offset   priority0_offset + priority0_length
-		36               u32    priority1_length   irq_words * sizeof(u32)
-		40               u32    enabled_offset     priority1_offset + priority1_length
-		44               u32    enabled_length     enabled_words * sizeof(u32)
+		20               u32    priority0_offset   pending_offset + pending_length
+		24               u32    priority1_offset   priority0_offset + priority0_length
+		28               u32    enabled_offset     priority1_offset + priority1_length
 		pending_offset   u32    pending            irq_words * sizeof(u32)
 		priority0_offset u32    priority0          irq_words * sizeof(u32)
 		priority1_offset u32    priority1          irq_words * sizeof(u32)
 		enabled_offset   u32    enabled            enabled_words * sizeof(u32)
 
-		irq_words     = NUM_IRQS / bits_per_word
-		enabled_words = NUM_IRQS * NUM_NODES * NUM_HARTS / bits_per_word
+		The following constants describe the length of the MMIO apetures:
+
+        Constant         | Expression
+        :--------------- | :----------------
+		irq_words        | num_irqs / bits_per_word
+		pending_length   | irq_words * sizeof(u32)
+		priority0_length | irq_words * sizeof(u32)
+		priority1_length | irq_words * sizeof(u32)
+		enabled_words    | num_irqs * num_nodes * num_harts / bits_per_word
+		enabled_length   | enabled_words * sizeof(u32)
 
 		The enabled bit field order is [node_id][hart_id][irq_word] so that
 		the offset into the enabled bit field can be calculated using the
@@ -75,11 +79,11 @@ namespace riscv {
 			bits_per_word = sizeof(u32) << 3,
 			word_shift = ctz_pow2(bits_per_word),
 			irq_words = NUM_IRQS / bits_per_word,
-			pending_size = sizeof(u32) * irq_words,
-			priority_size = sizeof(u32) * irq_words * priority_bits,
+			pending_length = sizeof(u32) * irq_words,
+			priority_length = sizeof(u32) * irq_words,
 			enabled_words = (NUM_IRQS * NUM_NODES * NUM_HARTS) / bits_per_word,
-			enabled_size = sizeof(u32) * enabled_words,
-			total_size = 12 * sizeof(u32) + pending_size + priority_size + enabled_size
+			enabled_length = sizeof(u32) * enabled_words,
+			total_size = 8 * sizeof(u32) + pending_length + (2 * priority_length) + enabled_length
 		};
 
 		P &proc;
@@ -91,13 +95,9 @@ namespace riscv {
 		u32 num_harts;
 		u32 num_priorities;
 		u32 pending_offset;
-		u32 pending_length;
 		u32 priority0_offset;
-		u32 priority0_length;
 		u32 priority1_offset;
-		u32 priority1_length;
 		u32 enabled_offset;
-		u32 enabled_length;
 
 		/* PLIC data registers */
 
@@ -122,14 +122,10 @@ namespace riscv {
 				num_nodes(NUM_NODES),
 				num_harts(NUM_HARTS),
 				num_priorities(4),
-				pending_offset(12 * sizeof(u32)),
-				pending_length(irq_words * sizeof(u32)),
+				pending_offset(8 * sizeof(u32)),
 				priority0_offset(pending_offset + pending_length),
-				priority0_length(irq_words * sizeof(u32)),
-				priority1_offset(priority0_offset + priority0_length),
-				priority1_length(irq_words * sizeof(u32)),
-				enabled_offset(priority1_offset + priority1_length),
-				enabled_length(enabled_words * sizeof(u32)),
+				priority1_offset(priority0_offset + priority_length),
+				enabled_offset(priority1_offset + priority_length),
 				pending{},
 				priority0{},
 				priority1{},
@@ -144,13 +140,9 @@ namespace riscv {
 			debug("plic_mmio:num_nodes        %d", num_nodes);
 			debug("plic_mmio:num_harts        %d", num_harts);
 			debug("plic_mmio:pending_offset   %d", pending_offset);
-			debug("plic_mmio:pending_length   %d", pending_length);
 			debug("plic_mmio:priority0_offset %d", priority0_offset);
-			debug("plic_mmio:priority0_length %d", priority0_length);
 			debug("plic_mmio:priority1_offset %d", priority1_offset);
-			debug("plic_mmio:priority1_length %d", priority1_length);
 			debug("plic_mmio:enabled_offset   %d", enabled_offset);
-			debug("plic_mmio:enabled_length   %d", enabled_length);
 			debug("plic_mmio:total_size       %d", total_size);
 			std::string pending_bstr;
 			std::string priority0_bstr;
