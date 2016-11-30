@@ -259,7 +259,6 @@ namespace riscv {
 			irq(irq),
 			com{ 0 }
 		{
-			debug("uart_mmio:irq %d", irq);
 			console = std::make_shared<console_thread<P>>(proc);
 		}
 
