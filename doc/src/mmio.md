@@ -1,7 +1,12 @@
 # MMIO
 
-The following document outlines (unofficial) layout for the riscv_meta
-emulator, TIME, MIPI, PLIC and UART MMIO devices.
+The following document outlines (unofficial) layout for the riscv-meta
+emulator devices:
+
+- TIME
+- MIPI
+- PLIC
+- UART
 
 The UART MMIO layout is based on a 16550, the TIME device is based on
 version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
