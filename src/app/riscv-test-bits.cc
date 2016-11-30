@@ -12,12 +12,9 @@
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-bits.h"
-#include "riscv-host.h"
 #include "riscv-util.h"
 
 using namespace riscv;
-
-const int TIME_ITERATIONS = 16;
 
 template <typename T>
 static inline std::string to_binary_string(T val)
@@ -65,168 +62,88 @@ void test_binary_string(T val, const char* chk)
 }
 
 template <typename T>
-void test_add_overflow(T a, T b, bool expected, int iters = TIME_ITERATIONS)
+void test_add_overflow(T a, T b, bool expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		add_overflow<T>(a, b);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	bool overflow = add_overflow<T>(a, b);
 	bool pass = overflow == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s a=%-20llu (0x%016llx) b=%-20llu (0x%016llx) overflow=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s a=%-20llu (0x%016llx) b=%-20llu (0x%016llx) overflow=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)a, (u64)a,
 		   (u64)b, (u64)b,
 		   overflow, expected);
 }
 
 template <typename T>
-void test_sub_underflow(T a, T b, bool expected, int iters = TIME_ITERATIONS)
+void test_sub_underflow(T a, T b, bool expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		sub_underflow<T>(a, b);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	bool underflow = sub_underflow<T>(a, b);
 	bool pass = underflow == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s a=%-20llu (0x%016llx) b=%-20llu (0x%016llx) overflow=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s a=%-20llu (0x%016llx) b=%-20llu (0x%016llx) overflow=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)a, (u64)a,
 		   (u64)b, (u64)b,
 		   underflow, expected);
 }
 
 template <typename T>
-void test_bitextend(T val, int bit, T expected, int iters = TIME_ITERATIONS)
+void test_bitextend(T val, int bit, T expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		bitextend<T>(val, bit);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	T result = bitextend<T>(val, bit);
 	bool pass = result == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) result=%lld (0b%s) expected=%lld (0b%s)\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) result=%lld (0b%s) expected=%lld (0b%s)\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(),
 		   (u64)result, to_binary_string<T>(result).c_str(),
 		   (u64)expected, to_binary_string<T>(expected).c_str());
 }
 
 template <typename T>
-void test_popcount(T val, int expected, int iters = TIME_ITERATIONS)
+void test_popcount(T val, int expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		popcount<T>(val);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	int count = popcount<T>(val);
 	bool pass = count == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
 }
 
 template <typename T>
-void test_ispow2(T val, bool expected, int iters = TIME_ITERATIONS)
+void test_ispow2(T val, bool expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		ispow2<T>(val);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	bool pow2 = ispow2<T>(val);
 	bool pass = pow2 == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) pow2=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) pow2=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(), pow2, expected);
 }
 
 template <typename T>
-void test_roundpow2(T val, int expected, int iters = TIME_ITERATIONS)
+void test_roundpow2(T val, int expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		roundpow2<T>(val);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	int rounded = roundpow2<T>(val);
 	bool pass = rounded == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) rounded=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) rounded=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(), rounded, expected);
 }
 
 template <typename T>
-void test_clz(T val, int expected, int iters = TIME_ITERATIONS)
+void test_clz(T val, int expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		clz<T>(val);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	int count = clz<T>(val);
 	bool pass = count == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
 }
 
 template <typename T>
-void test_ctz(T val, int expected, int iters = TIME_ITERATIONS)
+void test_ctz(T val, int expected)
 {
-	uint64_t tstart = 0, trun = 0, tmin = 0, tmax = 0, ttotal = 0, tavg = 0;
-	for (int i = 0; i < iters; i++) {
-		tstart = cpu_cycle_clock();
-		ctz<T>(val);
-		ttotal += (trun = (cpu_cycle_clock() - tstart));
-		if (tmin == 0 || trun < tmin) tmin = trun;
-		if (tmax == 0 || trun > tmax) tmax = trun;
-	}
-	tavg = ttotal / iters;
-
 	int count = ctz<T>(val);
 	bool pass = count == expected;
-	printf("%s [%4llu,%4llu,%4llu] %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
-		   pass ? "PASS" : "FAIL", (u64)tmin, (u64)tmax, (u64)tavg, __func__,
+	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
+		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
 }
 
@@ -339,22 +256,18 @@ void test_roundpow2()
 
 void test_bitextend()
 {
-#if ENABLE_BROKEN
 	test_bitextend<uint16_t>(0b010, 3, 0b0010);
 	test_bitextend<uint16_t>(0b011, 3, 0b0011);
 	test_bitextend<uint16_t>(0b110, 3, 0xfffe);
 	test_bitextend<uint16_t>(0b111, 3, 0xffff);
-#endif
 	test_bitextend<uint32_t>(0b010, 3, 0b010);
 	test_bitextend<uint32_t>(0b011, 3, 0b011);
 	test_bitextend<uint32_t>(0b110, 3, 0xfffffffe);
 	test_bitextend<uint32_t>(0b111, 3, 0xffffffff);
-#if ENABLE_BROKEN
 	test_bitextend<uint64_t>(0b010, 3, 0b010ULL);
 	test_bitextend<uint64_t>(0b011, 3, 0b011ULL);
 	test_bitextend<uint64_t>(0b110, 3, 0xfffffffffffffffeULL);
 	test_bitextend<uint64_t>(0b111, 3, 0xffffffffffffffffULL);
-#endif
 }
 
 void test_popcount()
