@@ -54,7 +54,9 @@ potentially there may be one MIPI device per node._
 ## PLIC MMIO Layout
 
 The PLIC device has a custom scalable layout based on principles
-outlined in the RISC-V Privileged Specification.
+outlined in the RISC-V Privileged Specification. The PLIC MMIO
+apeture is designed to be scalable. It can be configured with
+variables for number of nodes, hardware threads and IRQs.
 
 Example PLIC device aperture at offset `0x40002000`, with 1 node,
 32 harts, 64 irqs.
