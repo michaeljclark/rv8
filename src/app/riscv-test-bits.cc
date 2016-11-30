@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
+#include <array>
 #include <string>
 #include <map>
 
@@ -15,18 +16,6 @@
 #include "riscv-util.h"
 
 using namespace riscv;
-
-template <typename T>
-static inline std::string to_binary_string(T val)
-{
-    const int bits = sizeof(T) << 3;
-    char buf[bits+1];
-    for (int i = 0; i < bits; ++i) {
-        buf[bits-i-1] = val & T(1)<<i ? '1' : '0';
-    }
-    buf[bits] = '\0';
-    return buf;
-}
 
 template <typename T>
 void test_limits(const char* min_chk, const char* max_chk)
@@ -55,7 +44,7 @@ void test_limits(const char* min_chk, const char* max_chk)
 template <typename T>
 void test_binary_string(T val, const char* chk)
 {
-	bool pass = strcmp(to_binary_string<T>(val).c_str(), chk) == 0;
+	bool pass = strcmp((char*)to_binary<T>(val), chk) == 0;
 	printf("%s %-24s val=%-20llu (0x%016llx) chk=%s\n",
 		   pass ? "PASS" : "FAIL", __func__,
 		   (u64)val, (u64)val, chk);
@@ -92,9 +81,9 @@ void test_bitextend(T val, int bit, T expected)
 	bool pass = result == expected;
 	printf("%s %-24s val=%-20llu (0b%s) result=%lld (0b%s) expected=%lld (0b%s)\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(),
-		   (u64)result, to_binary_string<T>(result).c_str(),
-		   (u64)expected, to_binary_string<T>(expected).c_str());
+		   (u64)val, (char*)to_binary<T>(val),
+		   (u64)result, (char*)to_binary<T>(result),
+		   (u64)expected, (char*)to_binary<T>(expected));
 }
 
 template <typename T>
@@ -104,7 +93,7 @@ void test_popcount(T val, int expected)
 	bool pass = count == expected;
 	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
+		   (u64)val, (char*)to_binary<T>(val), count, expected);
 }
 
 template <typename T>
@@ -114,7 +103,7 @@ void test_ispow2(T val, bool expected)
 	bool pass = pow2 == expected;
 	printf("%s %-24s val=%-20llu (0b%s) pow2=%d expected=%d\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(), pow2, expected);
+		   (u64)val, (char*)to_binary<T>(val), pow2, expected);
 }
 
 template <typename T>
@@ -124,7 +113,7 @@ void test_roundpow2(T val, int expected)
 	bool pass = rounded == expected;
 	printf("%s %-24s val=%-20llu (0b%s) rounded=%d expected=%d\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(), rounded, expected);
+		   (u64)val, (char*)to_binary<T>(val), rounded, expected);
 }
 
 template <typename T>
@@ -134,7 +123,7 @@ void test_clz(T val, int expected)
 	bool pass = count == expected;
 	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
+		   (u64)val, (char*)to_binary<T>(val), count, expected);
 }
 
 template <typename T>
@@ -144,7 +133,7 @@ void test_ctz(T val, int expected)
 	bool pass = count == expected;
 	printf("%s %-24s val=%-20llu (0b%s) count=%d expected=%d\n",
 		   pass ? "PASS" : "FAIL", __func__,
-		   (u64)val, to_binary_string<T>(val).c_str(), count, expected);
+		   (u64)val, (char*)to_binary<T>(val), count, expected);
 }
 
 void test_limits()
