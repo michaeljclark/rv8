@@ -47,7 +47,7 @@ _start:
 	sb      a1, 1(a0)       # Set IER_ERBDA bit in IER register
 
 # write msg to uart
-1:	auipc   a1, %pcrel_hi(msg)    # load msg(hi)
+1:	auipc   a1, %pcrel_hi(msg)     # load msg(hi)
 	addi    a1, a1, %pcrel_lo(1b)  # load msg(lo)
 print:
 	lb      t0, 0(a1)
