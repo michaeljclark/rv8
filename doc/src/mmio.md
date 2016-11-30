@@ -121,6 +121,8 @@ lowest   | U    | (00,01,10,11)
 
 ## UART MMIO Layout
 
+The UART MMIO layout is based on a 16550.
+
 Example UART device at offset `0x40003000`.
 
 `0000000040003000-0000000040003008 UART (0x0000-0x0008) +IO+R+W`
