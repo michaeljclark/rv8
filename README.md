@@ -293,10 +293,16 @@ usage: rv-sim [<options>] <elf_file>
                         --help, -h            Show help
 ```
 
-To run the simple Hello World program:
+To run the simple Hello World program (Proxy Mode):
 
 ```
 riscv-sim build/riscv64-unknown-elf/bin/hello-world-libc
+```
+
+To run the privilged UART echo program (Privileged Mode):
+
+```
+riscv-sim -p build/riscv64-unknown-elf/bin/test-m-mmio-uart
 ```
 
 RISC-V ELF Histogram Utility
@@ -321,6 +327,7 @@ To print the top 20 instructions in a RISC-V ELF binary:
 
 ```
 rv-bin histogram -I -b -c █ linux/vmlinux | head -20
+```
 
 To print the top 20 registers in a RISC-V ELF binary:
 
