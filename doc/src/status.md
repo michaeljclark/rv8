@@ -15,7 +15,7 @@ Privilege 1.9 Timer      | Testing
 Privilege 1.9 PLIC       | Testing
 Privilege 1.9 Interrupts | Testing (Revisit {m,h,s,u}{t,e,s}ip delivery)
 Privilege 1.9 PMAs       | In progress
-MMIO UART                | In progress
+MMIO UART                | Testing
 VirtIO Input             | Not Started
 VirtIO Framebuffer       | Not Started
 VirtIO Net               | Not Started
