@@ -116,12 +116,12 @@ namespace riscv {
 		bool step(size_t count)
 		{
 			typename P::decode_type dec;
-			size_t i = 0;
-			inst_t inst = 0;
+			typename P::ux inststop = P::instret + count;
 			addr_t pc_offset, new_offset;
-			P::time = cpu_cycle_clock();
+			inst_t inst = 0;
 
 			/* interrupt service routine */
+			P::time = cpu_cycle_clock();
 			P::isr();
 
 			/* trap return path */
@@ -131,7 +131,7 @@ namespace riscv {
 			}
 
 			/* step the processor */
-			while (i < count) {
+			while (P::instret < inststop) {
 				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				inst_t inst_cache_key = inst % inst_cache_size;
 				if (inst_cache[inst_cache_key].inst == inst) {
@@ -148,7 +148,6 @@ namespace riscv {
 					P::pc += new_offset;
 					P::cycle++;
 					P::instret++;
-					i++;
 				} else {
 					P::raise(riscv_cause_illegal_instruction, P::pc);
 				}
