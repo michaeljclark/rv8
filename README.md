@@ -48,15 +48,15 @@ Screenshots
 
 ![Histogram screenshot](/doc/images/screenshot-2.png)
 
-*Example Instructions Histogram from riscv-histogram-elf*
+*Example Instructions Histogram from `rv-bin histogram`*
 
 ![Histogram screenshot](/doc/images/screenshot-3.png)
 
-*Example Registers Histogram from riscv-histogram-elf*
+*Example Registers Histogram from `rv-bin histogram`*
 
 ![RISC-V disassembly screenshot](/doc/images/screenshot-4.png)
 
-*Example Disassembly output from riscv-parse-elf*
+*Example Disassembly output from `rv-bin dump`*
 
 References
 ----------------
@@ -296,13 +296,13 @@ usage: rv-sim [<options>] <elf_file>
 To run the simple Hello World program (Proxy Mode):
 
 ```
-riscv-sim build/riscv64-unknown-elf/bin/hello-world-libc
+rv-sim build/riscv64-unknown-elf/bin/hello-world-libc
 ```
 
 To run the privilged UART echo program (Privileged Mode):
 
 ```
-riscv-sim -p build/riscv64-unknown-elf/bin/test-m-mmio-uart
+rv-sim -p build/riscv64-unknown-elf/bin/test-m-mmio-uart
 ```
 
 RISC-V ELF Histogram Utility
