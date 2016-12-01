@@ -261,24 +261,22 @@ mtvec:
 
 .section .rodata
 
-# gigapage mapping
-.p2align 12
+# gigapage mapping (URW)
 sv39_pte_rw:
 	# riscv-pte-util sv39 0x80000000 URWV
 	.dword 0x20000017   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
-.p2align 12
+# gigapage mapping (UR)
 sv39_pte_r:
 	# riscv-pte-util sv39 0x80000000 URV
 	.dword 0x20000013   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
-.p2align 12
+# gigapage mapping (UX)
 sv39_pte_x:
 	# riscv-pte-util sv39 0x80000000 UXV
 	.dword 0x20000019   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
-# megapage mapping
-.p2align 12
+# megapage mapping (URW)
 sv39_pte_mrw1:
 	# riscv-pte-util sv39 0x80000000 URW
 	.dword 0x20000016   # 0x0000 -> 0x8000_0000 - 0xC000_0000
