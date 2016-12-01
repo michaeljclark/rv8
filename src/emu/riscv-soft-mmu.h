@@ -256,7 +256,7 @@ namespace riscv {
 			if (tlb_ent) {
 				/* update PTE accessed and dirty flags */
 				update_pte_flags<PTM>(op, tlb_ent->uva);
-				
+
 				return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
 			} else {
 				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
@@ -342,6 +342,14 @@ namespace riscv {
 					/* update PTE accessed and dirty flags */
 					update_pte_flags<PTM>(op, pte_uva);
 
+					if (proc.log & proc_log_pagewalk) {
+						debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
+							"ppn=0x%llx vpn=0x%llx pte=0x%llx -> addr=0x%llx",
+							(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
+							(addr_t)vpn, (addr_t)pte.xu.val,
+							page_translate_offset<PTM>(pte.val.ppn, va, level));
+					}
+
 					/* translate address taking into account PTE level */
 					return page_translate_offset<PTM>(pte.val.ppn, va, level);
 				}
@@ -354,8 +362,10 @@ namespace riscv {
 			}
 
 		out:
-			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d ppn=0x%llx vpn=0x%llx pte=0x%llx: translation fault",
-				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn, (addr_t)vpn, (addr_t)pte.xu.val);
+			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
+				"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
+				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
+				(addr_t)vpn, (addr_t)pte.xu.val);
 
 			switch (op) {
 				case op_fetch: proc.raise(riscv_cause_fault_fetch, va);

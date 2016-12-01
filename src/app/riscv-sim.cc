@@ -60,12 +60,13 @@
 #include "riscv-fpu.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
+#include "riscv-processor-logging.h"
+#include "riscv-processor-base.h"
+#include "riscv-processor-impl.h"
 #include "riscv-user-memory.h"
 #include "riscv-soft-tlb.h"
 #include "riscv-soft-mmu.h"
 #include "riscv-interp.h"
-#include "riscv-processor-base.h"
-#include "riscv-processor-impl.h"
 #include "riscv-processor-model.h"
 #include "riscv-unknown-abi.h"
 #include "riscv-processor-proxy.h"
@@ -386,6 +387,9 @@ struct riscv_emulator
 			{ "-t", "--log-traps", cmdline_arg_type_none,
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
+			{ "-v", "--log-pagewalks", cmdline_arg_type_none,
+				"Log Pagewalks",
+				[&](std::string s) { return (proc_logs |= proc_log_pagewalk); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },

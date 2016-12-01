@@ -10,7 +10,7 @@ _start:
 	csrrw   zero, mtvec, t0
 
 #
-# test load and store to RW page
+# test load and store to RW gigapage
 #
 
 # copy pte to RAM
@@ -40,7 +40,7 @@ _start:
 	slli    t0, t0, 17
 	csrrs   zero, mstatus, t0
 
-# write 0xff to 0x1000
+# write 0xcc to 0x1000
 	li      a0, 0x1000
 	li      a2, 0xcc
 	sb      a2, 0(a0)
@@ -75,7 +75,7 @@ _start:
 	csrrc   zero, mstatus, t0
 
 #
-# test a reading back data from physical memory
+# test reading from physical memory
 #
 
 # read from 0x80001000 and compare to 0xcc
@@ -84,7 +84,7 @@ _start:
 	bne     a1, a2, fail
 
 #
-# test a store fault on R page
+# test store fault on R gigapage
 #
 
 # copy pte to RAM
@@ -104,7 +104,7 @@ _start:
 	or      t1, t1, t0
 	csrrs   zero, mstatus, t1
 
-# write 0xff to 0x1000
+# write 0xcc to 0x1000
 	li      a0, 0x1000
 	li      a2, 0xcc
 	sb      a2, 0(a0)   # instruction should cause store fault
@@ -131,7 +131,7 @@ _start:
 	bne     t4, t3, fail
 
 #
-# test a load fault on X page
+# test a load fault on X gigapage
 #
 
 # copy pte to RAM
@@ -170,6 +170,11 @@ _start:
 	li      t0, 0
 	bne     a7, t0, fail
 
+# set mstatus.MXR=0 (Mmake eXecute Readable)
+	li      t0, 1
+	slli    t0, t0, 19
+	csrrc   zero, mstatus, t0
+
 # set mstatus.MPRV=0 (Disable M mode Paging)
 	li      t0, 1
 	slli    t0, t0, 17
@@ -182,6 +187,55 @@ _start:
 	and     t4, t3, t2
 	li      t3, 64
 	bne     t4, t3, fail
+
+#
+# test load and store to RW megapage
+#
+
+# copy pte to RAM
+1:	auipc   t0, %pcrel_hi(sv39_pte_mrw1)  # load sv39_pte_mrw1(hi)
+	addi    t0, t0, %pcrel_lo(1b)         # load sv39_pte_mrw1(lo)
+	li      t1, 0x80000000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+1:	auipc   t0, %pcrel_hi(sv39_pte_mrw2)  # load sv39_pte_mrw2(hi)
+	addi    t0, t0, %pcrel_lo(1b)         # load sv39_pte_mrw2(lo)
+	li      t1, 0x80001000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+
+# load sptbr ppn
+	csrrw   zero, sptbr, t1
+	sfence.vm
+
+# set mstatus.MPRV=1 (enable M mode paging)
+	li      t0, 1
+	slli    t0, t0, 17
+	csrrs   zero, mstatus, t0
+
+# write 0xcc to 0x2000
+	li      a0, 0x2000
+	li      a2, 0xcc
+	sb      a2, 0(a0)
+
+# read from 0x2000
+	lbu     a3, 0(a0)
+	bne     a2, a3, fail
+
+# set mstatus.MPRV=0 (Disable M mode Paging)
+	li      t1, 1
+	slli    t1, t1, 17
+	or      t0, t0, t1
+	csrrc   zero, mstatus, t0
+
+#
+# test reading from physical memory
+#
+
+# read from 0x80002000 and compare to 0xcc
+	li      a0, 0x80002000
+	lbu     a1, 0(a0)
+	bne     a1, a2, fail
 
 # success
 	li      a0, 0
@@ -206,6 +260,8 @@ mtvec:
 	mret
 
 .section .rodata
+
+# gigapage mapping
 .p2align 12
 sv39_pte_rw:
 	# riscv-pte-util sv39 0x80000000 URWV
@@ -221,3 +277,11 @@ sv39_pte_x:
 	# riscv-pte-util sv39 0x80000000 UXV
 	.dword 0x20000019   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
+# megapage mapping
+.p2align 12
+sv39_pte_mrw1:
+	# riscv-pte-util sv39 0x80000000 URW
+	.dword 0x20000016   # 0x0000 -> 0x8000_0000 - 0xC000_0000
+sv39_pte_mrw2:
+	# riscv-pte-util sv39 0x80001000 URWV
+	.dword 0x20000017   # 0x0000 -> 0x8000_0000 - 0xC000_0000

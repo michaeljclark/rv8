@@ -28,6 +28,7 @@
 #include "riscv-util.h"
 #include "riscv-host.h"
 #include "riscv-codec.h"
+#include "riscv-processor-logging.h"
 #include "riscv-processor-base.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"

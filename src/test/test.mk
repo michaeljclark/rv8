@@ -88,7 +88,7 @@ test: all
 
 test-priv: test
 	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-sv39
+	$(EMULATOR) -S -m -o -v -p $(BIN_DIR)/test-m-sv39
 	$(EMULATOR) -S -m -O -p $(BIN_DIR)/test-m-mmio-timer
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
