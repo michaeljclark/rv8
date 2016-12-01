@@ -32,6 +32,7 @@
 #include "riscv-processor-base.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
+#include "riscv-amo.h"
 #include "riscv-user-memory.h"
 #include "riscv-soft-tlb.h"
 #include "riscv-soft-mmu.h"

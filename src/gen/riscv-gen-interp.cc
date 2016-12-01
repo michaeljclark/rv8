@@ -116,6 +116,8 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "s64(rd)", "rd.r.l.val");
 			inst = replace(inst, "s64(rs1)", "rs1.r.l.val");
 			inst = replace(inst, "s64(rs2)", "rs2.r.l.val");
+			inst = replace(inst, "mmu.amo<s32>(", "proc.mmu.template amo<P,s32>(proc, ");
+			inst = replace(inst, "mmu.amo<s64>(", "proc.mmu.template amo<P,s64>(proc, ");
 			inst = replace(inst, "mmu.load<u8>(", "proc.mmu.template load<P,u8>(proc, ");
 			inst = replace(inst, "mmu.load<u16>(", "proc.mmu.template load<P,u16>(proc, ");
 			inst = replace(inst, "mmu.load<u32>(", "proc.mmu.template load<P,u32>(proc, ");

@@ -255,47 +255,47 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_amoswap_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoswap, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoadd_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoadd, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoxor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoxor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoand_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoand, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomin_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val < t ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomin, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomax_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val > t ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomax, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amominu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.wu.val < u32(t) ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amominu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomaxu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.wu.val > u32(t) ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomaxu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_flw:
@@ -896,47 +896,47 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_amoswap_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoswap, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoadd_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoadd, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoxor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoxor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoor_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoand_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amoand, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomin_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val < t ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomin, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomax_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.w.val > t ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomax, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amominu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.wu.val < u32(t) ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amominu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomaxu_w:
 			if (rva) {
-				s32 t(*(s32*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s32>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.wu.val > u32(t) ? proc.ireg[dec.rs2].r.w.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s32 t1, t2 = proc.ireg[dec.rs2].r.w.val; proc.mmu.template amo<P,s32>(proc, amomaxu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_lr_d:
@@ -951,47 +951,47 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case riscv_op_amoswap_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amoswap, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoadd_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val + t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amoadd, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoxor_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val ^ t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amoxor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoor_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val | t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amoor, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amoand_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val & t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amoand, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomin_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val < t ? proc.ireg[dec.rs2].r.l.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amomin, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomax_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.l.val > t ? proc.ireg[dec.rs2].r.l.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amomax, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amominu_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.lu.val < u64(t) ? proc.ireg[dec.rs2].r.l.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amominu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_amomaxu_d:
 			if (rva) {
-				s64 t(*(s64*)proc.ireg[dec.rs1]); proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1], proc.ireg[dec.rs2].r.lu.val > u64(t) ? proc.ireg[dec.rs2].r.l.val : t); if (dec.rd > 0) proc.ireg[dec.rd] = t;
+				s64 t1, t2 = proc.ireg[dec.rs2].r.l.val; proc.mmu.template amo<P,s64>(proc, amomaxu, proc.ireg[dec.rs1], t1, t2); if (dec.rd > 0) proc.ireg[dec.rd] = t1;
 			};
 			break;
 		case riscv_op_flw:

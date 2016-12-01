@@ -60,6 +60,7 @@
 #include "riscv-fpu.h"
 #include "riscv-pte.h"
 #include "riscv-pma.h"
+#include "riscv-amo.h"
 #include "riscv-processor-logging.h"
 #include "riscv-processor-base.h"
 #include "riscv-processor-impl.h"

@@ -143,6 +143,35 @@ namespace riscv {
 			}
 		}
 
+		/* amo */
+		template <typename P, typename T, const mmu_op op = op_load>
+		void amo(P &proc, const amo_op a_op, UX va, T &val1, T val2)
+		{
+			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
+			memory_segment<UX> *segment = nullptr;
+
+			/* raise exception if address is misalligned */
+			if (unlikely(misaligned<T>(va))) {
+				proc.raise(riscv_cause_misaligned_load, va);
+			}
+
+			/* translate to machine physical (raises exception on fault) */
+			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
+
+			/* translate to user virtual (null segment indicates no mapping) */
+			addr_t uva = mem.mpa_to_uva(segment, mpa);
+
+			/* Check PTE flags and effective mode */
+			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
+			{
+				proc.raise(riscv_cause_fault_load, va);
+			} else {
+				segment->load(uva, val1);
+				val2 = amo_fn<UX>(a_op, val1, val2);
+				segment->store(uva, val2);
+			}
+		}
+
 		/* load */
 		template <typename P, typename T, const mmu_op op = op_load>
 		void load(P &proc, UX va, T &val)

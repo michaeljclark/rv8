@@ -41,6 +41,14 @@ namespace riscv {
 
 		/* Note: in this simple proxy MMU model, stores beyond memory top wrap */
 
+		template <typename P, typename T>
+		void amo(P &proc, const amo_op a_op, UX va, T &val1, T val2)
+		{
+			val1 = UX(*(T*)addr_t(va & (memory_top - 1)));
+			val2 = amo_fn<UX>(a_op, val1, val2);
+			*((T*)addr_t(va & (memory_top - 1))) = val2;
+		}
+
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
 			val = UX(*(T*)addr_t(va & (memory_top - 1)));
