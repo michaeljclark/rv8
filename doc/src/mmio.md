@@ -15,6 +15,18 @@ RISC-V Privileged Specification. The MIPI device is a simple bitfield
 with one bit per hart, which when set will raise a software interrupt
 on the destiniation hart.
 
+## Example memory layout for `rv-sim`
+
+```
+soft-mmu :0000000000001000-0000000000002000 BOOT (0x0000-0x1000) +MAIN+R
+soft-mmu :0000000000010000-000000000001115c ROM0 (0x34000-0x3515c) +MAIN+R+X
+soft-mmu :0000000040000000-0000000040000010 TIME (0x0000-0x0010) +IO+R+W
+soft-mmu :0000000040001000-0000000040001008 MIPI (0x0000-0x0008) +IO+R+W
+soft-mmu :0000000040002000-0000000040002078 PLIC (0x0000-0x0078) +IO+R+W
+soft-mmu :0000000040003000-0000000040003008 UART (0x0000-0x0008) +IO+R+W
+soft-mmu :0000000080000000-00000000c0000000 RAM0 (0x81c00000-0xc1c00000) +MAIN+R+W+X
+```
+
 _Note: the addresses here are just examples and it is expected that
 the configuration string will contain the base addresses for each
 device MMIO aperture._
