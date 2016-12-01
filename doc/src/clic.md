@@ -40,7 +40,10 @@ More detail is available in PLIC section of the current [MMIO](mmio.md) layout d
 - the mipi region would be accessible from other cores to raise interprocessor interrupts.
 - if mipi,hipi,sipi,uipi are words, then the word can store a message signal (0 means no interrupt pending)
 - the IPI word is communicated along with the level m_software, h_software, s_software, u_software
-- e.g. a hart receiving s_software can read sipi to get message dispatch info (e.g. TLB shoot-down vs queue wakeup) 
+- e.g. a hart receiving s_software can read sipi to get message dispatch info (e.g. TLB shoot-down vs queue wakeup)
+- source hart mask for IPI, security issues; which harts can send IPIs to which other harts in a virtualised environment and configuration of partitions.
+- broadcast IPI to protection domain
+- array of structures versus structure of arrays
 - things we have forgotten or are unaware of
 
 ```
