@@ -13,7 +13,7 @@ The thoughts that out of the process of implementing version 1.9.1 of the privil
 
 - PLIC layout is vague. 
 - MIPI hart bit field or integer MMIO register for sending IPIs, mtime and mtimecmp could be coalesced into a CLIC (Core Level Interrupt Controller) device
-- Question whether MIPI would be better placed in the PLIC as a bit field, given it has wires to cores in the cluster or if there are IPI fields in each CLIC
+- Question whether MIPI would be better placed in the PLIC as a bit field, given it has wires to cores in the cluster or whether there are IPI fields in each CLIC (appropriate clock domain)
 - Prefer {M,H,S,U}IPI is an integer per CLIC that can indicate a XLEN-bit message communicated during the IPI (sketched below e.g. 1 = TLB SHOOT-DOWN, etc)
 - CLIC is per hart, and each hart requires their own timer compare registers for each priority/privilege level (same as a typical linux SMP setup).
 
@@ -65,8 +65,17 @@ The current the current [MMIO](mmio.md) layout document more closely matches the
 
 ## UART
 
-Suggest the platform spec mentions a de-facto standard such as an 8550 or 16550 style UART for console. The UART was present in the config string example in one of the earlier versions of the privileged spec. I also see 16550 UART in PowerPC Linux and MIPS Linux ports as an early boot console devices. I am not sure whether there are IP issues with the use of 16550 2x5 headers and register layout (essentially a struct). A UART makes early boot logging much much easier for bring up. Ethernet, Framebuffer and VirtIO are clearly more complicated for early bring up stage.
+Suggest the platform spec mentions a de-facto standard such as an 8550 or 16550 style UART for console. The UART was present in the config string example in one of the earlier versions of the privileged spec.
+
+- 16550 UART in PowerPC Linux and MIPS Linux ports as an early boot console devices
+- Check IP issues with the use of 16550 2x5 headers and register layout (essentially a struct)
+- UART makes early boot logging much much easier for bring up
+- Ethernet, Framebuffer and VirtIO are clearly more complicated for early bring up stage
 
 ## Interrupt Routing
 
-Interrupt routing needs consideration. Routing can be static or dynamic. The current model wires the UART to IRQ 3 on the PLIC. The intent is that static interrupt routing is described in configuration or an interface is provided in the PLIC for dynamic routing (PCI bus pin to IRQ mappings). Physical Interrupt wires on various devices can be statically or dynamically assigned to IRQs. It may be such that the wiring is indicated in the config. This is so that interrupt trap entry knows which device driver bottom half ISR routines to call without requiring IRQs to be hardcoded. Static mapping is sufficient for many purposes, but PCI may require dynamic bus interrupt pin to IRQ routing.
+Interrupt routing needs consideration. Routing can be static or dynamic. For example, the current model wires the UART to IRQ 3 on the PLIC. The intent is that static interrupt routing is described in configuration.
+
+Physical Interrupt wires on various devices can be statically or dynamically assigned to IRQs. It may be such that static interrupt wiring is indicated in the config. This is so that interrupt trap entry knows which device driver bottom half ISR routines to call without requiring IRQs to be hardcoded.
+
+Static mapping is sufficient for many purposes, but PCI may require a method for dynamic bus interrupt pin to IRQ routing.
