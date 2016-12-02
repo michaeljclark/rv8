@@ -154,7 +154,7 @@ To run the Privileged System Emulator tests with _`rv-sys`_: ```make test-sys```
 
 To install to `/usr/local/bin`: ```make && sudo make install```
 
-_Notes_
+**Notes**
 
 - The test-build target requires the RISC-V GNU Compiler Toolchain
 
@@ -184,7 +184,7 @@ To run the ELF parser and disassembler:
 rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 ```
 
-_Notes_
+**Notes**
 
 - The ELF dissassembler output requires 125 column terminal window
 
