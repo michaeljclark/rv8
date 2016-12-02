@@ -91,7 +91,7 @@ const char* elf_sh_type_name(int v)
 		case SHT_SYMTAB: return "SYMTAB";
 		case SHT_STRTAB: return "STRTAB";
 		case SHT_RELA: return "RELA";
-		case SHT_HASH: return "HASH" ;
+		case SHT_HASH: return "HASH";
 		case SHT_DYNAMIC: return "DYNAMIC";
 		case SHT_NOTE: return "NOTE";
 		case SHT_NOBITS: return "NOBITS";
@@ -165,6 +165,57 @@ const char* elf_st_other_name(int v)
 		case STV_INTERNAL: return "INTERNAL";
 		case STV_HIDDEN: return "HIDDEN";
 		case STV_PROTECTED: return "PROTECTED";
+		default: return "UNKNOWN";
+	}
+}
+
+const char* elf_rela_type_name(int v) {
+	switch (v) {
+		case R_RISCV_NONE: return "R_RISCV_NONE";
+		case R_RISCV_32: return "R_RISCV_32";
+		case R_RISCV_64: return "R_RISCV_64";
+		case R_RISCV_RELATIVE: return "R_RISCV_RELATIVE";
+		case R_RISCV_COPY: return "R_RISCV_COPY";
+		case R_RISCV_JUMP_SLOT: return "R_RISCV_JUMP_SLOT";
+		case R_RISCV_TLS_DTPMOD32: return "R_RISCV_TLS_DTPMOD32";
+		case R_RISCV_TLS_DTPMOD64: return "R_RISCV_TLS_DTPMOD64";
+		case R_RISCV_TLS_DTPREL32: return "R_RISCV_TLS_DTPREL32";
+		case R_RISCV_TLS_DTPREL64: return "R_RISCV_TLS_DTPREL64";
+		case R_RISCV_TLS_TPREL32: return "R_RISCV_TLS_TPREL32";
+		case R_RISCV_TLS_TPREL64: return "R_RISCV_TLS_TPREL64";
+		case R_RISCV_BRANCH: return "R_RISCV_BRANCH";
+		case R_RISCV_JAL: return "R_RISCV_JAL";
+		case R_RISCV_CALL: return "R_RISCV_CALL";
+		case R_RISCV_CALL_PLT: return "R_RISCV_CALL_PLT";
+		case R_RISCV_GOT_HI20: return "R_RISCV_GOT_HI20";
+		case R_RISCV_TLS_GOT_HI20: return "R_RISCV_TLS_GOT_HI20";
+		case R_RISCV_TLS_GD_HI20: return "R_RISCV_TLS_GD_HI20";
+		case R_RISCV_PCREL_HI20: return "R_RISCV_PCREL_HI20";
+		case R_RISCV_PCREL_LO12_I: return "R_RISCV_PCREL_LO12_I";
+		case R_RISCV_PCREL_LO12_S: return "R_RISCV_PCREL_LO12_S";
+		case R_RISCV_HI20: return "R_RISCV_HI20";
+		case R_RISCV_LO12_I: return "R_RISCV_LO12_I";
+		case R_RISCV_LO12_S: return "R_RISCV_LO12_S";
+		case R_RISCV_TPREL_HI20: return "R_RISCV_TPREL_HI20";
+		case R_RISCV_TPREL_LO12_I: return "R_RISCV_TPREL_LO12_I";
+		case R_RISCV_TPREL_LO12_S: return "R_RISCV_TPREL_LO12_S";
+		case R_RISCV_TPREL_ADD: return "R_RISCV_TPREL_ADD";
+		case R_RISCV_ADD8: return "R_RISCV_ADD8";
+		case R_RISCV_ADD16: return "R_RISCV_ADD16";
+		case R_RISCV_ADD32: return "R_RISCV_ADD32";
+		case R_RISCV_ADD64: return "R_RISCV_ADD64";
+		case R_RISCV_SUB8: return "R_RISCV_SUB8";
+		case R_RISCV_SUB16: return "R_RISCV_SUB16";
+		case R_RISCV_SUB32: return "R_RISCV_SUB32";
+		case R_RISCV_SUB64: return "R_RISCV_SUB64";
+		case R_RISCV_GNU_VTINHERIT: return "R_RISCV_GNU_VTINHERIT";
+		case R_RISCV_GNU_VTENTRY: return "R_RISCV_GNU_VTENTRY";
+		case R_RISCV_ALIGN: return "R_RISCV_ALIGN";
+		case R_RISCV_RVC_BRANCH: return "R_RISCV_RVC_BRANCH";
+		case R_RISCV_RVC_JUMP: return "R_RISCV_RVC_JUMP";
+		case R_RISCV_RVC_LUI: return "R_RISCV_RVC_LUI";
+		case R_RISCV_GPREL_I: return "R_RISCV_GPREL_I";
+		case R_RISCV_GPREL_S: return "R_RISCV_GPREL_S";
 		default: return "UNKNOWN";
 	}
 }
@@ -285,5 +336,37 @@ void elf_print_symbol_table(elf_file &elf, elf_symbol_colorize_fn colorize)
 		"Name", colorize("reset"));
 	for (size_t i = 0; i < elf.symbols.size(); i++) {
 		printf("%s\n", elf_sym_info(elf, i, colorize).c_str());
+	}
+}
+
+void elf_print_relocations(elf_file &elf, elf_symbol_colorize_fn colorize)
+{
+	for (size_t i = 0; i < elf.shdrs.size(); i++) {
+		Elf64_Shdr &shdr = elf.shdrs[i];
+		if (shdr.sh_type & SHT_RELA) {
+			printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+
+			printf("\n%sSymbol %-18s %-20s %-30s %-18s%s\n",
+				colorize("title"),
+				"Offset", "Symbol", "Type", "Addend",
+				colorize("reset"));
+			for (auto &rela : elf.relocations[i]) {
+				Elf64_Xword sym = ELF64_R_SYM(rela.r_info);
+				Elf64_Xword type = ELF64_R_TYPE(rela.r_info);
+				printf("%s[%4lu]%s %s0x%-16llx%s %-20s %-30s %s0x%-16llx%s\n",
+					colorize("legend"),
+					i,
+					colorize("reset"),
+					colorize("address"),
+					rela.r_offset,
+					colorize("reset"),
+					elf.sym_name(sym),
+					elf_rela_type_name(type),
+					colorize("address"),
+					rela.r_addend,
+					colorize("reset"));
+			}
+			printf("\n");
+		}
 	}
 }

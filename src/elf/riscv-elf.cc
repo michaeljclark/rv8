@@ -79,6 +79,17 @@ struct sym32_bswap
 	}
 };
 
+struct rela32_bswap
+{
+	typedef Elf32_Rela type_name;
+
+	template <typename S> static void bswap(type_name *rela32)
+	{
+		rela32->r_offset =     S::bswap(rela32->r_offset);
+		rela32->r_info =       S::bswap(rela32->r_info);
+	}
+};
+
 struct ehdr64_bswap
 {
 	typedef Elf64_Ehdr type_name;
@@ -147,6 +158,18 @@ struct sym64_bswap
 		sym64->st_shndx =      S::bswap(sym64->st_shndx);
 		sym64->st_value =      S::bswap(sym64->st_value);
 		sym64->st_size =       S::bswap(sym64->st_size);
+	}
+};
+
+struct rela64_bswap
+{
+	typedef Elf64_Rela type_name;
+
+	template <typename S> static void bswap(type_name *rela64)
+	{
+		rela64->r_offset =     S::bswap(rela64->r_offset);
+		rela64->r_info =       S::bswap(rela64->r_info);
+		rela64->r_addend =     S::bswap(rela64->r_addend);
 	}
 };
 
@@ -221,6 +244,19 @@ template <typename A, typename B> void sym_convert(A *sym_a, B *sym_b)
 	sym_a->st_shndx =      sym_b->st_shndx;
 }
 
+template <typename A, typename B> void rela_convert_32_64(A *rela_a, B *rela_b)
+{
+	rela_a->r_offset = rela_b->r_offset;
+	rela_a->r_info = ELF64_R_INFO(ELF32_R_SYM(rela_b->r_info), ELF32_R_TYPE(rela_b->r_info));
+	rela_a->r_addend = 0;
+}
+
+template <typename A, typename B> void rela_convert_64_32(A *rela_a, B *rela_b)
+{
+	rela_a->r_offset = rela_b->r_offset;
+	rela_a->r_info = ELF32_R_INFO(ELF64_R_SYM(rela_b->r_info), ELF64_R_TYPE(rela_b->r_info));
+}
+
 bool elf_check_magic(uint8_t *e_ident)
 {
 	return e_ident[EI_MAG0] == ELFMAG0 && e_ident[EI_MAG1] == ELFMAG1 &&
@@ -247,6 +283,11 @@ void elf_bswap_sym32(Elf32_Sym *sym32, int ei_data, ELFENDIAN endian)
 	do_swap<sym32_bswap>(ei_data, endian, sym32);
 }
 
+void elf_bswap_rela32(Elf32_Rela *rela32, int ei_data, ELFENDIAN endian)
+{
+	do_swap<rela32_bswap>(ei_data, endian, rela32);
+}
+
 void elf_bswap_ehdr64(Elf64_Ehdr *ehdr64, int ei_data, ELFENDIAN endian)
 {
 	do_swap<ehdr64_bswap>(ei_data, endian, ehdr64);
@@ -265,6 +306,11 @@ void elf_bswap_shdr64(Elf64_Shdr *shdr64, int ei_data, ELFENDIAN endian)
 void elf_bswap_sym64(Elf64_Sym *sym64, int ei_data, ELFENDIAN endian)
 {
 	do_swap<sym64_bswap>(ei_data, endian, sym64);
+}
+
+void elf_bswap_rela64(Elf64_Rela *rela64, int ei_data, ELFENDIAN endian)
+{
+	do_swap<rela64_bswap>(ei_data, endian, rela64);
 }
 
 void elf_ehdr32_to_ehdr64(Elf64_Ehdr *ehdr64, Elf32_Ehdr *ehdr32)
@@ -288,6 +334,11 @@ void elf_sym32_to_sym64(Elf64_Sym *sym64, Elf32_Sym *sym32)
 	sym_convert(sym64, sym32);
 }
 
+void elf_rela32_to_rela64(Elf64_Rela *rela64, Elf32_Rela *rela32)
+{
+	rela_convert_32_64(rela64, rela32);
+}
+
 void elf_ehdr64_to_ehdr32(Elf32_Ehdr *ehdr32, Elf64_Ehdr *ehdr64)
 {
 	memcpy(ehdr32->e_ident, ehdr64->e_ident, EI_NIDENT);
@@ -307,4 +358,9 @@ void elf_shdr64_to_shdr32(Elf32_Shdr *shdr32, Elf64_Shdr *shdr64)
 void elf_sym64_to_sym32(Elf32_Sym *sym32, Elf64_Sym *sym64)
 {
 	sym_convert(sym32, sym64);
+}
+
+void elf_rela64_to_rela32(Elf32_Rela *rela64, Elf64_Rela *rela32)
+{
+	rela_convert_64_32(rela32, rela64);
 }

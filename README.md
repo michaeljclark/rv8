@@ -170,6 +170,7 @@ usage: dump [<options>] <elf_file>
        --print-section-headers, -s            Print Section headers
        --print-program-headers, -p            Print Program headers
           --print-symbol-table, -t            Print Symbol Table
+           --print-relocations, -r            Print Relocations
            --print-disassembly, -d            Print Disassembly
                    --no-pseudo, -x            Disable Pseudoinstructions
                    --print-all, -a            Print All

@@ -52,6 +52,7 @@ struct riscv_parse_elf
 	bool program_headers = false;
 	bool symbol_table = false;
 	bool disassebly = false;
+	bool relocations = false;
 	bool decode_pseudo = false;
 	bool help_or_error = false;
 
@@ -203,6 +204,9 @@ struct riscv_parse_elf
 			{ "-t", "--print-symbol-table", cmdline_arg_type_none,
 				"Print Symbol Table",
 				[&](std::string s) { return (symbol_table = true); } },
+			{ "-r", "--print-relocations", cmdline_arg_type_none,
+				"Print Relocations",
+				[&](std::string s) { return (relocations = true); } },
 			{ "-d", "--print-disassembly", cmdline_arg_type_none,
 				"Print Disassembly",
 				[&](std::string s) { return (disassebly = true); } },
@@ -265,6 +269,10 @@ struct riscv_parse_elf
 		if (symbol_table) {
 			print_heading("Symbol Table");
 			elf_print_symbol_table(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+		}
+		if (relocations && elf.ehdr.e_machine == EM_RISCV) {
+			print_heading("Relocations");
+			elf_print_relocations(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (disassebly && elf.ehdr.e_machine == EM_RISCV) {
 			print_heading("Disassembly");
