@@ -96,9 +96,7 @@ The following table shows the RISC-V Meta libraries:
 > The project code idiom is a subset of C++14 with STL, C struct with member
 functions, single inheritance, operator overloading, variadiac templates and
 template based static polymorphism. RTTI and exceptions are *disallowed*.
-C++ virtual functions are *disallowed* in nano, micro and mini.
-C++ virtual functions are currently used in `src/gen` but will be removed
-when static polymorphism is implemented (virtual functions are discouraged).
+C++ virtual functions are *discouraged* in nano, micro and mini.
 The use of stringstream is temporarily permitted in `src/gen` until it has
 been replaced with with variadic template based string formatter in `src/fmt`.
 
