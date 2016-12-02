@@ -166,6 +166,7 @@ namespace riscv {
 			{
 				proc.raise(riscv_cause_fault_load, va);
 			} else {
+				/* TODO - we need some locking magic for SMP on non RISC-V */
 				segment->load(uva, val1);
 				val2 = amo_fn<UX>(a_op, val1, val2);
 				segment->store(uva, val2);
