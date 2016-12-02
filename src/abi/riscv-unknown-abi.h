@@ -13,8 +13,9 @@ namespace riscv {
 		std::vector<std::pair<void*,size_t>> segments;
 		addr_t heap_begin;
 		addr_t heap_end;
+		bool log;
 
-		proxy_memory() : segments(), heap_begin(0), heap_end(0) {}
+		proxy_memory() : segments(), heap_begin(0), heap_end(0), log(false) {}
 	};
 
 	template <typename UX, typename MEMORY = proxy_memory<UX>>

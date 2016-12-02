@@ -58,78 +58,40 @@ Screenshots
 
 *Example Disassembly output from `rv-bin dump`*
 
-References
-----------------
-
-- [lowRISC project](http://www.lowrisc.org/)
-- [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
-- [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
-- [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
-- [RISC-V ISA Specification](http://riscv.org/specifications/)
-- [RISC-V Compressed ISA Specification](http://riscv.org/specifications/compressed-isa/)
-- [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
-- [RISC-V ISA Simulator](https://github.com/riscv/riscv-isa-sim/)
-- [RISC-V Opcodes](https://github.com/riscv/riscv-opcodes/)
-- [RISC-V LLVM](https://github.com/riscv/riscv-llvm/)
-- [RISC-V Clang](https://github.com/riscv/riscv-clang/)
-- [Clang SafeStack](http://clang.llvm.org/docs/SafeStack.html)
-- [musl libc](https://www.musl-libc.org/)
-- [Yocto Project](https://www.yoctoproject.org/)
-- [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html)
-- [The Netwide Assembler](http://repo.or.cz/nasm.git)
-- [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
-- [Abstractions for Practical Virtual Machine Replay](https://www.cs.utah.edu/~aburtsev/doc/vee16-xentt.pdf)
-- [A Secure Processor Architecture for Encrypted Computation on Untrusted Programs](https://people.csail.mit.edu/devadas/pubs/ascend-stc12.pdf)
-- [Jump Over ASLR: Attacking Branch Predictors to Bypass ASLR](http://www.cs.binghamton.edu/~dima/micro16.pdf)
-- [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
-- [SoK: Introspections on Trust and the Semantic Gap](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6956590)
-- [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
-- [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
-- [Geometric Memory Management](http://arxiv.org/pdf/1512.09358.pdf)
-- [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
-- [TLSF: a New Dynamic Memory Allocator for Real-Time Systems](http://www.gii.upv.es/tlsf/files/ecrts04_tlsf.pdf)
-- [A Precise Memory Model for Low-Level Bounded Model Checking](https://www.usenix.org/legacy/event/ssv10/tech/full_papers/Sinz.pdf)
-- [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
-- [Virtual IO Device Specification](http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.html)
-- [Standard C++](https://isocpp.org/std/the-standard/)
-- [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
-- [AMD64 System V Application Binary Interface](http://refspecs.linuxfoundation.org/elf/x86-64-abi-0.99.pdf)
-- [ELF Handling for Thread-Local Storage](https://www.akkadia.org/drepper/tls.pdf)
-- [DWARF Debugging Information Format Version 4](http://dwarfstd.org/doc/DWARF4.pdf)
-- [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
-- [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
-- A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))
-
 Project Structure
 -----------------------
 
-|Directory|Description|
-|:---|:---------------|
-|`meta`|Instruction set metadata|
-|`src/abi`|Application binary interface|
-|`src/app`|Test programs and utilities|
-|`src/asm`|Assembler metadata library|
-|`src/elf`|ELF parser library|
-|`src/emu`|ISA emulator headers|
-|`src/fmt`|String formatting library|
-|`src/mem`|Memory allocator library|
-|`src/model`|ISA metamodel library|
-|`src/util`|Miscellaneous utilities library|
-|`doc/pdf`|Generated documentation|
+| Directory    | Description
+| :----------- | :---------------
+| `meta`       | Instruction set metadata
+| `src/abi`    | Application binary interface
+| `src/app`    | Test programs and utilities
+| `src/asm`    | Assembler metadata library
+| `src/crypto` | Cryptographic function library
+| `src/elf`    | ELF parser library
+| `src/emu`    | ISA simulator and emulator headers
+| `src/fmt`    | String formatting library
+| `src/mem`    | Memory allocator library
+| `src/model`  | ISA metamodel library
+| `src/rom`    | Boot ROM generator
+| `src/test`   | ISA simulator and emulator tests
+| `src/util`   | Miscellaneous utilities library
+| `doc/pdf`    | Generated documentation
 
 Libraries
 -----------------
 
 The following table shows the RISC-V Meta libraries:
 
-|Name|Description|Scale|
-|:---|:----------|-----|
-|libriscv_asm.a|Disassembly formatting|micro|
-|libriscv_elf.a|ELF parser|micro|
-|libriscv_fmt.a|String formatting|micro|
-|libriscv_meta.a|Instruction set metadata|nano|
-|libriscv_model.a|Instruction set metamodel|macro|
-|libriscv_util.a|Utility functions for tools|mini|
+| Name                | Description                             | Scale
+| :------------------ | :-------------------------------------- | :----
+| `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
+| `libriscv_crypto.a` | Cryptographic functions                 | micro
+| `libriscv_elf.a`    | ELF parser                              | micro
+| `libriscv_fmt.a`    | String formatting                       | micro
+| `libriscv_gen.a`    | Source and documentation generators     | macro
+| `libriscv_model.a`  | Instruction set metamodel               | macro
+| `libriscv_util.a`   | Utility functions for tools             | mini
 
 > The project code idiom is a subset of C++14 with STL, C struct with member
 functions, single inheritance, operator overloading, variadiac templates and
@@ -145,11 +107,12 @@ Tools
 
 The following table shows the RISC-V Meta tools:
 
-|Name|Description|
-|:---|:----------|
-|rv-meta|Source, headers and documentation generator|
-|rv-bin|ELF dump, disassmble, compress and histogram tool|
-|rv-sim|ISA Emulator Proof of Concept|
+|Name    | Description
+|:------ | :-----------------
+|rv-meta | Code and documentation generator
+|rv-bin  | ELF dump, disassmble, compress and histogram
+|rv-sim  | ABI Proxy Simulator
+|rv-sys  | Privileged System Emulator
 
 Dependencies
 -----------------
@@ -173,17 +136,30 @@ Build Instructions
 
 The meta compiler has been tested on Linux, Darwin and FreeBSD.
 
+To build the utilities, simulator, emulator and tests: ```make all test-build```
+
 To print a colour opcode map: ```make map```
 
 To output a LaTeX opcode tex: ```make latex```
 
 To output a LaTeX opcode pdf: ```make pdf```
 
-To run the proof of concept emulator: ```make test-sim```
+To run the ABI Proxy Simulator tests with _`spike`_: ```make test-spike```
 
-To install to /usr/local/bin: ```make && sudo make install```
+To run the ABI Proxy Simulator tests with _`rv-sim`_: ```make test-sim```
 
-ELF Dump Utility
+To run the QEMU tests with _`rv-sim`_: ```make qemu-tests```
+
+To run the Privileged System Emulator tests with _`rv-sys`_: ```make test-sys```
+
+To install to `/usr/local/bin`: ```make && sudo make install```
+
+_Notes_
+
+- The test-build target requires the RISC-V GNU Compiler Toolchain
+
+
+RV ELF Dump Utility
 -----------------------------
 
 ELF Dump usage command line options:
@@ -205,15 +181,18 @@ usage: dump [<options>] <elf_file>
 To run the ELF parser and disassembler:
 
 ```
-# Requires RISC-V GNU Compiler Toolchain to build tests
-make test-build-rv64
 rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 ```
 
-Parse Meta Utility
+_Notes_
+
+- The ELF dissassembler output requires 125 column terminal window
+
+
+RV Metadata Utility
 -----------------------------
 
-Parse Meta usage command line options:
+The RV Metadata usage command line options:
 
 ```
 $ rv-meta -h
@@ -267,27 +246,21 @@ To output LaTeX for the RV64G ISA subset:
 rv-meta -I RV64G -l -r meta
 ```
 
-RISC-V Test Emulator
+
+RV Proxy Simulator
 -----------------------------
 
-Emulator command line options:
+The ABI Proxy Simulator command line options:
 
 ```
 $ rv-sim -h
 usage: rv-sim [<options>] <elf_file>
                       --config, -c <string>   Configuration strung
                          --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
-                  --privileged, -p            Privileged ISA Emulation
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
-                    --log-mmio, -O            Log Memory Mapped IO
               --log-memory-map, -m            Log Memory Map Information
-               --log-mmode-csr, -M            Log Machine Control and Status Registers
-               --log-hmode-csr, -H            Log Hypervisor Control and Status Registers
-               --log-smode-csr, -S            Log Supervisor Control and Status Registers
-               --log-umode-csr, -U            Log User Control and Status Registers
                --log-registers, -r            Log Registers (defaults to integer registers)
-                   --log-traps, -t            Log Traps
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
@@ -299,16 +272,45 @@ To run the simple Hello World program (Proxy Mode):
 rv-sim build/riscv64-unknown-elf/bin/hello-world-libc
 ```
 
+
+RV System Emulator
+-----------------------------
+
+The Privilged ISA System Emulator command line options:
+
+```
+$ rv-sys -h
+usage: rv-sys [<options>] <elf_file>
+                      --config, -c <string>   Configuration strung
+                         --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
+            --log-instructions, -l            Log Instructions
+                --log-operands, -o            Log Instructions and Operands
+                    --log-mmio, -O            Log Memory Mapped IO
+              --log-memory-map, -m            Log Memory Map Information
+               --log-mmode-csr, -M            Log Machine Control and Status Registers
+               --log-hmode-csr, -H            Log Hypervisor Control and Status Registers
+               --log-smode-csr, -S            Log Supervisor Control and Status Registers
+               --log-umode-csr, -U            Log User Control and Status Registers
+               --log-registers, -r            Log Registers (defaults to integer registers)
+               --log-pagewalks, -v            Log Pagewalks
+                   --log-traps, -t            Log Traps
+                   --no-pseudo, -x            Disable Pseudoinstruction decoding
+                        --seed, -s <string>   Random seed
+                        --help, -h            Show help
+
+```
+
 To run the privilged UART echo program (Privileged Mode):
 
 ```
-rv-sim -p build/riscv64-unknown-elf/bin/test-m-mmio-uart
+rv-sys build/riscv64-unknown-elf/bin/test-m-mmio-uart
 ```
 
-RISC-V ELF Histogram Utility
+
+RV ELF Histogram Utility
 -------------------------------------
 
-ELF Histogram usage command line options:
+The ELF Histogram Utility usage command line options:
 
 ```
 $ rv-bin histogram -h
@@ -334,3 +336,45 @@ To print the top 20 registers in a RISC-V ELF binary:
 ```
 rv-bin histogram -R -b -c █ linux/vmlinux | head -20
 ```
+
+References
+----------------
+
+- [lowRISC project](http://www.lowrisc.org/)
+- [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
+- [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
+- [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
+- [RISC-V ISA Specification](http://riscv.org/specifications/)
+- [RISC-V Compressed ISA Specification](http://riscv.org/specifications/compressed-isa/)
+- [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
+- [RISC-V ISA Simulator](https://github.com/riscv/riscv-isa-sim/)
+- [RISC-V Opcodes](https://github.com/riscv/riscv-opcodes/)
+- [RISC-V LLVM](https://github.com/riscv/riscv-llvm/)
+- [RISC-V Clang](https://github.com/riscv/riscv-clang/)
+- [Clang SafeStack](http://clang.llvm.org/docs/SafeStack.html)
+- [musl libc](https://www.musl-libc.org/)
+- [Yocto Project](https://www.yoctoproject.org/)
+- [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html)
+- [The Netwide Assembler](http://repo.or.cz/nasm.git)
+- [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
+- [Abstractions for Practical Virtual Machine Replay](https://www.cs.utah.edu/~aburtsev/doc/vee16-xentt.pdf)
+- [A Secure Processor Architecture for Encrypted Computation on Untrusted Programs](https://people.csail.mit.edu/devadas/pubs/ascend-stc12.pdf)
+- [Jump Over ASLR: Attacking Branch Predictors to Bypass ASLR](http://www.cs.binghamton.edu/~dima/micro16.pdf)
+- [SoK: Eternal War in Memory](https://www.cs.berkeley.edu/~dawnsong/papers/Oakland13-SoK-CR.pdf)
+- [SoK: Introspections on Trust and the Semantic Gap](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6956590)
+- [Hacking Blind](http://www.scs.stanford.edu/~abelay/pdf/bittau:brop.pdf)
+- [Code Pointer Integrity](http://dslab.epfl.ch/pubs/cpi.pdf)
+- [Geometric Memory Management](http://arxiv.org/pdf/1512.09358.pdf)
+- [Two-Level Segregated Fit memory allocator implementation](https://github.com/mattconte/tlsf/)
+- [TLSF: a New Dynamic Memory Allocator for Real-Time Systems](http://www.gii.upv.es/tlsf/files/ecrts04_tlsf.pdf)
+- [A Precise Memory Model for Low-Level Bounded Model Checking](https://www.usenix.org/legacy/event/ssv10/tech/full_papers/Sinz.pdf)
+- [IEEE Std 1003.1™, 2013 Edition](http://pubs.opengroup.org/onlinepubs/9699919799/)
+- [Virtual IO Device Specification](http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.html)
+- [Standard C++](https://isocpp.org/std/the-standard/)
+- [Exception Handling in LLVM](http://llvm.org/docs/ExceptionHandling.html)
+- [AMD64 System V Application Binary Interface](http://refspecs.linuxfoundation.org/elf/x86-64-abi-0.99.pdf)
+- [ELF Handling for Thread-Local Storage](https://www.akkadia.org/drepper/tls.pdf)
+- [DWARF Debugging Information Format Version 4](http://dwarfstd.org/doc/DWARF4.pdf)
+- [The Error Model](http://joeduffyblog.com/2016/02/07/the-error-model/) and other essays
+- [No sane compiler would optimize atomics](https://github.com/jfbastien/no-sane-compiler/)
+- A Guide to Undefined Behavior in C and C++ ([part 1](http://blog.regehr.org/archives/213) [part 2](http://blog.regehr.org/archives/226) [part 3](http://blog.regehr.org/archives/232))

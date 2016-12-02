@@ -76,6 +76,46 @@ namespace riscv {
 			}
 		}
 
+		void seed_registers(host_cpu &cpu, uint64_t initial_seed, size_t n)
+		{
+			sha512_ctx_t sha512;
+			u8 seed[SHA512_OUTPUT_BYTES];   /* 512-bits random seed */
+			u8 random[SHA512_OUTPUT_BYTES]; /* 512-bits hash output */
+
+			/* if 64-bit initial seed is specified, repeat seed 8 times in the seed buffer
+			   if no initial seed is specified then fill the seed buffer with 512-bits of random */
+			for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+				*(u64*)(seed + i) = initial_seed ? initial_seed
+					: (((u64)cpu.get_random_seed()) << 32) | (u64)cpu.get_random_seed() ;
+			}
+
+			/* Log initial seed state */
+			if (P::log & proc_log_memory) {
+				std::string seed_str;
+				for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+					seed_str.append(format_string("%016llx", *(u64*)(seed + i)));
+				}
+				debug("seed: %s", seed_str.c_str());
+			}
+
+			/* Randomize the integer registers */
+			size_t rand_bytes = 0;
+			std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
+			for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
+				/* on buffer exhaustion sha-512 hash the seed and xor the hash back into the seed */
+				if ((rand_bytes & (SHA512_OUTPUT_BYTES - 1)) == 0) {
+					sha512_init(&sha512);
+					sha512_update(&sha512, seed, SHA512_OUTPUT_BYTES);
+					sha512_final(&sha512, random);
+					for (size_t i = 0; i < SHA512_OUTPUT_BYTES; i += 8) {
+						*(u64*)(seed + i) ^= *(u64*)(random + i);
+					}
+				}
+				P::ireg[i].r.xu.val = *(u64*)(random + (rand_bytes & (SHA512_OUTPUT_BYTES - 1)));
+				rand_bytes += 8;
+			}
+		}
+
 		std::string format_operands(T &dec)
 		{
 			size_t reg;

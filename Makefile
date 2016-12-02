@@ -267,6 +267,11 @@ RV_SIM_SRCS =     $(SRC_DIR)/app/riscv-sim.cc
 RV_SIM_OBJS =     $(call src_objs, $(RV_SIM_SRCS))
 RV_SIM_BIN =      $(BIN_DIR)/rv-sim
 
+# rv-sys
+RV_SYS_SRCS =     $(SRC_DIR)/app/riscv-sys.cc
+RV_SYS_OBJS =     $(call src_objs, $(RV_SYS_SRCS))
+RV_SYS_BIN =      $(BIN_DIR)/rv-sys
+
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/riscv-test-bits.cc
 TEST_BITS_OBJS = $(call src_objs, $(TEST_BITS_SRCS))
@@ -337,6 +342,7 @@ ALL_SRCS = $(RV_ASM_SRCS) \
 BINARIES = $(RV_META_BIN) \
            $(RV_BIN_BIN) \
            $(RV_SIM_BIN) \
+           $(RV_SYS_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
            $(TEST_ENCODER_BIN) \
@@ -386,27 +392,33 @@ qemu-tests:
 
 test-emulate: ; @echo Please use make test-sim
 
-test-run: test-run-rv64
+test-build: test-build-rv64
+test-spike: test-spike-rv64
 test-sim: test-sim-rv64
+test-sys: test-sys-rv64
 
-test-run-all: ; $(MAKE) -j1 test-run-rv64 test-run-rvc64 test-run-rv32 test-run-rvc32
-test-sim-all: ; $(MAKE) -j1 sim-rv64 sim-rvc64 sim-rv32 sim-rvc32
+test-spike-all: ; $(MAKE) -j1 test-spike-rv64 test-spike-rvc64 test-spike-rv32 test-spike-rvc32
+test-sim-all: ; $(MAKE) -j1 test-sim-rv64 test-sim-rvc64 test-sim-rv32 test-sim-rvc32
 
 test-build-rv64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64)
-test-run-rv64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64)
-test-sim-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV64) EMULATOR=$(RV_SIM_BIN)
+test-spike-rv64: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64)
+test-sim-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64) EMULATOR=$(RV_SIM_BIN)
+test-sys-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV64) EMULATOR=$(RV_SYS_BIN)
 
 test-build-rvc64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64C)
-test-run-rvc64: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV64C)
-test-sim-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV64C) EMULATOR=$(RV_SIM_BIN)
+test-spike-rvc64: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64C)
+test-sim-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64C) EMULATOR=$(RV_SIM_BIN)
+test-sys-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV64C) EMULATOR=$(RV_SYS_BIN)
 
 test-build-rv32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32)
-test-run-rv32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32)
-test-sim-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV32) EMULATOR=$(RV_SIM_BIN)
+test-spike-rv32: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32)
+test-sim-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32) EMULATOR=$(RV_SIM_BIN)
+test-sys-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV32) EMULATOR=$(RV_SYS_BIN)
 
 test-build-rvc32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32C)
-test-run-rvc32: ; $(MAKE) -f $(TEST_MK) test $(TEST_RV32C)
-test-sim-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-priv $(TEST_RV32C) EMULATOR=$(RV_SIM_BIN)
+test-spike-rvc32: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32C)
+test-sim-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32C) EMULATOR=$(RV_SIM_BIN)
+test-sys-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV32C) EMULATOR=$(RV_SYS_BIN)
 
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
@@ -418,6 +430,7 @@ install:
 	install $(RV_META_BIN) /usr/local/bin/rv-meta
 	install $(RV_BIN_BIN) /usr/local/bin/rv-bin
 	install $(RV_SIM_BIN) /usr/local/bin/rv-sim
+	install $(RV_SYS_BIN) /usr/local/bin/rv-sys
 
 # metadata targets
 
@@ -519,6 +532,10 @@ $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FM
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(DLMALLOC_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

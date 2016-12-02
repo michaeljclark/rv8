@@ -75,7 +75,7 @@ dirs: ; @mkdir -p $(ASM_DIR) $(OBJ_DIR) $(BIN_DIR) $(GEN_DIR)
 clean:
 	rm -f $(PROGRAMS) *.o
 
-test: all
+test-sim: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-pcrel
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-args Hello World
@@ -86,10 +86,10 @@ test: all
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-yes 11
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-no 11
 
-test-priv: test
-	$(EMULATOR) -S -m -o -p $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -m -o -v -p $(BIN_DIR)/test-m-sv39
-	$(EMULATOR) -S -m -O -p $(BIN_DIR)/test-m-mmio-timer
+test-sys: all
+	$(EMULATOR) -S -m -o $(BIN_DIR)/test-m-ecall-trap
+	$(EMULATOR) -S -m -t -v $(BIN_DIR)/test-m-sv39
+	$(EMULATOR) -S -m -O $(BIN_DIR)/test-m-mmio-timer
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
