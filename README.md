@@ -192,7 +192,7 @@ rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 RV Metadata Utility
 -----------------------------
 
-The RV Metadata usage command line options:
+The RV source and documentation generator usage command line options:
 
 ```
 $ rv-meta -h
