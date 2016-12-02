@@ -431,8 +431,8 @@ typedef struct {
 // Relocations
 
 inline const Elf32_Word ELF32_R_SYM(Elf32_Word i) { return i >> 8; }
-inline const Elf32_Word ELF32_R_TYPE(Elf32_Word i) { return i & 0xf; }
-inline const Elf32_Word ELF32_R_INFO(Elf32_Word s, Elf32_Word t) { return (s << 4) | (t & 0xf); }
+inline const Elf32_Word ELF32_R_TYPE(Elf32_Word i) { return i & 0xff; }
+inline const Elf32_Word ELF32_R_INFO(Elf32_Word s, Elf32_Word t) { return (s << 8) | (t & 0xff); }
 
 inline const Elf64_Xword ELF64_R_SYM(Elf64_Xword i) { return i >> 32; }
 inline const Elf64_Xword ELF64_R_TYPE(Elf64_Xword i) { return i & 0xffffffffUL; }
