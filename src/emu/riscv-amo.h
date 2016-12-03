@@ -59,6 +59,7 @@ namespace riscv {
 			case amominu: return amominu_fn(x, y);
 			case amomaxu: return amomaxu_fn(x, y);
 		}
+		return 0;
 	}
 }
 

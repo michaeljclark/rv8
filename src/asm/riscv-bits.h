@@ -64,8 +64,8 @@ namespace riscv {
 			case 536870912: return 29;
 			case 1073741824: return 30;
 			case 2147483648: return 31;
-			default: return 0;
 		}
+		return 0;
 	}
 
 	inline constexpr uintptr_t round_up(uintptr_t addr, uintptr_t page_size)
