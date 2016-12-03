@@ -512,98 +512,79 @@ namespace riscv {
 			 * service external interrupts from the PLIC if enabled
 			 *
 			 * TODO: change to interrupt source per privilege level
-			 *       and redliver interrupt while meip is set
 			 */
 
-			bool irq_pending = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
-			if (P::mstatus.r.mie && irq_pending) {
-				if (P::mideleg & (1 << riscv_intr_m_external)) {
-					if (P::hideleg & (1 << riscv_intr_h_external)) {
-						if (P::sideleg & (1 << riscv_intr_s_external) && P::mie.r.ueie) {
-							P::mip.r.ueip = 1;
-							utrap(riscv_intr_u_external, true);
-							return;
-						} else if (P::mie.r.seie) {
-							P::mip.r.seip = 1;
-							strap(riscv_intr_s_external, true);
-							return;
-						}
-					} else if (P::mie.r.heie) {
-						P::mip.r.heip = 1;
-						htrap(riscv_intr_h_external, true);
-						return;
-					}
-				} else if (P::mie.r.meie) {
-					P::mip.r.meip = 1;
-					mtrap(riscv_intr_m_external, true);
-					return;
-				}
+			if (device_plic->irq_pending(P::mode, P::node_id, P::hart_id)) {
+				P::mip.r.meip = 1;
+			}
+			if (P::mstatus.r.mie && P::mie.r.meie && P::mip.r.meip) {
+				mtrap(riscv_intr_m_external, true);
+				return;
+			}
+			if (P::mstatus.r.hie && P::mie.r.heie && P::mip.r.heip) {
+				htrap(riscv_intr_h_external, true);
+				return;
+			}
+			if (P::mstatus.r.sie && P::mie.r.seie && P::mip.r.seip) {
+				strap(riscv_intr_s_external, true);
+				return;
+			}
+			if (P::mstatus.r.uie && P::mie.r.ueie && P::mip.r.ueip) {
+				utrap(riscv_intr_u_external, true);
+				return;
 			}
 
 			/*
 			 * service timer interrupts if enabled
 			 *
 			 * TODO: change to interrupt source per privilege level
-			 *       and redliver interrupt while mtip is set
 			 */
 
-			bool timer_pending = device_time->timer_pending(P::time);
-			if (P::mstatus.r.mie && timer_pending) {
-				if (P::mideleg & (1 << riscv_intr_m_timer)) {
-					if (P::hideleg & (1 << riscv_intr_h_timer)) {
-						if (P::sideleg & (1 << riscv_intr_s_timer) && P::mie.r.utie) {
-							P::mip.r.utip = 1;
-							utrap(riscv_intr_u_timer, true);
-							return;
-						} else if (P::mie.r.stie) {
-							P::mip.r.stip = 1;
-							strap(riscv_intr_s_timer, true);
-							return;
-						}
-					} else if (P::mie.r.htie) {
-						P::mip.r.htip = 1;
-						htrap(riscv_intr_h_timer, true);
-						return;
-					}
-				} else if (P::mie.r.mtie) {
-					P::mip.r.mtip = 1;
-					mtrap(riscv_intr_m_timer, true);
-					return;
-				}
+			if (device_time->timer_pending(P::time)) {
+				P::mip.r.mtip = 1;
+			}
+			if (P::mstatus.r.mie && P::mie.r.mtie && P::mip.r.mtip) {
+				mtrap(riscv_intr_m_timer, true);
+				return;
+			}
+			if (P::mstatus.r.hie && P::mie.r.htie && P::mip.r.htip) {
+				htrap(riscv_intr_h_timer, true);
+				return;
+			}
+			if (P::mstatus.r.sie && P::mie.r.stie && P::mip.r.stip) {
+				strap(riscv_intr_s_timer, true);
+				return;
+			}
+			if (P::mstatus.r.uie && P::mie.r.utie && P::mip.r.utip) {
+				utrap(riscv_intr_u_timer, true);
+				return;
 			}
 
 			/*
 			 * service interprocessor interrupts
 			 *
 			 * TODO: change to interrupt source per privilege level
-			 *       and redliver interrupt while msip is set
 			 */
 
-			bool ipi_pending = device_mipi->ipi_pending(P::hart_id);
-			if (P::mstatus.r.mie && ipi_pending) {
-				if (P::mideleg & (1 << riscv_intr_m_software)) {
-					if (P::hideleg & (1 << riscv_intr_h_software)) {
-						if (P::sideleg & (1 << riscv_intr_s_software) && P::mie.r.ueie) {
-							P::mip.r.usip = 1;
-							utrap(riscv_intr_u_software, true);
-							return;
-						} else if (P::mie.r.ssie) {
-							P::mip.r.ssip = 1;
-							strap(riscv_intr_s_software, true);
-							return;
-						}
-					} else if (P::mie.r.hsie) {
-						P::mip.r.hsip = 1;
-						htrap(riscv_intr_h_software, true);
-						return;
-					}
-				} else if (P::mie.r.msie) {
-					P::mip.r.msip = 1;
-					mtrap(riscv_intr_m_software, true);
-					return;
-				}
+			if (device_mipi->ipi_pending(P::hart_id)) {
+				P::mip.r.msip = 1;
 			}
-
+			if (P::mstatus.r.mie && P::mie.r.msie && P::mip.r.msip) {
+				mtrap(riscv_intr_m_software, true);
+				return;
+			}
+			if (P::mstatus.r.hie && P::mie.r.hsie && P::mip.r.hsip) {
+				htrap(riscv_intr_h_software, true);
+				return;
+			}
+			if (P::mstatus.r.sie && P::mie.r.ssie && P::mip.r.ssip) {
+				strap(riscv_intr_s_software, true);
+				return;
+			}
+			if (P::mstatus.r.uie && P::mie.r.usie && P::mip.r.usip) {
+				utrap(riscv_intr_u_software, true);
+				return;
+			}
 		}
 
 		void trap(typename P::decode_type &dec, int cause)
