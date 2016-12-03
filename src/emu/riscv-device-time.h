@@ -43,6 +43,7 @@ namespace riscv {
 		{
 			debug("time_mmio:mtime            %llu", mtime);
 			debug("time_mmio:mtimecmp         %llu", mtimecmp);
+			debug("time_mmio:claimed          %d", claimed);
 		}
 
 		bool timer_pending(UX time)
