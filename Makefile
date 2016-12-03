@@ -329,6 +329,7 @@ ALL_SRCS = $(RV_ASM_SRCS) \
            $(RV_BIN_SRCS) \
            $(RV_META_SRCS) \
            $(RV_SIM_SRCS) \
+           $(RV_SYS_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_CONFIG_SRCS) \
            $(TEST_ENCODER_SRCS) \
