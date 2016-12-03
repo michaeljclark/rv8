@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdarg>
+#include <csignal>
 #include <vector>
 #include <string>
 #include <algorithm>
