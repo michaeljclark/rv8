@@ -674,17 +674,21 @@ namespace riscv {
 				if (P::hedeleg & deleg) {
 					if (P::sedeleg & deleg) {
 						if (set_badaddr) P::ubadaddr = P::badaddr;
+						P::mip.r.utip = P::mip.r.ueip = P::mip.r.utip = 0;
 						utrap(cause, false);
 					} else {
 						if (set_badaddr) P::sbadaddr = P::badaddr;
+						P::mip.r.stip = P::mip.r.seip = P::mip.r.usip = 0;
 						strap(cause, false);
 					}
 				} else {
 					if (set_badaddr) P::hbadaddr = P::badaddr;
+					P::mip.r.htip = P::mip.r.heip = P::mip.r.hsip = 0;
 					htrap(cause, false);
 				}
 			} else {
 				if (set_badaddr) P::mbadaddr = P::badaddr;
+				P::mip.r.mtip = P::mip.r.meip = P::mip.r.msip = 0;
 				mtrap(cause, false);
 			}
 		}
