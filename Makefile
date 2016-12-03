@@ -54,7 +54,7 @@ CXXFLAGS =      -std=c++1y -fno-exceptions -fno-rtti $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000 -lncurses
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static -lncurses
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static -lncurses -ltermcap
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS =   -lpthread
@@ -214,6 +214,8 @@ LIBEDIT_SRCS =   $(SRC_DIR)/edit/chared.c \
                  $(SRC_DIR)/edit/tokenizer.c \
                  $(SRC_DIR)/edit/tokenizern.c \
                  $(SRC_DIR)/edit/tty.c \
+                 $(SRC_DIR)/edit/unvis.c \
+                 $(SRC_DIR)/edit/vis.c \
                  $(SRC_DIR)/edit/vi.c
 LIBEDIT_OBJS =   $(call cc_src_objs, $(LIBEDIT_SRCS))
 LIBEDIT_LIB =    $(LIB_DIR)/libedit.a
