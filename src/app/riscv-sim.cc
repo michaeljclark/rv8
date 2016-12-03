@@ -36,7 +36,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
@@ -58,26 +57,15 @@
 #include "riscv-disasm.h"
 #include "riscv-alu.h"
 #include "riscv-fpu.h"
-#include "riscv-pte.h"
 #include "riscv-pma.h"
 #include "riscv-amo.h"
 #include "riscv-processor-logging.h"
 #include "riscv-processor-base.h"
 #include "riscv-processor-impl.h"
-#include "riscv-user-memory.h"
-#include "riscv-soft-tlb.h"
-#include "riscv-soft-mmu.h"
 #include "riscv-interp.h"
 #include "riscv-processor-model.h"
 #include "riscv-unknown-abi.h"
 #include "riscv-processor-proxy.h"
-#include "riscv-queue.h"
-#include "riscv-device-boot.h"
-#include "riscv-device-time.h"
-#include "riscv-device-mipi.h"
-#include "riscv-device-plic.h"
-#include "riscv-device-uart.h"
-#include "riscv-processor-priv-1.9.h"
 #include "riscv-processor-runloop.h"
 
 #if defined (ENABLE_GPERFTOOL)

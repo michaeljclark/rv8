@@ -36,7 +36,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 
 #include "riscv-endian.h"
 #include "riscv-types.h"
@@ -69,8 +68,6 @@
 #include "riscv-soft-mmu.h"
 #include "riscv-interp.h"
 #include "riscv-processor-model.h"
-#include "riscv-unknown-abi.h"
-#include "riscv-processor-proxy.h"
 #include "riscv-queue.h"
 #include "riscv-device-boot.h"
 #include "riscv-device-time.h"

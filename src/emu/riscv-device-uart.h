@@ -14,16 +14,20 @@ namespace riscv {
 	{
 		P &proc;
 		struct termios old_tio, new_tio;
+		int pipefds[2];
+		struct pollfd pollfds[2];
 		queue_atomic<char> queue;
 		volatile bool running;
-		int fdvec[2];
-		struct pollfd fds[2];
+		volatile bool suspended;
 		std::thread thread;
 
 		console_thread(P &proc) :
 			proc(proc),
+			pipefds{0},
+			pollfds(),
 			queue(1024),
 			running(true),
+			suspended(false),
 			thread(&console_thread::mainloop, this)
 		{}
 
@@ -31,25 +35,26 @@ namespace riscv {
 		{
 			setup();
 			while (running) {
-				fds[0].fd = fdvec[0];
-				fds[0].events = POLLIN;
-				fds[0].revents = 0;
-				fds[1].fd = STDIN_FILENO;
-				fds[1].events = POLLIN;
-				fds[1].revents = 0;
-				if (poll(fds, 2, -1) < 0 && errno != EINTR) {
+				pollfds[0].fd = pipefds[0];
+				pollfds[0].events = POLLIN;
+				pollfds[0].revents = 0;
+				pollfds[1].fd = STDIN_FILENO;
+				pollfds[1].events = POLLIN;
+				pollfds[1].revents = 0;
+				if (poll(pollfds, 2, -1) < 0 && errno != EINTR) {
 					panic("console poll failed: %s", strerror(errno));
 				}
 				if (!running) break;
-				if (fds[0].revents & POLLIN) {
+				if (pollfds[0].revents & POLLIN) {
 					unsigned char c;
-					if (read(fdvec[0], &c, 1) < 0) {
+					if (read(pipefds[0], &c, 1) < 0) {
 						debug("console: socket: read: %s", strerror(errno));
 					} else if (write(STDIN_FILENO, &c, 1) < 0) {
 						debug("console: socket: write: %s", strerror(errno));
 					}
 				}
-				if (fds[1].revents & POLLIN) {
+				if (suspended) continue;
+				if (pollfds[1].revents & POLLIN) {
 					unsigned char c;
 					if (read(STDIN_FILENO, &c, 1) < 0) {
 						debug("console: stdin: read: %s", strerror(errno));
@@ -78,19 +83,19 @@ namespace riscv {
 			tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
 
 			/* create socketpair */
-			if (socketpair(PF_UNIX, SOCK_DGRAM, 0, fdvec) < 0) {
-				panic("socket failed: %s", strerror(errno));
+			if (pipe(pipefds) < 0) {
+				panic("pipe failed: %s", strerror(errno));
 			}
-			if (fcntl(fdvec[0], F_SETFD, FD_CLOEXEC) < 0) {
+			if (fcntl(pipefds[0], F_SETFD, FD_CLOEXEC) < 0) {
 				panic("console fcntl(F_SETFD, FD_CLOEXEC) failed: %s", strerror(errno));
 			}
-			if (fcntl(fdvec[0], F_SETFL, O_NONBLOCK) < 0) {
+			if (fcntl(pipefds[0], F_SETFL, O_NONBLOCK) < 0) {
 				panic("console fcntl(F_SETFL, O_NONBLOCK) failed: %s", strerror(errno));
 			}
-			if (fcntl(fdvec[1], F_SETFD, FD_CLOEXEC) < 0) {
+			if (fcntl(pipefds[1], F_SETFD, FD_CLOEXEC) < 0) {
 				panic("console fcntl(F_SETFD, FD_CLOEXEC) failed: %s", strerror(errno));
 			}
-			if (fcntl(fdvec[1], F_SETFL, O_NONBLOCK) < 0) {
+			if (fcntl(pipefds[1], F_SETFL, O_NONBLOCK) < 0) {
 				panic("console fcntl(F_SETFL, O_NONBLOCK) failed: %s", strerror(errno));
 			}
 		}
@@ -106,7 +111,7 @@ namespace riscv {
 			/* set running flag to false and write a null byte to the FIFO */
 			running = false;
 			unsigned char c = 0;
-			if (write(fdvec[1], &c, 1) < 0) {
+			if (write(pipefds[1], &c, 1) < 0) {
 				debug("console: socket: write: %s", strerror(errno));
 			}
 			thread.join();
@@ -129,7 +134,7 @@ namespace riscv {
 
 		void write_char(u8 c)
 		{
-			if (write(fdvec[1], &c, 1) < 0) {
+			if (write(pipefds[1], &c, 1) < 0) {
 				debug("console: socket: write: %s", strerror(errno));
 			}
 		}
@@ -257,7 +262,7 @@ namespace riscv {
 			proc(proc),
 			plic(plic),
 			irq(irq),
-			com{ 0 }
+			com{0}
 		{
 			console = std::make_shared<console_thread<P>>(proc);
 		}
