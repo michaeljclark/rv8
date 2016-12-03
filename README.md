@@ -156,6 +156,18 @@ To install to `/usr/local/bin`: ```make && sudo make install```
 
 - The test-build target requires the RISC-V GNU Compiler Toolchain
 
+### Ubuntu 14.04LTS Dependencies
+
+The compiler in Ubuntu 14.04LTS doesn't support C++14. These
+instructions will install g++6 from the ubuntu toolchain repository
+and build the project using g++6.
+
+```
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt-get install g++-6 libncurses5-dev
+make CXX=g++-6 CC=gcc-6
+```
 
 RV ELF Dump Utility
 -----------------------------
