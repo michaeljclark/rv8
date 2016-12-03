@@ -346,16 +346,17 @@ void elf_print_relocations(elf_file &elf, elf_symbol_colorize_fn colorize)
 		if (shdr.sh_type & SHT_RELA) {
 			printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
 
-			printf("\n%sSymbol %-18s %-20s %-30s %-18s%s\n",
+			printf("\n%sReloc  %-18s %-20s %-30s %-18s%s\n",
 				colorize("title"),
 				"Offset", "Symbol", "Type", "Addend",
 				colorize("reset"));
+			size_t j = 0;
 			for (auto &rela : elf.relocations[i]) {
 				Elf64_Xword sym = ELF64_R_SYM(rela.r_info);
 				Elf64_Xword type = ELF64_R_TYPE(rela.r_info);
 				printf("%s[%4lu]%s %s0x%-16llx%s %-20s %-30s %s0x%-16llx%s\n",
 					colorize("legend"),
-					i,
+					j++,
 					colorize("reset"),
 					colorize("address"),
 					rela.r_offset,
