@@ -508,7 +508,12 @@ namespace riscv {
 
 			device_uart->service();
 
-			/* service external interrupts from the PLIC if enabled */
+			/*
+			 * service external interrupts from the PLIC if enabled
+			 *
+			 * TODO: change to interrupt source per privilege level
+			 *       and redliver interrupt while meip is set
+			 */
 
 			bool irq_pending = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
 			if (P::mstatus.r.mie && irq_pending) {
@@ -535,7 +540,12 @@ namespace riscv {
 				}
 			}
 
-			/* service timer interrupts if enabled */
+			/*
+			 * service timer interrupts if enabled
+			 *
+			 * TODO: change to interrupt source per privilege level
+			 *       and redliver interrupt while mtip is set
+			 */
 
 			bool timer_pending = device_time->timer_pending(P::time);
 			if (P::mstatus.r.mie && timer_pending) {
@@ -562,7 +572,12 @@ namespace riscv {
 				}
 			}
 
-			/* service interprocessor interrupts */
+			/*
+			 * service interprocessor interrupts
+			 *
+			 * TODO: change to interrupt source per privilege level
+			 *       and redliver interrupt while msip is set
+			 */
 
 			bool ipi_pending = device_mipi->ipi_pending(P::hart_id);
 			if (P::mstatus.r.mie && ipi_pending) {
