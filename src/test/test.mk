@@ -64,9 +64,10 @@ PROGRAMS = \
 	$(BIN_DIR)/test-jump-tables-yes \
 	$(BIN_DIR)/test-jump-tables-no \
 	$(BIN_DIR)/test-m-ecall-trap \
-	$(BIN_DIR)/test-m-sv39 \
+	$(BIN_DIR)/test-m-mret-user \
 	$(BIN_DIR)/test-m-mmio-timer \
-	$(BIN_DIR)/test-m-mmio-uart
+	$(BIN_DIR)/test-m-mmio-uart \
+	$(BIN_DIR)/test-m-sv39
 
 all: dirs $(ASSEMBLY) $(PROGRAMS)
 
@@ -88,8 +89,9 @@ test-sim: all
 
 test-sys: all
 	$(EMULATOR) -S -m -o $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -m -t -v $(BIN_DIR)/test-m-sv39
+	$(EMULATOR) -S -m -o $(BIN_DIR)/test-m-mret-user
 	$(EMULATOR) -S -m -O $(BIN_DIR)/test-m-mmio-timer
+	$(EMULATOR) -S -m -t -v $(BIN_DIR)/test-m-sv39
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
@@ -140,6 +142,9 @@ $(BIN_DIR)/test-m-mmio-timer: $(OBJ_DIR)/test-m-mmio-timer.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-mmio-uart.o: $(SRC_DIR)/test-m-mmio-uart.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-mmio-uart: $(OBJ_DIR)/test-m-mmio-uart.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-m-mret-user.o: $(SRC_DIR)/test-m-mret-user.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-mret-user: $(OBJ_DIR)/test-m-mret-user.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-sv39.o: $(SRC_DIR)/test-m-sv39.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-sv39: $(OBJ_DIR)/test-m-sv39.o ; $(LD) $^ -o $@
