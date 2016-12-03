@@ -53,18 +53,8 @@ namespace riscv {
 			 * faults which will result in a call to the trap handler.
 			 */
 
-			const char* signal_name;
-			switch (signum) {
-				case SIGSEGV: signal_name = "SIGSEGV"; break;
-				case SIGTERM: signal_name = "SIGTERM"; break;
-				case SIGQUIT: signal_name = "SIGQUIT"; break;
-				case SIGINT: signal_name = "SIGINT"; break;
-				case SIGHUP: signal_name = "SIGHUP"; break;
-				case SIGUSR1: signal_name = "SIGUSR1"; break;
-				default: signal_name = "FAULT";
-			}
-
-			printf("%-9s:%016llx\n", signal_name, (addr_t)info->si_addr);
+			printf("SIGNAL   :%s pc:0x%0llx si_addr:0x%0llx\n",
+				signal_name(signum), (addr_t)P::pc, (addr_t)info->si_addr);
 			P::print_csr_registers();
 			P::print_int_registers();
 			exit(1);

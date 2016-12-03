@@ -63,6 +63,25 @@ void debug(const char* fmt, ...)
 	va_end(ap);
 }
 
+const char* signal_name(int signum)
+{
+	switch (signum) {
+		case SIGHUP: return "SIGHUP";
+		case SIGINT: return "SIGINT";
+		case SIGQUIT: return "SIGQUIT";
+		case SIGILL: return "SIGILL";
+		case SIGABRT: return "SIGABRT";
+		case SIGFPE: return "SIGFPE";
+		case SIGSEGV: return "SIGSEGV";
+		case SIGPIPE: return "SIGPIPE";
+		case SIGTERM: return "SIGTERM";
+		case SIGUSR1: return "SIGUSR1";
+		case SIGUSR2: return "SIGUSR2";
+		default: break;
+	}
+	return "SIG?";
+}
+
 std::string ltrim(std::string s)
 {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
