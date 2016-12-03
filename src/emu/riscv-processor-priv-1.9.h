@@ -514,9 +514,8 @@ namespace riscv {
 			 * TODO: change to interrupt source per privilege level
 			 */
 
-			if (device_plic->irq_pending(P::mode, P::node_id, P::hart_id)) {
-				P::mip.r.meip = 1;
-			}
+			P::mip.r.meip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
+
 			if (P::mstatus.r.mie && P::mie.r.meie && P::mip.r.meip) {
 				mtrap(riscv_intr_m_external, true);
 				return;
