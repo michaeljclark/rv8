@@ -48,12 +48,9 @@ namespace riscv {
 		bool timer_pending(UX time)
 		{
 			mtime = time;
-			if (!claimed) {
-				claimed = mtime >= mtimecmp;
-				return claimed;
-			} else {
-				return false;
-			}
+			if (claimed) return false;
+			claimed = mtime >= mtimecmp;
+			return claimed;
 		}
 
 		/* Timer MMIO */
