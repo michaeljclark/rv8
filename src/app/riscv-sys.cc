@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include "histedit.h"
+
 #include "riscv-endian.h"
 #include "riscv-types.h"
 #include "riscv-fmt.h"
@@ -75,6 +77,7 @@
 #include "riscv-device-plic.h"
 #include "riscv-device-uart.h"
 #include "riscv-processor-priv-1.9.h"
+#include "riscv-debug-cli.h"
 #include "riscv-processor-runloop.h"
 
 #if defined (ENABLE_GPERFTOOL)
@@ -141,8 +144,6 @@ struct riscv_emulator
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
-
-	static const int inst_step = 100000; /* Number of instructions executes in step call */
 
 	riscv_emulator() : cpu(host_cpu::get_instance()) {}
 
@@ -325,8 +326,8 @@ struct riscv_emulator
 		ProfilerStart("test-emulate.out");
 #endif
 
-		/* Step the CPU until it halts */
-		while(proc.step(inst_step));
+		/* Run the CPU until it halts */
+		proc.run();
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();

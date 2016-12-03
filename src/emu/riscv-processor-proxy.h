@@ -12,6 +12,8 @@ namespace riscv {
 	template <typename P>
 	struct processor_proxy : P
 	{
+		const char* name() { return "rv-sim"; }
+
 		void init() {}
 
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
@@ -59,10 +61,9 @@ namespace riscv {
 			return 0; /* illegal instruction */
 		}
 
-		void isr()
-		{
-
-		}
+		void isr() {}
+		void debug_enter() {}
+		void debug_leave() {}
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
@@ -82,7 +83,9 @@ namespace riscv {
 
 		void signal(int signum, siginfo_t *info)
 		{
-			/* does nothing */
+			if (signum == SIGINT) {
+				P::raise(0x1011, P::pc);
+			}
 		}
 
 	};

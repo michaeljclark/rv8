@@ -20,6 +20,9 @@ namespace riscv {
 	struct processor_runloop : processor_fault, P
 	{
 		static const size_t inst_cache_size = 8191;
+		static const int inst_step = 100000;
+
+		std::shared_ptr<debug_cli<P>> cli;
 
 		struct riscv_inst_cache_ent
 		{
@@ -28,6 +31,9 @@ namespace riscv {
 		};
 
 		riscv_inst_cache_ent inst_cache[inst_cache_size];
+
+		processor_runloop() : cli(std::make_shared<debug_cli<P>>()) {}
+		processor_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli) {}
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
@@ -103,7 +109,23 @@ namespace riscv {
 			P::init();
 		}
 
-		bool step(size_t count)
+		void run()
+		{
+			for (;;) {
+				exit_cause ex = step(inst_step);
+				switch (ex) {
+					case exit_cause_continue:
+						break;
+					case exit_cause_cli:
+						cli->run(this);
+						break;
+					case exit_cause_halt:
+						return;
+				}
+			}
+		}
+
+		exit_cause step(size_t count)
 		{
 			typename P::decode_type dec;
 			typename P::ux inststop = P::instret + count;
@@ -117,6 +139,9 @@ namespace riscv {
 			/* trap return path */
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {
+				if (cause == 0x1111) {
+					return exit_cause_cli;
+				}
 				P::trap(dec, cause);
 			}
 
@@ -142,7 +167,7 @@ namespace riscv {
 					P::raise(riscv_cause_illegal_instruction, P::pc);
 				}
 			}
-			return true;
+			return exit_cause_continue;
 		}
 	};
 

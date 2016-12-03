@@ -172,6 +172,8 @@ namespace riscv {
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
 		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
 
+		const char* name() { return "rv-sys"; }
+
 		void init()
 		{
 			/* set initial value for misa register */
@@ -586,6 +588,18 @@ namespace riscv {
 			}
 		}
 
+		void debug_enter()
+		{
+			/* suspend uart console reads */
+			device_uart->console->suspend();
+		}
+
+		void debug_leave()
+		{
+			/* restart uart console reads */
+			device_uart->console->resume();
+		}
+
 		void trap(typename P::decode_type &dec, int cause)
 		{
 			/* setjmp cannot return zero so 0x100 is added to cause */
@@ -675,11 +689,15 @@ namespace riscv {
 
 		void signal(int signum, siginfo_t *info)
 		{
-			if (signum == SIGHUP) {
+			if (signum == SIGINT) {
+				P::raise(0x1011, P::pc);
+			}
+			else if (signum == SIGHUP) {
 				typename P::ux epc = P::pc;
 				reset();
 				P::raise(0x1000, epc);
-			} else {
+			}
+			else {
 				if (signum == SIGUSR1) {
 					print_device_registers();
 				}

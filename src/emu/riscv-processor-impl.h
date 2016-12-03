@@ -25,6 +25,15 @@ namespace riscv {
 		csr_rc        /* Read/Clear CSR */
 	};
 
+	/* Interpreter Exit Causes */
+
+	enum exit_cause {
+		exit_cause_continue,
+		exit_cause_cli,
+		exit_cause_halt
+	};
+
+
 	/* Register formatter */
 
 	template <typename T>

@@ -34,6 +34,7 @@ namespace riscv {
 		void mainloop()
 		{
 			setup();
+			open_pipe();
 			while (running) {
 				pollfds[0].fd = pipefds[0];
 				pollfds[0].events = POLLIN;
@@ -63,25 +64,12 @@ namespace riscv {
 					}
 				}
 			}
+			close_pipe();
 			teardown();
 		}
 
-		void setup()
+		void open_pipe()
 		{
-			#if 0
-			/* change standard in to non-blocking */
-			int flags = fcntl(STDIN_FILENO, F_GETFL);
-			fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
-			#endif
-
-			/* fetch the terminal input settings,
-			   disable canonical mode and echo,
-			   then set the new input settings */
-			tcgetattr(STDIN_FILENO, &old_tio);
-			new_tio = old_tio;
-			new_tio.c_lflag &=(~ICANON & ~ECHO);
-			tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
-
 			/* create socketpair */
 			if (pipe(pipefds) < 0) {
 				panic("pipe failed: %s", strerror(errno));
@@ -100,12 +88,42 @@ namespace riscv {
 			}
 		}
 
+		void close_pipe() {
+			close(pipefds[0]);
+			close(pipefds[1]);
+		}
+
+		/* setup console */
+		void setup()
+		{
+			tcgetattr(STDIN_FILENO, &old_tio);
+			new_tio = old_tio;
+			new_tio.c_lflag &=(~ICANON & ~ECHO);
+			tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
+		}
+
+		/* teardown console */
 		void teardown()
 		{
 			/* restore settings */
 			tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
 		}
 
+		/* suspend console input */
+		void suspend()
+		{
+			teardown();
+			suspended = true;
+		}
+
+		/* resume console input */
+		void resume()
+		{
+			setup();
+			suspended = false;
+		}
+
+		/* shutdown console thread */
 		void shutdown()
 		{
 			/* set running flag to false and write a null byte to the FIFO */
@@ -117,21 +135,19 @@ namespace riscv {
 			thread.join();
 		}
 
+		/* check if data is available */
 		bool has_char()
 		{
 			return queue.size() > 0;
 		}
 
-		bool full()
-		{
-			return queue.full();
-		}
-
+		/* read one character */
 		u8 read_char()
 		{
 			return queue.size() > 0 ? queue.pop_front() : 0;
 		}
 
+		/* write one character */
 		void write_char(u8 c)
 		{
 			if (write(pipefds[1], &c, 1) < 0) {

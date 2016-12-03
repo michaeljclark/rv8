@@ -41,7 +41,7 @@
 #define HAVE_ISASCII 1
 
 /* Define to 1 if you have the `issetugid' function. */
-#define HAVE_ISSETUGID 1
+/* #undef HAVE_ISSETUGID */
 
 /* Define to 1 if you have the `curses' library (-lcurses). */
 /* #undef HAVE_LIBCURSES */
@@ -56,7 +56,7 @@
 #define HAVE_LIMITS_H 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
-/* #undef HAVE_MALLOC_H */
+#define HAVE_MALLOC_H 1
 
 /* Define to 1 if you have the `memchr' function. */
 #define HAVE_MEMCHR 1
@@ -77,7 +77,7 @@
 #define HAVE_REGCOMP 1
 
 /* Define to 1 if you have the `re_comp' function. */
-/* #undef HAVE_RE_COMP */
+#define HAVE_RE_COMP 1
 
 /* Define to 1 if you have the `secure_getenv' function. */
 /* #undef HAVE_SECURE_GETENV */
@@ -114,10 +114,10 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strlcat' function. */
-#define HAVE_STRLCAT 1
+/* #undef HAVE_STRLCAT */
 
 /* Define to 1 if you have the `strlcpy' function. */
-#define HAVE_STRLCPY 1
+/* #undef HAVE_STRLCPY */
 
 /* Define to 1 if you have the `strrchr' function. */
 #define HAVE_STRRCHR 1
@@ -129,13 +129,13 @@
 #define HAVE_STRTOL 1
 
 /* Define to 1 if struct dirent has member d_namlen */
-#define HAVE_STRUCT_DIRENT_D_NAMLEN 1
+/* #undef HAVE_STRUCT_DIRENT_D_NAMLEN */
 
 /* Define to 1 if you have the `strunvis' function. */
-#define HAVE_STRUNVIS 1
+/* #undef HAVE_STRUNVIS */
 
 /* Define to 1 if you have the `strvis' function. */
-#define HAVE_STRVIS 1
+/* #undef HAVE_STRVIS */
 
 /* Define to 1 if you have the <sys/cdefs.h> header file. */
 #define HAVE_SYS_CDEFS_H 1
@@ -182,7 +182,7 @@
 /* #undef HAVE_VFORK_H */
 
 /* Define to 1 if you have the `vis' function. */
-#define HAVE_VIS 1
+/* #undef HAVE_VIS */
 
 /* Define to 1 if you have the `wcsdup' function. */
 #define HAVE_WCSDUP 1
@@ -198,7 +198,7 @@
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
-/* #undef LSTAT_FOLLOWS_SLASHED_SYMLINK */
+#define LSTAT_FOLLOWS_SLASHED_SYMLINK 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
