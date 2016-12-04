@@ -6,10 +6,10 @@
 
 #include <sys/mman.h>
 
-static const uintptr_t morecore_block_size   = 0x400000;    /* 4MiB */
+static const uintptr_t morecore_page_size    = 0x10000;     /* 64KiB */
 static const uintptr_t morecore_heap_offset  = 0x80000000;  /* 2GiB */
 static const uintptr_t morecore_heap_size    = 0x40000000;  /* 1GiB */
-static const int       morecore_pool_entries = 32;
+static const int       morecore_pool_entries = 512;
 static int             morecore_pool_count = 0;
 static void*           morecore_pool_mem[morecore_pool_entries] = { 0 };
 static size_t          morecore_pool_size[morecore_pool_entries] = { 0 };
@@ -36,7 +36,7 @@ void *os_more_core(int size)
   static void *sbrk_top = 0;
 
   if (size < 0) {
-    return (void *)(~(size_t)0);
+    return (void *)-1;
   } else if (size == 0) {
     return sbrk_top;
   }
@@ -53,14 +53,14 @@ void *os_more_core(int size)
   }
 
   /* align size to block size and calculate location */
-  size = (size + (morecore_block_size-1)) & ~(morecore_block_size-1);
+  size = (size + (morecore_page_size-1)) & ~(morecore_page_size-1);
   ptr = (void*)(morecore_pool_count == 0 ? morecore_heap_offset :
     (uintptr_t)morecore_pool_mem[morecore_pool_count - 1] + morecore_pool_size[morecore_pool_count - 1]);
   if ((uintptr_t)ptr + size - morecore_heap_offset > morecore_heap_size) {
     size = morecore_heap_size - (uintptr_t)ptr;
   }
   if (size < 0) {
-    return (void *)(~(size_t)0);
+    return (void *)-1;
   }
 
   ptr = mmap((void*)ptr, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_FIXED | MAP_SHARED, -1, 0);
