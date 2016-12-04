@@ -36,7 +36,7 @@
 
 using namespace riscv;
 
-bool config::parse_scalar(std::string valstr, integral_t &val)
+bool config::parse_integral(std::string valstr, integral_t &val)
 {
 	char *endptr = nullptr;
 	valstr = replace(valstr, "_", "");
@@ -54,11 +54,11 @@ bool config::parse_address_range(std::string valstr, address_range_ptr range)
 {
 	auto range_comps = split(valstr, ":");
 	if (range_comps.size() == 1) {
-		if (!parse_scalar(range_comps[0], range->start)) return false;
+		if (!parse_integral(range_comps[0], range->start)) return false;
 		range->end = range->start;
 	} else if (range_comps.size() == 2) {
-		if (!parse_scalar(range_comps[0], range->start)) return false;
-		if (!parse_scalar(range_comps[1], range->end)) return false;
+		if (!parse_integral(range_comps[0], range->start)) return false;
+		if (!parse_integral(range_comps[1], range->end)) return false;
 	} else {
 		return false;
 	}
@@ -232,7 +232,7 @@ void config::config_plic()
 	}};
 
 	config_fn_map["plic.ndevs"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], plic_list.back()->ndevs)) {
+		if (!parse_integral(line[1], plic_list.back()->ndevs)) {
 			panic("config: invalid ndevs value: plic \"%s\": %s",
 				plic_list.back()->interface.c_str(), line[1].c_str());
 		}
@@ -266,13 +266,13 @@ void config::config_plic()
 
 	block_start_fn_map["plic.#"] = {1, 1, [&] (config_line &line) {
 		auto plic_node = std::make_shared<riscv::plic_node>();
-		parse_scalar(line[0], plic_node->node_id);
+		parse_integral(line[0], plic_node->node_id);
 		plic_list.back()->node_list.push_back(plic_node);
 	}};
 
 	block_start_fn_map["plic.#.#"] = {1, 1, [&] (config_line &line) {
 		auto plic_hart = std::make_shared<riscv::plic_hart>();
-		parse_scalar(line[0], plic_hart->hart_id);
+		parse_integral(line[0], plic_hart->hart_id);
 		plic_list.back()->node_list.back()->hart_list.push_back(plic_hart);
 	}};
 
@@ -375,8 +375,8 @@ void config::config_pcie()
 	config_fn_map["pcie.bus.bus"] = {2, 2, [&] (config_line &line) {
 		auto comps = split(line[1], ":");
 		if (comps.size() != 2 ||
-			!parse_scalar(comps[0], pcie_list.back()->bus_list.back()->bus_pair.first) ||
-			!parse_scalar(comps[1], pcie_list.back()->bus_list.back()->bus_pair.second)) {
+			!parse_integral(comps[0], pcie_list.back()->bus_list.back()->bus_pair.first) ||
+			!parse_integral(comps[1], pcie_list.back()->bus_list.back()->bus_pair.second)) {
 			panic("config: invalid bus spec: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -401,7 +401,7 @@ void config::config_pcie()
 	}};
 
 	config_fn_map["pcie.bridge.bus"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], pcie_list.back()->bridge_list.back()->bus_id)) {
+		if (!parse_integral(line[1], pcie_list.back()->bridge_list.back()->bus_id)) {
 			panic("config: invalid bridge bus number: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -409,7 +409,7 @@ void config::config_pcie()
 	}};
 
 	config_fn_map["pcie.bridge.irq"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], pcie_list.back()->bridge_list.back()->irq_id)) {
+		if (!parse_integral(line[1], pcie_list.back()->bridge_list.back()->irq_id)) {
 			panic("config: invalid bridge irq number: pcie \"%s\": %s",
 				pcie_list.back()->interface.c_str(),
 				line[1].c_str());
@@ -428,7 +428,7 @@ void config::config_leds()
 	}};
 
 	config_fn_map["leds.ngpio"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], leds_list.back()->ngpio)) {
+		if (!parse_integral(line[1], leds_list.back()->ngpio)) {
 			panic("config: invalid ngpio value: leds \"%s\": %s",
 				leds_list.back()->interface.c_str(), line[1].c_str());
 		}
@@ -468,7 +468,7 @@ void config::config_ram()
 
 	block_start_fn_map["ram.#"] = {1, 1, [&] (config_line &line) {
 		auto ram_node = std::make_shared<riscv::ram_node>();
-		parse_scalar(line[0], ram_node->node_id);
+		parse_integral(line[0], ram_node->node_id);
 		ram_list.back()->node_list.push_back(ram_node);
 	}};
 
@@ -507,13 +507,13 @@ void config::config_core()
 
 	block_start_fn_map["core.#"] = {1, 1, [&] (config_line &line) {
 		auto core_node = std::make_shared<riscv::core_node>();
-		parse_scalar(line[0], core_node->node_id);
+		parse_integral(line[0], core_node->node_id);
 		core_list.back()->node_list.push_back(core_node);
 	}};
 
 	block_start_fn_map["core.#.#"] = {1, 1, [&] (config_line &line) {
 		auto core_hart = std::make_shared<riscv::core_hart>();
-		parse_scalar(line[0], core_hart->hart_id);
+		parse_integral(line[0], core_hart->hart_id);
 		core_list.back()->node_list.back()->hart_list.push_back(core_hart);
 	}};
 
@@ -522,7 +522,7 @@ void config::config_core()
 	}};
 
 	config_fn_map["core.#.#.timecmp"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], core_list.back()->node_list.back()->hart_list.back()->timecmp)) {
+		if (!parse_integral(line[1], core_list.back()->node_list.back()->hart_list.back()->timecmp)) {
 			panic("config: invalid timecmp value: core node id %u: hart id %u: %s",
 				core_list.back()->node_list.back()->node_id,
 				core_list.back()->node_list.back()->hart_list.back()->hart_id,
@@ -531,7 +531,7 @@ void config::config_core()
 	}};
 
 	config_fn_map["core.#.#.ipi"] = {2, 2, [&] (config_line &line) {
-		if (!parse_scalar(line[1], core_list.back()->node_list.back()->hart_list.back()->ipi)) {
+		if (!parse_integral(line[1], core_list.back()->node_list.back()->hart_list.back()->ipi)) {
 			panic("config: invalid ipi value: core node id %u: hart id %u: %s",
 				core_list.back()->node_list.back()->node_id,
 				core_list.back()->node_list.back()->hart_list.back()->hart_id,

@@ -231,7 +231,7 @@ namespace riscv {
 		uart_list_t          uart_list;
 		core_list_t          core_list;
 
-		static bool parse_scalar(std::string valstr, integral_t &val);
+		static bool parse_integral(std::string valstr, integral_t &val);
 		static bool parse_address_range(std::string valstr, address_range_ptr range);
 		static std::string address_range_to_string(address_range_list &addr_list);
 
@@ -256,7 +256,7 @@ namespace riscv {
 			}
 			if (prefix.size() > 0) {
 				integral_t num;
-				if (parse_scalar(key, num)) {
+				if (parse_integral(key, num)) {
 					std::string block_key = prefix.back() + ".#";
 					it = map.find(block_key);
 					if (it != map.end()) {
