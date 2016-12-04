@@ -57,7 +57,8 @@ MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000 -ln
 LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static -lncurses -ltermcap
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
-PTH_LDFLAGS =   -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+PTH_LDFLAGS_2 = -lpthread
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -116,8 +117,12 @@ CPPFLAGS +=     $(PTH_CPPFLAGS)
 endif
 
 # check if we can use pthread lib flags
-ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS)), 0)
-LDFLAGS +=      $(PTH_LDFLAGS)
+ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS_1)), 0)
+LDFLAGS +=      $(PTH_LDFLAGS_1)
+else
+ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS_2)), 0)
+LDFLAGS +=      $(PTH_LDFLAGS_2)
+endif
 endif
 
 # check if we can use libcxx
