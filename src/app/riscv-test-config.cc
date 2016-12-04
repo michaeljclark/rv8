@@ -14,6 +14,7 @@
 #include <map>
 
 #include "riscv-types.h"
+#include "riscv-util.h"
 #include "riscv-config-parser.h"
 #include "riscv-config.h"
 

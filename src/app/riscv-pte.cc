@@ -22,23 +22,6 @@
 
 using namespace riscv;
 
-static u64 parse_value(const char* valstr)
-{
-	u64 val;
-	char *endptr = nullptr;
-	if (strncmp(valstr, "0x", 2) == 0) {
-		val = strtoull(valstr + 2, &endptr, 16);
-	} else if (strncmp(valstr, "0b", 2) == 0) {
-		val = strtoull(valstr + 2, &endptr, 2);
-	} else {
-		val = strtoull(valstr, &endptr, 10);
-	}
-	if (*endptr != '\0') {
-		panic("parse_value: invalid value: %s", valstr);
-	}
-	return val;
-}
-
 struct pte_flag_spec {
 	char c;
 	u32 val;
@@ -102,10 +85,11 @@ int rv_pte_main(int argc, const char *argv[])
 		printf("usage: %s sv39 0x80000000 URWV\n", argv[0]);
 		exit(1);
 	}
+	s64 ppn;
 	std::string mode = argv[1];
-	u64 ppn = parse_value(argv[2]);
+	if (!parse_integral(argv[2], ppn)) panic("invalid ppn");
 	u32 flags = decode_flags(argv[3]);
-	u64 pte_val = decode_pte(argv[1], ppn, flags);
+	u64 pte_val = decode_pte(argv[1], u64(ppn), flags);
 	printf("mode=%s pa=0x%llx flags=0x%x pte_val=0x%llx\n",
 		mode.c_str(), ppn, flags, pte_val);
 	exit(0);

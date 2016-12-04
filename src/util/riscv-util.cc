@@ -12,6 +12,20 @@
 
 static const int INITIAL_BUFFER_SIZE = 256;
 
+bool parse_integral(std::string valstr, long long &val)
+{
+	char *endptr = nullptr;
+	valstr = replace(valstr, "_", "");
+	if (valstr.find("0x") == 0) {
+		val = strtoull(valstr.c_str() + 2, &endptr, 16);
+	} else if (valstr.find("0b") == 0) {
+		val = strtoull(valstr.c_str() + 2, &endptr, 2);
+	} else {
+		val = strtoull(valstr.c_str(), &endptr, 10);
+	}
+	return (*endptr == '\0');
+}
+
 std::string format_string(const char* fmt, ...)
 {
     std::vector<char> buf(INITIAL_BUFFER_SIZE);

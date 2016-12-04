@@ -36,20 +36,6 @@
 
 using namespace riscv;
 
-bool config::parse_integral(std::string valstr, integral_t &val)
-{
-	char *endptr = nullptr;
-	valstr = replace(valstr, "_", "");
-	if (valstr.find("0x") == 0) {
-		val = strtoull(valstr.c_str() + 2, &endptr, 16);
-	} else if (valstr.find("0b") == 0) {
-		val = strtoull(valstr.c_str() + 2, &endptr, 2);
-	} else {
-		val = strtoull(valstr.c_str(), &endptr, 10);
-	}
-	return (*endptr == '\0');
-}
-
 bool config::parse_address_range(std::string valstr, address_range_ptr range)
 {
 	auto range_comps = split(valstr, ":");

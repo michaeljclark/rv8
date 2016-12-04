@@ -5,6 +5,8 @@
 #ifndef riscv_util_h
 #define riscv_util_h
 
+extern bool parse_integral(std::string valstr, long long &val);
+
 extern std::string format_string(const char* fmt, ...);
 extern void log_format(FILE *file, const char* fmt, va_list arg);
 extern void panic(const char* fmt, ...) __attribute__ ((noreturn));
