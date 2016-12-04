@@ -31,10 +31,16 @@ namespace riscv {
 			thread(&console_thread::mainloop, this)
 		{}
 
+		~console_thread()
+		{
+			shutdown();
+		}
+
 		void mainloop()
 		{
-			setup();
+			block_signals();
 			open_pipe();
+			configure_console();
 			while (running) {
 				pollfds[0].fd = pipefds[0];
 				pollfds[0].events = POLLIN;
@@ -64,8 +70,26 @@ namespace riscv {
 					}
 				}
 			}
+			restore_console();
 			close_pipe();
-			teardown();
+		}
+
+		void block_signals()
+		{
+			// block signals
+			sigset_t set;
+			sigemptyset(&set);
+			sigaddset(&set, SIGSEGV);
+			sigaddset(&set, SIGTERM);
+			sigaddset(&set, SIGQUIT);
+			sigaddset(&set, SIGINT);
+			sigaddset(&set, SIGHUP);
+			sigaddset(&set, SIGUSR1);
+			if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0)
+			{
+				panic("console_thread: can't set thread signal mask: %s",
+					strerror(errno));
+			}
 		}
 
 		void open_pipe()
@@ -94,7 +118,7 @@ namespace riscv {
 		}
 
 		/* setup console */
-		void setup()
+		void configure_console()
 		{
 			tcgetattr(STDIN_FILENO, &old_tio);
 			new_tio = old_tio;
@@ -103,7 +127,7 @@ namespace riscv {
 		}
 
 		/* teardown console */
-		void teardown()
+		void restore_console()
 		{
 			/* restore settings */
 			tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
@@ -112,14 +136,14 @@ namespace riscv {
 		/* suspend console input */
 		void suspend()
 		{
-			teardown();
+			restore_console();
 			suspended = true;
 		}
 
 		/* resume console input */
 		void resume()
 		{
-			setup();
+			configure_console();
 			suspended = false;
 		}
 
@@ -129,10 +153,12 @@ namespace riscv {
 			/* set running flag to false and write a null byte to the FIFO */
 			running = false;
 			unsigned char c = 0;
+			/* wake up the console thread so it checks running and exits */
 			if (write(pipefds[1], &c, 1) < 0) {
 				debug("console: socket: write: %s", strerror(errno));
 			}
-			/*thread.join();*/
+			/* wait for the console thread to finish */
+			thread.join();
 		}
 
 		/* check if data is available */
@@ -281,11 +307,6 @@ namespace riscv {
 			com{0}
 		{
 			console = std::make_shared<console_thread<P>>(proc);
-		}
-
-		void shutdown()
-		{
-			console->shutdown();
 		}
 
 		void service()

@@ -72,7 +72,6 @@ namespace riscv {
 
 		void help()
 		{
-			printf("helpxx\n");
 			for (auto &ent : map) {
 				printf("%-20s %s\n",
 					ent.second.name.c_str(),
@@ -82,7 +81,6 @@ namespace riscv {
 
 		static bool cmd_help(cmd_state &st, args_t &args)
 		{
-			printf("helpx\n");
 			st.cli->help();
 			return false;
 		}

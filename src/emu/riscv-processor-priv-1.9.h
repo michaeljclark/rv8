@@ -602,12 +602,8 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
-			/* setjmp cannot return zero so 0x100 is added to cause */
-			if (cause < 0x100) panic("invalid trap cause");
-			else cause -= 0x100;
-
 			/* check for reset */
-			if (cause == 0x1000) return;
+			if (cause == P::internal_cause_reset) return;
 
 			/* translate causes that we catch as illegal instructions */
 			if (cause == riscv_cause_illegal_instruction) {
@@ -649,8 +645,8 @@ namespace riscv {
 			if (terminate) {
 				print_csr_registers();
 				P::print_int_registers();
-				device_uart->shutdown();
-				exit(0);
+				P::running = false;
+				return;
 			}
 
 			/* only set badaddr for load, store or fetch faults */
@@ -697,22 +693,24 @@ namespace riscv {
 
 		void signal(int signum, siginfo_t *info)
 		{
-			/*
+			/* longjmp back to the step loop */
+
 			if (signum == SIGINT) {
-				P::raise(0x1011, P::pc);
+				P::raise(P::internal_cause_cli, P::pc);
 			}
-			*/
 			if (signum == SIGHUP) {
-				typename P::ux epc = P::pc;
+				auto epc = P::pc;
 				reset();
-				P::raise(0x1000, epc);
+				P::raise(P::internal_cause_reset, epc);
 			}
 			if (signum == SIGUSR1) {
 				print_device_registers();
 			}
-			/* currently we exit on all other signals
-			   so we can perform cleanup here (shutdown devices) */
-			device_uart->shutdown();
+			if (signum == SIGTERM) {
+				P::raise(P::internal_cause_halt, P::pc);
+			} else {
+				P::raise(P::internal_cause_fatal, P::pc);
+			}
 		}
 
 		void reset()

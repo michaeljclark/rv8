@@ -30,9 +30,8 @@ namespace riscv {
 	enum exit_cause {
 		exit_cause_continue,
 		exit_cause_cli,
-		exit_cause_halt
+		exit_cause_halt,
 	};
-
 
 	/* Register formatter */
 

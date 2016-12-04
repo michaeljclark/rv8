@@ -162,6 +162,7 @@ namespace riscv {
 		SX lr;                        /* Load Reservation (TODO - global) */
 		SX badaddr;                   /* Fault address */
 		jmp_buf env;                  /* Fault handler */
+		bool running;                 /* Run Loop control */
 
 		/* Base ISA Control and Status Registers */
 
@@ -171,14 +172,25 @@ namespace riscv {
 		UX fcsr;                      /* Floating-Point Control and Status Register */
 
 		processor_base() : pc(0), ireg(), freg(),
-			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
+			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(), running(true),
 			time(0), cycle(0), instret(0), fcsr(0) {}
+
+		/* Internal setjmp/longjump causes */
+
+		enum {
+			/* longjmp cause offset so we can send zero cause */
+			internal_cause_offset = 0x100,
+			internal_cause_reset  = 0x1000,
+			internal_cause_cli    = 0x1001,
+			internal_cause_halt   = 0x1002,
+			internal_cause_fatal  = 0x1003
+		};
 
 		[[noreturn]] void raise(int cause, ux addr)
 		{
 			/* setjmp cannot return zero so 0x100 is added to cause */
 			badaddr = addr;
-			longjmp(env, cause + 0x100);
+			longjmp(env, cause + internal_cause_offset);
 		}
 	};
 

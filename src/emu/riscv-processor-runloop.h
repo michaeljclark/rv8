@@ -41,29 +41,13 @@ namespace riscv {
 				(processor_fault::current)->signal_dispatch(signum, info);
 		}
 
-		[[noreturn]] void signal_dispatch(int signum, siginfo_t *info)
+		void signal_dispatch(int signum, siginfo_t *info)
 		{
-			/* let the processor try to handle the signal first */
-			P::signal(signum, info);
-
-			/*
-			 * NOTE: processor_proxy with the proxy_mmu is not able to
-			 * recover enough information from SIGSEGV to issue a trap.
-			 *
-			 * SIGSEGV is a fatal error, and in the proxy_mmu which uses
-			 * the process virtual address space, it can be caused by the
-			 * interpreter referencing unmapped memory (however proxy_mmu
-			 * masks all loads and stores below < 1GB).
-			 *
-			 * processor_priv MMU uses longjmp to communicate access
-			 * faults which will result in a call to the trap handler.
-			 */
-
 			printf("SIGNAL   :%s pc:0x%0llx si_addr:0x%0llx\n",
 				signal_name(signum), (addr_t)P::pc, (addr_t)info->si_addr);
-			P::print_csr_registers();
-			P::print_int_registers();
-			exit(1);
+
+			/* let the processor longjmp */
+			P::signal(signum, info);
 		}
 
 		void init()
@@ -117,7 +101,12 @@ namespace riscv {
 					case exit_cause_continue:
 						break;
 					case exit_cause_cli:
-						if (cli) cli->run(this);
+						if (cli) {
+							cli->run(this);
+						} else {
+							debug("CLI not present: terminating");
+							return;
+						}
 						break;
 					case exit_cause_halt:
 						return;
@@ -139,10 +128,19 @@ namespace riscv {
 			/* trap return path */
 			int cause;
 			if (unlikely((cause = setjmp(P::env)) > 0)) {
-				if (cause == 0x1111) {
-					return exit_cause_cli;
+				cause -= P::internal_cause_offset;
+				switch(cause) {
+					case P::internal_cause_cli:
+						return exit_cause_cli;
+					case P::internal_cause_fatal:
+						P::print_csr_registers();
+						P::print_int_registers();
+						return exit_cause_halt;
+					case P::internal_cause_halt:
+						return exit_cause_halt;
 				}
 				P::trap(dec, cause);
+				if (!P::running) return exit_cause_halt;
 			}
 
 			/* step the processor */

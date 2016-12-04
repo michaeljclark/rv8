@@ -67,10 +67,6 @@ namespace riscv {
 
 		void trap(typename P::decode_type &dec, int cause)
 		{
-			/* setjmp cannot return zero so 0x100 is added to cause */
-			if (cause < 0x100) panic("invalid trap cause");
-			else cause -= 0x100;
-
 			/* proxy processor unconditionally exits on trap */
 			P::print_log(dec, 0);
 			printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
@@ -78,16 +74,34 @@ namespace riscv {
 				addr_t(P::pc), addr_t(P::badaddr));
 			P::print_csr_registers();
 			P::print_int_registers();
-			exit(1);
+			P::raise(P::internal_cause_halt, P::pc);
 		}
 
 		void signal(int signum, siginfo_t *info)
 		{
 			/*
+			 * NOTE: processor_proxy with the proxy_mmu is not able to
+			 * recover enough information from SIGSEGV to issue a trap.
+			 *
+			 * SIGSEGV is a fatal error, and in the proxy_mmu which uses
+			 * the process virtual address space, it can be caused by the
+			 * interpreter referencing unmapped memory (however proxy_mmu
+			 * masks all loads and stores below < 1GB).
+			 *
+			 * processor_priv MMU uses longjmp to communicate access
+			 * faults which will result in a call to the trap handler.
+			 */
+
+			/* longjmp back to the step loop */
+
 			if (signum == SIGINT) {
-				P::raise(0x1011, P::pc);
+				P::raise(P::internal_cause_cli, P::pc);
+			} else if (signum == SIGTERM) {
+				P::raise(P::internal_cause_halt, P::pc);
+			} else {
+				P::raise(P::internal_cause_fatal, P::pc);
 			}
-			*/
+
 		}
 
 	};
