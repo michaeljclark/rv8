@@ -3,7 +3,9 @@
 //
 
 #include <cstdio>
+#include <cstdint>
 #include <cstring>
+#include <cstdlib>
 #include <functional>
 #include <algorithm>
 #include <memory>
