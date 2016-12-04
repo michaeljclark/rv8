@@ -20,6 +20,7 @@ namespace riscv {
 		{
 			cmd_fn fn;
 			std::string name;
+			std::string params;
 			std::string description;
 		};
 
@@ -59,55 +60,112 @@ namespace riscv {
 			el_set(el, EL_HIST, history, hist);
 
 			/* add commands to map */
-			add_command(cmd_dev, "dev", "Show devices");
-			add_command(cmd_help, "help", "Show help");
-			add_command(cmd_mem, "map", "Show memory map");
-			add_command(cmd_reg, "reg", "Show registers");
-			add_command(cmd_run, "run", "Resume execution");
-			add_command(cmd_quit, "quit", "End the simulation");
+			add_command(cmd_dev,    "dev",    "",          "Show devices");
+			add_command(cmd_disasm, "disasm", "<addr>",    "Disassemble Memory");
+			add_command(cmd_help,   "help",   "",          "Show help");
+			add_command(cmd_mem,    "map",    "",          "Show memory map");
+			add_command(cmd_reg,    "reg",    "",          "Show registers");
+			add_command(cmd_run,    "run",    "",          "Resume execution");
+			add_command(cmd_quit,   "quit",   "",          "End the simulation");
 		}
 
-		void add_command(cmd_fn fn, std::string name, std::string description)
+		void add_command(cmd_fn fn, std::string name,
+			std::string params, std::string description)
 		{
-			map[name] = cmd_def{fn, name, description};
+			map[name] = cmd_def{fn, name, params, description};
 		}
 
 		void help()
 		{
 			for (auto &ent : map) {
-				printf("%-20s %s\n",
+				printf("%-10s %-25s %s\n",
 					ent.second.name.c_str(),
+					ent.second.params.c_str(),
 					ent.second.description.c_str());
 			}
 		}
 
+		/* TODO add metadata for command args to generalise error checks */
+
+		static bool cmd_dev(cmd_state &st, args_t &args)
+		{
+			if (args.size() != 1) {
+				printf("invalid arguments\n");
+				return false;
+			}
+			st.proc->print_device_registers();
+			return false;
+		}
+
+		static bool cmd_disasm(cmd_state &st, args_t &args)
+		{
+			static const char *fmt_32 = "core-%-4zu:%08llx (%s) %-30s\n";
+			static const char *fmt_64 = "core-%-4zu:%016llx (%s) %-30s\n";
+			static const char *fmt_128 = "core-%-4zu:%032llx (%s) %-30s\n";
+
+			if (args.size() != 2) {
+				printf("invalid arguments\n");
+				return false;
+			}
+			addr_t addr;
+			if (!parse_integral(args[1], addr)) {
+				printf("invalid address\n");
+				return false;
+			}
+			size_t i = 0;
+			while (i++ < 20) {
+				addr_t pc_offset;
+				typename P::decode_type dec;
+				inst_t inst = st.proc->mmu.inst_fetch(*st.proc,
+					typename P::ux(addr), pc_offset);
+				st.proc->inst_decode(dec, inst);
+				decode_pseudo_inst(dec);
+				std::string args = disasm_inst_simple(dec);
+				printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
+					st.proc->hart_id, addr_t(addr),
+					st.proc->format_inst(inst).c_str(), args.c_str());
+				addr += pc_offset;
+			}
+			return false;
+		}
+
 		static bool cmd_help(cmd_state &st, args_t &args)
 		{
+			if (args.size() != 1) {
+				printf("invalid arguments\n");
+				return false;
+			}
 			st.cli->help();
 			return false;
 		}
 
 		static bool cmd_mem(cmd_state &st, args_t &args)
 		{
+			if (args.size() != 1) {
+				printf("invalid arguments\n");
+				return false;
+			}
 			st.proc->mmu.mem.print_memory_map();
 			return false;
 		}
 
-		static bool cmd_run(cmd_state &, args_t &)
+		static bool cmd_run(cmd_state &, args_t &args)
 		{
+			if (args.size() != 1) {
+				printf("invalid arguments\n");
+				return false;
+			}
 			return true;
 		}
 
-		static bool cmd_reg(cmd_state &st, args_t &)
+		static bool cmd_reg(cmd_state &st, args_t &args)
 		{
+			if (args.size() != 1) {
+				printf("invalid arguments\n");
+				return false;
+			}
 			st.proc->print_csr_registers();
 			st.proc->print_int_registers();
-			return false;
-		}
-
-		static bool cmd_dev(cmd_state &st, args_t &)
-		{
-			st.proc->print_device_registers();
 			return false;
 		}
 
@@ -115,6 +173,8 @@ namespace riscv {
 		{
 			exit(1);
 		}
+
+		/* CLI main loop */
 
 		void run(P *proc)
 		{
