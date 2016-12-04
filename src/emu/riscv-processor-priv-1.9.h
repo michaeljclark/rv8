@@ -630,8 +630,15 @@ namespace riscv {
 				}
 			}
 
-			/* TODO: ebreak is temporarily used to terminate the interpreter */
-			bool terminate = (dec.op == riscv_op_ebreak);
+			/* ebreak is used to start the CLI or terminate */
+			bool terminate = false;
+			if (dec.op == riscv_op_ebreak) {
+				if (P::log & proc_log_ebreak_cli) {
+					P::raise(P::internal_cause_cli, P::pc);
+				} else {
+					terminate = true;
+				}
+			}
 
 			/* log instruction and trap if logging is enabled */
 			if ((P::log & proc_log_trap) || terminate) {
