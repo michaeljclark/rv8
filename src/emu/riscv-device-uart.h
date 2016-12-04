@@ -132,7 +132,7 @@ namespace riscv {
 			if (write(pipefds[1], &c, 1) < 0) {
 				debug("console: socket: write: %s", strerror(errno));
 			}
-			thread.join();
+			/*thread.join();*/
 		}
 
 		/* check if data is available */
