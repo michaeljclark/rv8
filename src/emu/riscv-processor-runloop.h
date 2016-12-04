@@ -32,7 +32,7 @@ namespace riscv {
 
 		riscv_inst_cache_ent inst_cache[inst_cache_size];
 
-		processor_runloop() : cli(std::make_shared<debug_cli<P>>()) {}
+		processor_runloop() : cli(/*std::make_shared<debug_cli<P>>()*/) {}
 		processor_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli) {}
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
@@ -117,7 +117,7 @@ namespace riscv {
 					case exit_cause_continue:
 						break;
 					case exit_cause_cli:
-						cli->run(this);
+						if (cli) cli->run(this);
 						break;
 					case exit_cause_halt:
 						return;

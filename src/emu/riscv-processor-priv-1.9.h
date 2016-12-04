@@ -697,22 +697,22 @@ namespace riscv {
 
 		void signal(int signum, siginfo_t *info)
 		{
+			/*
 			if (signum == SIGINT) {
 				P::raise(0x1011, P::pc);
 			}
-			else if (signum == SIGHUP) {
+			*/
+			if (signum == SIGHUP) {
 				typename P::ux epc = P::pc;
 				reset();
 				P::raise(0x1000, epc);
 			}
-			else {
-				if (signum == SIGUSR1) {
-					print_device_registers();
-				}
-				/* currently we exit on all other signals
-				   so we can perform cleanup here (shutdown devices) */
-				device_uart->shutdown();
+			if (signum == SIGUSR1) {
+				print_device_registers();
 			}
+			/* currently we exit on all other signals
+			   so we can perform cleanup here (shutdown devices) */
+			device_uart->shutdown();
 		}
 
 		void reset()

@@ -83,9 +83,11 @@ namespace riscv {
 
 		void signal(int signum, siginfo_t *info)
 		{
+			/*
 			if (signum == SIGINT) {
 				P::raise(0x1011, P::pc);
 			}
+			*/
 		}
 
 	};
