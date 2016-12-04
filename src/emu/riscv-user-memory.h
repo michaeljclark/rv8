@@ -118,19 +118,33 @@ namespace riscv {
 		user_memory() : log(false) {}
 		~user_memory() { clear_segments(); }
 
+		/* print memory */
+		void print_memory_map()
+		{
+			for (auto &seg : segments) {
+				print_memory_segment(seg);
+			}
+		}
+
+		/* print segment */
+		void print_memory_segment(memory_segment_type &seg)
+		{
+			debug("soft-mmu :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
+				(u64)seg->mpa, (u64)seg->mpa + seg->size, seg->name,
+				(u64)seg->uva, (u64)seg->uva + seg->size,
+				(seg->flags & pma_type_io) ? "+IO" : "",
+				(seg->flags & pma_type_main) ? "+MAIN" : "",
+				(seg->flags & pma_prot_read) ? "+R" : "",
+				(seg->flags & pma_prot_write) ? "+W" : "",
+				(seg->flags & pma_prot_execute) ? "+X" : "");
+		}
+
 		/* add existing memory segment given user physical address and size */
 		void add_segment(memory_segment_type seg)
 		{
 			segments.push_back(seg);
 			if (log) {
-				debug("soft-mmu :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
-					(u64)seg->mpa, (u64)seg->mpa + seg->size, seg->name,
-					(u64)seg->uva, (u64)seg->uva + seg->size,
-					(seg->flags & pma_type_io) ? "+IO" : "",
-					(seg->flags & pma_type_main) ? "+MAIN" : "",
-					(seg->flags & pma_prot_read) ? "+R" : "",
-					(seg->flags & pma_prot_write) ? "+W" : "",
-					(seg->flags & pma_prot_execute) ? "+X" : "");
+				print_memory_segment(seg);
 			}
 		}
 

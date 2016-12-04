@@ -15,6 +15,8 @@ namespace riscv {
 		addr_t heap_end;
 		bool log;
 
+		void print_memory_map() {}
+
 		proxy_memory() : segments(), heap_begin(0), heap_end(0), log(false) {}
 	};
 

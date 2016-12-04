@@ -61,6 +61,7 @@ namespace riscv {
 			/* add commands to map */
 			add_command(cmd_dev, "dev", "Show devices");
 			add_command(cmd_help, "help", "Show help");
+			add_command(cmd_mem, "map", "Show memory map");
 			add_command(cmd_reg, "reg", "Show registers");
 			add_command(cmd_run, "run", "Resume execution");
 			add_command(cmd_quit, "quit", "End the simulation");
@@ -83,6 +84,12 @@ namespace riscv {
 		static bool cmd_help(cmd_state &st, args_t &args)
 		{
 			st.cli->help();
+			return false;
+		}
+
+		static bool cmd_mem(cmd_state &st, args_t &args)
+		{
+			st.proc->mmu.mem.print_memory_map();
 			return false;
 		}
 
