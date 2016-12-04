@@ -116,7 +116,7 @@ namespace riscv {
 				if (args.size() == 0) continue;
 				auto it = map.find(args[0]);
 				if (it == map.end()) {
-					printf("unknown command %s", args[0].c_str());
+					printf("unknown command %s\n", args[0].c_str());
 					continue;
 				}
 				if (it->second.fn(st, args)) break;
