@@ -59,6 +59,7 @@ namespace riscv {
 			el_set(el, EL_HIST, history, hist);
 
 			/* add commands to map */
+			add_command(cmd_dev, "dev", "Show devices");
 			add_command(cmd_help, "help", "Show help");
 			add_command(cmd_reg, "reg", "Show registers");
 			add_command(cmd_run, "run", "Resume execution");
@@ -94,6 +95,12 @@ namespace riscv {
 		{
 			st.proc->print_csr_registers();
 			st.proc->print_int_registers();
+			return false;
+		}
+
+		static bool cmd_dev(cmd_state &st, args_t &)
+		{
+			st.proc->print_device_registers();
 			return false;
 		}
 

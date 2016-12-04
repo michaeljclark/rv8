@@ -194,6 +194,8 @@ namespace riscv {
 			if (P::log & proc_log_int_reg) print_int_registers();
 		}
 
+		void print_device_registers() {}
+
 		void print_csr_registers()
 		{
 			printf("%s %s %s\n", format_reg("cycle", P::cycle).c_str(),

@@ -194,6 +194,14 @@ namespace riscv {
 			P::mmu.mem.add_segment(device_uart);
 		}
 
+		void print_device_registers()
+		{
+			device_time->print_registers();
+			device_mipi->print_registers();
+			device_plic->print_registers();
+			device_uart->print_registers();
+		}
+
 		void print_csr_registers()
 		{
 			printf("%s %s\n",    format_reg("pdid",      P::pdid).c_str(),
@@ -494,14 +502,6 @@ namespace riscv {
 			P::mstatus.r.mie = 0;
 			P::mode = riscv_mode_M;
 			P::pc = P::mtvec;
-		}
-
-		void print_device_registers()
-		{
-			device_time->print_registers();
-			device_mipi->print_registers();
-			device_plic->print_registers();
-			device_uart->print_registers();
 		}
 
 		void isr()
