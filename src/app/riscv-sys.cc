@@ -340,10 +340,6 @@ struct riscv_emulator
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();
 #endif
-
-		/* Unmap memory segments */
-
-		/* TODO - unmap ELF ROM */
 	}
 
 	/* Start a specific processor implementation based on ELF type and ISA extensions */
