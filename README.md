@@ -179,12 +179,13 @@ $ rv-bin dump -h
 usage: dump [<options>] <elf_file>
                        --color, -c            Enable Color
             --print-elf-header, -e            Print ELF header
+        --print-elf-header-ext, -x            Print ELF header (extended)
        --print-section-headers, -s            Print Section headers
        --print-program-headers, -p            Print Program headers
           --print-symbol-table, -t            Print Symbol Table
            --print-relocations, -r            Print Relocations
            --print-disassembly, -d            Print Disassembly
-                   --no-pseudo, -x            Disable Pseudoinstructions
+                      --pseudo, -P            Decode Pseudoinstructions
                    --print-all, -a            Print All
                         --help, -h            Show help
 ```
