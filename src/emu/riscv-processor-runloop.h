@@ -93,15 +93,11 @@ namespace riscv {
 			P::init();
 		}
 
-		void run()
+		void run(exit_cause ex = exit_cause_continue)
 		{
 			u32 logsave = P::log;
 			size_t count = inst_step;
 			for (;;) {
-				exit_cause ex = step(count);
-				if (P::debugging && ex == exit_cause_continue) {
-					ex = exit_cause_cli;
-				}
 				switch (ex) {
 					case exit_cause_continue:
 						break;
@@ -118,6 +114,10 @@ namespace riscv {
 						break;
 					case exit_cause_halt:
 						return;
+				}
+				ex = step(count);
+				if (P::debugging && ex == exit_cause_continue) {
+					ex = exit_cause_cli;
 				}
 			}
 		}

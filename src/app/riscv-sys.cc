@@ -245,7 +245,7 @@ struct riscv_emulator
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
-				"Start CLI debugger on ebreak",
+				"Start debug CLI",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
@@ -329,8 +329,13 @@ struct riscv_emulator
 		ProfilerStart("test-emulate.out");
 #endif
 
-		/* Run the CPU until it halts */
-		proc.run();
+		/*
+		 * Run the CPU until it halts
+		 *
+		 * when --debug flag is present we start in the debugger
+		 */
+		proc.run(proc.log & proc_log_ebreak_cli
+			? exit_cause_cli : exit_cause_continue);
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStop();
