@@ -47,6 +47,21 @@ namespace riscv {
 			return prompt_buf;
 		}
 
+		static size_t word_size_mnem(std::string ws)
+		{
+			if (ws == "b") {
+				return 1;
+			} else if (ws == "s") {
+				return 2;
+			} else if (ws == "w") {
+				return 4;
+			} else if (ws == "d") {
+				return 8;
+			} else {
+				return 0;
+			}
+		}
+
 		debug_cli() :
 			el(nullptr),
 			hist(nullptr),
@@ -62,13 +77,14 @@ namespace riscv {
 			el_set(el, EL_HIST, history, hist);
 
 			/* add commands to map */
-			add_command(cmd_dev,    1, 1, "dev",    "",          "Show devices");
-			add_command(cmd_disasm, 2, 2, "disasm", "<addr>",    "Disassemble Memory");
-			add_command(cmd_help,   1, 1, "help",   "",          "Show help");
-			add_command(cmd_mem,    1, 1, "map",    "",          "Show memory map");
-			add_command(cmd_reg,    1, 1, "reg",    "",          "Show registers");
-			add_command(cmd_run,    1, 1, "run",    "",          "Resume execution");
-			add_command(cmd_quit,   1, 1, "quit",   "",          "End the simulation");
+			add_command(cmd_dev,    1, 1, "dev",    "",                 "Show devices");
+			add_command(cmd_disasm, 2, 2, "disasm", "<addr>",           "Disassemble Memory");
+			add_command(cmd_help,   1, 1, "help",   "",                 "Show help");
+			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Show help");
+			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
+			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show registers");
+			add_command(cmd_run,    1, 1, "run",    "",                 "Resume execution");
+			add_command(cmd_quit,   1, 1, "quit",   "",                 "End the simulation");
 		}
 
 		void add_command(cmd_fn fn, size_t min_args, size_t max_args,
@@ -93,15 +109,34 @@ namespace riscv {
 			return false;
 		}
 
+		static std::string format_addr(size_t xlen, addr_t addr)
+		{
+			static const char *fmt_32 = "%08llx";
+			static const char *fmt_64 = "%016llx";
+			static const char *fmt_128 = "%032llx";
+			char buf[32] = { 0 };
+			switch (xlen) {
+				case 32:
+					snprintf(buf, sizeof(buf), fmt_32, addr);
+					break;
+				case 64:
+					snprintf(buf, sizeof(buf), fmt_64, addr);
+					break;
+				case 128:
+					snprintf(buf, sizeof(buf), fmt_128, addr);
+					break;
+			}
+			return buf;
+		}
+
 		static bool cmd_disasm(cmd_state &st, args_t &args)
 		{
-			static const char *fmt_32 = "core-%-4zu:%08llx (%s) %-30s\n";
-			static const char *fmt_64 = "core-%-4zu:%016llx (%s) %-30s\n";
-			static const char *fmt_128 = "core-%-4zu:%032llx (%s) %-30s\n";
+			static const char *fmt = "core-%-4zu:%s (%s) %-30s\n";
 
 			addr_t addr;
 			if (!parse_integral(args[1], addr)) {
-				printf("invalid address\n");
+				printf("%s: invalid address: %s\n",
+					args[0].c_str(), args[1].c_str());
 				return false;
 			}
 			size_t i = 0;
@@ -113,8 +148,7 @@ namespace riscv {
 				st.proc->inst_decode(dec, inst);
 				decode_pseudo_inst(dec);
 				std::string args = disasm_inst_simple(dec);
-				printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
-					st.proc->hart_id, addr_t(addr),
+				printf(fmt, st.proc->hart_id, format_addr(P::xlen, addr).c_str(),
 					st.proc->format_inst(inst).c_str(), args.c_str());
 				addr += pc_offset;
 			}
@@ -124,6 +158,70 @@ namespace riscv {
 		static bool cmd_help(cmd_state &st, args_t &args)
 		{
 			st.cli->help();
+			return false;
+		}
+
+		static bool cmd_hex(cmd_state &st, args_t &args)
+		{
+			addr_t addr;
+			if (!parse_integral(args[1], addr)) {
+				printf("%s: invalid address: %s\n",
+					args[0].c_str(), args[1].c_str());
+				return false;
+			}
+			size_t ws = 1;
+			if (args.size() == 3) {
+				ws = word_size_mnem(args[2]);
+				if (ws == 0) {
+				printf("%s: invalid word size: %s\n",
+					args[0].c_str(), args[2].c_str());
+					return false;
+				}
+			}
+			size_t i = 0;
+			printf("Ws=%zu\n", ws);
+			while (i++ < 20) {
+				std::string line = format_addr(P::xlen, addr) + ":";
+				size_t words = 32 / (ws << 1);
+				for (size_t j = 0; j < words; j++) {
+					switch (ws) {
+						case 1:
+						{
+							u8 val;
+							st.proc->mmu.load(*st.proc,
+								typename P::ux(addr), val);
+							sprintf(line, " %02x", val);
+							break;
+						}
+						case 2:
+						{
+							u16 val;
+							st.proc->mmu.load(*st.proc,
+								typename P::ux(addr), val);
+							sprintf(line, " %04x", val);
+							break;
+						}
+						case 4:
+						{
+							u32 val;
+							st.proc->mmu.load(*st.proc,
+								typename P::ux(addr), val);
+							sprintf(line, " %08x", val);
+							break;
+						}
+						case 8:
+						{
+							u64 val;
+							st.proc->mmu.load(*st.proc,
+								typename P::ux(addr), val);
+							sprintf(line, " %016x", val);
+							break;
+						}
+					}
+					addr += ws;
+				}
+				printf("%s\n", line.c_str());
+			}
 			return false;
 		}
 
