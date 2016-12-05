@@ -77,14 +77,14 @@ namespace riscv {
 			el_set(el, EL_HIST, history, hist);
 
 			/* add commands to map */
-			add_command(cmd_dev,    1, 1, "dev",    "",                 "Show devices");
+			add_command(cmd_dev,    1, 1, "dev",    "",                 "Show Devices");
 			add_command(cmd_disasm, 2, 2, "disasm", "<addr>",           "Disassemble Memory");
-			add_command(cmd_help,   1, 1, "help",   "",                 "Show help");
-			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Show help");
+			add_command(cmd_help,   1, 1, "help",   "",                 "Help");
+			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Hex Dump Memory");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
-			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show registers");
-			add_command(cmd_run,    1, 2, "run",    "[count]",          "Resume execution");
-			add_command(cmd_quit,   1, 1, "quit",   "",                 "End the simulation");
+			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
+			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
+			add_command(cmd_run,    1, 2, "run",    "[count]",          "Step processor");
 		}
 
 		void add_command(cmd_fn fn, size_t min_args, size_t max_args,
