@@ -273,6 +273,7 @@ usage: rv-sim [<options>] <elf_file>
                 --log-operands, -o            Log Instructions and Operands
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
+                       --debug, -d            Start up in debugger CLI
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
@@ -306,6 +307,7 @@ usage: rv-sys [<options>] <elf_file>
                --log-registers, -r            Log Registers (defaults to integer registers)
                --log-pagewalks, -v            Log Pagewalks
                    --log-traps, -t            Log Traps
+                       --debug, -d            Start up in debugger CLI
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
