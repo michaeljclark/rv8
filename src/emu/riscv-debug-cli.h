@@ -13,7 +13,7 @@ namespace riscv {
 		struct cmd_def;
 		struct cmd_state;
 		typedef std::vector<std::string> args_t;
-		typedef std::function<bool(cmd_state&,args_t&)> cmd_fn;
+		typedef std::function<size_t(cmd_state&,args_t&)> cmd_fn;
 		typedef std::map<std::string,cmd_def> cmd_map;
 
 		struct cmd_def
@@ -83,7 +83,7 @@ namespace riscv {
 			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Show help");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show registers");
-			add_command(cmd_run,    1, 1, "run",    "",                 "Resume execution");
+			add_command(cmd_run,    1, 2, "run",    "[count]",          "Resume execution");
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End the simulation");
 		}
 
@@ -103,10 +103,10 @@ namespace riscv {
 			}
 		}
 
-		static bool cmd_dev(cmd_state &st, args_t &args)
+		static size_t cmd_dev(cmd_state &st, args_t &args)
 		{
 			st.proc->print_device_registers();
-			return false;
+			return 0;
 		}
 
 		static std::string format_addr(size_t xlen, addr_t addr)
@@ -129,7 +129,7 @@ namespace riscv {
 			return buf;
 		}
 
-		static bool cmd_disasm(cmd_state &st, args_t &args)
+		static size_t cmd_disasm(cmd_state &st, args_t &args)
 		{
 			static const char *fmt = "core-%-4zu:%s (%s) %-30s\n";
 
@@ -137,7 +137,7 @@ namespace riscv {
 			if (!parse_integral(args[1], addr)) {
 				printf("%s: invalid address: %s\n",
 					args[0].c_str(), args[1].c_str());
-				return false;
+				return 0;
 			}
 			size_t i = 0;
 			while (i++ < 20) {
@@ -152,22 +152,22 @@ namespace riscv {
 					st.proc->format_inst(inst).c_str(), args.c_str());
 				addr += pc_offset;
 			}
-			return false;
+			return 0;
 		}
 
-		static bool cmd_help(cmd_state &st, args_t &args)
+		static size_t cmd_help(cmd_state &st, args_t &args)
 		{
 			st.cli->help();
-			return false;
+			return 0;
 		}
 
-		static bool cmd_hex(cmd_state &st, args_t &args)
+		static size_t cmd_hex(cmd_state &st, args_t &args)
 		{
 			addr_t addr;
 			if (!parse_integral(args[1], addr)) {
 				printf("%s: invalid address: %s\n",
 					args[0].c_str(), args[1].c_str());
-				return false;
+				return 0;
 			}
 			size_t ws = 1;
 			if (args.size() == 3) {
@@ -175,7 +175,7 @@ namespace riscv {
 				if (ws == 0) {
 				printf("%s: invalid word size: %s\n",
 					args[0].c_str(), args[2].c_str());
-					return false;
+					return 0;
 				}
 			}
 			size_t i = 0;
@@ -222,39 +222,48 @@ namespace riscv {
 				}
 				printf("%s\n", line.c_str());
 			}
-			return false;
+			return 0;
 		}
 
-		static bool cmd_mem(cmd_state &st, args_t &args)
+		static size_t cmd_mem(cmd_state &st, args_t &args)
 		{
 			st.proc->mmu.mem.print_memory_map();
-			return false;
+			return 0;
 		}
 
-		static bool cmd_run(cmd_state &, args_t &args)
+		static size_t cmd_run(cmd_state &, args_t &args)
 		{
-			return true;
+			s64 inst_count = -1;
+			if (args.size() == 2) {
+				if (!parse_integral(args[1], inst_count)) {
+					printf("%s: invalid count: %s\n",
+						args[0].c_str(), args[1].c_str());
+					return 0;
+				}
+			}
+			return size_t(inst_count);
 		}
 
-		static bool cmd_reg(cmd_state &st, args_t &args)
+		static size_t cmd_reg(cmd_state &st, args_t &args)
 		{
 			st.proc->print_csr_registers();
 			st.proc->print_int_registers();
-			return false;
+			return 0;
 		}
 
-		[[noreturn]] static bool cmd_quit(cmd_state&, args_t &)
+		[[noreturn]] static size_t cmd_quit(cmd_state&, args_t &)
 		{
 			exit(1);
 		}
 
 		/* CLI main loop */
 
-		void run(P *proc)
+		size_t run(P *proc)
 		{
 			cmd_state st{ proc, this };
 			const char *buf = nullptr;
 			int num;
+			size_t inst_step;
 
 			el_set(el, EL_CLIENTDATA, &st);
 			proc->debug_enter();
@@ -280,9 +289,10 @@ namespace riscv {
 					}
 					continue;
 				}
-				if (def.fn(st, args)) break;
+				if ((inst_step = def.fn(st, args)) != 0) break;
 			}
 			proc->debug_leave();
+			return inst_step;
 		}
 	};
 }

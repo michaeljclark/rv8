@@ -95,17 +95,25 @@ namespace riscv {
 
 		void run()
 		{
+			u32 logsave = P::log;
+			size_t count = inst_step;
 			for (;;) {
-				exit_cause ex = step(inst_step);
+				exit_cause ex = step(count);
+				if (P::debugging && ex == exit_cause_continue) {
+					ex = exit_cause_cli;
+				}
 				switch (ex) {
 					case exit_cause_continue:
 						break;
 					case exit_cause_cli:
-						if (cli) {
-							cli->run(this);
+						P::debugging = true;
+						count = cli->run(this);
+						if (count == size_t(-1)) {
+							P::debugging = false;
+							P::log = logsave;
+							count = inst_step;
 						} else {
-							debug("CLI not present: terminating");
-							return;
+							P::log |= (proc_log_inst | proc_log_operands | proc_log_trap);
 						}
 						break;
 					case exit_cause_halt:

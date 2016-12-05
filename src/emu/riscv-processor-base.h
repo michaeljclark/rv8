@@ -163,6 +163,7 @@ namespace riscv {
 		SX badaddr;                   /* Fault address */
 		jmp_buf env;                  /* Fault handler */
 		bool running;                 /* Run Loop control */
+		bool debugging;               /* Debug Step control */
 
 		/* Base ISA Control and Status Registers */
 
@@ -172,7 +173,8 @@ namespace riscv {
 		UX fcsr;                      /* Floating-Point Control and Status Register */
 
 		processor_base() : pc(0), ireg(), freg(),
-			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(), running(true),
+			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
+			running(true), debugging(false),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 
 		/* Internal setjmp/longjump causes */
