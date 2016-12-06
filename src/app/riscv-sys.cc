@@ -322,7 +322,7 @@ struct riscv_emulator
 		typename P::ux rom_base = 0;
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_flags & PT_LOAD) {
+			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
 				map_load_segment_priv(proc, elf_filename.c_str(), phdr);
 				if (rom_base == 0) rom_base = phdr.p_vaddr;
 			}

@@ -377,7 +377,7 @@ struct riscv_emulator
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_flags & PT_LOAD) {
+			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
 				map_load_segment_user(proc, elf_filename.c_str(), phdr);
 			}
 		}
