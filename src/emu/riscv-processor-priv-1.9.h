@@ -166,6 +166,7 @@ namespace riscv {
 	template <typename P>
 	struct processor_privileged : P
 	{
+		std::shared_ptr<sbi_mmio_device<processor_privileged>> device_sbi;
 		std::shared_ptr<boot_mmio_device<processor_privileged>> device_boot;
 		std::shared_ptr<time_mmio_device<processor_privileged>> device_time;
 		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
@@ -180,6 +181,7 @@ namespace riscv {
 			P::misa = P::misa_default;
 
 			/* create TIME, MIPI, PLIC and UART devices */
+			device_sbi = std::make_shared<sbi_mmio_device<processor_privileged>>(*this, s32(0xfffff000));
 			device_boot = std::make_shared<boot_mmio_device<processor_privileged>>(*this, 0x1000);
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
 			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
@@ -187,6 +189,7 @@ namespace riscv {
 			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000, device_plic, 3);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
+			P::mmu.mem.add_segment(device_sbi);
 			P::mmu.mem.add_segment(device_boot);
 			P::mmu.mem.add_segment(device_time);
 			P::mmu.mem.add_segment(device_mipi);
@@ -469,6 +472,9 @@ namespace riscv {
 			P::mstatus.r.uie = 0;
 			P::mode = riscv_mode_U;
 			P::pc = P::utvec;
+			if (P::debugging) {
+				P::raise(P::internal_cause_cli, P::pc);
+			}
 		}
 
 		void strap(typename P::ux cause, bool interrupt)
@@ -480,6 +486,9 @@ namespace riscv {
 			P::mstatus.r.sie = 0;
 			P::mode = riscv_mode_S;
 			P::pc = P::stvec;
+			if (P::debugging) {
+				P::raise(P::internal_cause_cli, P::pc);
+			}
 		}
 
 		void htrap(typename P::ux cause, bool interrupt)
@@ -491,6 +500,9 @@ namespace riscv {
 			P::mstatus.r.hie = 0;
 			P::mode = riscv_mode_H;
 			P::pc = P::htvec;
+			if (P::debugging) {
+				P::raise(P::internal_cause_cli, P::pc);
+			}
 		}
 
 		void mtrap(typename P::ux cause, bool interrupt)
@@ -502,6 +514,9 @@ namespace riscv {
 			P::mstatus.r.mie = 0;
 			P::mode = riscv_mode_M;
 			P::pc = P::mtvec;
+			if (P::debugging) {
+				P::raise(P::internal_cause_cli, P::pc);
+			}
 		}
 
 		void isr()

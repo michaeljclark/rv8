@@ -1,0 +1,135 @@
+#include "sbi-mcall.h"
+
+  .section .text
+  .globl _start
+_start:
+
+  # TODO: figure out something better to do with this space.  It's not
+  # protected from the OS, so beware.
+  .skip 2048
+
+  # hart_id
+  .p2align 4
+  .globl sbi_hart_id
+  li a7, MCALL_HART_ID
+  ecall
+  ret
+
+  # num_harts
+  .p2align 4
+  .globl sbi_num_harts
+  li a7, MCALL_NUM_HARTS
+  ecall
+  ret
+
+  # query_memory
+  .p2align 4
+  .globl sbi_query_memory
+  li a7, MCALL_QUERY_MEMORY
+  ecall
+  ret
+
+  # console_putchar
+  .p2align 4
+  .globl sbi_console_putchar
+  li a7, MCALL_CONSOLE_PUTCHAR
+  ecall
+  ret
+
+  # console_getchar
+  .p2align 4
+  .globl sbi_console_getchar
+  li a7, MCALL_CONSOLE_GETCHAR
+  ecall
+  ret
+
+ # htif_syscall
+  .p2align 4
+  .globl sbi_htif_syscall
+  li a7, MCALL_HTIF_SYSCALL
+  ecall
+  ret
+
+  # send ipi
+  .p2align 4
+  .globl sbi_send_ipi
+  li a7, MCALL_SEND_IPI
+  ecall
+  ret
+
+  # clear ipi
+  .p2align 4
+  .globl sbi_clear_ipi
+  li a7, MCALL_CLEAR_IPI
+  ecall
+  ret
+
+  # timebase
+  .p2align 4
+  .globl sbi_timebase
+  li a7, MCALL_TIMEBASE
+  ecall
+  ret
+
+  # shutdown
+  .p2align 4
+  .globl sbi_shutdown
+  li a7, MCALL_SHUTDOWN
+  ecall
+  ret
+
+  # set_timer
+  .p2align 4
+  .globl sbi_set_timer
+  li a7, MCALL_SET_TIMER
+  ecall
+  ret
+
+  # mask_interrupt
+  .p2align 4
+  .globl sbi_mask_interrupt
+  li a7, MCALL_MASK_INTERRUPT
+  ecall
+  ret
+
+  # unmask_interrupt
+  .p2align 4
+  .globl sbi_unmask_interrupt
+  li a7, MCALL_UNMASK_INTERRUPT
+  ecall
+  ret
+
+  # remote_sfence_vm
+  .p2align 4
+  .globl sbi_remote_sfence_vm
+  li a7, MCALL_REMOTE_SFENCE_VM
+  ecall
+  ret
+
+  # remote_sfence_vm_range
+  .p2align 4
+  .globl sbi_remote_sfence_vm_range
+  li a7, MCALL_REMOTE_SFENCE_VM_RANGE
+  ecall
+  ret
+
+  # remote_fence_i
+  .p2align 4
+  .globl sbi_remote_fence_i
+  li a7, MCALL_REMOTE_FENCE_I
+  ecall
+  ret
+
+  # end of SBI trampolines
+
+  .globl do_mcall
+do_mcall:
+  mv a7, a0
+  mv a0, a1
+  mv a1, a2
+  ecall
+  ret
+
+.p2align 12
+  .globl sbi_end
+sbi_end:

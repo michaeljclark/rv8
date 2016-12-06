@@ -72,6 +72,7 @@
 #include "riscv-processor-model.h"
 #include "riscv-queue.h"
 #include "riscv-device-boot.h"
+#include "riscv-device-sbi.h"
 #include "riscv-device-time.h"
 #include "riscv-device-mipi.h"
 #include "riscv-device-plic.h"
