@@ -1,11 +1,16 @@
 #
 # boot-rom.S
 #
-
-# RV64 definitions
+# 1). The assembly code uses lx and xlenb to load and
+#     calculate pointer offsets to allow for RV32
 #
-# The assembly code uses lx and xlenb to load and
-# calculate pointer offsets to allow RV32 support
+# 2). temporary code until we have an SMP boot protocol
+#     eventually will use hart_id and LR/SC to choose
+#     boot processor and application processors go into
+#     wfi loop
+#
+# 3). handle ecall traps without full register save
+#
 
 .eqv xlenb, 8
 
@@ -17,7 +22,9 @@
 	sd \rd, \rs1
 .endm
 
-# Condig MMIO definitions
+# MMIO definitions
+
+.equ UART_MMIO_BASE, 0x40002000
 
 .equ CONFIG_MMIO_BASE, 0x40001000
 
@@ -56,6 +63,7 @@
 .endm
 
 .section .text
+.option norvc
 .globl _start
 _start:
 
@@ -65,11 +73,6 @@ reset:
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load mtvec(lo)
 	csrrw   zero, mtvec, t0
-
-	# temporary code until we have an SMP boot protocol
-	# eventually will use hart_id and LR/SC to choose
-	# boot processor and application processors go into
-	# wfi loop
 
 	# load ROM address from config MMIO region
 	li      gp, CONFIG_MMIO_BASE
@@ -111,70 +114,115 @@ intr:
 	ebreak
 
 trap:
-	# computa cause function address from trap table
+	# check cause is in bounds
 	slti    a0, a1, 12
 	beqz    a0, bad_trap
+
+	# computa cause function address from trap table
 1:	auipc   a0, %pcrel_hi(trap_table)  # load trap_table(hi)
 	addi    a0, a0, %pcrel_lo(1b)      # load trap_table(lo)
 	slli    a1, a1, 2
 	add     a0, a0, a1
 	lw      a0, (a0)
 
-	# TODO - handle simple trap requests without full
-	#        register save and perhaps use subroutine
-
-	# save regs
-	TRAP_REG_SP_OP sx
-
-	# advance mepc
-	csrrs   t0, mepc, x0               # increment mepc
-	addi    t0, t0, 4
-	csrrw   zero, mepc, t0
-
 	# jump to trap table
-	jalr    ra, a0
-	LX      a1, 1*xlenb(sp)               # a0 holds result
-
-	# restore registers and return
-	TRAP_REG_SP_OP lx
-	mret
+	jalr    zero, a0
 
 s_ecall_trap:
-	li      a0, 5
-	# we can't handle S-mode ecall yet
-	ebreak;
-
 h_ecall_trap:
-	li      a0, 6
-	# we can't handle H-mode ecall yet
-	ebreak;
-
 m_ecall_trap:
-	li      a0, 7
-	# we can't handle M-mode ecall yet
+	# check mcall is in bounds
+	slti    a0, a7, 16
+	beqz    a0, bad_trap
+	slti    a0, a7, 16
+
+	# computa cause function address from trap table
+1:	auipc   a0, %pcrel_hi(sbi_table)   # load sbi_table(hi)
+	addi    a0, a0, %pcrel_lo(1b)      # load sbi_table(lo)
+	slli    a7, a7, 2
+	add     a0, a0, a7
+	lw      a0, (a0)
+
+	# advance mepc
+	csrrs   a1, mepc, x0
+	addi    a1, a1, 4
+	csrrw   zero, mepc, a1
+
+	# jump to SBI table
+	jalr    zero, a0
+
+mcall_hart_id:
+	li      a1, CONFIG_MMIO_BASE
+	lx      a0, CONFIG_NUM_HARTS(a1)
+	csrrw   sp, mscratch, sp
+	mret
+
+mcall_console_putchar:
+mcall_console_getchar:
+mcall_htif_syscall:
+mcall_send_ipi:
+mcall_clear_ipi:
+mcall_shutdown:
+mcall_set_timer:
+mcall_remote_sfence_vm:
+mcall_remote_fence_i:
+mcall_num_harts:
+mcall_query_memory:
+mcall_timebase:
+mcall_mask_interrupt:
+mcall_unmask_interrupt:
+mcall_remote_sfence_vm_range:
+	# load diagnostic register
+	li      a0, 5
+	# we can't handle M-mode SBI yet
 	ebreak;
 
 bad_trap:
-	li      a0, 8
-	# we can't handle bad yet
+	# can't handle bad trep
 	ebreak;
 
 wait:
 	wfi
 	j wait
 
+save_reg:
+	TRAP_REG_SP_OP sx
+	ret
+
+restore_reg:
+	TRAP_REG_SP_OP lx
+	ret
+
 trap_table:
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word bad_trap
-  .word s_ecall_trap
-  .word h_ecall_trap
-  .word m_ecall_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word bad_trap
+	.word s_ecall_trap
+	.word h_ecall_trap
+	.word m_ecall_trap
+
+sbi_table:
+	.word mcall_hart_id,                 0
+	.word mcall_console_putchar,         1
+	.word mcall_console_getchar,         2
+	.word mcall_htif_syscall,            3
+	.word mcall_send_ipi,                4
+	.word mcall_clear_ipi,               5
+	.word mcall_shutdown,                6
+	.word mcall_set_timer,               7
+	.word mcall_remote_sfence_vm,        8
+	.word mcall_remote_fence_i,          9
+	.word mcall_num_harts,               10
+	.word mcall_query_memory,            11
+	.word mcall_timebase,                12
+	.word mcall_mask_interrupt,          13
+	.word mcall_unmask_interrupt,        14
+	.word mcall_remote_sfence_vm_range,  15
 
 .p2align 12
