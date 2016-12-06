@@ -210,21 +210,21 @@ trap_table:
 	.word m_ecall_trap
 
 sbi_table:
-	.word mcall_hart_id,                 0
-	.word mcall_console_putchar,         1
-	.word mcall_console_getchar,         2
-	.word mcall_htif_syscall,            3
-	.word mcall_send_ipi,                4
-	.word mcall_clear_ipi,               5
-	.word mcall_shutdown,                6
-	.word mcall_set_timer,               7
-	.word mcall_remote_sfence_vm,        8
-	.word mcall_remote_fence_i,          9
-	.word mcall_num_harts,               10
-	.word mcall_query_memory,            11
-	.word mcall_timebase,                12
-	.word mcall_mask_interrupt,          13
-	.word mcall_unmask_interrupt,        14
-	.word mcall_remote_sfence_vm_range,  15
+	.word mcall_hart_id
+	.word mcall_console_putchar
+	.word mcall_console_getchar
+	.word mcall_htif_syscall
+	.word mcall_send_ipi
+	.word mcall_clear_ipi
+	.word mcall_shutdown
+	.word mcall_set_timer
+	.word mcall_remote_sfence_vm
+	.word mcall_remote_fence_i
+	.word mcall_num_harts
+	.word mcall_query_memory
+	.word mcall_timebase
+	.word mcall_mask_interrupt
+	.word mcall_unmask_interrupt
+	.word mcall_remote_sfence_vm_range
 
 .p2align 12
