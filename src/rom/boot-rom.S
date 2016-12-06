@@ -1,6 +1,8 @@
 #
 # boot-rom.S
 #
+# portions derived from riscv-pk BBL
+#
 # 1). The assembly code uses lx and xlenb to load and
 #     calculate pointer offsets to allow for RV32
 #
