@@ -134,6 +134,9 @@ struct riscv_emulator
 		(AEE) application execution environment
 	*/
 
+	static const uintmax_t default_ram_base = 0x80000000ULL; /* 2GiB */
+	static const uintmax_t default_ram_size = 0x40000000ULL; /* 1GiB */
+
 	elf_file elf;
 	std::string elf_filename;
 	config cfg;
@@ -326,7 +329,7 @@ struct riscv_emulator
 		}
 
 		/* Add 1GB RAM to the mmu (TODO - read from config string) */
-		proc.mmu.mem.add_ram(/*mpa=2GiB*/ 0x80000000ULL, /*size=1GiB*/ 0x40000000ULL);
+		proc.mmu.mem.add_ram(default_ram_base, default_ram_size);
 
 		/* Initialize interpreter */
 		proc.init();
@@ -335,6 +338,8 @@ struct riscv_emulator
 		proc.device_config->time_base = 1000000000;
 		proc.device_config->rom_base = rom_base;
 		proc.device_config->rom_entry = elf.ehdr.e_entry;
+		proc.device_config->ram_base = default_ram_base;
+		proc.device_config->ram_size = default_ram_size;
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");

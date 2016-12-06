@@ -1,4 +1,25 @@
-#include "sbi-mcall.h"
+#
+# sbi-rom.S
+#
+
+# MCALL definitions
+
+.equ MCALL_HART_ID,                 0
+.equ MCALL_NUM_HARTS,               10
+.equ MCALL_QUERY_MEMORY,            11
+.equ MCALL_CONSOLE_PUTCHAR,         1
+.equ MCALL_CONSOLE_GETCHAR,         2
+.equ MCALL_HTIF_SYSCALL,            3
+.equ MCALL_SEND_IPI,                4
+.equ MCALL_CLEAR_IPI,               5
+.equ MCALL_TIMEBASE,                12
+.equ MCALL_SHUTDOWN,                6
+.equ MCALL_SET_TIMER,               7
+.equ MCALL_MASK_INTERRUPT,          13
+.equ MCALL_UNMASK_INTERRUPT,        14
+.equ MCALL_REMOTE_SFENCE_VM,        8
+.equ MCALL_REMOTE_SFENCE_VM_RANGE,  15
+.equ MCALL_REMOTE_FENCE_I,          9
 
   .section .text
   .globl _start
