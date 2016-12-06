@@ -181,15 +181,15 @@ namespace riscv {
 
 		void print_log(decode_type &dec, inst_t inst)
 		{
-			static const char *fmt_32 = "core-%-4zu:%08llx (%s) %-30s %s\n";
-			static const char *fmt_64 = "core-%-4zu:%016llx (%s) %-30s %s\n";
-			static const char *fmt_128 = "core-%-4zu:%032llx (%s) %-30s %s\n";
+			static const char *fmt_32 = "%019llu core-%-4zu:%08llx (%s) %-30s %s\n";
+			static const char *fmt_64 = "%019llu core-%-4zu:%016llx (%s) %-30s %s\n";
+			static const char *fmt_128 = "%019llu core-%-4zu:%032llx (%s) %-30s %s\n";
 			if (P::log & proc_log_inst) {
 				if (!(P::log & proc_log_no_pseudo)) decode_pseudo_inst(dec);
 				std::string args = disasm_inst_simple(dec);
 				std::string op_args = (P::log & proc_log_operands) ? format_operands(dec) : std::string();
 				printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
-					P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
+					P::instret, P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
 			}
 			if (P::log & proc_log_int_reg) print_int_registers();
 		}
