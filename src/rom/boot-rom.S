@@ -28,7 +28,7 @@
 .equ CONFIG_RAM_BASE,  xlenb * 4
 .equ CONFIG_RAM_SIZE,  xlenb * 5
 
-# Partial register save macro (skips a0,a2,t0-t6)
+# Partial register save macro (skips a0-a1,t0-t6)
 
 .macro TRAP_REG_SP_OP OP
 	\OP ra, 2*xlenb(sp)
