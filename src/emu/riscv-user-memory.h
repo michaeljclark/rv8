@@ -175,7 +175,8 @@ namespace riscv {
 		addr_t mpa_to_uva(memory_segment<UX>* &out_seg, UX mpa)
 		{
 			for (auto &seg : segments) {
-				if (mpa >= seg->mpa && mpa < seg->mpa + seg->size) {
+				if (mpa >= seg->mpa && /* note the upper limit may wrap to 0 */
+					((mpa < seg->mpa + seg->size) || (seg->mpa + seg->size == 0))) {
 					out_seg = seg.get();
 					return seg->uva + (mpa - seg->mpa);
 				}
