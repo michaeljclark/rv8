@@ -72,6 +72,7 @@
 #include "riscv-processor-model.h"
 #include "riscv-queue.h"
 #include "riscv-device-boot.h"
+#include "riscv-device-config.h"
 #include "riscv-device-sbi.h"
 #include "riscv-device-time.h"
 #include "riscv-device-mipi.h"
@@ -246,8 +247,11 @@ struct riscv_emulator
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
-				"Start up in debugger CLI",
+				"Start up in debugger",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
+			{ "-T", "--debug-trap", cmdline_arg_type_none,
+				"Start up in debugger and enter debugger on trap",
+				[&](std::string s) { return (proc_logs |= (proc_log_ebreak_cli | proc_log_trap_cli)); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
@@ -306,17 +310,18 @@ struct riscv_emulator
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.log = proc_logs;
-		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem.log = (proc.log & proc_log_memory);
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
 
 		/* Find the ELF executable PT_LOAD segments and map them into the emulator mmu */
+		typename P::ux rom_base = 0;
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & PT_LOAD) {
 				map_load_segment_priv(proc, elf_filename.c_str(), phdr);
+				if (rom_base == 0) rom_base = phdr.p_vaddr;
 			}
 		}
 
@@ -325,6 +330,11 @@ struct riscv_emulator
 
 		/* Initialize interpreter */
 		proc.init();
+		proc.reset(); /* Reset code calls mapped ROM image */
+		proc.device_config->num_harts = 1;
+		proc.device_config->time_base = 1000000000;
+		proc.device_config->rom_base = rom_base;
+		proc.device_config->rom_entry = elf.ehdr.e_entry;
 
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");

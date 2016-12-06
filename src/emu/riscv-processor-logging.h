@@ -22,7 +22,8 @@ namespace riscv {
 		proc_log_trap =            1<<9,       /* Log processor traps */
 		proc_log_pagewalk =        1<<10,      /* Log virtual memory page walks */
 		proc_log_ebreak_cli =      1<<11,      /* Switch to debug CLI on ebreak */
-		proc_log_no_pseudo =       1<<12       /* Don't decode pseudoinstructions */
+		proc_log_trap_cli =        1<<12,      /* Switch to debug CLI on trap */
+		proc_log_no_pseudo =       1<<13       /* Don't decode pseudoinstructions */
 	};
 
 }

@@ -169,9 +169,10 @@ namespace riscv {
 		std::shared_ptr<sbi_mmio_device<processor_privileged>> device_sbi;
 		std::shared_ptr<boot_mmio_device<processor_privileged>> device_boot;
 		std::shared_ptr<time_mmio_device<processor_privileged>> device_time;
-		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
+		std::shared_ptr<config_mmio_device<processor_privileged>> device_config;
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
 		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
+		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
 
 		const char* name() { return "rv-sys"; }
 
@@ -184,22 +185,25 @@ namespace riscv {
 			device_sbi = std::make_shared<sbi_mmio_device<processor_privileged>>(*this, s32(0xfffff000));
 			device_boot = std::make_shared<boot_mmio_device<processor_privileged>>(*this, 0x1000);
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
-			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
+			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x40001000);
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
 			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000, device_plic, 3);
+			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40004000);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem.add_segment(device_sbi);
 			P::mmu.mem.add_segment(device_boot);
 			P::mmu.mem.add_segment(device_time);
-			P::mmu.mem.add_segment(device_mipi);
+			P::mmu.mem.add_segment(device_config);
 			P::mmu.mem.add_segment(device_plic);
 			P::mmu.mem.add_segment(device_uart);
+			P::mmu.mem.add_segment(device_mipi);
 		}
 
 		void print_device_registers()
 		{
 			device_time->print_registers();
+			device_config->print_registers();
 			device_mipi->print_registers();
 			device_plic->print_registers();
 			device_uart->print_registers();
@@ -472,7 +476,7 @@ namespace riscv {
 			P::mstatus.r.uie = 0;
 			P::mode = riscv_mode_U;
 			P::pc = P::utvec;
-			if (P::debugging) {
+			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
 			}
 		}
@@ -486,7 +490,7 @@ namespace riscv {
 			P::mstatus.r.sie = 0;
 			P::mode = riscv_mode_S;
 			P::pc = P::stvec;
-			if (P::debugging) {
+			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
 			}
 		}
@@ -500,7 +504,7 @@ namespace riscv {
 			P::mstatus.r.hie = 0;
 			P::mode = riscv_mode_H;
 			P::pc = P::htvec;
-			if (P::debugging) {
+			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
 			}
 		}
@@ -514,7 +518,7 @@ namespace riscv {
 			P::mstatus.r.mie = 0;
 			P::mode = riscv_mode_M;
 			P::pc = P::mtvec;
-			if (P::debugging) {
+			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
 			}
 		}
@@ -649,6 +653,10 @@ namespace riscv {
 			bool terminate = false;
 			if (dec.op == riscv_op_ebreak) {
 				if (P::log & proc_log_ebreak_cli) {
+					print_log(dec, 0);
+					printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
+						riscv_cause_name_sym[cause],
+						addr_t(P::pc), addr_t(P::badaddr));
 					P::raise(P::internal_cause_cli, P::pc);
 				} else {
 					terminate = true;
