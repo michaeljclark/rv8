@@ -22,6 +22,7 @@
 .equ MCALL_REMOTE_FENCE_I,          9
 
   .section .text
+  .option norvc
   .globl _start
 _start:
 
