@@ -186,8 +186,8 @@ mcall_query_memory:
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
-	li      t3, 65536
-	sub     t2, t2, t1
+	li      t3, 65536    # reserve 64K for M-mode stack
+	sub     t2, t2, t3
 	li      a0, 0
 	sx      t1, 0*xlenb(a1)
 	sx      t2, 1*xlenb(a1)
