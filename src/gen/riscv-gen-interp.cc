@@ -137,7 +137,7 @@ static void print_interp_h(riscv_gen *gen)
 			inst = replace(inst, "frd", "FRD");
 			inst = replace(inst, "frs1", "FRS1");
 			inst = replace(inst, "frs2", "FRS2");
-			inst = replace(inst, "rd", "if (dec.rd > 0) proc.ireg[dec.rd]");
+			inst = replace(inst, "rd = ", "proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : ");
 			inst = replace(inst, "rs1", "proc.ireg[dec.rs1]");
 			inst = replace(inst, "rs2", "proc.ireg[dec.rs2]");
 			inst = replace(inst, "FRD", "frd");
