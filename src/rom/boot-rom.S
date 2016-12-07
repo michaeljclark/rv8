@@ -146,7 +146,7 @@ m_ecall_trap:
 	lw      a0, (a0)
 
 	# advance mepc
-	csrrs   a1, mepc, x0
+	csrrs   a1, mepc, zero
 	addi    a1, a1, 4
 	csrrw   zero, mepc, a1
 
@@ -154,12 +154,17 @@ m_ecall_trap:
 	jalr    zero, a0
 
 mcall_hart_id:
-	li      a1, CONFIG_MMIO_BASE
-	lx      a0, CONFIG_NUM_HARTS(a1)
+	csrrs   a0, mhartid, zero
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_console_putchar:
+	li      a1, UART_MMIO_BASE
+	lx      a0, 0*xlenb(sp)
+	sb      a0, 0(a1)
+	csrrw   sp, mscratch, sp
+	mret
+
 mcall_console_getchar:
 mcall_htif_syscall:
 mcall_send_ipi:
@@ -169,6 +174,11 @@ mcall_set_timer:
 mcall_remote_sfence_vm:
 mcall_remote_fence_i:
 mcall_num_harts:
+	li      a1, CONFIG_MMIO_BASE
+	lx      a0, CONFIG_NUM_HARTS(a1)
+	csrrw   sp, mscratch, sp
+	mret
+
 mcall_query_memory:
 mcall_timebase:
 mcall_mask_interrupt:
