@@ -180,6 +180,26 @@ mcall_num_harts:
 	mret
 
 mcall_query_memory:
+	lx      a0, 0*xlenb(sp)
+	lx      a1, 1*xlenb(sp)
+	bnez    a0, mem_block_end
+	li      t0, CONFIG_MMIO_BASE
+	lx      t1, CONFIG_RAM_BASE(t0)
+	lx      t2, CONFIG_RAM_SIZE(t0)
+	li      t3, 65536
+	sub     t2, t2, t1
+	li      a0, 0
+	sx      t1, 0*xlenb(a1)
+	sx      t2, 1*xlenb(a1)
+	sx      a0, 2*xlenb(a1)
+	csrrw   sp, mscratch, sp
+	mret
+
+mem_block_end:
+	li      a0, -1
+	csrrw   sp, mscratch, sp
+	mret
+
 mcall_timebase:
 mcall_mask_interrupt:
 mcall_unmask_interrupt:
