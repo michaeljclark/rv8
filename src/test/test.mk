@@ -64,6 +64,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-jump-tables-yes \
 	$(BIN_DIR)/test-jump-tables-no \
 	$(BIN_DIR)/test-m-ecall-trap \
+	$(BIN_DIR)/test-m-hartid \
 	$(BIN_DIR)/test-m-mret-user \
 	$(BIN_DIR)/test-m-mmio-timer \
 	$(BIN_DIR)/test-m-mmio-uart \
@@ -136,6 +137,9 @@ $(BIN_DIR)/test-infinite-loop: $(OBJ_DIR)/test-infinite-loop.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-m-hartid.o: $(SRC_DIR)/test-m-hartid.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-hartid: $(OBJ_DIR)/test-m-hartid.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-mmio-timer.o: $(SRC_DIR)/test-m-mmio-timer.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-mmio-timer: $(OBJ_DIR)/test-m-mmio-timer.o ; $(LD) $^ -o $@
