@@ -25,7 +25,6 @@
 .endm
 
 # MMIO Base registers
-
 .equ TIME_MMIO_BASE,     0x40000000
 .equ CONFIG_MMIO_BASE,   0x40001000
 .equ PLIC_MMIO_BASE,     0x40002000
@@ -34,7 +33,6 @@
 .equ GPIO_MMIO_BASE,     0x40005000
 
 # Config MMIO register offsets
-
 .equ CONFIG_NUM_HARTS, xlenb * 0
 .equ CONFIG_TIME_BASE, xlenb * 1
 .equ CONFIG_ROM_BASE,  xlenb * 2
@@ -51,8 +49,7 @@
 .equ GPIO_OUT_POWER,   1 # GPIO output pin 1 wired to power
 .equ GPIO_OUT_RESET,   2 # GPIO output pin 2 wired to reset
 
-# Partial register save macro (skips a0-a1,t0-t6)
-
+# Partial register save macro (skips a0-a1)
 .macro TRAP_REG_SP_OP OP
 	\OP ra, 2*xlenb(sp)
 	\OP sp, 3*xlenb(sp)
@@ -76,6 +73,13 @@
 	\OP s9, 21*xlenb(sp)
 	\OP s10, 22*xlenb(sp)
 	\OP s11, 23*xlenb(sp)
+	\OP t0, 24*xlenb(sp)
+	\OP t1, 25*xlenb(sp)
+	\OP t2, 26*xlenb(sp)
+	\OP t3, 27*xlenb(sp)
+	\OP t4, 28*xlenb(sp)
+	\OP t5, 29*xlenb(sp)
+	\OP t6, 30*xlenb(sp)
 .endm
 
 .section .text
@@ -86,9 +90,7 @@ _start:
 #
 # Reset Vector
 #
-
 reset:
-
 	# setup mcall trap address
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load mtvec(lo)
@@ -119,7 +121,6 @@ reset:
 #
 # Trap Entry
 #
-
 mtvec:
 	# save stack in scratch
 	csrrw   sp, mscratch, sp
@@ -183,20 +184,13 @@ wait:
 	wfi
 	j wait
 
-save_reg:
-	TRAP_REG_SP_OP sx
-	ret
-
-restore_reg:
-	TRAP_REG_SP_OP lx
-	ret
-
 #
 # SBI Interface
 #
 # The SBI PLIC routines only touch a0-a7 and t0-t6 which
 # are caller saved registers in the C ABU and thus can be
 # clobbered by SBI ecall routines.
+#
 
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
@@ -335,9 +329,8 @@ fail:
 	mret
 
 #
-# Exception dispatch table
+# Exception jump table
 #
-
 trap_table:
 	.word bad_trap
 	.word bad_trap
@@ -353,9 +346,8 @@ trap_table:
 	.word m_ecall_trap
 
 #
-# SBI dispatch table
+# SBI jump table
 #
-
 sbi_table:
 	.word mcall_hart_id
 	.word mcall_console_putchar
