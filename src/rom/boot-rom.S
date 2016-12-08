@@ -24,11 +24,16 @@
 	sd \rd, \rs1
 .endm
 
-# MMIO definitions
+# MMIO Base registers
 
-.equ UART_MMIO_BASE, 0x40003000
+.equ TIME_MMIO_BASE,     0x40000000
+.equ CONFIG_MMIO_BASE,   0x40001000
+.equ PLIC_MMIO_BASE,     0x40002000
+.equ UART_MMIO_BASE,     0x40003000
+.equ MIPI_MMIO_BASE,     0x40004000
+.equ GPIO_MMIO_BASE,     0x40005000
 
-.equ CONFIG_MMIO_BASE, 0x40001000
+# Config MMIO register offsets
 
 .equ CONFIG_NUM_HARTS, xlenb * 0
 .equ CONFIG_TIME_BASE, xlenb * 1
@@ -36,6 +41,15 @@
 .equ CONFIG_ROM_ENTRY, xlenb * 3
 .equ CONFIG_RAM_BASE,  xlenb * 4
 .equ CONFIG_RAM_SIZE,  xlenb * 5
+
+# GPIO MMIO register offsets
+.equ GPIO_INTR_ENABLE, 0
+.equ GPIO_INTR_PEND,   4
+.equ GPIO_INPUT_BUF,   8
+.equ GPIO_OUTPUT_BUF,  12
+
+.equ GPIO_OUT_POWER,   1 # GPIO output pin 1 wired to power
+.equ GPIO_OUT_RESET,   2 # GPIO output pin 2 wired to reset
 
 # Partial register save macro (skips a0-a1,t0-t6)
 
@@ -170,6 +184,11 @@ mcall_htif_syscall:
 mcall_send_ipi:
 mcall_clear_ipi:
 mcall_shutdown:
+	li      a1, GPIO_MMIO_BASE
+	li      a0, GPIO_OUT_POWER
+	sw      a0, GPIO_OUTPUT_BUF(a1)
+	j       wait
+
 mcall_set_timer:
 mcall_remote_sfence_vm:
 mcall_remote_fence_i:

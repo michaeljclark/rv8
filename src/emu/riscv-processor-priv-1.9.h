@@ -173,6 +173,7 @@ namespace riscv {
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
 		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
 		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
+		std::shared_ptr<gpio_mmio_device<processor_privileged>> device_gpio;
 
 		const char* name() { return "rv-sys"; }
 
@@ -189,6 +190,7 @@ namespace riscv {
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
 			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000, device_plic, 3);
 			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40004000);
+			device_gpio = std::make_shared<gpio_mmio_device<processor_privileged>>(*this, 0x40005000, device_plic, 4);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem.add_segment(device_sbi);
@@ -198,6 +200,7 @@ namespace riscv {
 			P::mmu.mem.add_segment(device_plic);
 			P::mmu.mem.add_segment(device_uart);
 			P::mmu.mem.add_segment(device_mipi);
+			P::mmu.mem.add_segment(device_gpio);
 		}
 
 		void print_device_registers()
@@ -207,6 +210,7 @@ namespace riscv {
 			device_mipi->print_registers();
 			device_plic->print_registers();
 			device_uart->print_registers();
+			device_gpio->print_registers();
 		}
 
 		void print_csr_registers()
@@ -531,6 +535,7 @@ namespace riscv {
 			/* service all external devices connected to the PLIC */
 
 			device_uart->service();
+			device_gpio->service();
 
 			/*
 			 * service external interrupts from the PLIC if enabled
@@ -740,7 +745,7 @@ namespace riscv {
 				print_device_registers();
 			}
 			if (signum == SIGTERM) {
-				P::raise(P::internal_cause_halt, P::pc);
+				P::raise(P::internal_cause_poweroff, P::pc);
 			} else {
 				P::raise(P::internal_cause_fatal, P::pc);
 			}

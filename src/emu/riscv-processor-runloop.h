@@ -112,7 +112,7 @@ namespace riscv {
 							P::log |= (proc_log_inst | proc_log_operands | proc_log_trap);
 						}
 						break;
-					case exit_cause_halt:
+					case exit_cause_poweroff:
 						return;
 				}
 				ex = step(count);
@@ -143,12 +143,12 @@ namespace riscv {
 					case P::internal_cause_fatal:
 						P::print_csr_registers();
 						P::print_int_registers();
-						return exit_cause_halt;
-					case P::internal_cause_halt:
-						return exit_cause_halt;
+						return exit_cause_poweroff;
+					case P::internal_cause_poweroff:
+						return exit_cause_poweroff;
 				}
 				P::trap(dec, cause);
-				if (!P::running) return exit_cause_halt;
+				if (!P::running) return exit_cause_poweroff;
 			}
 
 			/* step the processor */

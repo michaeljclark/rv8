@@ -4,10 +4,12 @@ void _start()
 {
 	void(*sbi_console_putchar)(char) = (void*)-2000;
 	unsigned long(*sbi_query_memory)(unsigned long id, unsigned long *) = (void*)-2016;
+	void(*sbi_shutdown)(void) = (void*)-1904;
 
 	unsigned long block[3];
 	sbi_query_memory(0, (unsigned long*)&block);
 
+	/* print memory base */
 	sbi_console_putchar('m');
 	sbi_console_putchar('e');
 	sbi_console_putchar('m');
@@ -27,8 +29,10 @@ void _start()
 	sbi_console_putchar('0' + (block[0] / 100) % 10);
 	sbi_console_putchar('0' + (block[0] / 10) % 10);
 	sbi_console_putchar('0' + block[0] % 10);
+	sbi_console_putchar('\r');
 	sbi_console_putchar('\n');
 
+	/* print memory size */
 	sbi_console_putchar('m');
 	sbi_console_putchar('e');
 	sbi_console_putchar('m');
@@ -48,9 +52,12 @@ void _start()
 	sbi_console_putchar('0' + (block[1] / 100) % 10);
 	sbi_console_putchar('0' + (block[1] / 10) % 10);
 	sbi_console_putchar('0' + block[1] % 10);
+	sbi_console_putchar('\r');
 	sbi_console_putchar('\n');
 
+	/* wait for IO buffers to quench */
 	for (volatile int i = 0; i < 100000; i++) {}
 
-	asm volatile ("ebreak");
+	/* shutdown */
+	sbi_shutdown();
 }

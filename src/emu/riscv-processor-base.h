@@ -184,7 +184,7 @@ namespace riscv {
 			internal_cause_offset = 0x100,
 			internal_cause_reset  = 0x1000,
 			internal_cause_cli    = 0x1001,
-			internal_cause_halt   = 0x1002,
+			internal_cause_poweroff   = 0x1002,
 			internal_cause_fatal  = 0x1003
 		};
 

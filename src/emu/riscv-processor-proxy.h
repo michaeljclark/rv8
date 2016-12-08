@@ -74,7 +74,7 @@ namespace riscv {
 				addr_t(P::pc), addr_t(P::badaddr));
 			P::print_csr_registers();
 			P::print_int_registers();
-			P::raise(P::internal_cause_halt, P::pc);
+			P::raise(P::internal_cause_poweroff, P::pc);
 		}
 
 		void signal(int signum, siginfo_t *info)
@@ -97,7 +97,7 @@ namespace riscv {
 			if (signum == SIGINT) {
 				P::raise(P::internal_cause_cli, P::pc);
 			} else if (signum == SIGTERM) {
-				P::raise(P::internal_cause_halt, P::pc);
+				P::raise(P::internal_cause_poweroff, P::pc);
 			} else {
 				P::raise(P::internal_cause_fatal, P::pc);
 			}
