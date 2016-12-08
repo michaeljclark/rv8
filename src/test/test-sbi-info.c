@@ -35,14 +35,6 @@ void _start()
 	unsigned long(*sbi_query_memory)(unsigned long id, unsigned long *) = (void*)-2016;
 	void(*sbi_shutdown)(void) = (void*)-1904;
 
-	/* 
-	 * Note: This C code is designed to run in Machine mode without
-	 * any initial setup of stack, thread or global pointer registers.
-	 *
-	 * For this reason, the code is linked with --no-relax to avoid
-	 * GP-relative constant references
-	 */
-
 	/* print hart_id and num_harts */
 	_putval("hart_id   ", sbi_hart_id(), 4);
 	_putval("num_harts ", sbi_num_harts(), 4);
