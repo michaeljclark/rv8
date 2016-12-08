@@ -50,7 +50,8 @@ namespace riscv {
 				pma_type_io | pma_prot_read | pma_prot_write),
 			proc(proc),
 			plic(plic),
-			irq(irq)
+			irq(irq),
+			gpio{}
 		{}
 
 		/* GPIO interface */
