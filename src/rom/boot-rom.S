@@ -138,8 +138,14 @@ reset:
 
 	# program uart to raise interrupts on recieved data
 	li      a0, UART_MMIO_BASE
-	li      a1, IER_ERBDA   # Load IER_ERBDA bit
-	sb      a1, REG_IER(a0) # Set IER_ERBDA bit in IER reg
+	li      a1, IER_ERBDA     # Load IER_ERBDA bit
+	sb      a1, REG_IER(a0)   # Enable IER_ERBDA in IER reg
+
+	# Enable machine mode external interrupts
+	li      t0, 2048
+	csrrs   zero, mie, t0     # set mie.MEIE=1
+	li      t0, 8
+	csrrs   zero, mstatus, t0 # set mstatus.MIE=1
 
 	# return to the ROM
 	LX      ra, CONFIG_ROM_ENTRY(gp)
