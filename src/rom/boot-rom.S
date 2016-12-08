@@ -83,6 +83,10 @@
 .globl _start
 _start:
 
+#
+# Reset Vector
+#
+
 reset:
 
 	# setup mcall trap address
@@ -111,6 +115,10 @@ reset:
 	csrrw   sp, mscratch, sp
 	csrrw   zero, mepc, ra
 	mret
+
+#
+# Trap Entry
+#
 
 mtvec:
 	# save stack in scratch
@@ -167,6 +175,26 @@ m_ecall_trap:
 	# jump to SBI table
 	jalr    zero, a0
 
+bad_trap:
+	# can't handle bad trep
+	ebreak;
+
+wait:
+	wfi
+	j wait
+
+save_reg:
+	TRAP_REG_SP_OP sx
+	ret
+
+restore_reg:
+	TRAP_REG_SP_OP lx
+	ret
+
+#
+# SBI Interface
+#
+
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
 	csrrw   sp, mscratch, sp
@@ -180,9 +208,21 @@ mcall_console_putchar:
 	mret
 
 mcall_console_getchar:
+	# unimplemented
+	ebreak;
+
 mcall_htif_syscall:
+	# unimplemented
+	ebreak;
+
 mcall_send_ipi:
+	# unimplemented
+	ebreak;
+
 mcall_clear_ipi:
+	# unimplemented
+	ebreak;
+
 mcall_shutdown:
 	li      a1, GPIO_MMIO_BASE
 	li      a0, GPIO_OUT_POWER
@@ -190,8 +230,17 @@ mcall_shutdown:
 	j       wait
 
 mcall_set_timer:
+	# unimplemented
+	ebreak;
+
 mcall_remote_sfence_vm:
+	# unimplemented
+	ebreak;
+
 mcall_remote_fence_i:
+	# unimplemented
+	ebreak;
+
 mcall_num_harts:
 	li      a1, CONFIG_MMIO_BASE
 	lx      a0, CONFIG_NUM_HARTS(a1)
@@ -226,28 +275,20 @@ mcall_timebase:
 	mret
 
 mcall_mask_interrupt:
+	# unimplemented
+	ebreak;
+
 mcall_unmask_interrupt:
+	# unimplemented
+	ebreak;
+
 mcall_remote_sfence_vm_range:
-	# load diagnostic register
-	li      a0, 5
-	# we can't handle M-mode SBI yet
+	# unimplemented
 	ebreak;
 
-bad_trap:
-	# can't handle bad trep
-	ebreak;
-
-wait:
-	wfi
-	j wait
-
-save_reg:
-	TRAP_REG_SP_OP sx
-	ret
-
-restore_reg:
-	TRAP_REG_SP_OP lx
-	ret
+#
+# Exception dispatch table
+#
 
 trap_table:
 	.word bad_trap
@@ -262,6 +303,10 @@ trap_table:
 	.word s_ecall_trap
 	.word h_ecall_trap
 	.word m_ecall_trap
+
+#
+# SBI dispatch table
+#
 
 sbi_table:
 	.word mcall_hart_id
