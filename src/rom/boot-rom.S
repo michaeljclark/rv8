@@ -137,9 +137,9 @@ reset:
 	csrrs   zero, mstatus, t1
 
 	# program uart to raise interrupts on recieved data
-	li      a0, UART_MMIO_BASE
-	li      a1, IER_ERBDA     # Load IER_ERBDA bit
-	sb      a1, REG_IER(a0)   # Enable IER_ERBDA in IER reg
+	li      t0, UART_MMIO_BASE
+	li      t1, IER_ERBDA     # Load IER_ERBDA bit
+	sb      t1, REG_IER(t0)   # Enable IER_ERBDA in IER reg
 
 	# Enable machine mode external interrupts
 	li      t0, 2048          # set mie.MEIE=1
@@ -239,15 +239,15 @@ mcall_hart_id:
 	mret
 
 mcall_console_putchar:
-	li      a1, UART_MMIO_BASE  # load UART MMIO base register
-	lx      a0, 0*xlenb(sp)     # restore a0
-	sb      a0, REG_RBR(a1)     # write byte
+	lx      a0, 0*xlenb(sp)     # restore arg0
+	li      t1, UART_MMIO_BASE  # load UART MMIO base register
+	sb      a0, REG_RBR(t1)     # write byte
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_console_getchar:
-	li      a1, UART_MMIO_BASE  # load UART MMIO base register
-	lb      t0, REG_IIR(a1)     # check if a byte is readable
+	li      t1, UART_MMIO_BASE  # load UART MMIO base register
+	lb      t0, REG_IIR(t1)     # check if a byte is readable
 	andi    t0, t0, IIR_RX_RDY
 	beqz    t0, fail            # return -1 if no data
 	lb      a0, REG_RBR(a1)     # read byte
@@ -267,17 +267,17 @@ mcall_clear_ipi:
 	ebreak;
 
 mcall_shutdown:
-	li      a1, GPIO_MMIO_BASE
-	li      a0, GPIO_OUT_POWER
-	sw      a0, GPIO_OUTPUT_BUF(a1)
+	li      t1, GPIO_MMIO_BASE
+	li      t0, GPIO_OUT_POWER
+	sw      t0, GPIO_OUTPUT_BUF(t1)
 	j       wait
 
 mcall_set_timer:
-	li      a1, TIMER_MMIO_BASE
-	ld      t0, TIMER_MTIME(a1)    # read from mtime
-	lx      a0, 0*xlenb(sp)        # restore a0
-	add     a1, t0, a0             # add to current time
-	sd      a1, TIMER_MTIMECMP(a1) # write to mtimecmp
+	lx      a0, 0*xlenb(sp)        # restore arg0
+	li      t0, TIMER_MMIO_BASE
+	ld      t1, TIMER_MTIME(t0)    # read from mtime
+	add     t2, t1, a0             # add arg0 to current time
+	sd      t2, TIMER_MTIMECMP(t0) # write to mtimecmp
 	li      t0, 128                # set mie.MTIE=1
 	csrrs   zero, mie, t0
 	li      t0, 128                # set mstatus.MPIE=1
@@ -301,9 +301,9 @@ mcall_num_harts:
 	mret
 
 mcall_query_memory:
-	lx      a0, 0*xlenb(sp)
-	lx      a1, 1*xlenb(sp)
-	bnez    a0, fail    # implementation has one segment
+	lx      a0, 0*xlenb(sp) # restore arg0
+	lx      a1, 1*xlenb(sp) # restore arg1
+	bnez    a0, fail        # only one segment
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
@@ -317,27 +317,27 @@ mcall_query_memory:
 	mret
 
 mcall_timebase:
-	li      a1, CONFIG_MMIO_BASE
-	lx      a0, CONFIG_TIME_BASE(a1)
+	li      t0, CONFIG_MMIO_BASE
+	lx      a0, CONFIG_TIME_BASE(t0)
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_mask_interrupt:
-	lx      a0, 0*xlenb(sp)
-	slti    a1, a0, 32      # can handle irqs 0-31
-	beqz    a1, fail
-	li      a1, 1           # set irq bit
-	sll     a5, a1, a0      # a5 contains shifted mask
-	li      a4, -1
-	xor     a5, a5, a4      # invert irq mask
+	lx      a0, 0*xlenb(sp) # restore arg0
+	slti    t1, a0, 32      # can handle irqs 0-31
+	beqz    t1, fail
+	li      t1, 1           # set irq bit
+	sll     t5, t1, a0      # a5 contains shifted mask
+	li      t4, -1
+	xor     t5, t5, t4      # invert irq mask
 
-	li      a0, PLIC_MMIO_BASE
+	li      t0, PLIC_MMIO_BASE
 
-	lw      a1, 28(a0)      # enabled offset
-	add     a2, a0, a1      # enabled node_id=0, hart_id=0
-	lw      a4, 0(a2)       # load enabled word from PLIC
-	and     a4, a4, a5
-	sw      a4, 0(a2)       # store enabled word to PLIC
+	lw      t1, 28(t0)      # enabled offset
+	add     t2, t0, t1      # enabled node_id=0, hart_id=0
+	lw      t4, 0(t2)       # load enabled word from PLIC
+	and     t4, t4, t5
+	sw      t4, 0(t2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
 	csrrw   sp, mscratch, sp
@@ -346,31 +346,31 @@ mcall_mask_interrupt:
 mcall_unmask_interrupt:
 
 # enable IRQ 3 in the PLIC for node_id=0, hart_id=0
-	lx      a0, 0*xlenb(sp)
-	slti    a1, a0, 32      # can handle irqs 0-31
-	beqz    a1, fail
-	li      a1, 1           # set irq bit
-	sll     a5, a1, a0      # a5 contains shifted mask
+	lx      a0, 0*xlenb(sp) # restore arg0
+	slti    t1, a0, 32      # can handle irqs 0-31
+	beqz    t1, fail
+	li      t1, 1           # set irq bit
+	sll     t5, t1, a0      # a5 contains shifted mask
 
-	li      a0, PLIC_MMIO_BASE
+	li      t0, PLIC_MMIO_BASE
 
-	lw      a1, 20(a0)      # priority0 offset
-	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
-	lw      a4, 0(a2)       # load priority0 word from PLIC
-	or      a4, a4, a5
-	sw      a4, 0(a2)       # store priority0 word to PLIC
+	lw      t1, 20(t0)      # priority0 offset
+	add     t2, t0, t1      # priority0 node_id=0, hart_id=0
+	lw      t4, 0(t2)       # load priority0 word from PLIC
+	or      t4, t4, t5
+	sw      t4, 0(t2)       # store priority0 word to PLIC
 
-	lw      a1, 24(a0)      # priority1 offset
-	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
-	lw      a4, 0(a2)       # load priority1 word from PLIC
-	or      a4, a4, a5
-	sw      a4, 0(a2)       # store priority1 word to PLIC
+	lw      t1, 24(t0)      # priority1 offset
+	add     t2, t0, t1      # priority1 node_id=0, hart_id=0
+	lw      t4, 0(t2)       # load priority1 word from PLIC
+	or      t4, t4, t5
+	sw      t4, 0(t2)       # store priority1 word to PLIC
 
-	lw      a1, 28(a0)      # enabled offset
-	add     a2, a0, a1      # enabled node_id=0, hart_id=0
-	lw      a4, 0(a2)       # load enabled word from PLIC
-	or      a4, a4, a5
-	sw      a4, 0(a2)       # store enabled word to PLIC
+	lw      t1, 28(t0)      # enabled offset
+	add     t2, t0, t1      # enabled node_id=0, hart_id=0
+	lw      t4, 0(t2)       # load enabled word from PLIC
+	or      t4, t4, t5
+	sw      t4, 0(t2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
 	csrrw   sp, mscratch, sp
