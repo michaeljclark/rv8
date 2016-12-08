@@ -32,12 +32,14 @@ void _start()
 {
 	unsigned long(*sbi_hart_id)(void) = (void*)-2048;
 	unsigned long(*sbi_num_harts)(void) = (void*)-2032;
+	unsigned long(*sbi_timebase)(void) = (void*)-1920;
 	unsigned long(*sbi_query_memory)(unsigned long id, unsigned long *) = (void*)-2016;
 	void(*sbi_shutdown)(void) = (void*)-1904;
 
 	/* print hart_id and num_harts */
 	_putval("hart_id   ", sbi_hart_id(), 4);
 	_putval("num_harts ", sbi_num_harts(), 4);
+	_putval("timebase  ", sbi_timebase(), 10);
 
 	/* get memory info */
 	unsigned long block[3];
