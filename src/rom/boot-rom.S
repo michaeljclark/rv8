@@ -142,16 +142,16 @@ reset:
 	sb      a1, REG_IER(a0)   # Enable IER_ERBDA in IER reg
 
 	# Enable machine mode external interrupts
-	li      t0, 2048
-	csrrs   zero, mie, t0     # set mie.MEIE=1
-	li      t0, 8
-	csrrs   zero, mstatus, t0 # set mstatus.MIE=1
+	li      t0, 2048          # set mie.MEIE=1
+	csrrs   zero, mie, t0
+	li      t0, 128           # set mstatus.MPIE=1
+	csrrs   zero, mstatus, t0
 
 	# return to the ROM
 	LX      ra, CONFIG_ROM_ENTRY(gp)
 	csrrw   sp, mscratch, sp
 	csrrw   zero, mepc, ra
-	mret
+	mret                      # MPIE -> MIE after mret
 
 #
 # Trap Entry
