@@ -53,11 +53,13 @@
 
 # UART MMIO register offets
 
-.equ REG_RBR, 0
-.equ REG_THR, 0
-.equ REG_IIR, 2
+.equ REG_RBR,          0
+.equ REG_THR,          0
+.equ REG_IER,          1
+.equ REG_IIR,          2
 
-.equ IIR_RX_RDY, 4
+.equ IIR_RX_RDY,       4
+.equ IER_ERBDA,        1
 
 # GPIO MMIO register offsets
 
@@ -133,6 +135,11 @@ reset:
 	slli    t0, t0, 11
 	or      t1, t1, t0
 	csrrs   zero, mstatus, t1
+
+	# program uart to raise interrupts on recieved data
+	li      a0, UART_MMIO_BASE
+	li      a1, IER_ERBDA   # Load IER_ERBDA bit
+	sb      a1, REG_IER(a0) # Set IER_ERBDA bit in IER reg
 
 	# return to the ROM
 	LX      ra, CONFIG_ROM_ENTRY(gp)
@@ -311,18 +318,19 @@ mcall_timebase:
 
 mcall_mask_interrupt:
 	lx      a0, 0*xlenb(sp)
-	slti    a0, a0, 32      # can handle irqs 0-31
-	bnez    a0, fail
-	li      a3, 1           # set irq bit
-	sll     a3, a3, a0
-	li      a4, -1          # invert irq mask
-	xor     a3, a4, a4
+	slti    a1, a0, 32      # can handle irqs 0-31
+	beqz    a1, fail
+	li      a1, 1           # set irq bit
+	sll     a5, a1, a0      # a5 contains shifted mask
+	li      a4, -1
+	xor     a5, a5, a4      # invert irq mask
+
 	li      a0, PLIC_MMIO_BASE
 
 	lw      a1, 28(a0)      # enabled offset
 	add     a2, a0, a1      # enabled node_id=0, hart_id=0
 	lw      a4, 0(a2)       # load enabled word from PLIC
-	and     a4, a5, a3
+	and     a4, a4, a5
 	sw      a4, 0(a2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
@@ -330,29 +338,32 @@ mcall_mask_interrupt:
 	mret
 
 mcall_unmask_interrupt:
+
+# enable IRQ 3 in the PLIC for node_id=0, hart_id=0
 	lx      a0, 0*xlenb(sp)
-	slti    a0, a0, 32      # can handle irqs 0-31
-	bnez    a0, fail
-	li      a3, 1           # set irq bit
-	sll     a3, a3, a0
+	slti    a1, a0, 32      # can handle irqs 0-31
+	beqz    a1, fail
+	li      a1, 1           # set irq bit
+	sll     a5, a1, a0      # a5 contains shifted mask
+
 	li      a0, PLIC_MMIO_BASE
 
 	lw      a1, 20(a0)      # priority0 offset
 	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
 	lw      a4, 0(a2)       # load priority0 word from PLIC
-	or      a4, a5, a3
+	or      a4, a4, a5
 	sw      a4, 0(a2)       # store priority0 word to PLIC
 
 	lw      a1, 24(a0)      # priority1 offset
 	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
 	lw      a4, 0(a2)       # load priority1 word from PLIC
-	or      a4, a5, a3
+	or      a4, a4, a5
 	sw      a4, 0(a2)       # store priority1 word to PLIC
 
 	lw      a1, 28(a0)      # enabled offset
 	add     a2, a0, a1      # enabled node_id=0, hart_id=0
 	lw      a4, 0(a2)       # load enabled word from PLIC
-	or      a4, a5, a3
+	or      a4, a4, a5
 	sw      a4, 0(a2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
@@ -387,21 +398,21 @@ trap_table:
 #
 
 sbi_table:
-	.word mcall_hart_id
-	.word mcall_console_putchar
-	.word mcall_console_getchar
-	.word mcall_htif_syscall
-	.word mcall_send_ipi
-	.word mcall_clear_ipi
-	.word mcall_shutdown
-	.word mcall_set_timer
-	.word mcall_remote_sfence_vm
-	.word mcall_remote_fence_i
-	.word mcall_num_harts
-	.word mcall_query_memory
-	.word mcall_timebase
-	.word mcall_mask_interrupt
-	.word mcall_unmask_interrupt
-	.word mcall_remote_sfence_vm_range
+	.word mcall_hart_id                #  0 <- SBI 0  (-2048)
+	.word mcall_console_putchar        #  1 <- SBI 3  (-2000)
+	.word mcall_console_getchar        #  2 <- SBI 4  (-1984)
+	.word mcall_htif_syscall           #  3 <- SBI 5  (-1968) deprecated
+	.word mcall_send_ipi               #  4 <- SBI 6  (-1952)
+	.word mcall_clear_ipi              #  5 <- SBI 7  (-1936)
+	.word mcall_shutdown               #  6 <- SBI 9  (-1904)
+	.word mcall_set_timer              #  7 <- SBI 10 (-1888)
+	.word mcall_remote_sfence_vm       #  8 <- SBI 13 (-1840)
+	.word mcall_remote_fence_i         #  9 <- SBI 15 (-1808)
+	.word mcall_num_harts              # 10 <- SBI 1  (-2032)
+	.word mcall_query_memory           # 11 <- SBI 2  (-2016)
+	.word mcall_timebase               # 12 <- SBI 8  (-1920)
+	.word mcall_mask_interrupt         # 13 <- SBI 11 (-1872)
+	.word mcall_unmask_interrupt       # 14 <- SBI 12 (-1856)
+	.word mcall_remote_sfence_vm_range # 15 <- SBI 14 (-1824)
 
 .p2align 12
