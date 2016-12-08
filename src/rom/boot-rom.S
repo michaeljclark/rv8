@@ -24,15 +24,26 @@
 	sd \rd, \rs1
 .endm
 
+# M-Mode constants
+
+.equ M_MODE_STACK_SIZE,65536
+
 # MMIO Base registers
-.equ TIME_MMIO_BASE,     0x40000000
-.equ CONFIG_MMIO_BASE,   0x40001000
-.equ PLIC_MMIO_BASE,     0x40002000
-.equ UART_MMIO_BASE,     0x40003000
-.equ MIPI_MMIO_BASE,     0x40004000
-.equ GPIO_MMIO_BASE,     0x40005000
+
+.equ TIMER_MMIO_BASE,  0x40000000
+.equ CONFIG_MMIO_BASE, 0x40001000
+.equ PLIC_MMIO_BASE,   0x40002000
+.equ UART_MMIO_BASE,   0x40003000
+.equ MIPI_MMIO_BASE,   0x40004000
+.equ GPIO_MMIO_BASE,   0x40005000
+
+# Timer MMIO register offets
+
+.equ TIMER_MTIME,      xlenb * 0
+.equ TIMER_MTIMECMP,   xlenb * 8
 
 # Config MMIO register offsets
+
 .equ CONFIG_NUM_HARTS, xlenb * 0
 .equ CONFIG_TIME_BASE, xlenb * 1
 .equ CONFIG_ROM_BASE,  xlenb * 2
@@ -49,6 +60,7 @@
 .equ IIR_RX_RDY, 4
 
 # GPIO MMIO register offsets
+
 .equ GPIO_INTR_ENABLE, 0
 .equ GPIO_INTR_PEND,   4
 .equ GPIO_INPUT_BUF,   8
@@ -240,8 +252,17 @@ mcall_shutdown:
 	j       wait
 
 mcall_set_timer:
-	# unimplemented
-	ebreak;
+	li      a1, TIMER_MMIO_BASE
+	ld      t0, TIMER_MTIME(a1)    # read from mtime
+	lx      a0, 0*xlenb(sp)        # restore a0
+	add     a1, t0, a0             # add to current time
+	sd      a1, TIMER_MTIMECMP(a1) # write to mtimecmp
+	li      t0, 128                # set mie.MTIE=1
+	csrrs   zero, mie, t0
+	li      t0, 8                  # set mstatus.MIE=1
+	csrrs   zero, mstatus, t0
+	csrrw   sp, mscratch, sp       # return
+	mret
 
 mcall_remote_sfence_vm:
 	# unimplemented
@@ -264,7 +285,7 @@ mcall_query_memory:
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
-	li      t3, 65536    # reserve 64K for M-mode stack
+	li      t3, M_MODE_STACK_SIZE # reserve M-mode space
 	sub     t2, t2, t3
 	li      a0, 0
 	sx      t1, 0*xlenb(a1)
