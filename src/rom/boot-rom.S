@@ -70,6 +70,7 @@
 .equ GPIO_OUT_RESET,   2 # GPIO output pin 2 wired to reset
 
 # Partial register save macro (skips a0-a1)
+
 .macro TRAP_REG_SP_OP OP
 	\OP ra, 2*xlenb(sp)
 	\OP sp, 3*xlenb(sp)
@@ -110,6 +111,7 @@ _start:
 #
 # Reset Vector
 #
+
 reset:
 	# setup mcall trap address
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
@@ -141,6 +143,7 @@ reset:
 #
 # Trap Entry
 #
+
 mtvec:
 	# save stack in scratch
 	csrrw   sp, mscratch, sp
@@ -155,7 +158,12 @@ mtvec:
 
 intr:
 	# we can't handle interrupts yet
-	li      a0, 4
+
+	# TODO: check meip, mtie, msip
+	#       check mideleg, hideleg, sideleg
+	#       if required, set {h,s,u}{e,t,s}{ip}
+
+	li      a0, 5      # return sentinel for debugging
 	ebreak
 
 trap:
@@ -265,6 +273,7 @@ mcall_set_timer:
 	mret
 
 mcall_remote_sfence_vm:
+mcall_remote_sfence_vm_range:
 	# unimplemented
 	ebreak;
 
@@ -350,10 +359,6 @@ mcall_unmask_interrupt:
 	csrrw   sp, mscratch, sp
 	mret
 
-mcall_remote_sfence_vm_range:
-	# unimplemented
-	ebreak;
-
 fail:
 	li      a0, -1
 	csrrw   sp, mscratch, sp
@@ -362,6 +367,7 @@ fail:
 #
 # Exception jump table
 #
+
 trap_table:
 	.word bad_trap
 	.word bad_trap
@@ -379,6 +385,7 @@ trap_table:
 #
 # SBI jump table
 #
+
 sbi_table:
 	.word mcall_hart_id
 	.word mcall_console_putchar
