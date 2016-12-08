@@ -40,6 +40,14 @@
 .equ CONFIG_RAM_BASE,  xlenb * 4
 .equ CONFIG_RAM_SIZE,  xlenb * 5
 
+# UART MMIO register offets
+
+.equ REG_RBR, 0
+.equ REG_THR, 0
+.equ REG_IIR, 2
+
+.equ IIR_RX_RDY, 4
+
 # GPIO MMIO register offsets
 .equ GPIO_INTR_ENABLE, 0
 .equ GPIO_INTR_PEND,   4
@@ -198,16 +206,18 @@ mcall_hart_id:
 	mret
 
 mcall_console_putchar:
-	li      a1, UART_MMIO_BASE
-	lx      a0, 0*xlenb(sp)
-	sb      a0, 0(a1)
+	li      a1, UART_MMIO_BASE  # load UART MMIO base register
+	lx      a0, 0*xlenb(sp)     # restore a0
+	sb      a0, REG_RBR(a1)     # write byte
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_console_getchar:
-	li      a1, UART_MMIO_BASE
-	lx      a0, 0*xlenb(sp)
-	lb      a0, 0(a1)
+	li      a1, UART_MMIO_BASE  # load UART MMIO base register
+	lb      t0, REG_IIR(a1)     # check if a byte is readable
+	andi    t0, t0, IIR_RX_RDY
+	beqz    t0, fail            # return -1 if no data
+	lb      a0, REG_RBR(a1)     # read byte
 	csrrw   sp, mscratch, sp
 	mret
 
