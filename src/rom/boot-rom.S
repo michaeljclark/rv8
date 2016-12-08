@@ -280,10 +280,10 @@ mcall_set_timer:
 	sd      a1, TIMER_MTIMECMP(a1) # write to mtimecmp
 	li      t0, 128                # set mie.MTIE=1
 	csrrs   zero, mie, t0
-	li      t0, 8                  # set mstatus.MIE=1
+	li      t0, 128                # set mstatus.MPIE=1
 	csrrs   zero, mstatus, t0
-	csrrw   sp, mscratch, sp       # return
-	mret
+	csrrw   sp, mscratch, sp
+	mret                           # MPIE -> MIE after mret
 
 mcall_remote_sfence_vm:
 mcall_remote_sfence_vm_range:
