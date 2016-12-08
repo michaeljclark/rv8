@@ -159,4 +159,4 @@ $(OBJ_DIR)/test-m-sv39.o: $(SRC_DIR)/test-m-sv39.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-sv39: $(OBJ_DIR)/test-m-sv39.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-sbi.o: $(SRC_DIR)/test-sbi.c ; $(CC) -O3 -c $^ -o $@
-$(BIN_DIR)/test-sbi: $(OBJ_DIR)/test-sbi.o ; $(CC) -nostartfiles $^ -o $@
+$(BIN_DIR)/test-sbi: $(OBJ_DIR)/test-sbi.o ; $(CC) -Wl,--no-relax -nostartfiles $^ -o $@
