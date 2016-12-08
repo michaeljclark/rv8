@@ -194,6 +194,9 @@ restore_reg:
 #
 # SBI Interface
 #
+# The SBI PLIC routines only touch a0-a7 and t0-t6 which
+# are caller saved registers in the C ABU and thus can be
+# clobbered by SBI ecall routines.
 
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
@@ -208,8 +211,11 @@ mcall_console_putchar:
 	mret
 
 mcall_console_getchar:
-	# unimplemented
-	ebreak;
+	li      a1, UART_MMIO_BASE
+	lx      a0, 0*xlenb(sp)
+	lb      a0, 0(a1)
+	csrrw   sp, mscratch, sp
+	mret
 
 mcall_htif_syscall:
 	# unimplemented
@@ -250,7 +256,7 @@ mcall_num_harts:
 mcall_query_memory:
 	lx      a0, 0*xlenb(sp)
 	lx      a1, 1*xlenb(sp)
-	bnez    a0, mem_block_end
+	bnez    a0, fail
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
@@ -263,11 +269,6 @@ mcall_query_memory:
 	csrrw   sp, mscratch, sp
 	mret
 
-mem_block_end:
-	li      a0, -1
-	csrrw   sp, mscratch, sp
-	mret
-
 mcall_timebase:
 	li      a1, CONFIG_MMIO_BASE
 	lx      a0, CONFIG_TIME_BASE(a1)
@@ -275,16 +276,63 @@ mcall_timebase:
 	mret
 
 mcall_mask_interrupt:
-	# unimplemented
-	ebreak;
+	lx      a0, 0*xlenb(sp)
+	slti    a0, a0, 32      # can handle irqs 0-31
+	bnez    a0, fail
+	li      a3, 1           # set irq bit
+	sll     a3, a3, a0
+	li      a4, -1          # invert irq mask
+	xor     a3, a4, a4
+	li      a0, PLIC_MMIO_BASE
+
+	lw      a1, 28(a0)      # enabled offset
+	add     a2, a0, a1      # enabled node_id=0, hart_id=0
+	lw      a4, 0(a2)       # load enabled word from PLIC
+	and     a4, a5, a3
+	sw      a4, 0(a2)       # store enabled word to PLIC
+
+	li      a0, 0           # success
+	csrrw   sp, mscratch, sp
+	mret
 
 mcall_unmask_interrupt:
-	# unimplemented
-	ebreak;
+	lx      a0, 0*xlenb(sp)
+	slti    a0, a0, 32      # can handle irqs 0-31
+	bnez    a0, fail
+	li      a3, 1           # set irq bit
+	sll     a3, a3, a0
+	li      a0, PLIC_MMIO_BASE
+
+	lw      a1, 20(a0)      # priority0 offset
+	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
+	lw      a4, 0(a2)       # load priority0 word from PLIC
+	or      a4, a5, a3
+	sw      a4, 0(a2)       # store priority0 word to PLIC
+
+	lw      a1, 24(a0)      # priority1 offset
+	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
+	lw      a4, 0(a2)       # load priority1 word from PLIC
+	or      a4, a5, a3
+	sw      a4, 0(a2)       # store priority1 word to PLIC
+
+	lw      a1, 28(a0)      # enabled offset
+	add     a2, a0, a1      # enabled node_id=0, hart_id=0
+	lw      a4, 0(a2)       # load enabled word from PLIC
+	or      a4, a5, a3
+	sw      a4, 0(a2)       # store enabled word to PLIC
+
+	li      a0, 0           # success
+	csrrw   sp, mscratch, sp
+	mret
 
 mcall_remote_sfence_vm_range:
 	# unimplemented
 	ebreak;
+
+fail:
+	li      a0, -1
+	csrrw   sp, mscratch, sp
+	mret
 
 #
 # Exception dispatch table
