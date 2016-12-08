@@ -256,7 +256,7 @@ mcall_num_harts:
 mcall_query_memory:
 	lx      a0, 0*xlenb(sp)
 	lx      a1, 1*xlenb(sp)
-	bnez    a0, fail
+	bnez    a0, fail    # implementation has one segment
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
