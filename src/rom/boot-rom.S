@@ -220,6 +220,11 @@ mem_block_end:
 	mret
 
 mcall_timebase:
+	li      a1, CONFIG_MMIO_BASE
+	lx      a0, CONFIG_TIME_BASE(a1)
+	csrrw   sp, mscratch, sp
+	mret
+
 mcall_mask_interrupt:
 mcall_unmask_interrupt:
 mcall_remote_sfence_vm_range:
