@@ -26,9 +26,10 @@ void _start()
 	unsigned long(*sbi_unmask_interrupt)(unsigned long which) = (void*)-1856;
 
 	/* TODO - boot ROM trap code needs to handle mideleg and hideleg */
+	_puts("press any key to ebreak into M-mode trap handler, a0 <- 5\n");
 
 	asm(
-		"1:	 auipc   t0, %pcrel_hi(_isr)\n "
+		"1:	 auipc   t0,     %pcrel_hi(_isr)\n "
 		"    addi    t0, t0, %pcrel_lo(1b)\n "
 		"    csrrw   zero, stvec, t0\n" /* set stvec = _isr */
 		"    li      t0, 512\n"
