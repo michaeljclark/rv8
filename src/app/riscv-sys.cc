@@ -335,7 +335,6 @@ struct riscv_emulator
 		proc.mmu.mem.add_ram(default_ram_base, default_ram_size);
 
 		/* Initialize interpreter */
-		proc.init();
 		proc.reset(); /* Reset code calls mapped ROM image */
 		proc.device_config->num_harts = 1;
 		proc.device_config->time_base = 1000000000;
