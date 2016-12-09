@@ -80,25 +80,25 @@
 	\OP tp, 5*xlenb(sp)
 	\OP s0, 6*xlenb(sp)
 	\OP s1, 7*xlenb(sp)
-	\OP a2, 8*xlenb(sp)
-	\OP a3, 9*xlenb(sp)
-	\OP a4, 10*xlenb(sp)
-	\OP a5, 11*xlenb(sp)
-	\OP a6, 12*xlenb(sp)
-	\OP a7, 13*xlenb(sp)
-	\OP s2, 14*xlenb(sp)
-	\OP s3, 15*xlenb(sp)
-	\OP s4, 16*xlenb(sp)
-	\OP s5, 17*xlenb(sp)
-	\OP s6, 18*xlenb(sp)
-	\OP s7, 19*xlenb(sp)
-	\OP s8, 20*xlenb(sp)
-	\OP s9, 21*xlenb(sp)
-	\OP s10, 22*xlenb(sp)
-	\OP s11, 23*xlenb(sp)
-	\OP t0, 24*xlenb(sp)
-	\OP t1, 25*xlenb(sp)
-	\OP t2, 26*xlenb(sp)
+	\OP a0, 8*xlenb(sp)
+	\OP a1, 9*xlenb(sp)
+	\OP a2, 10*xlenb(sp)
+	\OP a3, 11*xlenb(sp)
+	\OP a4, 12*xlenb(sp)
+	\OP a5, 13*xlenb(sp)
+	\OP a6, 14*xlenb(sp)
+	\OP a7, 15*xlenb(sp)
+	\OP s2, 16*xlenb(sp)
+	\OP s3, 17*xlenb(sp)
+	\OP s4, 18*xlenb(sp)
+	\OP s5, 19*xlenb(sp)
+	\OP s6, 20*xlenb(sp)
+	\OP s7, 21*xlenb(sp)
+	\OP s8, 22*xlenb(sp)
+	\OP s9, 23*xlenb(sp)
+	\OP s10, 24*xlenb(sp)
+	\OP s11, 25*xlenb(sp)
+	\OP t2, 26*xlenb(sp) # t0,t1 are saved early
 	\OP t3, 27*xlenb(sp)
 	\OP t4, 28*xlenb(sp)
 	\OP t5, 29*xlenb(sp)
@@ -162,12 +162,12 @@ mtvec:
 	csrrw   sp, mscratch, sp
 
 	# save two working registers
-	sx      a0, 0*xlenb(sp)
-	sx      a1, 1*xlenb(sp)
+	sx      t0, 0*xlenb(sp)
+	sx      t1, 1*xlenb(sp)
 
 	# determine trap or interrupt from sign
-	csrrs   a1, mcause, zero
-	bgez    a1, trap
+	csrrs   t1, mcause, zero
+	bgez    t1, trap
 
 intr:
 	# we can't handle interrupts yet
@@ -181,41 +181,40 @@ intr:
 
 trap:
 	# check cause is in bounds
-	slti    a0, a1, 12
-	beqz    a0, bad_trap
+	slti    t0, t1, 12
+	beqz    t0, bad_trap
 
 	# computa cause function address from trap table
-1:	auipc   a0, %pcrel_hi(trap_table)  # load trap_table(hi)
-	addi    a0, a0, %pcrel_lo(1b)      # load trap_table(lo)
-	slli    a1, a1, 2
-	add     a0, a0, a1
-	lw      a0, (a0)
+1:	auipc   t0, %pcrel_hi(trap_table)  # load trap_table(hi)
+	addi    t0, t0, %pcrel_lo(1b)      # load trap_table(lo)
+	slli    t1, t1, 2
+	add     t0, t0, t1
+	lw      t0, (t0)
 
 	# jump to trap table
-	jalr    zero, a0
+	jalr    zero, t0
 
 s_ecall_trap:
 h_ecall_trap:
 m_ecall_trap:
 	# check mcall is in bounds
-	slti    a0, a7, 16
-	beqz    a0, bad_trap
-	slti    a0, a7, 16
+	slti    t0, a7, 16
+	beqz    t0, bad_trap
 
 	# computa cause function address from trap table
-1:	auipc   a0, %pcrel_hi(sbi_table)   # load sbi_table(hi)
-	addi    a0, a0, %pcrel_lo(1b)      # load sbi_table(lo)
+1:	auipc   t0, %pcrel_hi(sbi_table)   # load sbi_table(hi)
+	addi    t0, t0, %pcrel_lo(1b)      # load sbi_table(lo)
 	slli    a7, a7, 2
-	add     a0, a0, a7
-	lw      a0, (a0)
+	add     t0, t0, a7
+	lw      t0, (t0)
 
 	# advance mepc
-	csrrs   a1, mepc, zero
-	addi    a1, a1, 4
-	csrrw   zero, mepc, a1
+	csrrs   t1, mepc, zero
+	addi    t1, t1, 4
+	csrrw   zero, mepc, t1
 
 	# jump to SBI table
-	jalr    zero, a0
+	jalr    zero, t0
 
 bad_trap:
 	# can't handle bad trep
@@ -239,7 +238,6 @@ mcall_hart_id:
 	mret
 
 mcall_console_putchar:
-	lx      a0, 0*xlenb(sp)     # restore arg0
 	li      t1, UART_MMIO_BASE  # load UART MMIO base register
 	sb      a0, REG_RBR(t1)     # write byte
 	csrrw   sp, mscratch, sp
@@ -273,7 +271,6 @@ mcall_shutdown:
 	j       wait
 
 mcall_set_timer:
-	lx      a0, 0*xlenb(sp)        # restore arg0
 	li      t0, TIMER_MMIO_BASE
 	ld      t1, TIMER_MTIME(t0)    # read from mtime
 	add     t2, t1, a0             # add arg0 to current time
@@ -301,8 +298,6 @@ mcall_num_harts:
 	mret
 
 mcall_query_memory:
-	lx      a0, 0*xlenb(sp) # restore arg0
-	lx      a1, 1*xlenb(sp) # restore arg1
 	bnez    a0, fail        # only one segment
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
@@ -323,7 +318,6 @@ mcall_timebase:
 	mret
 
 mcall_mask_interrupt:
-	lx      a0, 0*xlenb(sp) # restore arg0
 	slti    t1, a0, 32      # can handle irqs 0-31
 	beqz    t1, fail
 	li      t1, 1           # set irq bit
@@ -346,7 +340,6 @@ mcall_mask_interrupt:
 mcall_unmask_interrupt:
 
 # enable IRQ 3 in the PLIC for node_id=0, hart_id=0
-	lx      a0, 0*xlenb(sp) # restore arg0
 	slti    t1, a0, 32      # can handle irqs 0-31
 	beqz    t1, fail
 	li      t1, 1           # set irq bit
