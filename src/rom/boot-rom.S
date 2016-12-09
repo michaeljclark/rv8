@@ -97,7 +97,7 @@
 .equ GPIO_OUT_POWER,   1 # GPIO output pin 1 wired to power
 .equ GPIO_OUT_RESET,   2 # GPIO output pin 2 wired to reset
 
-# Partial register save macro (skips a0-a1)
+# Partial register save macro (skips t0,t1)
 
 .macro TRAP_REG_SP_OP OP
 	\OP ra, 2*xlenb(sp)
