@@ -69,8 +69,9 @@ PROGRAMS = \
 	$(BIN_DIR)/test-m-mmio-timer \
 	$(BIN_DIR)/test-m-mmio-uart \
 	$(BIN_DIR)/test-m-sv39 \
+	$(BIN_DIR)/test-sbi-console \
 	$(BIN_DIR)/test-sbi-info \
-	$(BIN_DIR)/test-sbi-console
+	$(BIN_DIR)/test-sbi-timer
 
 all: dirs $(ASSEMBLY) $(PROGRAMS)
 
@@ -164,3 +165,6 @@ $(BIN_DIR)/test-sbi-console: $(OBJ_DIR)/test-sbi-console.o ; $(CC) -Wl,--no-rela
 
 $(OBJ_DIR)/test-sbi-info.o: $(SRC_DIR)/test-sbi-info.c ; $(CC) -mrvc -Os -c $^ -o $@
 $(BIN_DIR)/test-sbi-info: $(OBJ_DIR)/test-sbi-info.o ; $(CC) -Wl,--no-relax -nostartfiles $^ -o $@
+
+$(OBJ_DIR)/test-sbi-timer.o: $(SRC_DIR)/test-sbi-timer.c ; $(CC) -mrvc -Os -c $^ -o $@
+$(BIN_DIR)/test-sbi-timer: $(OBJ_DIR)/test-sbi-timer.o ; $(CC) -Wl,--no-relax -nostartfiles $^ -o $@
