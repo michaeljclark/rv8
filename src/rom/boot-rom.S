@@ -233,8 +233,8 @@ m_timer:
 	j trap_ret
 
 trap_ret:
-	sx      t0, 0*xlenb(sp)   # restore regs
-	sx      t1, 1*xlenb(sp)
+	lx      t0, 0*xlenb(sp)   # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret                      # return
 
