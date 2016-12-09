@@ -61,7 +61,7 @@ namespace riscv {
 		bool ipi_pending(UX hart_id)
 		{
 			hart_id &= (num_harts-1);
-			return (hart[hart_id >> word_shift] | (1ULL << (hart_id & (bits_per_word-1)))) > 0;
+			return (hart[hart_id >> word_shift] & (1ULL << (hart_id & (bits_per_word-1)))) > 0;
 		}
 
 		/* MIPI MMIO */
