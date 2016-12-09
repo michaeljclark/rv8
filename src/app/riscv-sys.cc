@@ -79,6 +79,7 @@
 #include "riscv-device-uart.h"
 #include "riscv-device-mipi.h"
 #include "riscv-device-gpio.h"
+#include "riscv-device-rand.h"
 #include "riscv-processor-priv-1.9.h"
 #include "riscv-debug-cli.h"
 #include "riscv-processor-runloop.h"
