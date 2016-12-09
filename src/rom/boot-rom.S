@@ -210,6 +210,9 @@ unhandled_trap:
 
 m_external:
     # TODO implement delegation using mideleg, hideleg, sideleg
+    # TODO hardware spec is buggy - if we don't aknowledge the
+    #      level exception, then MEIP will be raised and the SEIP
+    #      interrupt will never be delivered due to the priority
 	li t0, MIP_MEIP_MASK
 	csrrc  zero, mip, t0      # clear mstatus.MEIP
 	li t0, MIP_SEIP_MASK
