@@ -47,6 +47,7 @@
 #include "riscv-format.h"
 #include "riscv-meta.h"
 #include "riscv-util.h"
+#include "riscv-color.h"
 #include "riscv-host.h"
 #include "riscv-cmdline.h"
 #include "riscv-config-parser.h"

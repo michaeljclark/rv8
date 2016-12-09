@@ -89,6 +89,51 @@ namespace riscv {
 		} r;
 	};
 
+	/* Status and Interrupt register shift and mask values */
+
+	enum {
+		uie_shift =  0,
+		sie_shift =  1,
+		hie_shift =  2,
+		mie_shift =  3,
+		upie_shift = 4,
+		spie_shift = 5,
+		hpie_shift = 6,
+		mpie_shift = 7,
+		spp_shift =  8,
+		hpp_shift =  9,
+		mpp_shift =  11,
+		fs_shift =   13,
+		xs_shift =   15,
+		mprv_shift = 17,
+		pum_shift =  18,
+		mxr_shift =  19,
+		vm_shift =   24,
+	};
+
+	enum {
+		hpp_mask =   0b11,
+		mpp_mask =   0b11,
+		fs_mask =    0b11,
+		xs_mask =    0b11,
+		vm_mask =    0b11111,
+	};
+
+	enum {
+		us_shift = 0,
+		ss_shift = 1,
+		hs_shift = 2,
+		ms_shift = 3,
+		ut_shift = 4,
+		st_shift = 5,
+		ht_shift = 6,
+		mt_shift = 7,
+		ue_shift = 8,
+		se_shift = 9,
+		he_shift = 10,
+		me_shift = 11,
+	};
+
 	/* Processor state */
 
 	template <typename SX, typename UX, typename IREG, int IREG_COUNT, typename FREG, int FREG_COUNT>
@@ -156,6 +201,50 @@ namespace riscv {
 		UX           ubadaddr;        /* User Bad Address Register */
 
 		processor_priv() : processor_type(), pdid(0), mode(riscv_mode_M), resetvec(0x1000) {}
+
+		inline bool mstatus_uie() { return (mstatus.xu.val >> uie_shift) & 1; }
+		inline bool mstatus_sie() { return (mstatus.xu.val >> sie_shift) & 1; }
+		inline bool mstatus_hie() { return (mstatus.xu.val >> hie_shift) & 1; }
+		inline bool mstatus_mie() { return (mstatus.xu.val >> mie_shift) & 1; }
+		inline bool mstatus_upie() { return (mstatus.xu.val >> upie_shift) & 1; }
+		inline bool mstatus_spie() { return (mstatus.xu.val >> spie_shift) & 1; }
+		inline bool mstatus_hpie() { return (mstatus.xu.val >> hpie_shift) & 1; }
+		inline bool mstatus_mpie() { return (mstatus.xu.val >> mpie_shift) & 1; }
+		inline int mstatus_spp() { return (mstatus.xu.val >> spp_shift) & 1; }
+		inline int mstatus_hpp() { return (mstatus.xu.val >> hpp_shift) & hpp_mask; }
+		inline int mstatus_mpp() { return (mstatus.xu.val >> mpp_shift) & mpp_mask; }
+		inline int mstatus_fs() { return (mstatus.xu.val >> fs_shift) & fs_mask; }
+		inline int mstatus_xs() { return (mstatus.xu.val >> xs_shift) & xs_mask; }
+		inline bool mstatus_mprv() { return (mstatus.xu.val >> mprv_shift) & 1; }
+		inline bool mstatus_pum() { return (mstatus.xu.val >> pum_shift) & 1; }
+		inline bool mstatus_mxr() { return (mstatus.xu.val >> mxr_shift) & 1; }
+		inline int mstatus_vm() { return (mstatus.xu.val >> vm_shift) & vm_mask; }
+
+		inline bool mip_usip() { return (mip.xu.val >> us_shift) & 1; }
+		inline bool mip_ssip() { return (mip.xu.val >> ss_shift) & 1; }
+		inline bool mip_hsip() { return (mip.xu.val >> hs_shift) & 1; }
+		inline bool mip_msip() { return (mip.xu.val >> ms_shift) & 1; }
+		inline bool mip_utip() { return (mip.xu.val >> ut_shift) & 1; }
+		inline bool mip_stip() { return (mip.xu.val >> st_shift) & 1; }
+		inline bool mip_htip() { return (mip.xu.val >> ht_shift) & 1; }
+		inline bool mip_mtip() { return (mip.xu.val >> mt_shift) & 1; }
+		inline bool mip_ueip() { return (mip.xu.val >> ue_shift) & 1; }
+		inline bool mip_seip() { return (mip.xu.val >> se_shift) & 1; }
+		inline bool mip_heip() { return (mip.xu.val >> he_shift) & 1; }
+		inline bool mip_meip() { return (mip.xu.val >> me_shift) & 1; }
+
+		inline bool mie_usie() { return (mie.xu.val >> us_shift) & 1; }
+		inline bool mie_ssie() { return (mie.xu.val >> ss_shift) & 1; }
+		inline bool mie_hsie() { return (mie.xu.val >> hs_shift) & 1; }
+		inline bool mie_msie() { return (mie.xu.val >> ms_shift) & 1; }
+		inline bool mie_utie() { return (mie.xu.val >> ut_shift) & 1; }
+		inline bool mie_stie() { return (mie.xu.val >> st_shift) & 1; }
+		inline bool mie_htie() { return (mie.xu.val >> ht_shift) & 1; }
+		inline bool mie_mtie() { return (mie.xu.val >> mt_shift) & 1; }
+		inline bool mie_ueie() { return (mie.xu.val >> ue_shift) & 1; }
+		inline bool mie_seie() { return (mie.xu.val >> se_shift) & 1; }
+		inline bool mie_heie() { return (mie.xu.val >> he_shift) & 1; }
+		inline bool mie_meie() { return (mie.xu.val >> me_shift) & 1; }
 	};
 
 	using processor_priv_rv32imafd = processor_priv<s32,u32,ireg_rv32,32,freg_fp64,32>;
@@ -216,8 +305,90 @@ namespace riscv {
 			device_gpio->print_registers();
 		}
 
+		const char* colorize(int val)
+		{
+			if (!isatty(fileno(stdout))) {
+				return "";
+			} else if (val == 0) {
+				return _COLOR_RESET;
+			} else {
+				return _COLOR_BEGIN _COLOR_REVERSE _COLOR_END;
+			}
+			return "";
+		}
+
+		template <typename T>
+		void print_field(const char *name, T val)
+		{
+			std::string buf;
+			if (!isatty(fileno(stdout))) {
+				printf(" %s=%d", name, val);
+			} else {
+				if (sizeof(T) == sizeof(bool)) {
+					printf(" %s%s%s", colorize(val), name, colorize(0));
+				} else {
+					printf(" %s%s=%d%s", colorize(val), name, val, colorize(0));
+				}
+			}
+		}
+
+		void print_status_color()
+		{
+			printf("mip      :");
+			print_field("USIP", P::mip_usip());
+			print_field("SSIP", P::mip_ssip());
+			print_field("HSIP", P::mip_hsip());
+			print_field("MSIP", P::mip_msip());
+			print_field("UTIP", P::mip_utip());
+			print_field("STIP", P::mip_stip());
+			print_field("HTIP", P::mip_htip());
+			print_field("MTIP", P::mip_mtip());
+			print_field("UEIP", P::mip_ueip());
+			print_field("SEIP", P::mip_seip());
+			print_field("HEIP", P::mip_heip());
+			print_field("MEIP", P::mip_meip());
+			printf("\n");
+
+			printf("mie      :");
+			print_field("USIE", P::mie_usie());
+			print_field("SSIE", P::mie_ssie());
+			print_field("HSIE", P::mie_hsie());
+			print_field("MSIE", P::mie_msie());
+			print_field("UTIE", P::mie_utie());
+			print_field("STIE", P::mie_stie());
+			print_field("HTIE", P::mie_htie());
+			print_field("MTIE", P::mie_mtie());
+			print_field("UEIE", P::mie_ueie());
+			print_field("SEIE", P::mie_seie());
+			print_field("HEIE", P::mie_heie());
+			print_field("MEIE", P::mie_meie());
+			printf("\n");
+
+			printf("mstatus  :");
+			print_field("UIE", P::mstatus_uie());
+			print_field("SIE", P::mstatus_sie());
+			print_field("HIE", P::mstatus_hie());
+			print_field("MIE", P::mstatus_mie());
+			print_field("UPIE", P::mstatus_upie());
+			print_field("SPIE", P::mstatus_spie());
+			print_field("HPIE", P::mstatus_hpie());
+			print_field("MPIE", P::mstatus_mpie());
+			print_field("SPP", P::mstatus_spp());
+			print_field("HPP", P::mstatus_hpp());
+			print_field("MPP", P::mstatus_mpp());
+			print_field("FS", P::mstatus_fs());
+			print_field("XS", P::mstatus_xs());
+			print_field("MPRV", P::mstatus_mprv());
+			print_field("PUM", P::mstatus_pum());
+			print_field("MXR", P::mstatus_mxr());
+			print_field("VM", P::mstatus_vm());
+			printf("\n");
+		}
+
 		void print_csr_registers()
 		{
+			print_status_color();
+
 			printf("%s %s\n",    format_reg("pdid",      P::pdid).c_str(),
 			                     format_reg("mode",      P::mode).c_str());
 			printf("%s %s %s\n", format_reg("mvendorid", P::mvendorid).c_str(),
