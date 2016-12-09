@@ -338,8 +338,6 @@ mcall_mask_interrupt:
 	mret
 
 mcall_unmask_interrupt:
-
-# enable IRQ 3 in the PLIC for node_id=0, hart_id=0
 	slti    t1, a0, 32      # can handle irqs 0-31
 	beqz    t1, fail
 	li      t1, 1           # set irq bit
