@@ -223,6 +223,8 @@ m_external:
 
 m_timer:
     # TODO implement delegation using mideleg, hideleg, sideleg
+    # NOTE Timer interrupt is edge triggered so does not suffer
+    #      from the issue with M_EXTERNAL software-bsed delegation
 	li t0, MIP_MTIP_MASK
 	csrrc  zero, mip, t0      # clear mstatus.MTIP
 	li t0, MIP_STIP_MASK
