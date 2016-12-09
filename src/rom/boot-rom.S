@@ -28,6 +28,32 @@
 
 .equ M_MODE_STACK_SIZE, 2 * 1024 * 1024
 
+.equ MIP_MEIP_MASK,    2048
+.equ MIP_HEIP_MASK,    1024
+.equ MIP_SEIP_MASK,    512
+.equ MIP_UEIP_MASK,    256
+.equ MIP_MTIP_MASK,    128
+.equ MIP_HTIP_MASK,    62
+.equ MIP_STIP_MASK,    32
+.equ MIP_UTIP_MASK,    16
+.equ MIP_MSIP_MASK,    8
+.equ MIP_HSIP_MASK,    4
+.equ MIP_SSIP_MASK,    2
+.equ MIP_USIP_MASK,    1
+
+.equ U_SOFTWARE,       0
+.equ S_SOFTWARE,       1
+.equ H_SOFTWARE,       2
+.equ M_SOFTWARE,       3
+.equ U_TIMER,          4
+.equ S_TIMER,          5
+.equ H_TIMER,          6
+.equ M_TIMER,          7
+.equ U_EXTERNAL,       8
+.equ S_EXTERNAL,       9
+.equ H_EXTERNAL,       10
+.equ M_EXTERNAL,       11
+
 # MMIO Base registers
 
 .equ TIMER_MMIO_BASE,  0x40000000
