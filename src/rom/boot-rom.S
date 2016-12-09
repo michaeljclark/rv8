@@ -26,7 +26,7 @@
 
 # M-Mode constants
 
-.equ M_MODE_STACK_SIZE,65536
+.equ M_MODE_STACK_SIZE, 2 * 1024 * 1024
 
 # MMIO Base registers
 
