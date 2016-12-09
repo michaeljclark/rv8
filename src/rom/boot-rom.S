@@ -66,7 +66,7 @@
 # Timer MMIO register offets
 
 .equ TIMER_MTIME,      xlenb * 0
-.equ TIMER_MTIMECMP,   xlenb * 8
+.equ TIMER_MTIMECMP,   xlenb * 1
 
 # Config MMIO register offsets
 
