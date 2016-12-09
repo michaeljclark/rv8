@@ -713,8 +713,6 @@ namespace riscv {
 
 			/*
 			 * service external interrupts from the PLIC if enabled
-			 *
-			 * TODO: change to interrupt source per privilege level
 			 */
 
 			P::mip.r.meip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
@@ -738,8 +736,6 @@ namespace riscv {
 
 			/*
 			 * service timer interrupts if enabled
-			 *
-			 * TODO: change to interrupt source per privilege level
 			 */
 
 			if (device_time->timer_pending(P::time)) {
@@ -764,8 +760,6 @@ namespace riscv {
 
 			/*
 			 * service interprocessor interrupts
-			 *
-			 * TODO: change to interrupt source per privilege level
 			 */
 
 			if (device_mipi->ipi_pending(P::hart_id)) {
