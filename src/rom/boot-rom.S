@@ -209,12 +209,12 @@ unhandled_trap:
 	ebreak
 
 m_external:
-    # TODO implement delegation using mideleg, hideleg, sideleg
-    # NOTE privilege spec is buggy - if we don't aknowledge the
-    #      level exception, then MEIP will be raised again and
-    #      SEIP interrupt won't be delivered due to the priority
-    # NOTE if we implemented simulated hardware delegation using
-    #      mideleg, hideleg, sideleg we can solve this issue.
+	# TODO implement delegation using mideleg, hideleg, sideleg
+	# NOTE privilege spec is buggy - if we don't aknowledge the
+	#      level exception, then MEIP will be raised again and
+	#      SEIP interrupt won't be delivered due to the priority
+	# NOTE if we implemented simulated hardware delegation using
+	#      mideleg, hideleg, sideleg we can solve this issue.
 	li t0, MIP_MEIP_MASK
 	csrrc  zero, mip, t0      # clear mstatus.MEIP
 	li t0, MIP_SEIP_MASK
@@ -222,9 +222,9 @@ m_external:
 	j trap_ret
 
 m_timer:
-    # TODO implement delegation using mideleg, hideleg, sideleg
-    # NOTE Timer interrupt is edge triggered so does not suffer
-    #      from the issue with M_EXTERNAL software-bsed delegation
+	# TODO implement delegation using mideleg, hideleg, sideleg
+	# NOTE Timer interrupt is edge triggered so does not suffer
+	#      from the issue with M_EXTERNAL software-bsed delegation
 	li t0, MIP_MTIP_MASK
 	csrrc  zero, mip, t0      # clear mstatus.MTIP
 	li t0, MIP_STIP_MASK
