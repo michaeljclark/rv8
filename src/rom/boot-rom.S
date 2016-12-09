@@ -212,7 +212,8 @@ m_external:
 	# TODO implement delegation using mideleg, hideleg, sideleg
 	# NOTE privilege spec is buggy - if we don't aknowledge the
 	#      level exception, then MEIP will be raised again and
-	#      SEIP interrupt won't be delivered due to the priority
+	#      SEIP interrupt won't be delivered due to the priority.
+	#      if we acknowledge the exception the IRQ will be lost.
 	# NOTE if we implemented simulated hardware delegation using
 	#      mideleg, hideleg, sideleg we can solve this issue.
 	li t0, MIP_MEIP_MASK
