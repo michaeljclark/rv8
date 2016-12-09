@@ -387,6 +387,9 @@ struct riscv_emulator
 		map_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
 		setup_proxy_stack(proc, P::mmu_type::memory_top, stack_size);
 
+		/* Initialize interpreter */
+		proc.init();
+
 #if defined (ENABLE_GPERFTOOL)
 		ProfilerStart("test-emulate.out");
 #endif

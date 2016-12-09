@@ -265,8 +265,6 @@ namespace riscv {
 		std::shared_ptr<gpio_mmio_device<processor_privileged>> device_gpio;
 		std::shared_ptr<rand_mmio_device<processor_privileged>> device_rand;
 
-		processor_privileged() { init(); }
-
 		const char* name() { return "rv-sys"; }
 
 		void init()
