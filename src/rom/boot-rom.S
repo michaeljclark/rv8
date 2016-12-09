@@ -195,15 +195,40 @@ mtvec:
 	csrrs   t1, mcause, zero
 	bgez    t1, trap
 
-intr:
-	# we can't handle interrupts yet
+	# discard MSB
+	sll     t1, t1, 1
+	srl     t1, t1, 1
 
-	# TODO: check meip, mtie, msip
-	#       check mideleg, hideleg, sideleg
-	#       if required, set {h,s,u}{e,t,s}{ip}
+	# dispatch
+	li      t0, M_EXTERNAL
+	beq     t0, t1, m_external
+	li      t0, M_TIMER
+	beq     t0, t1, m_timer
 
-	li      a0, 5      # return sentinel for debugging
+unhandled_trap:
 	ebreak
+
+m_external:
+    # TODO implement delegation using mideleg, hideleg, sideleg
+	li t0, MIP_MEIP_MASK
+	csrrc  zero, mip, t0      # clear mstatus.MEIP
+	li t0, MIP_SEIP_MASK
+	csrrs  zero, mip, t0      # set mstatus.SEIP
+	j trap_ret
+
+m_timer:
+    # TODO implement delegation using mideleg, hideleg, sideleg
+	li t0, MIP_MTIP_MASK
+	csrrc  zero, mip, t0      # clear mstatus.MTIP
+	li t0, MIP_STIP_MASK
+	csrrs  zero, mip, t0      # set mstatus.STIP
+	j trap_ret
+
+trap_ret:
+	sx      t0, 0*xlenb(sp)   # restore regs
+	sx      t1, 1*xlenb(sp)
+	csrrw   sp, mscratch, sp
+	mret                      # return
 
 trap:
 	# check cause is in bounds
