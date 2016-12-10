@@ -69,7 +69,7 @@ mtvec:
 	lb      a1, 0(a0)
 	sb      a1, 0(a0)
 
-# disable pending interrupt in the PLIC
+# clear pending interrupt in the PLIC
 	li      a0, 0x40002000
 	lw      a1, 16(a0)      # pending offset
 	add     a2, a0, a1      # pending node_id=0, hart_id=0
