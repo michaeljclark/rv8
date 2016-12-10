@@ -296,6 +296,7 @@ namespace riscv {
 					}
 					continue;
 				}
+				history(hist, &ev, H_ENTER, line.c_str());
 				if ((inst_step = def.fn(st, args)) != 0) break;
 			}
 			proc->debug_leave();
