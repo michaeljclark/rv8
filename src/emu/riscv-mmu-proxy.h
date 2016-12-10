@@ -31,11 +31,18 @@ namespace riscv {
 		 * LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static
 		 */
 
+		typedef std::shared_ptr<MEMORY> memory_type;
+
 		enum : addr_t {
 			memory_top = 0x40000000
 		};
 
-		MEMORY mem;
+		memory_type mem;
+
+		/* MMU constructor */
+
+		mmu_proxy() : mem(std::make_shared<MEMORY>()) {}
+		mmu_proxy(memory_type mem) : mem(mem) {}
 
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{

@@ -12,7 +12,8 @@ namespace riscv {
 	{
 		typedef TLB    tlb_type;
 		typedef PMA    pma_type;
-		typedef MEMORY memory_type;
+
+		typedef std::shared_ptr<MEMORY> memory_type;
 
 		enum mmu_op {
 			op_fetch,
@@ -26,6 +27,11 @@ namespace riscv {
 		tlb_type       l1_dtlb;     /* L1 Data TLB */
 		pma_type       pma;         /* PMA table */
 		memory_type    mem;         /* memory device */
+
+		/* MMU constructor */
+
+		mmu_soft() : mem(std::make_shared<MEMORY>()) {}
+		mmu_soft(memory_type mem) : mem(mem) {}
 
 		/* MMU methods */
 
@@ -110,7 +116,7 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
 
 			/* translate to user virtual (null segment indicates no mapping) */
-			addr_t uva = mem.mpa_to_uva(segment, mpa);
+			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
@@ -159,7 +165,7 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (null segment indicates no mapping) */
-			addr_t uva = mem.mpa_to_uva(segment, mpa);
+			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
@@ -189,7 +195,7 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (null segment indicates no mapping) */
-			addr_t uva = mem.mpa_to_uva(segment, mpa);
+			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
@@ -216,7 +222,7 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
 
 			/* translate to user virtual (null segment indicates no mapping) */
-			addr_t uva = mem.mpa_to_uva(segment, mpa);
+			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || store_access_fault(proc, proc.mode, uva, tlb_ent)))
@@ -358,7 +364,7 @@ namespace riscv {
 
 				/* map the ppn into the host address space */
 				memory_segment<UX> *segment = nullptr;
-				pte_uva = mem.mpa_to_uva(segment, pte_mpa);
+				pte_uva = mem->mpa_to_uva(segment, pte_mpa);
 				if (!segment) goto out;
 				segment->load(pte_uva, pte);
 

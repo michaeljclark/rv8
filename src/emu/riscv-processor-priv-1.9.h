@@ -284,15 +284,15 @@ namespace riscv {
 			device_rand = std::make_shared<rand_mmio_device<processor_privileged>>(*this, 0x40006000);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
-			P::mmu.mem.add_segment(device_sbi);
-			P::mmu.mem.add_segment(device_boot);
-			P::mmu.mem.add_segment(device_time);
-			P::mmu.mem.add_segment(device_config);
-			P::mmu.mem.add_segment(device_plic);
-			P::mmu.mem.add_segment(device_uart);
-			P::mmu.mem.add_segment(device_mipi);
-			P::mmu.mem.add_segment(device_gpio);
-			P::mmu.mem.add_segment(device_rand);
+			P::mmu.mem->add_segment(device_sbi);
+			P::mmu.mem->add_segment(device_boot);
+			P::mmu.mem->add_segment(device_time);
+			P::mmu.mem->add_segment(device_config);
+			P::mmu.mem->add_segment(device_plic);
+			P::mmu.mem->add_segment(device_uart);
+			P::mmu.mem->add_segment(device_mipi);
+			P::mmu.mem->add_segment(device_gpio);
+			P::mmu.mem->add_segment(device_rand);
 		}
 
 		void print_device_registers()

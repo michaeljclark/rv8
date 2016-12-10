@@ -168,7 +168,7 @@ struct riscv_emulator
 		}
 
 		/* keep track of the mapped segment and set the stack_top */
-		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
+		proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		*(u64*)(stack_top - sizeof(u64)) = 0xfeedcafebabef00dULL;
 		proc.ireg[riscv_ireg_sp] = stack_top - sizeof(u64);
 
@@ -279,10 +279,10 @@ struct riscv_emulator
 		}
 
 		/* add the mmap to the emulator proxy_mmu */
-		proc.mmu.mem.segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+		proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
 		addr_t seg_end = addr_t(phdr.p_vaddr + phdr.p_memsz);
-		if (proc.mmu.mem.heap_begin < seg_end) {
-			proc.mmu.mem.heap_begin = proc.mmu.mem.heap_end = seg_end;
+		if (proc.mmu.mem->heap_begin < seg_end) {
+			proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = seg_end;
 		}
 	}
 
@@ -370,7 +370,7 @@ struct riscv_emulator
 		P proc;
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
-		proc.mmu.mem.log = (proc.log & proc_log_memory);
+		proc.mmu.mem->log = (proc.log & proc_log_memory);
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
@@ -408,7 +408,7 @@ struct riscv_emulator
 #endif
 
 		/* Unmap memory segments */
-		for (auto &seg: proc.mmu.mem.segments) {
+		for (auto &seg: proc.mmu.mem->segments) {
 			munmap(seg.first, seg.second);
 		}
 	}

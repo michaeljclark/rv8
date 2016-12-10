@@ -87,11 +87,11 @@ int main(int argc, char *argv[])
 	assert(mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000) == nullptr);
 
 	// add RAM to the MMU emulation (exclude zero page)
-	mmu.mem.add_ram(0x1000, /*1GB*/0x40000000LL - 0x1000);
+	mmu.mem->add_ram(0x1000, /*1GB*/0x40000000LL - 0x1000);
 
 	// look up the User Virtual Address for a Machine Physical Adress
 	memory_segment<typename tlb_type::UX> *segment = nullptr;
-	addr_t uva = mmu.mem.mpa_to_uva(segment, 0x1000);
+	addr_t uva = mmu.mem->mpa_to_uva(segment, 0x1000);
 	assert(segment);
-	assert(uva == mmu.mem.segments.front()->uva + 0x0LL);
+	assert(uva == mmu.mem->segments.front()->uva + 0x0LL);
 }

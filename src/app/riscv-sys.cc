@@ -205,7 +205,7 @@ struct riscv_emulator
 		}
 
 		/* add the mmap to the emulator soft_mmu */
-		proc.mmu.mem.add_mmap(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
+		proc.mmu.mem->add_mmap(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 	}
 
@@ -316,7 +316,7 @@ struct riscv_emulator
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.log = proc_logs;
-		proc.mmu.mem.log = (proc.log & proc_log_memory);
+		proc.mmu.mem->log = (proc.log & proc_log_memory);
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
@@ -332,7 +332,7 @@ struct riscv_emulator
 		}
 
 		/* Add 1GB RAM to the mmu (TODO - read from config string) */
-		proc.mmu.mem.add_ram(default_ram_base, default_ram_size);
+		proc.mmu.mem->add_ram(default_ram_base, default_ram_size);
 
 		/* Initialize interpreter */
 		proc.init();

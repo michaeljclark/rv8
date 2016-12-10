@@ -227,7 +227,7 @@ namespace riscv {
 
 		static size_t cmd_mem(cmd_state &st, args_t &args)
 		{
-			st.proc->mmu.mem.print_memory_map();
+			st.proc->mmu.mem->print_memory_map();
 			return 0;
 		}
 
