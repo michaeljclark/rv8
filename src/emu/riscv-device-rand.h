@@ -25,7 +25,7 @@ namespace riscv {
 
 		rand_mmio_device(P &proc, UX mpa) :
 			memory_segment<UX>("RAND", mpa, /*uva*/0, /*size*/total_size,
-				pma_type_io | pma_prot_read | pma_prot_write),
+				pma_type_io | pma_prot_read),
 			proc(proc), cpu(host_cpu::get_instance())
 		{}
 
