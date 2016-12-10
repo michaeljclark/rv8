@@ -66,6 +66,7 @@
 #include "riscv-processor-impl.h"
 #include "riscv-interp.h"
 #include "riscv-processor-model.h"
+#include "riscv-mmu-proxy.h"
 #include "riscv-unknown-abi.h"
 #include "riscv-processor-proxy.h"
 #include "riscv-debug-cli.h"

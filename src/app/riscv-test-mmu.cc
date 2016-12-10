@@ -34,8 +34,8 @@
 #include "riscv-pma.h"
 #include "riscv-amo.h"
 #include "riscv-user-memory.h"
-#include "riscv-soft-tlb.h"
-#include "riscv-soft-mmu.h"
+#include "riscv-tlb-soft.h"
+#include "riscv-mmu-soft.h"
 
 using namespace riscv;
 

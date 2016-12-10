@@ -1,9 +1,9 @@
 //
-//  riscv-mmu.h
+//  riscv-mmu-soft.h
 //
 
-#ifndef riscv_mmu_h
-#define riscv_mmu_h
+#ifndef riscv_mmu_soft_h
+#define riscv_mmu_soft_h
 
 namespace riscv {
 
