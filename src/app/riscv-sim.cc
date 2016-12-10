@@ -427,18 +427,22 @@ struct riscv_emulator
 		switch (elf.ei_class) {
 			case ELFCLASS32:
 				switch (ext) {
+			#if ENABLE_RVIMA
 					case rv_isa_ima: start_proxy<proxy_emulator_rv32ima>(); break;
 					case rv_isa_imac: start_proxy<proxy_emulator_rv32imac>(); break;
 					case rv_isa_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
+			#endif
 					case rv_isa_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
 					case rv_isa_none: panic("illegal isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
 				switch (ext) {
+			#if ENABLE_RVIMA
 					case rv_isa_ima: start_proxy<proxy_emulator_rv64ima>(); break;
 					case rv_isa_imac: start_proxy<proxy_emulator_rv64imac>(); break;
 					case rv_isa_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
+			#endif
 					case rv_isa_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
 					case rv_isa_none: panic("illegal isa extension"); break;
 				}
