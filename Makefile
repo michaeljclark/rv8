@@ -412,8 +412,12 @@ doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/p
 # rom
 
 ROM_MK =        src/rom/rom.mk
-
 rom: ; $(MAKE) -f $(ROM_MK) all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
+
+# sample-asm
+
+ASM_MK =        src/sample/asm.mk
+sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
 
 # tests
 
