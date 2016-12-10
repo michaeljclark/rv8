@@ -87,6 +87,13 @@ namespace riscv {
 			add_command(cmd_run,    1, 2, "run",    "[count]",          "Step processor");
 		}
 
+		~debug_cli()
+		{
+			el_end(el);
+			tok_end(tok);
+			history_end(hist);
+		}
+
 		void add_command(cmd_fn fn, size_t min_args, size_t max_args,
 			std::string name, std::string params, std::string description)
 		{
