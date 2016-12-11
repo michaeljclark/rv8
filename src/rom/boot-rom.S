@@ -294,11 +294,15 @@ wait:
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
 	csrrw   sp, mscratch, sp
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	mret
 
 mcall_console_putchar:
 	li      t1, UART_MMIO_BASE  # load UART MMIO base register
 	sb      a0, REG_RBR(t1)     # write byte
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
@@ -308,6 +312,8 @@ mcall_console_getchar:
 	andi    t0, t0, IIR_RX_RDY
 	beqz    t0, fail            # return -1 if no data
 	lb      a0, REG_RBR(a1)     # read byte
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
@@ -338,6 +344,8 @@ mcall_set_timer:
 	csrrs   zero, mie, t0
 	li      t0, 128                # set mstatus.MPIE=1
 	csrrs   zero, mstatus, t0
+	lx      t0, 0*xlenb(sp)        # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret                           # MPIE -> MIE after mret
 
@@ -393,6 +401,8 @@ mcall_mask_interrupt:
 	sw      t4, 0(t2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
@@ -423,11 +433,15 @@ mcall_unmask_interrupt:
 	sw      t4, 0(t2)       # store enabled word to PLIC
 
 	li      a0, 0           # success
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
 fail:
 	li      a0, -1
+	lx      t0, 0*xlenb(sp)     # restore regs
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
