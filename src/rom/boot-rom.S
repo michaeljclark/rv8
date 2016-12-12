@@ -102,9 +102,9 @@ m_external:
 	# NOTE if we implemented simulated hardware delegation using
 	#      mideleg, hideleg, sideleg we can solve this issue.
 	li t0, MIP_MEIP_MASK
-	csrrc  zero, mip, t0      # clear mstatus.MEIP
+	csrrc  zero, mip, t0           # clear mstatus.MEIP
 	li t0, MIP_SEIP_MASK
-	csrrs  zero, mip, t0      # set mstatus.SEIP
+	csrrs  zero, mip, t0           # set mstatus.SEIP
 	j trap_ret
 
 m_timer:
@@ -112,16 +112,16 @@ m_timer:
 	# NOTE Timer interrupt is edge triggered so does not suffer
 	#      from the issue with M_EXTERNAL software-bsed delegation
 	li t0, MIP_MTIP_MASK
-	csrrc  zero, mip, t0      # clear mstatus.MTIP
+	csrrc  zero, mip, t0           # clear mstatus.MTIP
 	li t0, MIP_STIP_MASK
-	csrrs  zero, mip, t0      # set mstatus.STIP
+	csrrs  zero, mip, t0           # set mstatus.STIP
 	j trap_ret
 
 trap_ret:
-	lx      t0, 0*xlenb(sp)   # restore regs
-	lx      t1, 1*xlenb(sp)
+	lx      t0, 0*xlenb(sp)        # interrupt handlers need
+	lx      t1, 1*xlenb(sp)        # to restore all registers
 	csrrw   sp, mscratch, sp
-	mret                      # return
+	mret                           # return from interrupt
 
 trap:
 	# check cause is in bounds
@@ -179,26 +179,26 @@ wait:
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
 	csrrw   sp, mscratch, sp
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	mret
 
 mcall_console_putchar:
-	li      t1, UART_MMIO_BASE  # load UART MMIO base register
-	sb      a0, REG_RBR(t1)     # write byte
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	li      t1, UART_MMIO_BASE     # load UART MMIO base register
+	sb      a0, REG_RBR(t1)        # write byte
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_console_getchar:
-	li      t1, UART_MMIO_BASE  # load UART MMIO base register
-	lb      t0, REG_IIR(t1)     # check if a byte is readable
+	li      t1, UART_MMIO_BASE     # load UART MMIO base register
+	lb      t0, REG_IIR(t1)        # check if a byte is readable
 	andi    t0, t0, IIR_RX_RDY
-	beqz    t0, fail            # return -1 if no data
-	lb      a0, REG_RBR(a1)     # read byte
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	beqz    t0, fail               # return -1 if no data
+	lb      a0, REG_RBR(a1)        # read byte
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
@@ -229,8 +229,8 @@ mcall_set_timer:
 	csrrs   zero, mie, t0
 	li      t0, 128                # set mstatus.MPIE=1
 	csrrs   zero, mstatus, t0
-	lx      t0, 0*xlenb(sp)        # restore regs
-	lx      t1, 1*xlenb(sp)
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret                           # MPIE -> MIE after mret
 
@@ -246,87 +246,93 @@ mcall_remote_fence_i:
 mcall_num_harts:
 	li      a1, CONFIG_MMIO_BASE
 	lx      a0, CONFIG_NUM_HARTS(a1)
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_query_memory:
-	bnez    a0, fail        # only one segment
+	bnez    a0, fail               # only one segment
 	li      t0, CONFIG_MMIO_BASE
 	lx      t1, CONFIG_RAM_BASE(t0)
 	lx      t2, CONFIG_RAM_SIZE(t0)
-	li      t3, M_MODE_STACK_SIZE # reserve M-mode space
+	li      t3, M_MODE_STACK_SIZE  # reserve M-mode space
 	sub     t2, t2, t3
 	li      a0, 0
 	sx      t1, 0*xlenb(a1)
 	sx      t2, 1*xlenb(a1)
 	sx      a0, 2*xlenb(a1)
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_timebase:
 	li      t0, CONFIG_MMIO_BASE
 	lx      a0, CONFIG_TIME_BASE(t0)
+	lx      t0, 0*xlenb(sp)        # restore regs (avoid info leak)
+	lx      t1, 1*xlenb(sp)
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_mask_interrupt:
-	slti    t1, a0, 32      # can handle irqs 0-31
+	slti    t1, a0, 32             # can handle irqs 0-31
 	beqz    t1, fail
-	li      t1, 1           # set irq bit
-	sll     t5, t1, a0      # a5 contains shifted mask
+	li      t1, 1                  # set irq bit
+	sll     t5, t1, a0             # a5 contains shifted mask
 	li      t4, -1
-	xor     t5, t5, t4      # invert irq mask
+	xor     t5, t5, t4             # invert irq mask
 
 	li      t0, PLIC_MMIO_BASE
 
-	lw      t1, 28(t0)      # enabled offset
-	add     t2, t0, t1      # enabled node_id=0, hart_id=0
-	lw      t4, 0(t2)       # load enabled word from PLIC
+	lw      t1, 28(t0)             # enabled offset
+	add     t2, t0, t1             # enabled node_id=0, hart_id=0
+	lw      t4, 0(t2)              # load enabled word from PLIC
 	and     t4, t4, t5
-	sw      t4, 0(t2)       # store enabled word to PLIC
+	sw      t4, 0(t2)              # store enabled word to PLIC
 
-	li      a0, 0           # success
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	li      a0, 0                  # success
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
 mcall_unmask_interrupt:
-	slti    t1, a0, 32      # can handle irqs 0-31
+	slti    t1, a0, 32             # can handle irqs 0-31
 	beqz    t1, fail
-	li      t1, 1           # set irq bit
-	sll     t5, t1, a0      # a5 contains shifted mask
+	li      t1, 1                  # set irq bit
+	sll     t5, t1, a0             # a5 contains shifted mask
 
 	li      t0, PLIC_MMIO_BASE
 
-	lw      t1, 20(t0)      # priority0 offset
-	add     t2, t0, t1      # priority0 node_id=0, hart_id=0
-	lw      t4, 0(t2)       # load priority0 word from PLIC
+	lw      t1, 20(t0)             # priority0 offset
+	add     t2, t0, t1             # priority0 node_id=0, hart_id=0
+	lw      t4, 0(t2)              # load priority0 word from PLIC
 	or      t4, t4, t5
-	sw      t4, 0(t2)       # store priority0 word to PLIC
+	sw      t4, 0(t2)              # store priority0 word to PLIC
 
-	lw      t1, 24(t0)      # priority1 offset
-	add     t2, t0, t1      # priority1 node_id=0, hart_id=0
-	lw      t4, 0(t2)       # load priority1 word from PLIC
+	lw      t1, 24(t0)             # priority1 offset
+	add     t2, t0, t1             # priority1 node_id=0, hart_id=0
+	lw      t4, 0(t2)              # load priority1 word from PLIC
 	or      t4, t4, t5
-	sw      t4, 0(t2)       # store priority1 word to PLIC
+	sw      t4, 0(t2)              # store priority1 word to PLIC
 
-	lw      t1, 28(t0)      # enabled offset
-	add     t2, t0, t1      # enabled node_id=0, hart_id=0
-	lw      t4, 0(t2)       # load enabled word from PLIC
+	lw      t1, 28(t0)             # enabled offset
+	add     t2, t0, t1             # enabled node_id=0, hart_id=0
+	lw      t4, 0(t2)              # load enabled word from PLIC
 	or      t4, t4, t5
-	sw      t4, 0(t2)       # store enabled word to PLIC
+	sw      t4, 0(t2)              # store enabled word to PLIC
 
-	li      a0, 0           # success
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	li      a0, 0                  # success
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
 fail:
 	li      a0, -1
-	lx      t0, 0*xlenb(sp)     # restore regs
-	lx      t1, 1*xlenb(sp)
+	lx      t0, 0*xlenb(sp)        # restore regs to avoid
+	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
 	mret
 
