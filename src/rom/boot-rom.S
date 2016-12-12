@@ -178,9 +178,9 @@ wait:
 
 mcall_hart_id:
 	csrrs   a0, mhartid, zero
-	csrrw   sp, mscratch, sp
 	lx      t0, 0*xlenb(sp)        # restore regs to avoid
 	lx      t1, 1*xlenb(sp)        # information leakage
+	csrrw   sp, mscratch, sp
 	mret
 
 mcall_console_putchar:
