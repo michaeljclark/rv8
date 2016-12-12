@@ -120,24 +120,24 @@ amomaxu.d  rd rs1 rs2      aq rl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3 r·
 
 # RV32S    "RV32S Standard Extension for Supervisor-level Instructions"
 
-ecall      11..7=0 19..15=0 31..20=0x000      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-ebreak     11..7=0 19..15=0 31..20=0x001      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-uret       11..7=0 19..15=0 31..20=0x002      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-sret       11..7=0 19..15=0 31..20=0x102      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-hret       11..7=0 19..15=0 31..20=0x202      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-mret       11..7=0 19..15=0 31..20=0x302      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-dret       11..7=0 19..15=0 31..20=0x7b2      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-sfence.vm  11..7=0 rs1      31..20=0x104      14..12=0 6..2=0x1C 1..0=3  r+sf   rv32s rv64s
-wfi        11..7=0 19..15=0 31..20=0x105      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-#rdcycle    rd     19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
-#rdtime     rd     19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
-#rdinstret  rd     19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
-#rdcycleh   rd     19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
-#rdtimeh    rd     19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
-#rdinstreth rd     19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
-csrrw      rd      rs1      csr12             14..12=1 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
-csrrs      rd      rs1      csr12             14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
-csrrc      rd      rs1      csr12             14..12=3 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+ecall      11..7=0 19..15=0 31..20=0x000      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+ebreak     11..7=0 19..15=0 31..20=0x001      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+uret       11..7=0 19..15=0 31..20=0x002      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+sret       11..7=0 19..15=0 31..20=0x102      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+hret       11..7=0 19..15=0 31..20=0x202      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+mret       11..7=0 19..15=0 31..20=0x302      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+dret       11..7=0 19..15=0 31..20=0x7b2      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+sfence.vm  11..7=0 rs1      31..20=0x104      14..12=0 6..2=0x1C 1..0=3  r+sf    rv32s rv64s
+wfi        11..7=0 19..15=0 31..20=0x105      14..12=0 6..2=0x1C 1..0=3  none    rv32s rv64s
+#rdcycle    rd     19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
+#rdtime     rd     19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
+#rdinstret  rd     19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
+#rdcycleh   rd     19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  i·csr         rv32s
+#rdtimeh    rd     19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  i·csr         rv32s
+#rdinstreth rd     19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  i·csr         rv32s
+csrrw      rd      rs1      csr12             14..12=1 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
+csrrs      rd      rs1      csr12             14..12=2 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
+csrrc      rd      rs1      csr12             14..12=3 6..2=0x1C 1..0=3  i·csr   rv32s rv64s
 csrrwi     rd      zimm     csr12             14..12=5 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
 csrrsi     rd      zimm     csr12             14..12=6 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
 csrrci     rd      zimm     csr12             14..12=7 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
