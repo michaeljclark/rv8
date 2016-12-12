@@ -309,11 +309,10 @@ usage: rv-sys [<options>] <elf_file>
                    --log-traps, -t            Log Traps
                        --debug, -d            Start up in debugger
                   --debug-trap, -T            Start up in debugger and enter debugger on trap
-                  --debug-trap, -T            Enter debugger CLI on trap
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
+                --map-physical, -p <string>   Map execuatable at physical address
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
-
 ```
 
 To run the privilged UART echo program (Privileged Mode):

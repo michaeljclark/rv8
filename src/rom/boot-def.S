@@ -58,9 +58,10 @@
 .equ CONFIG_NUM_HARTS, xlenb * 0
 .equ CONFIG_TIME_BASE, xlenb * 1
 .equ CONFIG_ROM_BASE,  xlenb * 2
-.equ CONFIG_ROM_ENTRY, xlenb * 3
-.equ CONFIG_RAM_BASE,  xlenb * 4
-.equ CONFIG_RAM_SIZE,  xlenb * 5
+.equ CONFIG_ROM_SIZE,  xlenb * 3
+.equ CONFIG_ROM_ENTRY, xlenb * 4
+.equ CONFIG_RAM_BASE,  xlenb * 5
+.equ CONFIG_RAM_SIZE,  xlenb * 6
 
 # UART MMIO register offets
 

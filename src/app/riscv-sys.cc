@@ -147,6 +147,7 @@ struct riscv_emulator
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
+	addr_t map_physical = 0;
 	uint64_t initial_seed = 0;
 	int ext = rv_isa_imafdc;
 
@@ -184,7 +185,7 @@ struct riscv_emulator
 
 	/* Map ELF load segments into privileged MMU address space */
 	template <typename P>
-	void map_load_segment_priv(P &proc, const char* filename, Elf64_Phdr &phdr)
+	void map_load_segment_priv(P &proc, const char* filename, Elf64_Phdr &phdr, addr_t map_addr)
 	{
 		int fd = open(filename, O_RDONLY);
 		if (fd < 0) {
@@ -200,12 +201,12 @@ struct riscv_emulator
 		/* log elf load segment virtual address range */
 		if (proc.log & proc_log_memory) {
 			debug("mmap-elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
-				addr_t(phdr.p_vaddr), addr_t(phdr.p_vaddr + phdr.p_memsz),
+				addr_t(map_addr), addr_t(map_addr + phdr.p_memsz),
 				elf_p_flags_name(phdr.p_flags).c_str());
 		}
 
 		/* add the mmap to the emulator soft_mmu */
-		proc.mmu.mem->add_mmap(phdr.p_vaddr, addr_t(addr), phdr.p_memsz,
+		proc.mmu.mem->add_mmap(map_addr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 	}
 
@@ -261,6 +262,9 @@ struct riscv_emulator
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
+			{ "-p", "--map-physical", cmdline_arg_type_string,
+				"Map execuatable at physical address",
+				[&](std::string s) { return parse_integral(s, map_physical); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
 				[&](std::string s) { initial_seed = strtoull(s.c_str(), nullptr, 10); return true; } },
@@ -321,13 +325,22 @@ struct riscv_emulator
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
 
-		/* Find the ELF executable PT_LOAD segments and map them into the emulator mmu */
-		typename P::ux rom_base = 0;
+		/* Find the ELF executable PT_LOAD segment base address */
+		typename P::ux rom_base = 0, rom_size = 0;
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
-				map_load_segment_priv(proc, elf_filename.c_str(), phdr);
 				if (rom_base == 0) rom_base = phdr.p_vaddr;
+				rom_size = phdr.p_vaddr + phdr.p_memsz - rom_base;
+			}
+		}
+
+		/* Map the ELF executable PT_LOAD segments into the emulator mmu */
+		typename P::ux map_offset = map_physical == 0 ? 0 : rom_base - map_physical;
+		for (size_t i = 0; i < elf.phdrs.size(); i++) {
+			Elf64_Phdr &phdr = elf.phdrs[i];
+			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
+				map_load_segment_priv(proc, elf_filename.c_str(), phdr, phdr.p_vaddr - map_offset);
 			}
 		}
 
@@ -339,8 +352,9 @@ struct riscv_emulator
 		proc.reset(); /* Reset code calls mapped ROM image */
 		proc.device_config->num_harts = 1;
 		proc.device_config->time_base = 1000000000;
-		proc.device_config->rom_base = rom_base;
-		proc.device_config->rom_entry = elf.ehdr.e_entry;
+		proc.device_config->rom_base = rom_base - map_offset;
+		proc.device_config->rom_size = rom_size;
+		proc.device_config->rom_entry = elf.ehdr.e_entry - map_offset;
 		proc.device_config->ram_base = default_ram_base;
 		proc.device_config->ram_size = default_ram_size;
 

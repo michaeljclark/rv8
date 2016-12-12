@@ -15,7 +15,7 @@ namespace riscv {
 		typedef typename P::ux UX;
 
 		enum {
-			total_size = sizeof(UX) * 6
+			total_size = sizeof(UX) * 7
 		};
 
 		P &proc;
@@ -25,6 +25,7 @@ namespace riscv {
 		UX num_harts;
 		UX time_base;
 		UX rom_base;
+		UX rom_size;
 		UX rom_entry;
 		UX ram_base;
 		UX ram_size;
@@ -50,6 +51,7 @@ namespace riscv {
 			debug("cfg_mmio :num_harts        %d", num_harts);
 			debug("cfg_mmio :time_base        %d", time_base);
 			debug("cfg_mmio :rom_base         0x%llx", rom_base);
+			debug("cfg_mmio :rom_size         0x%llx", rom_size);
 			debug("cfg_mmio :rom_entry        0x%llx", rom_entry);
 			debug("cfg_mmio :ram_base         0x%llx", ram_base);
 			debug("cfg_mmio :ram_size         0x%llx", ram_size);
