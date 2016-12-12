@@ -149,7 +149,6 @@ static void print_alt(riscv_gen *gen)
 		// draw bit segment borders
 		for (auto &part : type->parts) {
 			riscv_bitspec &bitspec = part.first;
-			std::string &name = part.second;
 			int msb = bitspec.segments.front().first.msb;
 			int lsb = bitspec.segments.back().first.lsb;
 			printf("\\draw (%d,-1) rectangle (%d,-2);\n", 32 - lsb, (32 - msb) - 1);
@@ -159,7 +158,6 @@ static void print_alt(riscv_gen *gen)
 		// draw bit segment bit position labels
 		for (auto &part : type->parts) {
 			riscv_bitspec &bitspec = part.first;
-			std::string &name = part.second;
 			int msb = bitspec.segments.front().first.msb;
 			int lsb = bitspec.segments.back().first.lsb;
 			if (msb == lsb) {
