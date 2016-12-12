@@ -314,6 +314,15 @@ template <typename T> inline void decode_i(T &dec, inst_t inst)
 	dec.imm = operand_imm12::decode(inst);
 }
 
+/* Decode I CSR */
+template <typename T> inline void decode_i_csr(T &dec, inst_t inst)
+{
+	dec.rd = operand_rd::decode(inst);
+	dec.rs1 = operand_rs1::decode(inst);
+	dec.rs2 = riscv_ireg_zero;
+	dec.imm = operand_csr12::decode(inst);
+}
+
 /* Decode I sh5 */
 template <typename T> inline void decode_i_sh5(T &dec, inst_t inst)
 {

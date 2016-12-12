@@ -238,6 +238,12 @@ template <typename T> inline inst_t encode_i(T &dec)
 	return operand_rd::encode(dec.rd) | operand_rs1::encode(dec.rs1) | operand_imm12::encode(dec.imm);
 }
 
+/* Encode I CSR */
+template <typename T> inline inst_t encode_i_csr(T &dec)
+{
+	return operand_rd::encode(dec.rd) | operand_rs1::encode(dec.rs1) | operand_csr12::encode(dec.imm);
+}
+
 /* Encode I sh5 */
 template <typename T> inline inst_t encode_i_sh5(T &dec)
 {

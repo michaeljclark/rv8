@@ -512,9 +512,6 @@ namespace riscv {
 			const typename P::ux tvec_rmask    = typename P::ux(-1);
 			const typename P::ux tvec_wmask    = typename P::ux(-1) << 2;
 
-			/* TODO - fix CSR decoder so that it zero extends */
-			csr &= 0xfff;
-
 			switch (csr) {
 				case riscv_csr_fflags:   fenv_getflags(P::fcsr);
 				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,

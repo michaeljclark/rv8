@@ -129,18 +129,18 @@ mret       11..7=0 19..15=0 31..20=0x302      14..12=0 6..2=0x1C 1..0=3  none   
 dret       11..7=0 19..15=0 31..20=0x7b2      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
 sfence.vm  11..7=0 rs1      31..20=0x104      14..12=0 6..2=0x1C 1..0=3  r+sf   rv32s rv64s
 wfi        11..7=0 19..15=0 31..20=0x105      14..12=0 6..2=0x1C 1..0=3  none   rv32s rv64s
-#rdcycle    rd     19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-#rdtime     rd     19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-#rdinstret  rd     19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-#rdcycleh   rd     19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
-#rdtimeh    rd     19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
-#rdinstreth rd     19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  i+csr        rv32s
-csrrw      rd      rs1      csr12             14..12=1 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-csrrs      rd      rs1      csr12             14..12=2 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-csrrc      rd      rs1      csr12             14..12=3 6..2=0x1C 1..0=3  i+csr  rv32s rv64s
-csrrwi     rd      zimm     csr12             14..12=5 6..2=0x1C 1..0=3  i+csri rv32s rv64s
-csrrsi     rd      zimm     csr12             14..12=6 6..2=0x1C 1..0=3  i+csri rv32s rv64s
-csrrci     rd      zimm     csr12             14..12=7 6..2=0x1C 1..0=3  i+csri rv32s rv64s
+#rdcycle    rd     19..15=0 31..20=0xC00      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+#rdtime     rd     19..15=0 31..20=0xC01      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+#rdinstret  rd     19..15=0 31..20=0xC02      14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+#rdcycleh   rd     19..15=0 31..20=0xC80      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
+#rdtimeh    rd     19..15=0 31..20=0xC81      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
+#rdinstreth rd     19..15=0 31..20=0xC82      14..12=2 6..2=0x1C 1..0=3  i·csr        rv32s
+csrrw      rd      rs1      csr12             14..12=1 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+csrrs      rd      rs1      csr12             14..12=2 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+csrrc      rd      rs1      csr12             14..12=3 6..2=0x1C 1..0=3  i·csr  rv32s rv64s
+csrrwi     rd      zimm     csr12             14..12=5 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
+csrrsi     rd      zimm     csr12             14..12=6 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
+csrrci     rd      zimm     csr12             14..12=7 6..2=0x1C 1..0=3  i·csr+i rv32s rv64s
 
 # RV32F    "RV32F Standard Extension for Single-Precision Floating-Point"
 
@@ -218,14 +218,14 @@ fmv.d.x    frd rs1  24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 
-#frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#frflags   rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#fscsr     rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#fsrm      rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#fsflags   rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3         i+csr  rv32f rv64f
-#fsrmi     rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
-#fsflagsi  rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3         i+csri rv32f rv64f
+#frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#frflags   rd       19..15=0 31..20=0x001 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#fscsr     rd       rs1      31..20=0x003 14..12=1 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#fsrm      rd       rs1      31..20=0x002 14..12=1 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#fsflags   rd       rs1      31..20=0x001 14..12=1 6..2=0x1C 1..0=3         i·csr  rv32f rv64f
+#fsrmi     rd       zimm     31..20=0x002 14..12=5 6..2=0x1C 1..0=3         i·csri rv32f rv64f
+#fsflagsi  rd       zimm     31..20=0x001 14..12=5 6..2=0x1C 1..0=3         i·csri rv32f rv64f
 
 # RV32C    "RV32C Standard Extension for Compressed Instructions"
 
