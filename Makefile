@@ -175,18 +175,18 @@ DLMALLOC_OBJS = $(call cxx_src_objs, $(DLMALLOC_SRCS))
 DLMALLOC_LIB =  $(LIB_DIR)/libdlmalloc.a
 
 # libriscv_util
-RV_UTIL_SRCS =  $(SRC_DIR)/util/riscv-base64.cc \
-                $(SRC_DIR)/util/riscv-cmdline.cc \
-                $(SRC_DIR)/util/riscv-color.cc \
-                $(SRC_DIR)/util/riscv-config.cc \
-                $(SRC_DIR)/util/riscv-config-parser.cc \
-                $(SRC_DIR)/util/riscv-host.cc \
-                $(SRC_DIR)/util/riscv-util.cc
+RV_UTIL_SRCS =  $(SRC_DIR)/util/base64.cc \
+                $(SRC_DIR)/util/cmdline.cc \
+                $(SRC_DIR)/util/color.cc \
+                $(SRC_DIR)/util/config-string.cc \
+                $(SRC_DIR)/util/config-parser.cc \
+                $(SRC_DIR)/util/host.cc \
+                $(SRC_DIR)/util/util.cc
 RV_UTIL_OBJS =  $(call cxx_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
 
 # libriscv_crypto
-RV_CRYPTO_SRCS = $(SRC_DIR)/crypto/riscv-sha512.cc
+RV_CRYPTO_SRCS = $(SRC_DIR)/crypto/sha512.cc
 RV_CRYPTO_OBJS = $(call cxx_src_objs, $(RV_CRYPTO_SRCS))
 RV_CRYPTO_LIB =  $(LIB_DIR)/libriscv_crypto.a
 
@@ -221,137 +221,137 @@ LIBEDIT_OBJS =   $(call cc_src_objs, $(LIBEDIT_SRCS))
 LIBEDIT_LIB =    $(LIB_DIR)/libedit.a
 
 # libriscv_model
-RV_MODEL_HDR =  $(SRC_DIR)/model/riscv-model.h
-RV_MODEL_SRC =  $(SRC_DIR)/model/riscv-model.cc
+RV_MODEL_HDR =  $(SRC_DIR)/model/model.h
+RV_MODEL_SRC =  $(SRC_DIR)/model/model.cc
 RV_MODEL_OBJS = $(call cxx_src_objs, $(RV_MODEL_SRC))
 RV_MODEL_LIB =  $(LIB_DIR)/libriscv_model.a
 
 # libriscv_gen
-RV_GEN_HDR =    $(SRC_DIR)/gen/riscv-gen.h
-RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen-cc.cc \
-                $(SRC_DIR)/gen/riscv-gen-constraints.cc \
-                $(SRC_DIR)/gen/riscv-gen-fpu-test.cc \
-                $(SRC_DIR)/gen/riscv-gen-interp.cc \
-                $(SRC_DIR)/gen/riscv-gen-jit.cc \
-                $(SRC_DIR)/gen/riscv-gen-latex.cc \
-                $(SRC_DIR)/gen/riscv-gen-latex-alt.cc \
-                $(SRC_DIR)/gen/riscv-gen-map.cc \
-                $(SRC_DIR)/gen/riscv-gen-meta.cc \
-                $(SRC_DIR)/gen/riscv-gen-operands.cc \
-                $(SRC_DIR)/gen/riscv-gen-strings.cc \
-                $(SRC_DIR)/gen/riscv-gen-switch.cc
+RV_GEN_HDR =    $(SRC_DIR)/gen/gen.h
+RV_GEN_SRCS =   $(SRC_DIR)/gen/gen-cc.cc \
+                $(SRC_DIR)/gen/gen-constraints.cc \
+                $(SRC_DIR)/gen/gen-fpu-test.cc \
+                $(SRC_DIR)/gen/gen-interp.cc \
+                $(SRC_DIR)/gen/gen-jit.cc \
+                $(SRC_DIR)/gen/gen-latex.cc \
+                $(SRC_DIR)/gen/gen-latex-alt.cc \
+                $(SRC_DIR)/gen/gen-map.cc \
+                $(SRC_DIR)/gen/gen-meta.cc \
+                $(SRC_DIR)/gen/gen-operands.cc \
+                $(SRC_DIR)/gen/gen-strings.cc \
+                $(SRC_DIR)/gen/gen-switch.cc
 RV_GEN_OBJS =   $(call cxx_src_objs, $(RV_GEN_SRCS))
 RV_GEN_LIB =    $(LIB_DIR)/libriscv_gen.a
 
 # libriscv_elf
-RV_ELF_SRCS =   $(SRC_DIR)/elf/riscv-elf.cc \
-                $(SRC_DIR)/elf/riscv-elf-file.cc \
-                $(SRC_DIR)/elf/riscv-elf-format.cc
+RV_ELF_SRCS =   $(SRC_DIR)/elf/elf.cc \
+                $(SRC_DIR)/elf/elf-file.cc \
+                $(SRC_DIR)/elf/elf-format.cc
 RV_ELF_OBJS =   $(call cxx_src_objs, $(RV_ELF_SRCS))
 RV_ELF_LIB =    $(LIB_DIR)/libriscv_elf.a
 
 # libriscv_fmt
-RV_FMT_SRCS =   $(SRC_DIR)/fmt/riscv-bigint.cc \
-                $(SRC_DIR)/fmt/riscv-dtoa.cc \
-                $(SRC_DIR)/fmt/riscv-hdtoa.cc \
-                $(SRC_DIR)/fmt/riscv-itoa.cc \
-                $(SRC_DIR)/fmt/riscv-fmt.cc
+RV_FMT_SRCS =   $(SRC_DIR)/fmt/bigint.cc \
+                $(SRC_DIR)/fmt/dtoa.cc \
+                $(SRC_DIR)/fmt/hdtoa.cc \
+                $(SRC_DIR)/fmt/itoa.cc \
+                $(SRC_DIR)/fmt/fmt.cc
 RV_FMT_OBJS =   $(call cxx_src_objs, $(RV_FMT_SRCS))
 RV_FMT_LIB =    $(LIB_DIR)/libriscv_fmt.a
 
 # generated files
-RV_OPANDS_HDR = $(SRC_DIR)/asm/riscv-operands.h
-RV_CONSTR_HDR = $(SRC_DIR)/asm/riscv-constraints.h
-RV_CODEC_HDR =  $(SRC_DIR)/asm/riscv-switch.h
-RV_JIT_HDR =    $(SRC_DIR)/asm/riscv-jit.h
-RV_JIT_SRC =    $(SRC_DIR)/asm/riscv-jit.cc
-RV_META_HDR =   $(SRC_DIR)/asm/riscv-meta.h
-RV_META_SRC =   $(SRC_DIR)/asm/riscv-meta.cc
-RV_STR_HDR =    $(SRC_DIR)/asm/riscv-strings.h
-RV_STR_SRC =    $(SRC_DIR)/asm/riscv-strings.cc
-RV_INTERP_HDR = $(SRC_DIR)/emu/riscv-interp.h
+RV_OPANDS_HDR = $(SRC_DIR)/asm/operands.h
+RV_CONSTR_HDR = $(SRC_DIR)/asm/constraints.h
+RV_CODEC_HDR =  $(SRC_DIR)/asm/switch.h
+RV_JIT_HDR =    $(SRC_DIR)/asm/jit.h
+RV_JIT_SRC =    $(SRC_DIR)/asm/jit.cc
+RV_META_HDR =   $(SRC_DIR)/asm/meta.h
+RV_META_SRC =   $(SRC_DIR)/asm/meta.cc
+RV_STR_HDR =    $(SRC_DIR)/asm/strings.h
+RV_STR_SRC =    $(SRC_DIR)/asm/strings.cc
+RV_INTERP_HDR = $(SRC_DIR)/emu/interp.h
 RV_FPU_HDR =    $(SRC_DIR)/test/test-fpu-gen.h
 RV_FPU_GEN =    $(SRC_DIR)/test/test-fpu-gen.c
-TEST_CC_SRC =   $(SRC_DIR)/app/riscv-test-cc.cc
-TEST_CC_ASM =   $(ASM_DIR)/riscv-test-cc.s
+TEST_CC_SRC =   $(SRC_DIR)/app/test-cc.cc
+TEST_CC_ASM =   $(ASM_DIR)/test-cc.s
 
 # libriscv_asm
-RV_ASM_SRCS =   $(SRC_DIR)/asm/riscv-disasm.cc \
-                $(SRC_DIR)/asm/riscv-format.cc \
-                $(SRC_DIR)/asm/riscv-jit.cc \
-                $(SRC_DIR)/asm/riscv-meta.cc \
-                $(SRC_DIR)/asm/riscv-strings.cc
+RV_ASM_SRCS =   $(SRC_DIR)/asm/disasm.cc \
+                $(SRC_DIR)/asm/format.cc \
+                $(SRC_DIR)/asm/jit.cc \
+                $(SRC_DIR)/asm/meta.cc \
+                $(SRC_DIR)/asm/strings.cc
 RV_ASM_OBJS =   $(call cxx_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
 # rv-meta
-RV_META_SRCS =  $(SRC_DIR)/app/riscv-meta.cc
+RV_META_SRCS =  $(SRC_DIR)/app/rv-meta.cc
 RV_META_OBJS =  $(call cxx_src_objs, $(RV_META_SRCS))
 RV_META_BIN =   $(BIN_DIR)/rv-meta
 
 # rv-bin
-RV_BIN_SRCS =   $(SRC_DIR)/app/riscv-compress.cc \
-                $(SRC_DIR)/app/riscv-dump.cc \
-                $(SRC_DIR)/app/riscv-histogram.cc \
-                $(SRC_DIR)/app/riscv-pte.cc \
-                $(SRC_DIR)/app/riscv-bin.cc
+RV_BIN_SRCS =   $(SRC_DIR)/app/rv-compress.cc \
+                $(SRC_DIR)/app/rv-dump.cc \
+                $(SRC_DIR)/app/rv-histogram.cc \
+                $(SRC_DIR)/app/rv-pte.cc \
+                $(SRC_DIR)/app/rv-bin.cc
 RV_BIN_OBJS =   $(call cxx_src_objs, $(RV_BIN_SRCS))
 RV_BIN_BIN =    $(BIN_DIR)/rv-bin
 
 # rv-sim
-RV_SIM_SRCS =     $(SRC_DIR)/app/riscv-sim.cc
+RV_SIM_SRCS =     $(SRC_DIR)/app/rv-sim.cc
 RV_SIM_OBJS =     $(call cxx_src_objs, $(RV_SIM_SRCS))
 RV_SIM_BIN =      $(BIN_DIR)/rv-sim
 
 # rv-sys
-RV_SYS_SRCS =     $(SRC_DIR)/app/riscv-sys.cc
+RV_SYS_SRCS =     $(SRC_DIR)/app/rv-sys.cc
 RV_SYS_OBJS =     $(call cxx_src_objs, $(RV_SYS_SRCS))
 RV_SYS_BIN =      $(BIN_DIR)/rv-sys
 
 # test-bits
-TEST_BITS_SRCS = $(SRC_DIR)/app/riscv-test-bits.cc
+TEST_BITS_SRCS = $(SRC_DIR)/app/test-bits.cc
 TEST_BITS_OBJS = $(call cxx_src_objs, $(TEST_BITS_SRCS))
-TEST_BITS_BIN =  $(BIN_DIR)/riscv-test-bits
+TEST_BITS_BIN =  $(BIN_DIR)/test-bits
 
 # test-config
-TEST_CONFIG_SRCS = $(SRC_DIR)/app/riscv-test-config.cc
+TEST_CONFIG_SRCS = $(SRC_DIR)/app/test-config.cc
 TEST_CONFIG_OBJS = $(call cxx_src_objs, $(TEST_CONFIG_SRCS))
-TEST_CONFIG_BIN =  $(BIN_DIR)/riscv-test-config
+TEST_CONFIG_BIN =  $(BIN_DIR)/test-config
 
 # test-encoder
-TEST_ENCODER_SRCS = $(SRC_DIR)/app/riscv-test-encoder.cc
+TEST_ENCODER_SRCS = $(SRC_DIR)/app/test-encoder.cc
 TEST_ENCODER_OBJS = $(call cxx_src_objs, $(TEST_ENCODER_SRCS))
-TEST_ENCODER_BIN =  $(BIN_DIR)/riscv-test-encoder
+TEST_ENCODER_BIN =  $(BIN_DIR)/test-encoder
 
 # test-endian
-TEST_ENDIAN_SRCS = $(SRC_DIR)/app/riscv-test-endian.cc
+TEST_ENDIAN_SRCS = $(SRC_DIR)/app/test-endian.cc
 TEST_ENDIAN_OBJS = $(call cxx_src_objs, $(TEST_ENDIAN_SRCS))
-TEST_ENDIAN_BIN =  $(BIN_DIR)/riscv-test-endian
+TEST_ENDIAN_BIN =  $(BIN_DIR)/test-endian
 
 # test-mmu
-TEST_MMU_SRCS = $(SRC_DIR)/app/riscv-test-mmu.cc
+TEST_MMU_SRCS = $(SRC_DIR)/app/test-mmu.cc
 TEST_MMU_OBJS = $(call cxx_src_objs, $(TEST_MMU_SRCS))
-TEST_MMU_BIN =  $(BIN_DIR)/riscv-test-mmu
+TEST_MMU_BIN =  $(BIN_DIR)/test-mmu
 
 # test-mul
-TEST_MUL_SRCS = $(SRC_DIR)/app/riscv-test-mul.cc
+TEST_MUL_SRCS = $(SRC_DIR)/app/test-mul.cc
 TEST_MUL_OBJS = $(call cxx_src_objs, $(TEST_MUL_SRCS))
-TEST_MUL_BIN =  $(BIN_DIR)/riscv-test-mul
+TEST_MUL_BIN =  $(BIN_DIR)/test-mul
 
 # test-operators
-TEST_OPERATORS_SRCS = $(SRC_DIR)/app/riscv-test-operators.cc
+TEST_OPERATORS_SRCS = $(SRC_DIR)/app/test-operators.cc
 TEST_OPERATORS_OBJS = $(call cxx_src_objs, $(TEST_OPERATORS_SRCS))
-TEST_OPERATORS_BIN =  $(BIN_DIR)/riscv-test-operators
+TEST_OPERATORS_BIN =  $(BIN_DIR)/test-operators
 
 # test-printf
-TEST_PRINTF_SRCS = $(SRC_DIR)/app/riscv-test-printf.cc
+TEST_PRINTF_SRCS = $(SRC_DIR)/app/test-printf.cc
 TEST_PRINTF_OBJS = $(call cxx_src_objs, $(TEST_PRINTF_SRCS))
-TEST_PRINTF_BIN =  $(BIN_DIR)/riscv-test-printf
+TEST_PRINTF_BIN =  $(BIN_DIR)/test-printf
 
 # test-rand
-TEST_RAND_SRCS = $(SRC_DIR)/app/riscv-test-rand.cc
+TEST_RAND_SRCS = $(SRC_DIR)/app/test-rand.cc
 TEST_RAND_OBJS = $(call cxx_src_objs, $(TEST_RAND_SRCS))
-TEST_RAND_BIN =  $(BIN_DIR)/riscv-test-rand
+TEST_RAND_BIN =  $(BIN_DIR)/test-rand
 
 # source and binaries
 ALL_CXX_SRCS = $(RV_ASM_SRCS) \
@@ -381,6 +381,7 @@ BINARIES = $(RV_META_BIN) \
            $(RV_BIN_BIN) \
            $(RV_SIM_BIN) \
            $(RV_SYS_BIN) \
+           $(TEST_ASMJIT_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_CONFIG_BIN) \
            $(TEST_ENCODER_BIN) \
@@ -535,6 +536,10 @@ $(TEST_CC_SRC): $(RV_META_BIN) $(RV_META_DATA)
 
 # lib targets
 
+$(ASMJIT_LIB): $(ASMJIT_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 $(RV_ASM_LIB): $(RV_ASM_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
@@ -578,6 +583,10 @@ $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(ASMJIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
