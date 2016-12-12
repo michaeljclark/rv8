@@ -64,6 +64,13 @@ struct riscv_gen_latex : riscv_gen_abstract
 	void generate();
 };
 
+struct riscv_gen_latex_alt : riscv_gen_abstract
+{
+	riscv_gen_latex_alt(riscv_gen *gen) : riscv_gen_abstract(gen) {}
+	std::vector<cmdline_option> get_cmdline_options();
+	void generate();
+};
+
 struct riscv_gen_map : riscv_gen_abstract
 {
 	riscv_gen_map(riscv_gen *gen) : riscv_gen_abstract(gen) {}

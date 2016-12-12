@@ -36,8 +36,8 @@ The future goals of the RISC-V Meta project are:
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
 
-See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) for
-sample LaTeX output.
+See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) and
+[RISC-V Instruction Types](/doc/pdf/riscv-types.pdf) for sample LaTeX output.
 
 Screenshots
 ----------------

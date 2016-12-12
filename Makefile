@@ -234,6 +234,7 @@ RV_GEN_SRCS =   $(SRC_DIR)/gen/riscv-gen-cc.cc \
                 $(SRC_DIR)/gen/riscv-gen-interp.cc \
                 $(SRC_DIR)/gen/riscv-gen-jit.cc \
                 $(SRC_DIR)/gen/riscv-gen-latex.cc \
+                $(SRC_DIR)/gen/riscv-gen-latex-alt.cc \
                 $(SRC_DIR)/gen/riscv-gen-map.cc \
                 $(SRC_DIR)/gen/riscv-gen-meta.cc \
                 $(SRC_DIR)/gen/riscv-gen-operands.cc \
@@ -401,13 +402,17 @@ dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir
 
 # docs
 
-latex: doc/tex/riscv-instructions.tex
-pdf: doc/pdf/riscv-instructions.pdf
+latex: doc/tex/riscv-instructions.tex doc/tex/riscv-types.tex
+pdf: doc/pdf/riscv-instructions.pdf doc/pdf/riscv-types.pdf
 map: all ; @$(RV_META_BIN) -c -m -r $(META_DIR)
 doc/tex/riscv-instructions.tex: $(RV_META_BIN) ; @mkdir -p doc/tex
 	$(RV_META_BIN) -l -? -r $(META_DIR) > doc/tex/riscv-instructions.tex
 doc/pdf/riscv-instructions.pdf: doc/tex/riscv-instructions.tex ; @mkdir -p doc/pdf
 	( cd doc/tex && texi2pdf -o ../pdf/riscv-instructions.pdf riscv-instructions.tex )
+doc/tex/riscv-types.tex: $(RV_META_BIN) ; @mkdir -p doc/tex
+	$(RV_META_BIN) -la -? -r $(META_DIR) > doc/tex/riscv-types.tex
+doc/pdf/riscv-types.pdf: doc/tex/riscv-types.tex ; @mkdir -p doc/pdf
+	( cd doc/tex && texi2pdf -o ../pdf/riscv-types.pdf riscv-types.tex )
 
 # rom
 

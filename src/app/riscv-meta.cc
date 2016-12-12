@@ -45,6 +45,7 @@ riscv_gen::riscv_gen()
 	generators.push_back(std::make_shared<riscv_gen_interp>(this));
 	generators.push_back(std::make_shared<riscv_gen_jit>(this));
 	generators.push_back(std::make_shared<riscv_gen_latex>(this));
+	generators.push_back(std::make_shared<riscv_gen_latex_alt>(this));
 	generators.push_back(std::make_shared<riscv_gen_map>(this));
 	generators.push_back(std::make_shared<riscv_gen_meta>(this));
 	generators.push_back(std::make_shared<riscv_gen_operands>(this));
