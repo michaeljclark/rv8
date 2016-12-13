@@ -22,6 +22,9 @@ extern std::vector<std::string> split(std::string str, std::string sep,
 	bool inc_empty = true, bool inc_sep = false);
 extern std::string replace(std::string haystack, const std::string needle, const std::string noodle);
 
+std::vector<std::string> parse_line(std::string line);
+std::vector<std::vector<std::string>> read_file(std::string filename);
+
 template <typename T>
 struct bit_char_array_t : std::array<char, (sizeof(T)<<3)+1>
 {

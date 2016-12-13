@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <csignal>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -149,4 +151,88 @@ std::string replace(std::string haystack, const std::string needle, const std::s
          i += noodle.length();
     }
     return haystack;
+}
+
+std::vector<std::string> parse_line(std::string line)
+{
+	// simple parsing routine that handles tokens separated by whitespace,
+	// double quoted tokens containing whitespace and # comments
+
+	std::vector<char> token;
+	std::vector<std::string> comps;
+	enum {
+		whitespace,
+		quoted_token,
+		unquoted_token,
+		comment
+	} state = whitespace;
+
+	size_t i = 0;
+	while (i < line.size()) {
+		char c = line[i];
+		switch (state) {
+			case whitespace:
+				if (::isspace(c)) {
+					i++;
+				} else if (c == '#') {
+					state = comment;
+				} else if (c == '"') {
+					state = quoted_token;
+					i++;
+				} else {
+					state = unquoted_token;
+				}
+				break;
+			case quoted_token:
+				if (c == '"') {
+					comps.push_back(std::string(token.begin(), token.end()));
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			case unquoted_token:
+				if (::isspace(c)) {
+					comps.push_back(std::string(token.begin(), token.end()));
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			case comment:
+				i++;
+				break;
+		}
+	}
+	if (token.size() > 0) {
+		comps.push_back(std::string(token.begin(), token.end()));
+	}
+	return comps;
+}
+
+std::vector<std::vector<std::string>> read_file(std::string filename)
+{
+	std::vector<std::vector<std::string>> data;
+	std::ifstream in(filename.c_str());
+	std::string line;
+	if (!in.is_open()) {
+		panic("error opening %s\n", filename.c_str());
+	}
+	while (in.good())
+	{
+		std::getline(in, line);
+		size_t hoffset = line.find("#");
+		if (hoffset != std::string::npos) {
+			line = ltrim(rtrim(line.substr(0, hoffset)));
+		}
+		std::vector<std::string> part = parse_line(line);
+		if (part.size() == 0) continue;
+		data.push_back(part);
+	}
+	in.close();
+	return data;
 }
