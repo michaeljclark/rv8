@@ -71,6 +71,26 @@ namespace riscv
 	#include "switch.h"
 	#include "constraints.h"
 
+	/* Instruction Set Combinations */
+
+	enum rv_isa {
+		rv_isa_none,
+		rv_isa_ima,
+		rv_isa_imac,
+		rv_isa_imafd,
+		rv_isa_imafdc,
+	};
+
+	/* CSR permissions */
+
+	enum csr_perm {
+		csr_rw,       /* Read/Write CSR */
+		csr_rs,       /* Read/Set CSR */
+		csr_rc        /* Read/Clear CSR */
+	};
+
+	/* Decode */
+
 	struct decode
 	{
 		int32_t  imm;        /* decoded immediate */
