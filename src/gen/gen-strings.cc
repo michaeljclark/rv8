@@ -84,6 +84,7 @@ static void print_strings_cc(riscv_gen *gen)
 		if (reg->type != "ireg") continue;
 		printf("\t\"%s\",\n", reg->alias.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// Floating Point register names
@@ -92,6 +93,7 @@ static void print_strings_cc(riscv_gen *gen)
 		if (reg->type != "freg") continue;
 		printf("\t\"%s\",\n", reg->alias.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// Instruction names
@@ -103,6 +105,7 @@ static void print_strings_cc(riscv_gen *gen)
 			riscv_meta_model::opcode_comment(opcode, no_comment).c_str(),
 			opcode_name.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// Instruction operand names
@@ -111,6 +114,7 @@ static void print_strings_cc(riscv_gen *gen)
 	for (auto &operand : gen->operands) {
 		printf("\t\"%s\",\n", operand->name.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// Instruction operand type names
@@ -126,6 +130,7 @@ static void print_strings_cc(riscv_gen *gen)
 	for (auto &operand_type : operand_types) {
 		printf("\t\"%s\",\n", operand_type.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// CSR names
@@ -151,6 +156,7 @@ static void print_strings_cc(riscv_gen *gen)
 		if (en->group != "cause") continue;
 		printf("\t\"%s\",\n", en->name.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 
 	// interrupt names
@@ -159,6 +165,7 @@ static void print_strings_cc(riscv_gen *gen)
 		if (en->group != "intr") continue;
 		printf("\t\"%s\",\n", en->name.c_str());
 	}
+	printf("\tnullptr\n");
 	printf("};\n\n");
 }
 

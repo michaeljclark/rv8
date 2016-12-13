@@ -39,6 +39,7 @@ const char* riscv_ireg_name_sym[] = {
 	"t4",
 	"t5",
 	"t6",
+	nullptr
 };
 
 const char* riscv_freg_name_sym[] = {
@@ -74,6 +75,7 @@ const char* riscv_freg_name_sym[] = {
 	"ft9",
 	"ft10",
 	"ft11",
+	nullptr
 };
 
 const char* riscv_inst_name_sym[] = {
@@ -328,6 +330,7 @@ const char* riscv_inst_name_sym[] = {
 	"fsflags",
 	"fsrmi",
 	"fsflagsi",
+	nullptr
 };
 
 const char* riscv_operand_name_sym[] = {
@@ -386,6 +389,7 @@ const char* riscv_operand_name_sym[] = {
 	"cimmw",
 	"cimmd",
 	"cimmq",
+	nullptr
 };
 
 const char* riscv_operand_type_sym[] = {
@@ -412,6 +416,7 @@ const char* riscv_operand_type_sym[] = {
 	"simm9",
 	"simm10",
 	"simm7",
+	nullptr
 };
 
 const char* riscv_csr_name_sym[] = {
@@ -4526,6 +4531,7 @@ const char* riscv_cause_name_sym[] = {
 	"supervisor_ecall",
 	"hypervisor_ecall",
 	"machine_ecall",
+	nullptr
 };
 
 const char* riscv_intr_name_sym[] = {
@@ -4541,5 +4547,6 @@ const char* riscv_intr_name_sym[] = {
 	"s_external",
 	"h_external",
 	"m_external",
+	nullptr
 };
 
