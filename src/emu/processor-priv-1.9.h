@@ -712,72 +712,81 @@ namespace riscv {
 			 * service external interrupts from the PLIC if enabled
 			 */
 
-			P::mip.r.meip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
-
-			if (P::mstatus.r.mie && P::mie.r.meie && P::mip.r.meip) {
-				mtrap(riscv_intr_m_external, true);
-				return;
-			}
-			if (P::mstatus.r.hie && P::mie.r.heie && P::mip.r.heip) {
-				htrap(riscv_intr_h_external, true);
-				return;
-			}
-			if (P::mstatus.r.sie && P::mie.r.seie && P::mip.r.seip) {
-				strap(riscv_intr_s_external, true);
-				return;
-			}
-			if (P::mstatus.r.uie && P::mie.r.ueie && P::mip.r.ueip) {
-				utrap(riscv_intr_u_external, true);
-				return;
+			bool eip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
+			if (eip) {
+				if (P::medeleg & (1 << riscv_intr_m_external)) {
+					if (P::hedeleg & (1 << riscv_intr_h_external)) {
+						if (P::sedeleg & (1 << riscv_intr_s_external) &&
+								P::mstatus.r.uie && P::mie.r.ueie) {
+							P::mip.r.ueip = 1;
+							utrap(riscv_intr_u_external, false);
+						} else if (P::mstatus.r.sie && P::mie.r.seie) {
+							P::mip.r.seip = 1;
+							strap(riscv_intr_s_external, false);
+						}
+					} else if (P::mstatus.r.hie && P::mie.r.heie) {
+						P::mip.r.heip = 1;
+						htrap(riscv_intr_h_external, false);
+					}
+				} else if (P::mstatus.r.mie && P::mie.r.meie) {
+					P::mip.r.meip = 1;
+					mtrap(riscv_intr_m_external, false);
+				}
 			}
 
 			/*
 			 * service timer interrupts if enabled
 			 */
 
-			if (device_time->timer_pending(P::time)) {
-				P::mip.r.mtip = 1;
-			}
-			if (P::mstatus.r.mie && P::mie.r.mtie && P::mip.r.mtip) {
-				mtrap(riscv_intr_m_timer, true);
-				return;
-			}
-			if (P::mstatus.r.hie && P::mie.r.htie && P::mip.r.htip) {
-				htrap(riscv_intr_h_timer, true);
-				return;
-			}
-			if (P::mstatus.r.sie && P::mie.r.stie && P::mip.r.stip) {
-				strap(riscv_intr_s_timer, true);
-				return;
-			}
-			if (P::mstatus.r.uie && P::mie.r.utie && P::mip.r.utip) {
-				utrap(riscv_intr_u_timer, true);
-				return;
+			bool tip = device_time->timer_pending(P::time);
+			if (tip) {
+				if (P::medeleg & (1 << riscv_intr_m_timer)) {
+					if (P::hedeleg & (1 << riscv_intr_h_timer)) {
+						if (P::sedeleg & (1 << riscv_intr_s_timer) &&
+								P::mstatus.r.uie && P::mie.r.utie) {
+							P::mip.r.utip = 1;
+							utrap(riscv_intr_u_timer, false);
+						} else if (P::mstatus.r.sie && P::mie.r.stie) {
+							P::mip.r.stip = 1;
+							strap(riscv_intr_s_timer, false);
+						}
+					} else if (P::mstatus.r.hie && P::mie.r.htie) {
+						P::mip.r.htip = 1;
+						htrap(riscv_intr_h_timer, false);
+					}
+				} else if (P::mstatus.r.mie && P::mie.r.mtie) {
+					P::mip.r.mtip = 1;
+					mtrap(riscv_intr_m_timer, false);
+				}
 			}
 
 			/*
 			 * service interprocessor interrupts
 			 */
 
-			if (device_mipi->ipi_pending(P::hart_id)) {
-				P::mip.r.msip = 1;
+			bool sip = device_mipi->ipi_pending(P::hart_id);
+			if (sip) {
+				if (P::medeleg & (1 << riscv_intr_m_software)) {
+					if (P::hedeleg & (1 << riscv_intr_h_software)) {
+						if (P::sedeleg & (1 << riscv_intr_s_software) &&
+								P::mstatus.r.uie && P::mie.r.usie)
+						{
+							P::mip.r.usip = 1;
+							utrap(riscv_intr_u_software, false);
+						} else if (P::mstatus.r.sie && P::mie.r.ssie) {
+							P::mip.r.ssip = 1;
+							strap(riscv_intr_s_software, false);
+						}
+					} else if (P::mstatus.r.hie && P::mie.r.hsie) {
+						P::mip.r.hsip = 1;
+						htrap(riscv_intr_h_software, false);
+					}
+				} else if (P::mstatus.r.mie && P::mie.r.msie) {
+					P::mip.r.msip = 1;
+					mtrap(riscv_intr_m_software, false);
+				}
 			}
-			if (P::mstatus.r.mie && P::mie.r.msie && P::mip.r.msip) {
-				mtrap(riscv_intr_m_software, true);
-				return;
-			}
-			if (P::mstatus.r.hie && P::mie.r.hsie && P::mip.r.hsip) {
-				htrap(riscv_intr_h_software, true);
-				return;
-			}
-			if (P::mstatus.r.sie && P::mie.r.ssie && P::mip.r.ssip) {
-				strap(riscv_intr_s_software, true);
-				return;
-			}
-			if (P::mstatus.r.uie && P::mie.r.usie && P::mip.r.usip) {
-				utrap(riscv_intr_u_software, true);
-				return;
-			}
+
 		}
 
 		void debug_enter()
