@@ -63,6 +63,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-int-mul \
 	$(BIN_DIR)/test-jump-tables-yes \
 	$(BIN_DIR)/test-jump-tables-no \
+	$(BIN_DIR)/test-large-imm \
 	$(BIN_DIR)/test-m-ecall-trap \
 	$(BIN_DIR)/test-m-hartid \
 	$(BIN_DIR)/test-m-mret-user \
@@ -141,6 +142,9 @@ $(BIN_DIR)/test-jump-tables-yes: $(OBJ_DIR)/test-jump-tables-yes.o ; $(CC) $(CFL
 $(ASM_DIR)/test-jump-tables-no.s: $(SRC_DIR)/test-jump-tables.c ; $(CC) $(CFLAGS) -S -fno-jump-tables -nostartfiles $^ -o $@
 $(OBJ_DIR)/test-jump-tables-no.o: $(SRC_DIR)/test-jump-tables.c ; $(CC) $(CFLAGS) -c -fno-jump-tables $^ -o $@
 $(BIN_DIR)/test-jump-tables-no: $(OBJ_DIR)/test-jump-tables-no.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-large-imm.o: $(SRC_DIR)/test-large-imm.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-large-imm: $(OBJ_DIR)/test-large-imm.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
