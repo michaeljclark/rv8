@@ -186,7 +186,8 @@ usage: dump [<options>] <elf_file>
            --print-relocations, -r            Print Relocations
            --print-disassembly, -d            Print Disassembly
                       --pseudo, -P            Decode Pseudoinstructions
-                   --print-all, -a            Print All
+               --print-headers, -h            Print All Headers
+                   --print-all, -a            Print All Headers and Disassembly
                         --help, -h            Show help
 ```
 
