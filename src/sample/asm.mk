@@ -40,7 +40,11 @@ ASSEMBLY = \
 	$(ASM_DIR)/test-loop-4-rv64.s \
 	$(ASM_DIR)/test-loop-4-amd64.s \
 	$(ASM_DIR)/test-loop-5-rv64.s \
-	$(ASM_DIR)/test-loop-5-amd64.s
+	$(ASM_DIR)/test-loop-5-amd64.s \
+	$(ASM_DIR)/test-module-1-rv64.s \
+	$(ASM_DIR)/test-module-1-amd64.s \
+	$(ASM_DIR)/test-module-2-rv64.s \
+	$(ASM_DIR)/test-module-2-amd64.s
 
 OBJECTS = \
 	$(OBJ_DIR)/test-loop-1-rv64.o \
@@ -52,7 +56,11 @@ OBJECTS = \
 	$(OBJ_DIR)/test-loop-4-rv64.o \
 	$(OBJ_DIR)/test-loop-4-amd64.o \
 	$(OBJ_DIR)/test-loop-5-rv64.o \
-	$(OBJ_DIR)/test-loop-5-amd64.o
+	$(OBJ_DIR)/test-loop-5-amd64.o \
+	$(OBJ_DIR)/test-module-1-rv64.o \
+	$(OBJ_DIR)/test-module-1-amd64.o \
+	$(OBJ_DIR)/test-module-2-rv64.o \
+	$(OBJ_DIR)/test-module-2-amd64.o
 
 all: dirs $(ASSEMBLY) $(OBJECTS)
 
@@ -85,3 +93,13 @@ $(ASM_DIR)/test-loop-5-rv64.s: $(SRC_DIR)/test-loop-5.cc ; $(TARGET_CXX) $(TARGE
 $(OBJ_DIR)/test-loop-5-rv64.o: $(SRC_DIR)/test-loop-5.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
 $(ASM_DIR)/test-loop-5-amd64.s: $(SRC_DIR)/test-loop-5.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
 $(OBJ_DIR)/test-loop-5-amd64.o: $(SRC_DIR)/test-loop-5.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
+
+$(ASM_DIR)/test-module-1-rv64.s: $(SRC_DIR)/test-module-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-module-1-rv64.o: $(SRC_DIR)/test-module-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
+$(ASM_DIR)/test-module-1-amd64.s: $(SRC_DIR)/test-module-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-module-1-amd64.o: $(SRC_DIR)/test-module-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
+
+$(ASM_DIR)/test-module-2-rv64.s: $(SRC_DIR)/test-module-2.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-module-2-rv64.o: $(SRC_DIR)/test-module-2.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
+$(ASM_DIR)/test-module-2-amd64.s: $(SRC_DIR)/test-module-2.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-module-2-amd64.o: $(SRC_DIR)/test-module-2.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
