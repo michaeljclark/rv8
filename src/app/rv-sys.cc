@@ -142,7 +142,7 @@ struct riscv_emulator
 
 	elf_file elf;
 	std::string elf_filename;
-	config cfg;
+	config_string cfg;
 	std::string config_filename;
 	host_cpu &cpu;
 	int proc_logs = 0;

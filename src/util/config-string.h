@@ -9,11 +9,11 @@ namespace riscv {
 
 	/* Generic configuration model */
 
-	struct config;
+	struct config_string;
 	struct config_record;
 	struct block_record;
 
-	typedef std::shared_ptr<config> config_ptr;
+	typedef std::shared_ptr<config_string> config_ptr;
 	typedef std::vector<std::string> config_line;
 	typedef std::vector<config_line> block_stack;
 	typedef std::function<void(config_line&)>config_function;
@@ -210,7 +210,7 @@ namespace riscv {
 		addr_t ipi;
 	};
 
-	struct config : config_parser
+	struct config_string : config_parser
 	{
 		// Generic configuration model
 		config_function_map  config_fn_map;
@@ -234,7 +234,7 @@ namespace riscv {
 		static bool parse_address_range(std::string valstr, address_range_ptr range);
 		static std::string address_range_to_string(address_range_list &addr_list);
 
-		config();
+		config_string();
 		std::string to_string();
 		void read(std::string filename);
 

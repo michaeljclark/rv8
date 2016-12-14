@@ -53,8 +53,28 @@ static void print_jit_h(riscv_gen *gen)
 		printf("\tinst_t %s(%s);\n",
 			emit_name.c_str(), join(operand_list, ", ").c_str());
 	}
+	printf("\n");
+
+	for (auto &opcode : gen->opcodes) {
+		// exclude compressed and psuedo instructions
+		if (opcode->compressed || opcode->is_pseudo()) continue;
+
+		// create emit interface
+		std::string emit_name = riscv_meta_model::opcode_format("asm_", opcode, "_");
+		std::vector<std::string> operand_list;
+		operand_list.push_back("assembler &as");
+		for (auto &operand : opcode->codec->operands) {
+			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			operand_list.push_back(type_name);
+		}
+
+		// output emit interface
+		printf("\tbool %s(%s);\n",
+			emit_name.c_str(), join(operand_list, ", ").c_str());
+	}
 	printf("}\n");
 	printf("\n");
+
 	printf("#endif\n");
 }
 
@@ -65,12 +85,18 @@ static void print_jit_cc(riscv_gen *gen)
 R"C(#include <cstdint>
 #include <cstdlib>
 #include <cassert>
+#include <map>
+#include <vector>
+#include <memory>
+#include <string>
 
 #include "types.h"
 #include "host-endian.h"
-#include "jit.h"
+#include "bits.h"
 #include "meta.h"
 #include "codec.h"
+#include "assembler.h"
+#include "jit.h"
 
 using namespace riscv;
 
@@ -121,7 +147,54 @@ using namespace riscv;
 		printf("\treturn encode_inst(dec);\n");
 		printf("}\n\n");
 	}
-	printf("\n");}
+	printf("\n");
+
+	for (auto &opcode : gen->opcodes) {
+		// exclude compressed and psuedo instructions
+		if (opcode->compressed || opcode->is_pseudo()) continue;
+
+		// create emit interface
+		std::string emit_name = riscv_meta_model::opcode_format("asm_", opcode, "_");
+		std::vector<std::string> operand_list;
+		operand_list.push_back("assembler &as");
+		for (auto &operand : opcode->codec->operands) {
+			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			operand_list.push_back(type_name);
+		}
+
+		// output emit interface
+		printf("bool riscv::%s(%s)\n{\n",
+			emit_name.c_str(), join(operand_list, ", ").c_str());
+		printf("\tdecode dec;\n");
+		if (opcode->codec->operands.size() > 0) {
+			std::vector<std::string> check_list;
+			for (auto &operand : opcode->codec->operands) {
+				auto check_name = operand->name + ".valid()";
+				check_list.push_back(check_name);
+			}
+			printf("\tif (!(%s)) return false; /* illegal instruction */\n",
+				join(check_list, " && ").c_str());
+		}
+		printf("\tdec.op = %s;\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+		for (auto &operand : opcode->codec->operands) {
+			if (operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") {
+				printf("\tdec.imm = %s;\n", operand->name.c_str());
+			} else if (operand->type == "ireg") {
+				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+			} else if (operand->type == "freg") {
+				printf("\tdec.%s = %s;\n", operand->name.substr(1).c_str(), operand->name.c_str());
+			} else if (operand->type == "arg") {
+				printf("\tdec.%s = %s;\n", operand->name.c_str(), operand->name.c_str());
+			} else {
+				printf("/* dec.? = %s unhandled */\n", operand->name.c_str());
+			}
+		}
+		printf("\tas.add_inst(encode_inst(dec));\n");
+		printf("\treturn true;\n");
+		printf("}\n\n");
+	}
+	printf("\n");
+}
 
 void riscv_gen_jit::generate()
 {

@@ -388,6 +388,8 @@ struct riscv_meta_model
 	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
 	static const riscv_primitive_type* infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i);
+	static std::vector<std::string> parse_line(std::string line);
+	static std::vector<std::vector<std::string>> read_file(std::string filename);
 
 	std::vector<std::string> get_unique_codecs();
 	std::vector<std::string> get_inst_mnemonics(bool isa_widths, bool isa_extensions);

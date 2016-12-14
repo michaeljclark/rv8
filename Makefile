@@ -39,6 +39,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/edit \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
+                -I$(TOP_DIR)/src/expr \
                 -I$(TOP_DIR)/src/fmt \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/meta \
@@ -50,7 +51,7 @@ DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations
 CPPFLAGS =
 CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
-CXXFLAGS =      -std=c++1y -fno-exceptions -fno-rtti $(CFLAGS)
+CXXFLAGS =      -std=c++1y -fno-rtti $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000 -lncurses
@@ -220,6 +221,16 @@ LIBEDIT_SRCS =   $(SRC_DIR)/edit/chared.c \
 LIBEDIT_OBJS =   $(call cc_src_objs, $(LIBEDIT_SRCS))
 LIBEDIT_LIB =    $(LIB_DIR)/libedit.a
 
+# libexpr
+LIBEXPR_SRCS =   $(SRC_DIR)/expr/builtin-features.cc \
+                 $(SRC_DIR)/expr/catch.cc \
+                 $(SRC_DIR)/expr/functions.cc \
+                 $(SRC_DIR)/expr/objects.cc \
+                 $(SRC_DIR)/expr/packToken.cc \
+                 $(SRC_DIR)/expr/shunting-yard.cc
+LIBEXPR_OBJS =   $(call cxx_src_objs, $(LIBEXPR_SRCS))
+LIBEXPR_LIB =    $(LIB_DIR)/libexpr.a
+
 # libriscv_model
 RV_MODEL_HDR =  $(SRC_DIR)/model/model.h
 RV_MODEL_SRC =  $(SRC_DIR)/model/model.cc
@@ -284,6 +295,11 @@ RV_ASM_SRCS =   $(SRC_DIR)/asm/disasm.cc \
 RV_ASM_OBJS =   $(call cxx_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
+# rv-asm
+RV_ASSEMBLER_SRCS = $(SRC_DIR)/app/rv-asm.cc
+RV_ASSEMBLER_OBJS = $(call cxx_src_objs, $(RV_ASSEMBLER_SRCS))
+RV_ASSEMBLER_BIN =  $(BIN_DIR)/rv-asm
+
 # rv-meta
 RV_META_SRCS =  $(SRC_DIR)/app/rv-meta.cc
 RV_META_OBJS =  $(call cxx_src_objs, $(RV_META_SRCS))
@@ -328,6 +344,16 @@ TEST_ENDIAN_SRCS = $(SRC_DIR)/app/test-endian.cc
 TEST_ENDIAN_OBJS = $(call cxx_src_objs, $(TEST_ENDIAN_SRCS))
 TEST_ENDIAN_BIN =  $(BIN_DIR)/test-endian
 
+# test-expr
+TEST_EXPR_SRCS = $(SRC_DIR)/app/test-expr.cc
+TEST_EXPR_OBJS = $(call cxx_src_objs, $(TEST_EXPR_SRCS))
+TEST_EXPR_BIN =  $(BIN_DIR)/test-expr
+
+# test-jit
+TEST_JIT_SRCS = $(SRC_DIR)/app/test-jit.cc
+TEST_JIT_OBJS = $(call cxx_src_objs, $(TEST_JIT_SRCS))
+TEST_JIT_BIN =  $(BIN_DIR)/test-jit
+
 # test-mmu
 TEST_MMU_SRCS = $(SRC_DIR)/app/test-mmu.cc
 TEST_MMU_OBJS = $(call cxx_src_objs, $(TEST_MMU_SRCS))
@@ -354,7 +380,8 @@ TEST_RAND_OBJS = $(call cxx_src_objs, $(TEST_RAND_SRCS))
 TEST_RAND_BIN =  $(BIN_DIR)/test-rand
 
 # source and binaries
-ALL_CXX_SRCS = $(RV_ASM_SRCS) \
+ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
+           $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
            $(RV_FMT_SRCS) \
            $(RV_GEN_SRCS) \
@@ -370,14 +397,17 @@ ALL_CXX_SRCS = $(RV_ASM_SRCS) \
            $(TEST_CONFIG_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
+           $(TEST_EXPR_SRCS) \
            $(TEST_MMU_SRCS) \
            $(TEST_MUL_SRCS) \
            $(TEST_OPERATORS_SRCS) \
            $(TEST_PRINTF_SRCS) \
-           $(TEST_RAND_SRCS)
+           $(TEST_RAND_SRCS) \
+           $(LIBEXPR_SRCS)
 ALL_CC_SRCS = $(LIBEDIT_SRCS)
 
-BINARIES = $(RV_META_BIN) \
+BINARIES = $(RV_ASSEMBLER_BIN) \
+           $(RV_META_BIN) \
            $(RV_BIN_BIN) \
            $(RV_SIM_BIN) \
            $(RV_SYS_BIN) \
@@ -386,6 +416,8 @@ BINARIES = $(RV_META_BIN) \
            $(TEST_CONFIG_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
+           $(TEST_EXPR_BIN) \
+           $(TEST_JIT_BIN) \
            $(TEST_MMU_BIN) \
            $(TEST_MUL_BIN) \
            $(TEST_OPERATORS_BIN) \
@@ -478,6 +510,7 @@ install:
 	install $(RV_BIN_BIN) /usr/local/bin/rv-bin
 	install $(RV_SIM_BIN) /usr/local/bin/rv-sim
 	install $(RV_SYS_BIN) /usr/local/bin/rv-sys
+	install $(RV_ASSEMBLER_BIN) /usr/local/bin/rv-asm
 
 # metadata targets
 
@@ -552,6 +585,10 @@ $(LIBEDIT_LIB): $(LIBEDIT_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
+$(LIBEXPR_LIB): $(LIBEXPR_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, AR $@, $(AR) cr $@ $^)
+
 $(RV_ELF_LIB): $(RV_ELF_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
@@ -577,6 +614,10 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 # binary targets
+
+$(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
@@ -611,6 +652,14 @@ $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_EXPR_BIN): $(TEST_EXPR_OBJS) $(LIBEXPR_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(LIBEDIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

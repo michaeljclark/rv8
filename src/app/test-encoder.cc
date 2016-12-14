@@ -6,12 +6,20 @@
 #include <cinttypes>
 #undef NDEBUG
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <cassert>
+#include <map>
+#include <vector>
+#include <memory>
+#include <string>
 
-#include "host-endian.h"
 #include "types.h"
+#include "host-endian.h"
 #include "bits.h"
 #include "meta.h"
 #include "codec.h"
+#include "assembler.h"
 #include "jit.h"
 
 using namespace riscv;

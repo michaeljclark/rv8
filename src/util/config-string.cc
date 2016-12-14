@@ -36,7 +36,7 @@
 
 using namespace riscv;
 
-bool config::parse_address_range(std::string valstr, address_range_ptr range)
+bool config_string::parse_address_range(std::string valstr, address_range_ptr range)
 {
 	auto range_comps = split(valstr, ":");
 	if (range_comps.size() == 1) {
@@ -51,7 +51,7 @@ bool config::parse_address_range(std::string valstr, address_range_ptr range)
 	return true;
 }
 
-std::string config::address_range_to_string(address_range_list &addr_list)
+std::string config_string::address_range_to_string(address_range_list &addr_list)
 {
 	std::string s;
 	sprintf(s, "@");
@@ -64,7 +64,7 @@ std::string config::address_range_to_string(address_range_list &addr_list)
 	return s;
 }
 
-config::config()
+config_string::config_string()
 {
 	config_platform();
 	config_plic();
@@ -76,7 +76,7 @@ config::config()
 	config_core();
 }
 
-std::string config::to_string()
+std::string config_string::to_string()
 {
 	std::string s;
 	output_platform(s);
@@ -90,7 +90,7 @@ std::string config::to_string()
 	return s;
 }
 
-void config::read(std::string filename)
+void config_string::read(std::string filename)
 {
 	FILE *fp;
 	struct stat statbuf;
@@ -118,12 +118,12 @@ void config::read(std::string filename)
 	fclose(fp);
 }
 
-void config::symbol(const char *value, size_t vlen)
+void config_string::symbol(const char *value, size_t vlen)
 {
 	line.push_back(std::string(value, vlen));
 }
 
-void config::start_block()
+void config_string::start_block()
 {
 	config_line block_line = line;
 	
@@ -146,7 +146,7 @@ void config::start_block()
 	}
 }
 
-void config::end_block()
+void config_string::end_block()
 {
 	// look up  block record
 	block_record rec;
@@ -160,7 +160,7 @@ void config::end_block()
 	}
 }
 
-void config::end_statement()
+void config_string::end_statement()
 {
 	if (line.size() > 0)
 	{
@@ -183,11 +183,11 @@ void config::end_statement()
 	line.clear();
 }
 
-void config::config_done()
+void config_string::config_done()
 {
 }
 
-void config::config_platform()
+void config_string::config_platform()
 {
 	block_start_fn_map["platform"] = {1, 1, [&] (config_line &line) {
 		if (platform) panic("config must contain \"platform\" block");
@@ -207,7 +207,7 @@ void config::config_platform()
 	}};
 }
 
-void config::config_plic()
+void config_string::config_plic()
 {
 	block_start_fn_map["plic"] = {1, 1, [&] (config_line &line) {
 		plic_list.push_back(std::make_shared<riscv::plic>());
@@ -331,7 +331,7 @@ void config::config_plic()
 	}};
 }
 
-void config::config_pcie()
+void config_string::config_pcie()
 {
 	block_start_fn_map["pcie"] = {1, 1, [&] (config_line &line) {
 		pcie_list.push_back(std::make_shared<riscv::pcie>());
@@ -403,7 +403,7 @@ void config::config_pcie()
 	}};
 }
 
-void config::config_leds()
+void config_string::config_leds()
 {
 	block_start_fn_map["leds"] = {1, 1, [&] (config_line &line) {
 		leds_list.push_back(std::make_shared<riscv::leds>());
@@ -430,7 +430,7 @@ void config::config_leds()
 	}};
 }
 
-void config::config_rtc()
+void config_string::config_rtc()
 {
 	block_start_fn_map["rtc"] = {1, 1, [&] (config_line &line) {
 		rtc_list.push_back(std::make_shared<riscv::rtc>());
@@ -446,7 +446,7 @@ void config::config_rtc()
 	}};
 }
 
-void config::config_ram()
+void config_string::config_ram()
 {
 	block_start_fn_map["ram"] = {1, 1, [&] (config_line &line) {
 		ram_list.push_back(std::make_shared<riscv::ram>());
@@ -469,7 +469,7 @@ void config::config_ram()
 	}};
 }
 
-void config::config_uart()
+void config_string::config_uart()
 {
 	block_start_fn_map["uart"] = {1, 1, [&] (config_line &line) {
 		uart_list.push_back(std::make_shared<riscv::uart>());
@@ -485,7 +485,7 @@ void config::config_uart()
 	}};
 }
 
-void config::config_core()
+void config_string::config_core()
 {
 	block_start_fn_map["core"] = {1, 1, [&] (config_line &line) {
 		core_list.push_back(std::make_shared<riscv::core>());
@@ -526,14 +526,14 @@ void config::config_core()
 	}};
 }
 
-void config::output_platform(std::string &s)
+void config_string::output_platform(std::string &s)
 {
 	if (!platform) panic("config must contain \"platform\" block");
 	sprintf(s, "platform {\n\tvendor %s;\n\tarch   %s;\n};\n",
 		platform->vendor, platform->arch);
 }
 
-void config::output_plic(std::string &s)
+void config_string::output_plic(std::string &s)
 {
 	for (auto &plic : plic_list) {
 		sprintf(s,
@@ -571,7 +571,7 @@ void config::output_plic(std::string &s)
 	}
 }
 
-void config::output_pcie(std::string &s)
+void config_string::output_pcie(std::string &s)
 {
 	for (auto &pcie : pcie_list) {
 		sprintf(s, "pcie {\n\tinterface %s;\n",
@@ -601,7 +601,7 @@ void config::output_pcie(std::string &s)
 	}
 }
 
-void config::output_leds(std::string &s)
+void config_string::output_leds(std::string &s)
 {
 	for (auto &leds : leds_list) {
 		sprintf(s,
@@ -614,7 +614,7 @@ void config::output_leds(std::string &s)
 	}
 }
 
-void config::output_rtc(std::string &s)
+void config_string::output_rtc(std::string &s)
 {
 	for (auto &rtc : rtc_list) {
 		sprintf(s,
@@ -625,7 +625,7 @@ void config::output_rtc(std::string &s)
 	}
 }
 
-void config::output_ram(std::string &s)
+void config_string::output_ram(std::string &s)
 {
 	for (auto &ram : ram_list) {
 		sprintf(s, "ram {\n");
@@ -638,7 +638,7 @@ void config::output_ram(std::string &s)
 	}
 }
 
-void config::output_uart(std::string &s)
+void config_string::output_uart(std::string &s)
 {
 	for (auto &uart : uart_list) {
 		sprintf(s, "uart {\n\t%s\n};\n",
@@ -646,7 +646,7 @@ void config::output_uart(std::string &s)
 	}
 }
 
-void config::output_core(std::string &s)
+void config_string::output_core(std::string &s)
 {
 	for (auto &core : core_list) {
 		sprintf(s, "core {\n");

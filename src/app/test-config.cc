@@ -27,7 +27,7 @@ int main(int argc, const char * argv[])
 		exit(1);
 	}
 
-	config cfg;
+	config_string cfg;
 	cfg.read(argv[1]);
 
 	printf("%s", cfg.to_string().c_str());
