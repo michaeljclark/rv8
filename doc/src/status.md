@@ -29,6 +29,6 @@ i786 Optimizing bintrans | Exploratory stage
 i786 Shadow paging       | Exploratory stage
 RVC Compressor           | In progress
 Boot Protocol            | Document ELF Auxv AT_BASE Proposal
-Assembler                | Started documenting
+Assembler                | In progress
 ELF                      | Started documenting
 RV128                    | Proposal
