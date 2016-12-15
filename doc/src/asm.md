@@ -26,9 +26,10 @@ Directive    | Arguments                    | Description
 .endm        |                              | end macro definition
 .type        | symbol, @function            | ignore
 .option      | {rvc,norvc,push,pop}         | RISC-V options
-.half        |                              | 16-bit word
-.word        |                              | 32-bit word
-.dword       |                              | 64-bit word
+.byte        |                              | 8-bit comma separated words
+.half        |                              | 16-bit comma separated words
+.word        |                              | 32-bit comma separated words
+.dword       |                              | 64-bit comma separated words
 .dtprelword  |                              | 32-bit thread local word
 .dtpreldword |                              | 64-bit thread local word
 .p2align     | p2,[pad_val=0],max           | power of 2 align
