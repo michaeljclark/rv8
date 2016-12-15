@@ -23,7 +23,7 @@ const char* ansi_color_names[] = {
 	nullptr
 };
 
-ssize_t riscv_color_to_ansi_index(std::string color)
+ssize_t rv_color_to_ansi_index(std::string color)
 {
 	const char** p = ansi_color_names;
 	ssize_t i = -1;
@@ -36,11 +36,11 @@ ssize_t riscv_color_to_ansi_index(std::string color)
 	return i;
 }
 
-std::string riscv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color, ansi_color_spec spec)
+std::string rv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color, ansi_color_spec spec)
 {
 	char buf[32] = "";
-	ssize_t fg_color_num = riscv_color_to_ansi_index(fg_color);
-	ssize_t bg_color_num = riscv_color_to_ansi_index(bg_color);
+	ssize_t fg_color_num = rv_color_to_ansi_index(fg_color);
+	ssize_t bg_color_num = rv_color_to_ansi_index(bg_color);
 	switch (spec) {
 		case ansi_color_keep:
 			break;

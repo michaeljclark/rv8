@@ -2,8 +2,8 @@
 //  device-plic.h
 //
 
-#ifndef riscv_device_plic_h
-#define riscv_device_plic_h
+#ifndef rv_device_plic_h
+#define rv_device_plic_h
 
 namespace riscv {
 

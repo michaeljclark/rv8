@@ -2,8 +2,8 @@
 //  device-time.h
 //
 
-#ifndef riscv_device_time_h
-#define riscv_device_time_h
+#ifndef rv_device_time_h
+#define rv_device_time_h
 
 namespace riscv {
 

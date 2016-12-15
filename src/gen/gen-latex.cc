@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_latex::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_latex::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-?", "--substitute-question-marks", cmdline_arg_type_none,
@@ -59,40 +59,40 @@ R"LaTeX(\end{tabular}
 \end{table}
 )LaTeX";
 
-enum riscv_latex_type {
-	riscv_latex_type_empty,
-	riscv_latex_type_line,
-	riscv_latex_type_page_break,
-	riscv_latex_type_extension_heading,
-	riscv_latex_type_extension_contd,
-	riscv_latex_type_opcode,
-	riscv_latex_type_type_bitrange,
-	riscv_latex_type_type_spec,
+enum rv_latex_type {
+	rv_latex_type_empty,
+	rv_latex_type_line,
+	rv_latex_type_page_break,
+	rv_latex_type_extension_heading,
+	rv_latex_type_extension_contd,
+	rv_latex_type_opcode,
+	rv_latex_type_type_bitrange,
+	rv_latex_type_type_spec,
 };
 
-struct riscv_latex_row
+struct rv_latex_row
 {
-	riscv_latex_type row_type;
-	riscv_extension_ptr extension;
-	riscv_opcode_ptr opcode;
-	riscv_type_ptr type;
+	rv_latex_type row_type;
+	rv_extension_ptr extension;
+	rv_opcode_ptr opcode;
+	rv_type_ptr type;
 
-	riscv_latex_row(riscv_latex_type row_type)
+	rv_latex_row(rv_latex_type row_type)
 		: row_type(row_type) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_extension_ptr extension)
+	rv_latex_row(rv_latex_type row_type, rv_extension_ptr extension)
 		: row_type(row_type), extension(extension) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_opcode_ptr opcode)
+	rv_latex_row(rv_latex_type row_type, rv_opcode_ptr opcode)
 		: row_type(row_type), opcode(opcode) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_type_ptr type)
+	rv_latex_row(rv_latex_type row_type, rv_type_ptr type)
 		: row_type(row_type), type(type) {}
 };
 
-struct riscv_latex_page
+struct rv_latex_page
 {
-	std::vector<riscv_latex_row> rows;
+	std::vector<rv_latex_row> rows;
 };
 
 
@@ -126,38 +126,38 @@ static std::string latex_utf_substitute(std::string str)
 	return str;
 }
 
-static void print_latex_row(riscv_gen *gen, riscv_latex_row &row, std::string ts, bool remove_question_marks)
+static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool remove_question_marks)
 {
 	switch (row.row_type) {
-		case riscv_latex_type_empty:
+		case rv_latex_type_empty:
 			printf("\\tabularnewline\n");
 			break;
-		case riscv_latex_type_line:
+		case rv_latex_type_line:
 			printf("\\cline{1-%ld}\n", kLatexTableColumns);
 			break;
-		case riscv_latex_type_page_break:
+		case rv_latex_type_page_break:
 			printf("%s", kLatexTableEnd);
 			printf("%s%s", kLatexTableBegin, ts.c_str());
 			break;
-		case riscv_latex_type_extension_heading:
-		case riscv_latex_type_extension_contd:
+		case rv_latex_type_extension_heading:
+		case rv_latex_type_extension_contd:
 		{
 			printf("\\multicolumn{%ld}{c}{\\bf %s %s} & \\\\\n\\cline{1-%ld}\n",
 				kLatexTableColumns,
 				row.extension->description.c_str(),
-				row.row_type == riscv_latex_type_extension_contd ? " contd" : "",
+				row.row_type == rv_latex_type_extension_contd ? " contd" : "",
 				kLatexTableColumns);
 			break;
 		}
-		case riscv_latex_type_opcode:
+		case rv_latex_type_opcode:
 		{
 			auto &opcode = row.opcode;
 			ssize_t bit_width = opcode->extensions[0]->inst_width;
 
 			// calculate the column spans for this row
-			riscv_operand_ptr operand, loperand;
+			rv_operand_ptr operand, loperand;
 			bool lbound = false;
-			typedef std::tuple<riscv_opcode_ptr,riscv_operand_ptr,ssize_t,std::string> operand_tuple;
+			typedef std::tuple<rv_opcode_ptr,rv_operand_ptr,ssize_t,std::string> operand_tuple;
 			std::vector<operand_tuple> operand_parts;
 			for (ssize_t bit = bit_width-1; bit >= 0; bit--) {
 				char c = ((opcode->mask & (1 << bit)) ? ((opcode->match & (1 << bit)) ? '1' : '0') : '?');
@@ -263,7 +263,7 @@ static void print_latex_row(riscv_gen *gen, riscv_latex_row &row, std::string ts
 				ls.str().c_str(), name.c_str(), join(operand_comps, ", ").c_str(), kLatexTableColumns);
 			break;
 		}
-		case riscv_latex_type_type_spec:
+		case rv_latex_type_type_spec:
 		{
 			// construct the LaTeX for this type row
 			std::stringstream ls;
@@ -313,7 +313,7 @@ static void print_latex_row(riscv_gen *gen, riscv_latex_row &row, std::string ts
 				ls.str().c_str(), name.c_str(), kLatexTableColumns);
 			break;
 		}
-		case riscv_latex_type_type_bitrange:
+		case rv_latex_type_type_bitrange:
 		{
 			// construct the LaTeX for this type bit range header
 			std::stringstream ls;
@@ -343,7 +343,7 @@ static void print_latex_row(riscv_gen *gen, riscv_latex_row &row, std::string ts
 	}
 }
 
-static void print_latex(riscv_gen *gen)
+static void print_latex(rv_gen *gen)
 {
 	bool remove_question_marks = gen->has_option("remove_question_marks");
 
@@ -351,7 +351,7 @@ static void print_latex(riscv_gen *gen)
 	// adding type and extension headings, page breaks and continuations
 	size_t line = 0;
 	ssize_t inst_width = 0;
-	std::vector<riscv_latex_page> pages;
+	std::vector<rv_latex_page> pages;
 	for (auto &ext : gen->extensions) {
 		// check if this extension is in the selected subset
 		if (ext->opcodes.size() == 0 || (gen->ext_subset.size() > 0 &&
@@ -367,25 +367,25 @@ static void print_latex(riscv_gen *gen)
 		if (count == 0) continue;
 
 		// add new page
-		if (pages.size() == 0) pages.push_back(riscv_latex_page());
+		if (pages.size() == 0) pages.push_back(rv_latex_page());
 
 		// break to a new page if the instruction width changes
 		if (inst_width != 0 && inst_width != ext->inst_width) {
-			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
-			pages.push_back(riscv_latex_page());
+			pages.back().rows.push_back(rv_latex_row(rv_latex_type_page_break));
+			pages.push_back(rv_latex_page());
 			line = 0;
 		}
 
 		// don't start new extension heading unless we have reserved space
 		if (line % kLatexTableRows > kLatexTableRows - kLatexReserveRows) {
-			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
-			pages.push_back(riscv_latex_page());
+			pages.back().rows.push_back(rv_latex_row(rv_latex_type_page_break));
+			pages.push_back(rv_latex_page());
 			line = 0;
 		}
 
 		// add extension heading
-		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
-		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_extension_heading, ext));
+		pages.back().rows.push_back(rv_latex_row(rv_latex_type_empty));
+		pages.back().rows.push_back(rv_latex_row(rv_latex_type_extension_heading, ext));
 		line++;
 
 		// add opcodes
@@ -394,21 +394,21 @@ static void print_latex(riscv_gen *gen)
 			if (opcode->is_pseudo()) continue;
 			// add a line to the top of the page if there is a continuation
 			if (line % kLatexTableRows == 0) {
-				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
-				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_extension_contd, ext));
-				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_line));
+				pages.back().rows.push_back(rv_latex_row(rv_latex_type_empty));
+				pages.back().rows.push_back(rv_latex_row(rv_latex_type_extension_contd, ext));
+				pages.back().rows.push_back(rv_latex_row(rv_latex_type_line));
 			}
-			pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_opcode, opcode));
+			pages.back().rows.push_back(rv_latex_row(rv_latex_type_opcode, opcode));
 			line++;
 			// add page break
 			if (line % kLatexTableRows == 0) {
-				pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_page_break));
-				pages.push_back(riscv_latex_page());
+				pages.back().rows.push_back(rv_latex_row(rv_latex_type_page_break));
+				pages.push_back(rv_latex_page());
 			}
 		}
 
 		// add empty line
-		pages.back().rows.push_back(riscv_latex_row(riscv_latex_type_empty));
+		pages.back().rows.push_back(rv_latex_row(rv_latex_type_empty));
 		line++;
 
 		inst_width = ext->inst_width;
@@ -416,7 +416,7 @@ static void print_latex(riscv_gen *gen)
 
 	// iterate through the table rows and add types to 
 	for (auto &page : pages) {
-		std::vector<riscv_type_ptr> types;
+		std::vector<rv_type_ptr> types;
 		for (auto &row : page.rows) {
 			// accumulate types on this page
 			if (row.opcode) {
@@ -435,9 +435,9 @@ static void print_latex(riscv_gen *gen)
 
 		// insert type header rows at top of the page
 		for (auto ti = types.rbegin(); ti != types.rend(); ti++) {
-			page.rows.insert(page.rows.begin(), riscv_latex_row(riscv_latex_type_type_spec, *ti));
+			page.rows.insert(page.rows.begin(), rv_latex_row(rv_latex_type_type_spec, *ti));
 		}
-		page.rows.insert(page.rows.begin(), riscv_latex_row(riscv_latex_type_type_bitrange, default_type));
+		page.rows.insert(page.rows.begin(), rv_latex_row(rv_latex_type_type_bitrange, default_type));
 	}
 
 	// create the table width specification
@@ -464,7 +464,7 @@ static void print_latex(riscv_gen *gen)
 	printf("%s", kLatexDocumentEnd);
 }
 
-void riscv_gen_latex::generate()
+void rv_gen_latex::generate()
 {
 	if (gen->has_option("print_latex")) print_latex(gen);
 }

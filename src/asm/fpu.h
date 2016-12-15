@@ -2,8 +2,8 @@
 //  fpu.h
 //
 
-#ifndef riscv_fpu_h
-#define riscv_fpu_h
+#ifndef rv_fpu_h
+#define rv_fpu_h
 
 namespace riscv {
 
@@ -132,18 +132,18 @@ namespace riscv {
 	{
 #if defined USE_SSE_MATH
 		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
-		if (x86_mxcsr_val & x86_mxcsr_EF_ZE) fcsr |= riscv_fcsr_DZ;
-		if (x86_mxcsr_val & x86_mxcsr_EF_PE) fcsr |= riscv_fcsr_NX;
-		if (x86_mxcsr_val & x86_mxcsr_EF_IE) fcsr |= riscv_fcsr_NV;
-		if (x86_mxcsr_val & x86_mxcsr_EF_OE) fcsr |= riscv_fcsr_OF;
-		if (x86_mxcsr_val & x86_mxcsr_EF_UE) fcsr |= riscv_fcsr_UF;
+		if (x86_mxcsr_val & x86_mxcsr_EF_ZE) fcsr |= rv_fcsr_DZ;
+		if (x86_mxcsr_val & x86_mxcsr_EF_PE) fcsr |= rv_fcsr_NX;
+		if (x86_mxcsr_val & x86_mxcsr_EF_IE) fcsr |= rv_fcsr_NV;
+		if (x86_mxcsr_val & x86_mxcsr_EF_OE) fcsr |= rv_fcsr_OF;
+		if (x86_mxcsr_val & x86_mxcsr_EF_UE) fcsr |= rv_fcsr_UF;
 #else
 		int flags = fetestexcept(FE_ALL_EXCEPT);
-		if (flags & FE_DIVBYZERO) fcsr |= riscv_fcsr_DZ;
-		if (flags & FE_INEXACT) fcsr |= riscv_fcsr_NX;
-		if (flags & FE_INVALID) fcsr |= riscv_fcsr_NV;
-		if (flags & FE_OVERFLOW) fcsr |= riscv_fcsr_OF;
-		if (flags & FE_UNDERFLOW) fcsr |= riscv_fcsr_UF;
+		if (flags & FE_DIVBYZERO) fcsr |= rv_fcsr_DZ;
+		if (flags & FE_INEXACT) fcsr |= rv_fcsr_NX;
+		if (flags & FE_INVALID) fcsr |= rv_fcsr_NV;
+		if (flags & FE_OVERFLOW) fcsr |= rv_fcsr_OF;
+		if (flags & FE_UNDERFLOW) fcsr |= rv_fcsr_UF;
 #endif
 	}
 
@@ -155,19 +155,19 @@ namespace riscv {
 #if defined USE_SSE_MATH
 		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
 		x86_mxcsr_val &= ~(x86_mxcsr_EF_DE | x86_mxcsr_EF_PE | x86_mxcsr_EF_IE | x86_mxcsr_EF_OE | x86_mxcsr_EF_UE);
-		if (!(fcsr & riscv_fcsr_DZ)) x86_mxcsr_val |= x86_mxcsr_EF_DE;
-		if (!(fcsr & riscv_fcsr_NX)) x86_mxcsr_val |= x86_mxcsr_EF_PE;
-		if (!(fcsr & riscv_fcsr_NV)) x86_mxcsr_val |= x86_mxcsr_EF_IE;
-		if (!(fcsr & riscv_fcsr_OF)) x86_mxcsr_val |= x86_mxcsr_EF_OE;
-		if (!(fcsr & riscv_fcsr_UF)) x86_mxcsr_val |= x86_mxcsr_EF_UE;
+		if (!(fcsr & rv_fcsr_DZ)) x86_mxcsr_val |= x86_mxcsr_EF_DE;
+		if (!(fcsr & rv_fcsr_NX)) x86_mxcsr_val |= x86_mxcsr_EF_PE;
+		if (!(fcsr & rv_fcsr_NV)) x86_mxcsr_val |= x86_mxcsr_EF_IE;
+		if (!(fcsr & rv_fcsr_OF)) x86_mxcsr_val |= x86_mxcsr_EF_OE;
+		if (!(fcsr & rv_fcsr_UF)) x86_mxcsr_val |= x86_mxcsr_EF_UE;
 		__builtin_ia32_ldmxcsr(x86_mxcsr_val);
 #else
 		int flags = 0;
-		if (!(fcsr & riscv_fcsr_DZ)) flags |= FE_DIVBYZERO;
-		if (!(fcsr & riscv_fcsr_NX)) flags |= FE_INEXACT;
-		if (!(fcsr & riscv_fcsr_NV)) flags |= FE_INVALID;
-		if (!(fcsr & riscv_fcsr_OF)) flags |= FE_OVERFLOW;
-		if (!(fcsr & riscv_fcsr_UF)) flags |= FE_UNDERFLOW;
+		if (!(fcsr & rv_fcsr_DZ)) flags |= FE_DIVBYZERO;
+		if (!(fcsr & rv_fcsr_NX)) flags |= FE_INEXACT;
+		if (!(fcsr & rv_fcsr_NV)) flags |= FE_INVALID;
+		if (!(fcsr & rv_fcsr_OF)) flags |= FE_OVERFLOW;
+		if (!(fcsr & rv_fcsr_UF)) flags |= FE_UNDERFLOW;
 		feclearexcept(flags);
 #endif
 	}
@@ -180,21 +180,21 @@ namespace riscv {
 		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
 		x86_mxcsr_val &= ~x86_mxcsr_RC_RZ;
 		switch (rm) {
-			case riscv_rm_rne: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
-			case riscv_rm_rtz: x86_mxcsr_val |= x86_mxcsr_RC_RZ; break;
-			case riscv_rm_rdn: x86_mxcsr_val |= x86_mxcsr_RC_DN; break;
-			case riscv_rm_rup: x86_mxcsr_val |= x86_mxcsr_RC_UP; break;
-			case riscv_rm_rmm: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
+			case rv_rm_rne: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
+			case rv_rm_rtz: x86_mxcsr_val |= x86_mxcsr_RC_RZ; break;
+			case rv_rm_rdn: x86_mxcsr_val |= x86_mxcsr_RC_DN; break;
+			case rv_rm_rup: x86_mxcsr_val |= x86_mxcsr_RC_UP; break;
+			case rv_rm_rmm: x86_mxcsr_val |= x86_mxcsr_RC_RN; break;
 		}
 		__builtin_ia32_ldmxcsr(x86_mxcsr_val);
 #else
 		if (rm == 0b111) return;
 		switch (rm) {
-			case riscv_rm_rne: fesetround(FE_TONEAREST); /* ties to Even */ break;
-			case riscv_rm_rtz: fesetround(FE_TOWARDZERO); break;
-			case riscv_rm_rdn: fesetround(FE_DOWNWARD); break;
-			case riscv_rm_rup: fesetround(FE_UPWARD); break;
-			case riscv_rm_rmm: fesetround(FE_TONEAREST); /* ties to Max Magnitude */ break;
+			case rv_rm_rne: fesetround(FE_TONEAREST); /* ties to Even */ break;
+			case rv_rm_rtz: fesetround(FE_TOWARDZERO); break;
+			case rv_rm_rdn: fesetround(FE_DOWNWARD); break;
+			case rv_rm_rup: fesetround(FE_UPWARD); break;
+			case rv_rm_rmm: fesetround(FE_TONEAREST); /* ties to Max Magnitude */ break;
 		}
 #endif
 	}
@@ -219,8 +219,8 @@ namespace riscv {
 			: f >= 0
 			? s32(u32(f))
 			: f > -1
-			? (fcsr |= riscv_fcsr_NX, s32(0))
-			: (fcsr |= riscv_fcsr_NV, s32(0));
+			? (fcsr |= rv_fcsr_NX, s32(0))
+			: (fcsr |= rv_fcsr_NV, s32(0));
 	}
 
 	/* convert single or double to signed long (64-bit) */
@@ -243,8 +243,8 @@ namespace riscv {
 			: f >= 0
 			? s64(u64(f))
 			: f > -1
-			? (fcsr |= riscv_fcsr_NX, s64(0))
-			: (fcsr |= riscv_fcsr_NV, s64(0));
+			? (fcsr |= rv_fcsr_NX, s64(0))
+			: (fcsr |= rv_fcsr_NV, s64(0));
 	}
 
 	/* floating point square root */
@@ -261,13 +261,13 @@ namespace riscv {
 		typename F::size_type neg = v.r.sign, exp = v.r.exp, man = v.r.man;
 		return (exp == F::exp_denorm)
 			? (man == 0)
-			? (neg ? riscv_fclass_neg_zero : riscv_fclass_pos_zero)
-			: (neg ? riscv_fclass_neg_subnorm : riscv_fclass_pos_subnorm)
+			? (neg ? rv_fclass_neg_zero : rv_fclass_pos_zero)
+			: (neg ? rv_fclass_neg_subnorm : rv_fclass_pos_subnorm)
 			: (exp == F::exp_inf)
 			? (man == 0)
-			? (neg ? riscv_fclass_neg_inf : riscv_fclass_pos_inf)
-			: (man & 1 ? riscv_fclass_signaling_nan : riscv_fclass_quiet_nan)
-			: (neg ? riscv_fclass_neg_norm : riscv_fclass_pos_norm);
+			? (neg ? rv_fclass_neg_inf : rv_fclass_pos_inf)
+			: (man & 1 ? rv_fclass_signaling_nan : rv_fclass_quiet_nan)
+			: (neg ? rv_fclass_neg_norm : rv_fclass_pos_norm);
 	}
 
 	inline int f32_classify(f32 f) { return float_classify<f32_type>(f); }

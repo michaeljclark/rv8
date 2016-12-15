@@ -2,8 +2,8 @@
 //  endian.h
 //
 
-#ifndef riscv_endian_h
-#define riscv_endian_h
+#ifndef rv_endian_h
+#define rv_endian_h
 
 /*
  *   This header defines the following endian macros as defined here:

@@ -2,8 +2,8 @@
 //  util.h
 //
 
-#ifndef riscv_util_h
-#define riscv_util_h
+#ifndef rv_util_h
+#define rv_util_h
 
 extern bool parse_integral(std::string valstr, long long &val);
 

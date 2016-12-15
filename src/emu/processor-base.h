@@ -2,8 +2,8 @@
 //  processor-base.h
 //
 
-#ifndef riscv_processor_base_h
-#define riscv_processor_base_h
+#ifndef rv_processor_base_h
+#define rv_processor_base_h
 
 namespace riscv {
 

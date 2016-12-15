@@ -2,8 +2,8 @@
 //  host.h
 //
 
-#ifndef riscv_host_h
-#define riscv_host_h
+#ifndef rv_host_h
+#define rv_host_h
 
 #if defined _MSC_VER
 #include <intrin.h>

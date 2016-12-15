@@ -19,7 +19,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_constraints::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_constraints::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-XC", "--print-constraints-h", cmdline_arg_type_none,
@@ -28,12 +28,12 @@ std::vector<cmdline_option> riscv_gen_constraints::get_cmdline_options()
 	};
 }
 
-static void print_constraints_h(riscv_gen *gen)
+static void print_constraints_h(rv_gen *gen)
 {
 	static const char* kConstraintsHeader =
 
-R"C(#ifndef riscv_constraints_h
-#define riscv_constraints_h
+R"C(#ifndef rv_constraints_h
+#define rv_constraints_h
 
 )C";
 
@@ -109,7 +109,7 @@ R"C(#endif
 	printf("%s", kConstraintsFooter);
 }
 
-void riscv_gen_constraints::generate()
+void rv_gen_constraints::generate()
 {
 	if (gen->has_option("print_constraints_h")) print_constraints_h(gen);
 }

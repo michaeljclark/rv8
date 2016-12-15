@@ -2,8 +2,8 @@
 //  args.h
 //
 
-#ifndef riscv_args_h
-#define riscv_args_h
+#ifndef rv_args_h
+#define rv_args_h
 
 /*-
  * Copyright (c) 2016 Michael Clark <michaeljclark@mac.com>

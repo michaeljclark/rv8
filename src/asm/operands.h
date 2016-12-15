@@ -4,8 +4,8 @@
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_operands_h
-#define riscv_operands_h
+#ifndef rv_operands_h
+#define rv_operands_h
 
 typedef uimm_operand_t<5, S<11,7, B<4,0>>>                                         operand_rd;
 typedef uimm_operand_t<5, S<19,15, B<4,0>>>                                        operand_rs1;

@@ -2,8 +2,8 @@
 //  bits.h
 //
 
-#ifndef riscv_bits_h
-#define riscv_bits_h
+#ifndef rv_bits_h
+#define rv_bits_h
 
 namespace riscv {
 

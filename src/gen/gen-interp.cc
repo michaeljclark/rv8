@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_interp::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_interp::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-V", "--print-interp-h", cmdline_arg_type_none,
@@ -27,11 +27,11 @@ std::vector<cmdline_option> riscv_gen_interp::get_cmdline_options()
 	};
 }
 
-static void print_interp_h(riscv_gen *gen)
+static void print_interp_h(rv_gen *gen)
 {
 	printf(kCHeader, "interp.h");
-	printf("#ifndef riscv_interp_h\n");
-	printf("#define riscv_interp_h\n");
+	printf("#ifndef rv_interp_h\n");
+	printf("#define rv_interp_h\n");
 	printf("\n");
 	for (auto isa_width : gen->isa_width_prefixes()) {
 		printf("/* Execute Instruction RV%lu */\n\n", isa_width.first);
@@ -54,7 +54,7 @@ static void print_interp_h(riscv_gen *gen)
 			std::string inst = opcode->pseudocode_c;
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
-			printf("\t\tcase %s:\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+			printf("\t\tcase %s:\n", rv_meta_model::opcode_format("rv_op_", opcode, "_").c_str());
 			inst = replace(inst, "imm", "dec.imm");
 			inst = replace(inst, "ptr", "addr_t");
 			inst = replace(inst, "fcsr", "proc.fcsr");
@@ -161,7 +161,7 @@ static void print_interp_h(riscv_gen *gen)
 	printf("#endif\n");
 }
 
-void riscv_gen_interp::generate()
+void rv_gen_interp::generate()
 {
 	if (gen->has_option("print_interp_h")) print_interp_h(gen);
 }

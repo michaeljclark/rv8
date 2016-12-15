@@ -2,8 +2,8 @@
 //  processor-runloop.h
 //
 
-#ifndef riscv_processor_runloop_h
-#define riscv_processor_runloop_h
+#ifndef rv_processor_runloop_h
+#define rv_processor_runloop_h
 
 namespace riscv {
 
@@ -24,13 +24,13 @@ namespace riscv {
 
 		std::shared_ptr<debug_cli<P>> cli;
 
-		struct riscv_inst_cache_ent
+		struct rv_inst_cache_ent
 		{
 			inst_t inst;
 			typename P::decode_type dec;
 		};
 
-		riscv_inst_cache_ent inst_cache[inst_cache_size];
+		rv_inst_cache_ent inst_cache[inst_cache_size];
 
 		processor_runloop() : cli(std::make_shared<debug_cli<P>>()) {}
 		processor_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli) {}
@@ -170,7 +170,7 @@ namespace riscv {
 					P::cycle++;
 					P::instret++;
 				} else {
-					P::raise(riscv_cause_illegal_instruction, P::pc);
+					P::raise(rv_cause_illegal_instruction, P::pc);
 				}
 			}
 			return exit_cause_continue;

@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_latex_alt::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_latex_alt::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-la", "--print-latex-alt", cmdline_arg_type_none,
@@ -53,59 +53,59 @@ R"LaTeX(
 \end{tikzpicture}
 )LaTeX";
 
-enum riscv_latex_type {
-	riscv_latex_type_empty,
-	riscv_latex_type_line,
-	riscv_latex_type_page_break,
-	riscv_latex_type_extension_heading,
-	riscv_latex_type_extension_contd,
-	riscv_latex_type_opcode,
-	riscv_latex_type_type_bitrange,
-	riscv_latex_type_type_spec,
+enum rv_latex_type {
+	rv_latex_type_empty,
+	rv_latex_type_line,
+	rv_latex_type_page_break,
+	rv_latex_type_extension_heading,
+	rv_latex_type_extension_contd,
+	rv_latex_type_opcode,
+	rv_latex_type_type_bitrange,
+	rv_latex_type_type_spec,
 };
 
-struct riscv_latex_row
+struct rv_latex_row
 {
-	riscv_latex_type row_type;
-	riscv_extension_ptr extension;
-	riscv_opcode_ptr opcode;
-	riscv_type_ptr type;
+	rv_latex_type row_type;
+	rv_extension_ptr extension;
+	rv_opcode_ptr opcode;
+	rv_type_ptr type;
 
-	riscv_latex_row(riscv_latex_type row_type)
+	rv_latex_row(rv_latex_type row_type)
 		: row_type(row_type) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_extension_ptr extension)
+	rv_latex_row(rv_latex_type row_type, rv_extension_ptr extension)
 		: row_type(row_type), extension(extension) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_opcode_ptr opcode)
+	rv_latex_row(rv_latex_type row_type, rv_opcode_ptr opcode)
 		: row_type(row_type), opcode(opcode) {}
 
-	riscv_latex_row(riscv_latex_type row_type, riscv_type_ptr type)
+	rv_latex_row(rv_latex_type row_type, rv_type_ptr type)
 		: row_type(row_type), type(type) {}
 };
 
-struct riscv_latex_page
+struct rv_latex_page
 {
-	std::vector<riscv_latex_row> rows;
+	std::vector<rv_latex_row> rows;
 };
 
-static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
+static void print_latex_alt_type(rv_gen *gen, rv_type_ptr type)
 {
-	typedef std::vector<riscv_bitspec> riscv_bitspec_list;
+	typedef std::vector<rv_bitspec> rv_bitspec_list;
 
 	printf("%s", kLatexPictureBegin);
 
 	// find bit ranges for each named decode component
-	std::map<std::string,riscv_bitspec_list> decode_list;
+	std::map<std::string,rv_bitspec_list> decode_list;
 	std::vector<std::string> decode_names;
 
 	for (auto &part : type->parts) {
-		riscv_bitspec &bitspec = part.first;
+		rv_bitspec &bitspec = part.first;
 		std::string &name = part.second;
 		auto bi = decode_list.find(name);
 		if (bi == decode_list.end()) {
 			bi = decode_list.insert(decode_list.end(),
-				std::pair<std::string,riscv_bitspec_list>(name, riscv_bitspec_list()));
+				std::pair<std::string,rv_bitspec_list>(name, rv_bitspec_list()));
 			decode_names.push_back(name);
 		}
 		bi->second.push_back(bitspec);
@@ -121,7 +121,7 @@ static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
 
 	// draw bit segment fill
 	for (auto &part : type->parts) {
-		riscv_bitspec &bitspec = part.first;
+		rv_bitspec &bitspec = part.first;
 		std::string &name = part.second;
 		int msb = bitspec.segments.front().first.msb;
 		int lsb = bitspec.segments.back().first.lsb;
@@ -133,7 +133,7 @@ static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
 
 	// draw bit segment borders
 	for (auto &part : type->parts) {
-		riscv_bitspec &bitspec = part.first;
+		rv_bitspec &bitspec = part.first;
 		int msb = bitspec.segments.front().first.msb;
 		int lsb = bitspec.segments.back().first.lsb;
 		printf("\\draw (%d,-1) rectangle (%d,-2);\n", 32 - lsb, (32 - msb) - 1);
@@ -142,7 +142,7 @@ static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
 
 	// draw bit segment bit position labels
 	for (auto &part : type->parts) {
-		riscv_bitspec &bitspec = part.first;
+		rv_bitspec &bitspec = part.first;
 		int msb = bitspec.segments.front().first.msb;
 		int lsb = bitspec.segments.back().first.lsb;
 		if (msb == lsb) {
@@ -156,7 +156,7 @@ static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
 
 	// draw bit segment text labels
 	for (auto &part : type->parts) {
-		riscv_bitspec &bitspec = part.first;
+		rv_bitspec &bitspec = part.first;
 		std::string &name = part.second;
 
 		std::string label = name;
@@ -178,7 +178,7 @@ static void print_latex_alt_type(riscv_gen *gen, riscv_type_ptr type)
 	printf("%s", kLatexPictureEnd);
 }
 
-static void print_latex_alt(riscv_gen *gen)
+static void print_latex_alt(rv_gen *gen)
 {
 	// print document header
 	printf("%s", kLatexDocumentBegin);
@@ -202,7 +202,7 @@ static void print_latex_alt(riscv_gen *gen)
 	printf("%s", kLatexDocumentEnd);
 }
 
-void riscv_gen_latex_alt::generate()
+void rv_gen_latex_alt::generate()
 {
 	if (gen->has_option("print_latex_alt")) print_latex_alt(gen);
 }

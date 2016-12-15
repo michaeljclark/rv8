@@ -2,8 +2,8 @@
 //  processor-model.h
 //
 
-#ifndef riscv_processor_model_h
-#define riscv_processor_model_h
+#ifndef rv_processor_model_h
+#define rv_processor_model_h
 
 namespace riscv {
 
@@ -18,7 +18,7 @@ namespace riscv {
 	#define RV_IMAFDC /*I*/true, /*M*/true, /*A*/true, /*S*/true, /*F*/true, /*D*/true, /*C*/true
 
 	template <typename P>
-	static constexpr typename P::ux BASE(riscv_isa isa) { return typename P::ux(isa) << (P::xlen-2); }
+	static constexpr typename P::ux BASE(rv_isa isa) { return typename P::ux(isa) << (P::xlen-2); }
 	static constexpr int EXT(char x) { return 1 << (x - 'A'); }
 
 	/* RV32 Partial processor specialization templates (RV32IMA, RV32IMAC, RV32IMAFD, RV32IMAFDC) */
@@ -26,7 +26,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv32ima_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv32)
 			| EXT('I') | EXT('M') | EXT('A');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -41,7 +41,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv32imac_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv32)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('C');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -57,7 +57,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv32imafd_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv32)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -72,7 +72,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv32imafdc_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv32)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv32)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D') | EXT('C');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -91,7 +91,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv64ima_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv64)
 			| EXT('I') | EXT('M') | EXT('A');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -106,7 +106,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv64imac_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv64)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('C');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -122,7 +122,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv64imafd_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv64)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D');
 
 		void inst_decode(T &dec, inst_t inst) {
@@ -137,7 +137,7 @@ namespace riscv {
 	template <typename T, typename P, typename M, typename B = processor_impl<T,P,M>>
 	struct processor_rv64imafdc_model : B
 	{
-		const typename P::ux misa_default = BASE<P>(riscv_isa_rv64)
+		const typename P::ux misa_default = BASE<P>(rv_isa_rv64)
 			| EXT('I') | EXT('M') | EXT('A') | EXT('F') | EXT('D') | EXT('C');
 
 		void inst_decode(T &dec, inst_t inst) {

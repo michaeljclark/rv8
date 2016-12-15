@@ -2,8 +2,8 @@
 //  device-rand.h
 //
 
-#ifndef riscv_device_rand_h
-#define riscv_device_rand_h
+#ifndef rv_device_rand_h
+#define rv_device_rand_h
 
 namespace riscv {
 

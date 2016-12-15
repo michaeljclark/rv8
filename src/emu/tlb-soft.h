@@ -2,8 +2,8 @@
 //  tlb-soft.h
 //
 
-#ifndef riscv_tlb_soft_h
-#define riscv_tlb_soft_h
+#ifndef rv_tlb_soft_h
+#define rv_tlb_soft_h
 
 namespace riscv {
 

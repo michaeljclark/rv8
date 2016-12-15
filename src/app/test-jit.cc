@@ -80,32 +80,32 @@ using namespace riscv;
 using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy
 	<processor_rv64imafdc_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
-struct riscv_test_jit
+struct rv_test_jit
 {
 	void run()
 	{
 		assembler as;
 		proxy_emulator_rv64imafdc emulator;
 
-		asm_addi(as, riscv_ireg_a0, riscv_ireg_a0, 0xde);
-		asm_slli_rv64i(as, riscv_ireg_a0, riscv_ireg_a0, 8);
-		asm_addi(as, riscv_ireg_a0, riscv_ireg_a0, 0xad);
-		asm_slli_rv64i(as, riscv_ireg_a0, riscv_ireg_a0, 8);
-		asm_addi(as, riscv_ireg_a0, riscv_ireg_a0, 0xbe);
-		asm_slli_rv64i(as, riscv_ireg_a0, riscv_ireg_a0, 8);
-		asm_addi(as, riscv_ireg_a0, riscv_ireg_a0, 0xef);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
+		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xad);
+		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xbe);
+		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
 
 		std::vector<u8> &buf = as.get_section(".text")->buf;
 		emulator.pc = (uintptr_t)buf.data();
 		emulator.step(7);
 
-		u64 result = emulator.ireg[riscv_ireg_a0];
+		u64 result = emulator.ireg[rv_ireg_a0];
 		assert(result = 0xdeadbeef);
 	}
 };
 
 int main(int argc, char *argv[])
 {
-	riscv_test_jit test;
+	rv_test_jit test;
 	test.run();
 }

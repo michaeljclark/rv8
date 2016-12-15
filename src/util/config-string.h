@@ -2,8 +2,8 @@
 //  config.h
 //
 
-#ifndef riscv_config_h
-#define riscv_config_h
+#ifndef rv_config_h
+#define rv_config_h
 
 namespace riscv {
 

@@ -27,7 +27,7 @@
 #define _COLOR_LEGEND _COLOR_BEGIN _COLOR_BOLD       _COLOR_END
 #define _COLOR_EXT    _COLOR_BEGIN _COLOR_FG_RED     _COLOR_END
 
-std::vector<cmdline_option> riscv_gen_map::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_map::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-c", "--color", cmdline_arg_type_none,
@@ -45,7 +45,7 @@ std::vector<cmdline_option> riscv_gen_map::get_cmdline_options()
 	};
 }
 
-static std::string colorize_operands(riscv_gen *gen, riscv_opcode_ptr opcode)
+static std::string colorize_operands(rv_gen *gen, rv_opcode_ptr opcode)
 {
 	std::vector<char> token;
 	std::vector<std::string> comps;
@@ -71,7 +71,7 @@ static std::string colorize_operands(riscv_gen *gen, riscv_opcode_ptr opcode)
 		auto comp = comps[i];
 		auto operand = gen->operands_by_name[comp];
 		if (operand) {
-			auto new_comp = riscv_colors_to_ansi_escape_sequence(
+			auto new_comp = rv_colors_to_ansi_escape_sequence(
 				operand->fg_color, operand->bg_color, ansi_color_normal
 			);
 			new_comp.append(comp);
@@ -83,7 +83,7 @@ static std::string colorize_operands(riscv_gen *gen, riscv_opcode_ptr opcode)
 	return join(comps, "");
 }
 
-static void print_map(riscv_gen *gen)
+static void print_map(rv_gen *gen)
 {
 	bool enable_colorize = gen->has_option("enable_color") && isatty(fileno(stdout));
 	bool map_pseudo_code_c = gen->has_option("map_pseudo_code_c");
@@ -125,10 +125,10 @@ static void print_map(riscv_gen *gen)
 				}
 				default:
 				{
-					riscv_operand_ptr operand = opcode->find_operand(bit);
+					rv_operand_ptr operand = opcode->find_operand(bit);
 					if (operand) {
 						printf("%s%s%s",
-							enable_colorize ? riscv_colors_to_ansi_escape_sequence(
+							enable_colorize ? rv_colors_to_ansi_escape_sequence(
 								operand->fg_color, operand->bg_color
 							).c_str() : "",
 							operand->char_code().c_str(),
@@ -160,7 +160,7 @@ static void print_map(riscv_gen *gen)
 	}
 }
 
-void riscv_gen_map::generate()
+void rv_gen_map::generate()
 {
 	if (gen->has_option("print_map")) print_map(gen);
 }

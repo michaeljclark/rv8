@@ -100,15 +100,15 @@ struct asm_macro
 		macro_def(macro_def) {}
 };
 
-struct riscv_assembler
+struct rv_assembler
 {
 	std::string input_filename;
 	std::string output_filename = "a.out";
 	bool help_or_error = false;
 	bool bail_on_errors = true;
 
-	int ext = rv_isa_imafdc;
-	int width = riscv_isa_rv64;
+	int ext = rv_set_imafdc;
+	int width = rv_isa_rv64;
 
 	TokenMap vars;
 	assembler as;
@@ -122,7 +122,7 @@ struct riscv_assembler
 	std::map<std::string,asm_macro_ptr> macro_map;
 	std::map<std::string,asm_directive> map;
 
-	riscv_assembler()
+	rv_assembler()
 	{
 		configure_maps();
 		configure_directives();
@@ -153,54 +153,54 @@ struct riscv_assembler
 			ireg_map[ireg] = i;
 			freg_map[freg] = i;
 		}
-		populate_map(ireg_map, riscv_ireg_name_sym);
-		populate_map(freg_map, riscv_freg_name_sym);
-		populate_map(opcode_map, riscv_inst_name_sym);
-		populate_csr_map(csr_map, riscv_csr_name_sym);
+		populate_map(ireg_map, rv_ireg_name_sym);
+		populate_map(freg_map, rv_freg_name_sym);
+		populate_map(opcode_map, rv_inst_name_sym);
+		populate_csr_map(csr_map, rv_csr_name_sym);
 	}
 
 	void configure_directives()
 	{
-		map[".align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
-		map[".p2align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
-		map[".balign"] = std::bind(&riscv_assembler::handle_balign, this, std::placeholders::_1);
-		map[".equ"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
-		map[".eqv"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
-		map[".file"] = std::bind(&riscv_assembler::handle_file, this, std::placeholders::_1);
-		map[".globl"] = std::bind(&riscv_assembler::handle_globl, this, std::placeholders::_1);
-		map[".ident"] = std::bind(&riscv_assembler::handle_ident, this, std::placeholders::_1);
-		map[".macro"] = std::bind(&riscv_assembler::handle_macro, this, std::placeholders::_1);
-		map[".endm"] = std::bind(&riscv_assembler::handle_endm, this, std::placeholders::_1);
-		map[".section"] = std::bind(&riscv_assembler::handle_section, this, std::placeholders::_1);
-		map[".text"] = std::bind(&riscv_assembler::handle_text, this, std::placeholders::_1);
-		map[".data"] = std::bind(&riscv_assembler::handle_data, this, std::placeholders::_1);
-		map[".rodata"] = std::bind(&riscv_assembler::handle_rodata, this, std::placeholders::_1);
-		map[".bss"] = std::bind(&riscv_assembler::handle_bss, this, std::placeholders::_1);
-		map[".size"] = std::bind(&riscv_assembler::handle_size, this, std::placeholders::_1);
-		map[".string"] = std::bind(&riscv_assembler::handle_string, this, std::placeholders::_1);
-		map[".type"] = std::bind(&riscv_assembler::handle_type, this, std::placeholders::_1);
-		map[".byte"] = std::bind(&riscv_assembler::handle_byte, this, std::placeholders::_1);
-		map[".half"] = std::bind(&riscv_assembler::handle_half, this, std::placeholders::_1);
-		map[".word"] = std::bind(&riscv_assembler::handle_word, this, std::placeholders::_1);
-		map[".dword"] = std::bind(&riscv_assembler::handle_dword, this, std::placeholders::_1);
-		map[".dtprelword"] = std::bind(&riscv_assembler::handle_dtprelword, this, std::placeholders::_1);
-		map[".dtpreldword"] = std::bind(&riscv_assembler::handle_dtpreldword, this, std::placeholders::_1);
-		map[".option"] = std::bind(&riscv_assembler::handle_option, this, std::placeholders::_1);
-		map[".zero"] = std::bind(&riscv_assembler::handle_zero, this, std::placeholders::_1);
-		map["la"] = std::bind(&riscv_assembler::handle_la, this, std::placeholders::_1);
-		map["lla"] = std::bind(&riscv_assembler::handle_lla, this, std::placeholders::_1);
-		map["li"] = std::bind(&riscv_assembler::handle_li, this, std::placeholders::_1);
-		map["call"] = std::bind(&riscv_assembler::handle_call, this, std::placeholders::_1);
-		map["tail"] = std::bind(&riscv_assembler::handle_tail, this, std::placeholders::_1);
+		map[".align"] = std::bind(&rv_assembler::handle_p2align, this, std::placeholders::_1);
+		map[".p2align"] = std::bind(&rv_assembler::handle_p2align, this, std::placeholders::_1);
+		map[".balign"] = std::bind(&rv_assembler::handle_balign, this, std::placeholders::_1);
+		map[".equ"] = std::bind(&rv_assembler::handle_equ, this, std::placeholders::_1);
+		map[".eqv"] = std::bind(&rv_assembler::handle_equ, this, std::placeholders::_1);
+		map[".file"] = std::bind(&rv_assembler::handle_file, this, std::placeholders::_1);
+		map[".globl"] = std::bind(&rv_assembler::handle_globl, this, std::placeholders::_1);
+		map[".ident"] = std::bind(&rv_assembler::handle_ident, this, std::placeholders::_1);
+		map[".macro"] = std::bind(&rv_assembler::handle_macro, this, std::placeholders::_1);
+		map[".endm"] = std::bind(&rv_assembler::handle_endm, this, std::placeholders::_1);
+		map[".section"] = std::bind(&rv_assembler::handle_section, this, std::placeholders::_1);
+		map[".text"] = std::bind(&rv_assembler::handle_text, this, std::placeholders::_1);
+		map[".data"] = std::bind(&rv_assembler::handle_data, this, std::placeholders::_1);
+		map[".rodata"] = std::bind(&rv_assembler::handle_rodata, this, std::placeholders::_1);
+		map[".bss"] = std::bind(&rv_assembler::handle_bss, this, std::placeholders::_1);
+		map[".size"] = std::bind(&rv_assembler::handle_size, this, std::placeholders::_1);
+		map[".string"] = std::bind(&rv_assembler::handle_string, this, std::placeholders::_1);
+		map[".type"] = std::bind(&rv_assembler::handle_type, this, std::placeholders::_1);
+		map[".byte"] = std::bind(&rv_assembler::handle_byte, this, std::placeholders::_1);
+		map[".half"] = std::bind(&rv_assembler::handle_half, this, std::placeholders::_1);
+		map[".word"] = std::bind(&rv_assembler::handle_word, this, std::placeholders::_1);
+		map[".dword"] = std::bind(&rv_assembler::handle_dword, this, std::placeholders::_1);
+		map[".dtprelword"] = std::bind(&rv_assembler::handle_dtprelword, this, std::placeholders::_1);
+		map[".dtpreldword"] = std::bind(&rv_assembler::handle_dtpreldword, this, std::placeholders::_1);
+		map[".option"] = std::bind(&rv_assembler::handle_option, this, std::placeholders::_1);
+		map[".zero"] = std::bind(&rv_assembler::handle_zero, this, std::placeholders::_1);
+		map["la"] = std::bind(&rv_assembler::handle_la, this, std::placeholders::_1);
+		map["lla"] = std::bind(&rv_assembler::handle_lla, this, std::placeholders::_1);
+		map["li"] = std::bind(&rv_assembler::handle_li, this, std::placeholders::_1);
+		map["call"] = std::bind(&rv_assembler::handle_call, this, std::placeholders::_1);
+		map["tail"] = std::bind(&rv_assembler::handle_tail, this, std::placeholders::_1);
 	}
 
-	static rv_isa decode_isa_ext(std::string isa_ext)
+	static rv_set decode_isa_ext(std::string isa_ext)
 	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_isa_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_isa_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_isa_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_isa_imafdc;
-		else return rv_isa_none;
+		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_set_ima;
+		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_set_imac;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
+		else return rv_set_none;
 	}
 
 	template <typename T>
@@ -225,10 +225,10 @@ struct riscv_assembler
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
 			{ "-m32", "--riscv32", cmdline_arg_type_string,
 				"Assembler for RISC-V 32",
-				[&](std::string s) { return (width = riscv_isa_rv32); } },
+				[&](std::string s) { return (width = rv_isa_rv32); } },
 			{ "-m64", "--riscv64", cmdline_arg_type_string,
 				"Assembler for RISC-V 64 (default)",
-				[&](std::string s) { return (width = riscv_isa_rv32); } },
+				[&](std::string s) { return (width = rv_isa_rv64); } },
 			{ "-o", "--output", cmdline_arg_type_string,
 				"Output ELF file (default a.out)",
 				[&](std::string s) { output_filename = s; return true; } },
@@ -696,8 +696,8 @@ struct riscv_assembler
 	{
 		auto argv = line->split_args(",");
 		/* TODO */
-		const riscv_operand_data *data = riscv_inst_operand_data[op];
-		while(data->type != riscv_type_none) {
+		const rv_operand_data *data = rv_inst_operand_data[op];
+		while(data->type != rv_type_none) {
 			data++;
 		}
 		return true;
@@ -805,7 +805,7 @@ int main(int argc, const char* argv[])
 	printf("\n");
 	printf("rv-asm-0.0.0-prealpha-0\n");
 	printf("\n");
-	riscv_assembler as;
+	rv_assembler as;
 	as.parse_commandline(argc, argv);
 	as.assemble();
 	return 0;

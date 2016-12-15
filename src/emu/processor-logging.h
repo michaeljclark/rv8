@@ -2,8 +2,8 @@
 //  processor-logging.h
 //
 
-#ifndef riscv_processor_logging_h
-#define riscv_processor_logging_h
+#ifndef rv_processor_logging_h
+#define rv_processor_logging_h
 
 namespace riscv {
 

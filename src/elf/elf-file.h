@@ -2,8 +2,8 @@
 //  elf-file.h
 //
 
-#ifndef riscv_elf_file_h
-#define riscv_elf_file_h
+#ifndef rv_elf_file_h
+#define rv_elf_file_h
 
 struct cmp_str {
 	bool operator()(char const *a, char const *b) const { return std::strcmp(a, b) < 0; }

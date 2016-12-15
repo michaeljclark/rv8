@@ -2,8 +2,8 @@
 //  device-sbi.h
 //
 
-#ifndef riscv_device_sbi_h
-#define riscv_device_sbi_h
+#ifndef rv_device_sbi_h
+#define rv_device_sbi_h
 
 #include "sbi-rom-bin.h"
 

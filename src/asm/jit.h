@@ -4,8 +4,8 @@
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_jit_h
-#define riscv_jit_h
+#ifndef rv_jit_h
+#define rv_jit_h
 
 namespace riscv
 {

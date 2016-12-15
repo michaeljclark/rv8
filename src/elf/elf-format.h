@@ -2,8 +2,8 @@
 //  elf-format.h
 //
 
-#ifndef riscv_elf_format_h
-#define riscv_elf_format_h
+#ifndef rv_elf_format_h
+#define rv_elf_format_h
 
 typedef std::function<const char*(const char *type)> elf_symbol_colorize_fn;
 

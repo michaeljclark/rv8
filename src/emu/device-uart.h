@@ -2,8 +2,8 @@
 //  device-uart.h
 //
 
-#ifndef riscv_device_uart_h
-#define riscv_device_uart_h
+#ifndef rv_device_uart_h
+#define rv_device_uart_h
 
 namespace riscv {
 

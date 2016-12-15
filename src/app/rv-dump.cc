@@ -38,7 +38,7 @@
 
 using namespace riscv;
 
-struct riscv_parse_elf
+struct rv_parse_elf
 {
 	elf_file elf;
 	std::string filename;
@@ -122,8 +122,8 @@ struct riscv_parse_elf
 			dec.inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, dec.inst);
 			switch (dec.op) {
-				case riscv_op_jal:
-				case riscv_op_jalr:
+				case rv_op_jal:
+				case rv_op_jalr:
 					if (pc + pc_offset < end) {
 						addr = pc - pc_bias + pc_offset;
 						if (continuations.find(addr) == continuations.end()) {
@@ -135,7 +135,7 @@ struct riscv_parse_elf
 					break;
 			}
 			switch (dec.codec) {
-				case riscv_codec_sb:
+				case rv_codec_sb:
 					addr = pc - pc_bias + dec.imm;
 					if (continuations.find(addr) == continuations.end()) {
 						continuations.insert(std::pair<addr_t,uint32_t>(addr, continuation_num++));
@@ -160,8 +160,8 @@ struct riscv_parse_elf
 			decode_inst_rv64(dec, dec.inst);
 			if (decode_pseudo) decode_pseudo_inst(dec);
 			disasm_inst_print(dec, dec_hist, pc, pc_bias, gp,
-				std::bind(&riscv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
-				std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+				std::bind(&rv_parse_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
+				std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 			pc += pc_offset;
 		}
 	}
@@ -256,26 +256,26 @@ struct riscv_parse_elf
 		elf.load(filename);
 		if (elf_header) {
 			print_heading("ELF Header");
-			elf_print_header_info(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_header_info(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (elf_header_ext) {
-			elf_print_header_ext_info(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_header_ext_info(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (section_headers) {
 			print_heading("Section Headers");
-			elf_print_section_headers(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_section_headers(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (program_headers) {
 			print_heading("Program Headers");
-			elf_print_program_headers(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_program_headers(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (symbol_table) {
 			print_heading("Symbol Table");
-			elf_print_symbol_table(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_symbol_table(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (relocations && elf.ehdr.e_machine == EM_RISCV) {
 			print_heading("Relocations");
-			elf_print_relocations(elf, std::bind(&riscv_parse_elf::colorize, this, std::placeholders::_1));
+			elf_print_relocations(elf, std::bind(&rv_parse_elf::colorize, this, std::placeholders::_1));
 		}
 		if (disassebly && elf.ehdr.e_machine == EM_RISCV) {
 			print_heading("Disassembly");
@@ -286,7 +286,7 @@ struct riscv_parse_elf
 
 int rv_dump_main(int argc, const char *argv[])
 {
-	riscv_parse_elf elf_parser;
+	rv_parse_elf elf_parser;
 	elf_parser.parse_commandline(argc, argv);
 	elf_parser.run();
 	return 0;

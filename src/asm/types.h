@@ -2,8 +2,8 @@
 //  types.h
 //
 
-#ifndef riscv_types_h
-#define riscv_types_h
+#ifndef rv_types_h
+#define rv_types_h
 
 #include <cstdint>
 

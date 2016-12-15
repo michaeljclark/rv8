@@ -123,7 +123,7 @@ static bool allow_env_var(const char *var)
 
 /* RISC-V Emulator */
 
-struct riscv_emulator
+struct rv_emulator
 {
 	/*
 		Simple ABI/AEE RISC-V emulator that uses a machine generated interpreter
@@ -149,20 +149,20 @@ struct riscv_emulator
 	bool help_or_error = false;
 	addr_t map_physical = 0;
 	uint64_t initial_seed = 0;
-	int ext = rv_isa_imafdc;
+	int ext = rv_set_imafdc;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
 
-	riscv_emulator() : cpu(host_cpu::get_instance()) {}
+	rv_emulator() : cpu(host_cpu::get_instance()) {}
 
-	static rv_isa decode_isa_ext(std::string isa_ext)
+	static rv_set decode_isa_ext(std::string isa_ext)
 	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_isa_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_isa_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_isa_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_isa_imafdc;
-		else return rv_isa_none;
+		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_set_ima;
+		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_set_imac;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
+		else return rv_set_none;
 	}
 
 	static const int elf_p_flags_mmap(int v)
@@ -390,23 +390,23 @@ struct riscv_emulator
 			case ELFCLASS32:
 				switch (ext) {
 			#if ENABLE_RVIMA
-					case rv_isa_ima: start_priv<priv_emulator_rv32ima>(); break;
-					case rv_isa_imac: start_priv<priv_emulator_rv32imac>(); break;
-					case rv_isa_imafd: start_priv<priv_emulator_rv32imafd>(); break;
+					case rv_set_ima: start_priv<priv_emulator_rv32ima>(); break;
+					case rv_set_imac: start_priv<priv_emulator_rv32imac>(); break;
+					case rv_set_imafd: start_priv<priv_emulator_rv32imafd>(); break;
 			#endif
-					case rv_isa_imafdc: start_priv<priv_emulator_rv32imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
+					case rv_set_imafdc: start_priv<priv_emulator_rv32imafdc>(); break;
+					case rv_set_none: panic("illegal isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
 				switch (ext) {
 			#if ENABLE_RVIMA
-					case rv_isa_ima: start_priv<priv_emulator_rv64ima>(); break;
-					case rv_isa_imac: start_priv<priv_emulator_rv64imac>(); break;
-					case rv_isa_imafd: start_priv<priv_emulator_rv64imafd>(); break;
+					case rv_set_ima: start_priv<priv_emulator_rv64ima>(); break;
+					case rv_set_imac: start_priv<priv_emulator_rv64imac>(); break;
+					case rv_set_imafd: start_priv<priv_emulator_rv64imafd>(); break;
 			#endif
-					case rv_isa_imafdc: start_priv<priv_emulator_rv64imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
+					case rv_set_imafdc: start_priv<priv_emulator_rv64imafdc>(); break;
+					case rv_set_none: panic("illegal isa extension"); break;
 				}
 				break;
 			default: panic("illegal elf class");
@@ -419,7 +419,7 @@ struct riscv_emulator
 
 int main(int argc, const char* argv[], const char* envp[])
 {
-	riscv_emulator emulator;
+	rv_emulator emulator;
 	emulator.parse_commandline(argc, argv, envp);
 	emulator.exec();
 	return 0;

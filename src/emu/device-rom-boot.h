@@ -2,8 +2,8 @@
 //  device-boot.h
 //
 
-#ifndef riscv_device_boot_h
-#define riscv_device_boot_h
+#ifndef rv_device_boot_h
+#define rv_device_boot_h
 
 #include "boot-rom-bin.h"
 

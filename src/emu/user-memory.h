@@ -2,8 +2,8 @@
 //  memory.h
 //
 
-#ifndef riscv_memory_h
-#define riscv_memory_h
+#ifndef rv_memory_h
+#define rv_memory_h
 
 namespace riscv {
 

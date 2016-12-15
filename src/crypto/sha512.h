@@ -2,8 +2,8 @@
 //  sha512.h
 //
 
-#ifndef riscv_sha512_h
-#define riscv_sha512_h
+#ifndef rv_sha512_h
+#define rv_sha512_h
 
 namespace riscv {
 

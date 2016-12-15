@@ -2,8 +2,8 @@
 //  config_parser.h
 //
 
-#ifndef riscv_config_parser_h
-#define riscv_config_parser_h
+#ifndef rv_config_parser_h
+#define rv_config_parser_h
 
 namespace riscv {
 

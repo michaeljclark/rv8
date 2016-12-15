@@ -6,8 +6,8 @@
 /* PUBLIC DOMAIN - Jon Mayo - November 13, 2003 */
 /* $Id: base64.h 128 2007-04-20 08:20:40Z orange $ */
 
-#ifndef riscv_base64_h
-#define riscv_base64_h
+#ifndef rv_base64_h
+#define rv_base64_h
 
 #ifdef __cplusplus
 extern "C" {

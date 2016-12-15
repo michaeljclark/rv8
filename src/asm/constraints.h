@@ -4,8 +4,8 @@
 //  DANGER - This is machine generated code
 //
 
-#ifndef riscv_constraints_h
-#define riscv_constraints_h
+#ifndef rv_constraints_h
+#define rv_constraints_h
 
 template <typename T>
 inline bool constraint_check(T &dec, const rvc_constraint *c)

@@ -2,8 +2,8 @@
 //  device-ipi.h
 //
 
-#ifndef riscv_device_gpio_h
-#define riscv_device_gpio_h
+#ifndef rv_device_gpio_h
+#define rv_device_gpio_h
 
 namespace riscv {
 

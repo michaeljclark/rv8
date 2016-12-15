@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_jit::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_jit::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-J", "--print-jit-h", cmdline_arg_type_none,
@@ -30,11 +30,11 @@ std::vector<cmdline_option> riscv_gen_jit::get_cmdline_options()
 	};
 }
 
-static void print_jit_h(riscv_gen *gen)
+static void print_jit_h(rv_gen *gen)
 {
 	printf(kCHeader, "jit.h");
-	printf("#ifndef riscv_jit_h\n");
-	printf("#define riscv_jit_h\n");
+	printf("#ifndef rv_jit_h\n");
+	printf("#define rv_jit_h\n");
 	printf("\n");
 	printf("namespace riscv\n{\n");
 	for (auto &opcode : gen->opcodes) {
@@ -42,10 +42,10 @@ static void print_jit_h(riscv_gen *gen)
 		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
-		std::string emit_name = riscv_meta_model::opcode_format("emit_", opcode, "_");
+		std::string emit_name = rv_meta_model::opcode_format("emit_", opcode, "_");
 		std::vector<std::string> operand_list;
 		for (auto &operand : opcode->codec->operands) {
-			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			auto type_name = rv_meta_model::format_type(operand) + " " + operand->name;
 			operand_list.push_back(type_name);
 		}
 
@@ -60,11 +60,11 @@ static void print_jit_h(riscv_gen *gen)
 		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
-		std::string emit_name = riscv_meta_model::opcode_format("asm_", opcode, "_");
+		std::string emit_name = rv_meta_model::opcode_format("asm_", opcode, "_");
 		std::vector<std::string> operand_list;
 		operand_list.push_back("assembler &as");
 		for (auto &operand : opcode->codec->operands) {
-			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			auto type_name = rv_meta_model::format_type(operand) + " " + operand->name;
 			operand_list.push_back(type_name);
 		}
 
@@ -78,7 +78,7 @@ static void print_jit_h(riscv_gen *gen)
 	printf("#endif\n");
 }
 
-static void print_jit_cc(riscv_gen *gen)
+static void print_jit_cc(rv_gen *gen)
 {
 	static const char* kJitSource =
 
@@ -110,10 +110,10 @@ using namespace riscv;
 		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
-		std::string emit_name = riscv_meta_model::opcode_format("emit_", opcode, "_");
+		std::string emit_name = rv_meta_model::opcode_format("emit_", opcode, "_");
 		std::vector<std::string> operand_list;
 		for (auto &operand : opcode->codec->operands) {
-			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			auto type_name = rv_meta_model::format_type(operand) + " " + operand->name;
 			operand_list.push_back(type_name);
 		}
 
@@ -130,7 +130,7 @@ using namespace riscv;
 			printf("\tif (!(%s)) return 0; /* illegal instruction */\n",
 				join(check_list, " && ").c_str());
 		}
-		printf("\tdec.op = %s;\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+		printf("\tdec.op = %s;\n", rv_meta_model::opcode_format("rv_op_", opcode, "_").c_str());
 		for (auto &operand : opcode->codec->operands) {
 			if (operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") {
 				printf("\tdec.imm = %s;\n", operand->name.c_str());
@@ -154,11 +154,11 @@ using namespace riscv;
 		if (opcode->compressed || opcode->is_pseudo()) continue;
 
 		// create emit interface
-		std::string emit_name = riscv_meta_model::opcode_format("asm_", opcode, "_");
+		std::string emit_name = rv_meta_model::opcode_format("asm_", opcode, "_");
 		std::vector<std::string> operand_list;
 		operand_list.push_back("assembler &as");
 		for (auto &operand : opcode->codec->operands) {
-			auto type_name = riscv_meta_model::format_type(operand) + " " + operand->name;
+			auto type_name = rv_meta_model::format_type(operand) + " " + operand->name;
 			operand_list.push_back(type_name);
 		}
 
@@ -175,7 +175,7 @@ using namespace riscv;
 			printf("\tif (!(%s)) return false; /* illegal instruction */\n",
 				join(check_list, " && ").c_str());
 		}
-		printf("\tdec.op = %s;\n", riscv_meta_model::opcode_format("riscv_op_", opcode, "_").c_str());
+		printf("\tdec.op = %s;\n", rv_meta_model::opcode_format("rv_op_", opcode, "_").c_str());
 		for (auto &operand : opcode->codec->operands) {
 			if (operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") {
 				printf("\tdec.imm = %s;\n", operand->name.c_str());
@@ -196,7 +196,7 @@ using namespace riscv;
 	printf("\n");
 }
 
-void riscv_gen_jit::generate()
+void rv_gen_jit::generate()
 {
 	if (gen->has_option("print_jit_h")) print_jit_h(gen);
 	if (gen->has_option("print_jit_cc")) print_jit_cc(gen);

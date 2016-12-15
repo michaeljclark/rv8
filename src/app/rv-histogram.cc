@@ -37,7 +37,7 @@
 
 using namespace riscv;
 
-struct riscv_histogram_elf
+struct rv_histogram_elf
 {
 	elf_file elf;
 	std::string filename;
@@ -61,16 +61,16 @@ struct riscv_histogram_elf
 		else hi->second++;
 	}
 
-	size_t regnum(decode &dec, riscv_operand_name operand_name)
+	size_t regnum(decode &dec, rv_operand_name operand_name)
 	{
 		switch (operand_name) {
-			case riscv_operand_name_rd: return dec.rd;
-			case riscv_operand_name_rs1: return dec.rs1;
-			case riscv_operand_name_rs2: return dec.rs2;
-			case riscv_operand_name_frd: return dec.rd;
-			case riscv_operand_name_frs1: return dec.rs1;
-			case riscv_operand_name_frs2: return dec.rs2;
-			case riscv_operand_name_frs3: return dec.rs3;
+			case rv_operand_name_rd: return dec.rd;
+			case rv_operand_name_rs1: return dec.rs1;
+			case rv_operand_name_rs2: return dec.rs2;
+			case rv_operand_name_frd: return dec.rd;
+			case rv_operand_name_frs1: return dec.rs1;
+			case rv_operand_name_frs2: return dec.rs2;
+			case rv_operand_name_frs3: return dec.rs3;
 			default: return 0;
 		}
 	}
@@ -78,16 +78,16 @@ struct riscv_histogram_elf
 	void histogram_add_regs(map_t &hist, decode &dec)
 	{
 		std::string key;
-		const riscv_operand_data *operand_data = riscv_inst_operand_data[dec.op];
-		while (operand_data->type != riscv_type_none) {
+		const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
+		while (operand_data->type != rv_type_none) {
 			switch (operand_data->type) {
-				case riscv_type_ireg:
-				case riscv_type_freg:
-					key = std::string(operand_data->type == riscv_type_ireg ?
-						riscv_ireg_name_sym[regnum(dec, operand_data->operand_name)] :
-						riscv_freg_name_sym[regnum(dec, operand_data->operand_name)]) +
+				case rv_type_ireg:
+				case rv_type_freg:
+					key = std::string(operand_data->type == rv_type_ireg ?
+						rv_ireg_name_sym[regnum(dec, operand_data->operand_name)] :
+						rv_freg_name_sym[regnum(dec, operand_data->operand_name)]) +
 						(regs_position ? "-" : "") +
-						(regs_position ? riscv_operand_name_sym[operand_data->operand_name] : "");
+						(regs_position ? rv_operand_name_sym[operand_data->operand_name] : "");
 					histogram_add(hist, key);
 					break;
 				default: break;
@@ -105,7 +105,7 @@ struct riscv_histogram_elf
 			uint64_t inst = inst_fetch(pc, pc_offset);
 			decode_inst_rv64(dec, inst);
 			if (inst_histogram) {
-				histogram_add(hist, riscv_inst_name_sym[dec.op]);
+				histogram_add(hist, rv_inst_name_sym[dec.op]);
 			}
 			if (regs_histogram) {
 				histogram_add_regs(hist, dec);
@@ -212,7 +212,7 @@ struct riscv_histogram_elf
 
 int rv_histogram_main(int argc, const char *argv[])
 {
-	riscv_histogram_elf elf_histogram;
+	rv_histogram_elf elf_histogram;
 	elf_histogram.parse_commandline(argc, argv);
 	elf_histogram.run();
 	return 0;

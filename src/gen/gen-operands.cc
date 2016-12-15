@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_operands::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_operands::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-A", "--print-operands-h", cmdline_arg_type_none,
@@ -27,11 +27,11 @@ std::vector<cmdline_option> riscv_gen_operands::get_cmdline_options()
 	};
 }
 
-static void print_operands_h(riscv_gen *gen)
+static void print_operands_h(rv_gen *gen)
 {
 	printf(kCHeader, "operands.h");
-	printf("#ifndef riscv_operands_h\n");
-	printf("#define riscv_operands_h\n");
+	printf("#ifndef rv_operands_h\n");
+	printf("#define rv_operands_h\n");
 	printf("\n");
 
 	// print immediate decoders
@@ -45,7 +45,7 @@ static void print_operands_h(riscv_gen *gen)
 	printf("#endif\n");
 }
 
-void riscv_gen_operands::generate()
+void rv_gen_operands::generate()
 {
 	if (gen->has_option("print_operands_h")) print_operands_h(gen);
 }

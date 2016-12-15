@@ -29,7 +29,7 @@ R"C(//
 
 )C";
 
-void riscv_codec_node::clear()
+void rv_codec_node::clear()
 {
 	bits.clear();
 	vals.clear();
@@ -37,23 +37,23 @@ void riscv_codec_node::clear()
 	val_decodes.clear();
 }
 
-riscv_gen::riscv_gen()
+rv_gen::rv_gen()
 {
-	generators.push_back(std::make_shared<riscv_gen_cc>(this));
-	generators.push_back(std::make_shared<riscv_gen_constraints>(this));
-	generators.push_back(std::make_shared<riscv_gen_fpu_test>(this));
-	generators.push_back(std::make_shared<riscv_gen_interp>(this));
-	generators.push_back(std::make_shared<riscv_gen_jit>(this));
-	generators.push_back(std::make_shared<riscv_gen_latex>(this));
-	generators.push_back(std::make_shared<riscv_gen_latex_alt>(this));
-	generators.push_back(std::make_shared<riscv_gen_map>(this));
-	generators.push_back(std::make_shared<riscv_gen_meta>(this));
-	generators.push_back(std::make_shared<riscv_gen_operands>(this));
-	generators.push_back(std::make_shared<riscv_gen_strings>(this));
-	generators.push_back(std::make_shared<riscv_gen_switch>(this));
+	generators.push_back(std::make_shared<rv_gen_cc>(this));
+	generators.push_back(std::make_shared<rv_gen_constraints>(this));
+	generators.push_back(std::make_shared<rv_gen_fpu_test>(this));
+	generators.push_back(std::make_shared<rv_gen_interp>(this));
+	generators.push_back(std::make_shared<rv_gen_jit>(this));
+	generators.push_back(std::make_shared<rv_gen_latex>(this));
+	generators.push_back(std::make_shared<rv_gen_latex_alt>(this));
+	generators.push_back(std::make_shared<rv_gen_map>(this));
+	generators.push_back(std::make_shared<rv_gen_meta>(this));
+	generators.push_back(std::make_shared<rv_gen_operands>(this));
+	generators.push_back(std::make_shared<rv_gen_strings>(this));
+	generators.push_back(std::make_shared<rv_gen_switch>(this));
 }
 
-void riscv_gen::generate(int argc, const char *argv[])
+void rv_gen::generate(int argc, const char *argv[])
 {
 	std::string isa_spec = "";
 	bool help_or_error = false;
@@ -105,7 +105,7 @@ void riscv_gen::generate(int argc, const char *argv[])
 	}
 }
 
-void riscv_gen::generate_map()
+void rv_gen::generate_map()
 {
 	for (auto &opcode : opcodes) {
 		for (auto &mask : opcode->masks) {
@@ -120,10 +120,10 @@ void riscv_gen::generate_map()
 	}
 }
 
-void riscv_gen::generate_codec()
+void rv_gen::generate_codec()
 {
 	// make list of opcodes to include
-	riscv_opcode_list opcodes_copy;
+	rv_opcode_list opcodes_copy;
 	for (auto &opcode : opcodes) {
 		if (opcode->is_pseudo()) continue;
 		opcodes_copy.push_back(opcode);
@@ -134,7 +134,7 @@ void riscv_gen::generate_codec()
 	generate_codec_node(root_node, opcodes_copy);
 }
 
-void riscv_gen::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &opcode_list)
+void rv_gen::generate_codec_node(rv_codec_node &node, rv_opcode_list &opcode_list)
 {
 	// calculate row coverage for each column
 	std::vector<ssize_t> sum;
@@ -185,7 +185,7 @@ void riscv_gen::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &o
 		auto val_opcode_list_i = node.val_opcodes.find(val);
 		if (val_opcode_list_i == node.val_opcodes.end()) {
 			val_opcode_list_i = node.val_opcodes.insert(node.val_opcodes.begin(),
-				std::pair<ssize_t,riscv_opcode_list>(val, riscv_opcode_list()));
+				std::pair<ssize_t,rv_opcode_list>(val, rv_opcode_list()));
 		}
 		val_opcode_list_i->second.push_back(opcode);
 	}
@@ -204,7 +204,7 @@ void riscv_gen::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &o
 	for (auto &val : node.vals) {
 		if (node.val_decodes.find(val) == node.val_decodes.end()) {
 			node.val_decodes.insert(node.val_decodes.begin(),
-				std::pair<ssize_t,riscv_codec_node>(val, riscv_codec_node()));
+				std::pair<ssize_t,rv_codec_node>(val, rv_codec_node()));
 		}
 		generate_codec_node(node.val_decodes[val], node.val_opcodes[val]);
 	}
@@ -214,7 +214,7 @@ void riscv_gen::generate_codec_node(riscv_codec_node &node, riscv_opcode_list &o
 
 int main(int argc, const char *argv[])
 {
-	riscv_gen gen;
+	rv_gen gen;
 	gen.generate(argc, argv);
 	exit(0);
 }

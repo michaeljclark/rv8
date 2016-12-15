@@ -2,8 +2,8 @@
 //  elf.h
 //
 
-#ifndef riscv_elf_h
-#define riscv_elf_h
+#ifndef rv_elf_h
+#define rv_elf_h
 
 /*
 

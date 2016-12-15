@@ -2,8 +2,8 @@
 //  debug-cli.h
 //
 
-#ifndef riscv_debug_cli_h
-#define riscv_debug_cli_h
+#ifndef rv_debug_cli_h
+#define rv_debug_cli_h
 
 namespace riscv {
 

@@ -56,7 +56,7 @@ struct spasm : disasm
 		is_abs(0), is_pcrel(0), is_gprel(0) {}
 };
 
-struct riscv_compress_elf
+struct rv_compress_elf
 {
 	elf_file elf;
 	std::string filename;
@@ -191,7 +191,7 @@ struct riscv_compress_elf
 							uint64_t cont_addr = li->pc;
 							auto ci = get_continuation(cont_addr);
 							dec.label_pair = ci->second;
-							if (dec.op == riscv_op_jalr) {
+							if (dec.op == rv_op_jalr) {
 								if (bi + 1 != bend) {
 									uint64_t cont_addr = (bi + 1)->pc;
 									auto ci = get_continuation(cont_addr);
@@ -223,7 +223,7 @@ struct riscv_compress_elf
 		typename std::deque<T>::iterator bend)
 	{
 		switch (dec.op) {
-			case riscv_op_jal:
+			case rv_op_jal:
 			{
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
@@ -232,7 +232,7 @@ struct riscv_compress_elf
 					dec.label_branch = ci->second;
 				}
 			}
-			case riscv_op_jalr:
+			case rv_op_jalr:
 			{
 				if (bi + 1 != bend) {
 					uint64_t cont_addr = (bi + 1)->pc;
@@ -245,7 +245,7 @@ struct riscv_compress_elf
 				break;
 		}
 		switch (dec.codec) {
-			case riscv_codec_sb:
+			case rv_codec_sb:
 			{
 				dec.is_pcrel = true;
 				dec.addr = dec.pc + dec.imm;
@@ -265,24 +265,24 @@ struct riscv_compress_elf
 	template <typename T>
 	bool deocde_gprel(T &dec, addr_t gp)
 	{
-		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
+		if (!gp || dec.rs1 != rv_ireg_gp) return false;
 		switch (dec.op) {
-			case riscv_op_addi:
-			case riscv_op_lb:
-			case riscv_op_lh:
-			case riscv_op_lw:
-			case riscv_op_ld:
-			case riscv_op_lbu:
-			case riscv_op_lhu:
-			case riscv_op_lwu:
-			case riscv_op_flw:
-			case riscv_op_fld:
-			case riscv_op_sb:
-			case riscv_op_sh:
-			case riscv_op_sw:
-			case riscv_op_sd:
-			case riscv_op_fsw:
-			case riscv_op_fsd:
+			case rv_op_addi:
+			case rv_op_lb:
+			case rv_op_lh:
+			case rv_op_lw:
+			case rv_op_ld:
+			case rv_op_lbu:
+			case rv_op_lhu:
+			case rv_op_lwu:
+			case rv_op_flw:
+			case rv_op_fld:
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
 				dec.is_gprel = true;
 				dec.addr = int64_t(gp + dec.imm);
 				return true;
@@ -322,8 +322,8 @@ struct riscv_compress_elf
 
 			// clear instruction history on jump boundaries
 			switch(dec.op) {
-				case riscv_op_jal:
-				case riscv_op_jalr:
+				case rv_op_jal:
+				case rv_op_jalr:
 					dec_hist.clear();
 					break;
 				default:
@@ -411,7 +411,7 @@ struct riscv_compress_elf
 	{
 		while (size > 0) {
 			spasm dec;
-			dec.inst = emit_addi(riscv_ireg_x0, riscv_ireg_x0, 0);
+			dec.inst = emit_addi(rv_ireg_x0, rv_ireg_x0, 0);
 			decode_inst_rv64(dec, dec.inst);
 			dec.pc = bin.back().pc + inst_length(bin.back().inst);
 			if (size == 2) {
@@ -471,8 +471,8 @@ struct riscv_compress_elf
 		for (auto bi = bin.begin(); bi != bin.end(); bi++) {
 			auto &dec = *bi;
 			disasm_inst_print(dec, dec_hist, dec.pc, 0, gp,
-				std::bind(&riscv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
-				std::bind(&riscv_compress_elf::colorize, this, std::placeholders::_1));
+				std::bind(&rv_compress_elf::symlookup, this, std::placeholders::_1, std::placeholders::_2),
+				std::bind(&rv_compress_elf::colorize, this, std::placeholders::_1));
 		}
 	}
 
@@ -611,7 +611,7 @@ int rv_compress_main(int argc, const char *argv[])
 	printf("\n");
 	printf("rv-compress-0.0.0-alpha-0\n");
 	printf("\n");
-	riscv_compress_elf elf_compress;
+	rv_compress_elf elf_compress;
 	elf_compress.parse_commandline(argc, argv);
 	elf_compress.run();
 	return 0;

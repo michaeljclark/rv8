@@ -2,8 +2,8 @@
 //  alu.h
 //
 
-#ifndef riscv_alu_h
-#define riscv_alu_h
+#ifndef rv_alu_h
+#define rv_alu_h
 
 namespace riscv {
 

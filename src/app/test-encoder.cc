@@ -83,22 +83,22 @@ int main()
 	test_imm<ptr64>(1, 1);
 	test_imm<ptr64>(1, 0xffffffffffffffffLL);
 
-	assert(emit_lui(riscv_ireg_a2, 0xfffffffffffff000) == 0xfffff637);
-	assert(emit_lui(riscv_ireg_s4, 0x20000) == 0x00020a37);
-	assert(emit_lui(riscv_ireg_a2, 0xfff0fffffffff000) == 0); /* illegal instruciton */
+	assert(emit_lui(rv_ireg_a2, 0xfffffffffffff000) == 0xfffff637);
+	assert(emit_lui(rv_ireg_s4, 0x20000) == 0x00020a37);
+	assert(emit_lui(rv_ireg_a2, 0xfff0fffffffff000) == 0); /* illegal instruciton */
 
-	assert(emit_auipc(riscv_ireg_a0, 0xffffffffffef1000) == 0xffef1517);
-	assert(emit_auipc(riscv_ireg_t1, 0x117000) == 0x00117317);
-	assert(emit_auipc(riscv_ireg_a0, 0xfff0fffffffff000) == 0); /* illegal instruciton */
+	assert(emit_auipc(rv_ireg_a0, 0xffffffffffef1000) == 0xffef1517);
+	assert(emit_auipc(rv_ireg_t1, 0x117000) == 0x00117317);
+	assert(emit_auipc(rv_ireg_a0, 0xfff0fffffffff000) == 0); /* illegal instruciton */
 
-	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_s3, 0) == 0x000980e7);
-	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, 368) == 0x170300e7);
-	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, -1720) == 0x948300e7);
-	assert(emit_jalr(riscv_ireg_ra, riscv_ireg_t1, 4096) == 0); /* illegal instruciton */
+	assert(emit_jalr(rv_ireg_ra, rv_ireg_s3, 0) == 0x000980e7);
+	assert(emit_jalr(rv_ireg_ra, rv_ireg_t1, 368) == 0x170300e7);
+	assert(emit_jalr(rv_ireg_ra, rv_ireg_t1, -1720) == 0x948300e7);
+	assert(emit_jalr(rv_ireg_ra, rv_ireg_t1, 4096) == 0); /* illegal instruciton */
 
-	assert(emit_bne(riscv_ireg_a5, riscv_ireg_zero, -16) == 0xfe0798e3);
-	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 100) == 0x06f71263);
-	assert(emit_bne(riscv_ireg_a4, riscv_ireg_a5, 4096) == 0); /* illegal instruciton */
+	assert(emit_bne(rv_ireg_a5, rv_ireg_zero, -16) == 0xfe0798e3);
+	assert(emit_bne(rv_ireg_a4, rv_ireg_a5, 100) == 0x06f71263);
+	assert(emit_bne(rv_ireg_a4, rv_ireg_a5, 4096) == 0); /* illegal instruciton */
 
-	assert(emit_lbu(riscv_ireg_a4, riscv_ireg_a5, 20) == 0x0147c703);
+	assert(emit_lbu(rv_ireg_a4, rv_ireg_a5, 20) == 0x0147c703);
 }

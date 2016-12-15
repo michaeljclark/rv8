@@ -2,8 +2,8 @@
 //  color.h
 //
 
-#ifndef riscv_color_h
-#define riscv_color_h
+#ifndef rv_color_h
+#define rv_color_h
 
 #define _COLOR_BEGIN       "\x1B["
 #define _COLOR_SEP         ";"
@@ -38,8 +38,8 @@ enum ansi_color_spec {
 	ansi_color_reverse
 };
 
-extern ssize_t riscv_color_to_ansi_index(std::string color);
-extern std::string riscv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
+extern ssize_t rv_color_to_ansi_index(std::string color);
+extern std::string rv_colors_to_ansi_escape_sequence(std::string fg_color, std::string bg_color,
 	ansi_color_spec spec = ansi_color_keep);
 
 #endif

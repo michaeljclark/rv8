@@ -2,8 +2,8 @@
 //  mmu-proxy.h
 //
 
-#ifndef riscv_mmu_proxy_h
-#define riscv_mmu_proxy_h
+#ifndef rv_mmu_proxy_h
+#define rv_mmu_proxy_h
 
 namespace riscv {
 

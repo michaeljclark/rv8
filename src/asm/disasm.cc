@@ -91,7 +91,7 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 {
 	size_t offset = 0;
 	addr_t addr = pc - pc_bias;
-	const char *fmt = riscv_inst_format[dec.op];
+	const char *fmt = rv_inst_format[dec.op];
 	const char *symbol_name = symlookup((addr_t)addr, false);
 	const char* csr_name = nullptr;
 
@@ -128,13 +128,13 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 			case '(': print_add(offset, "("); break;
 			case ',': print_add(offset, ", "); break;
 			case ')': print_add(offset, ")"); break;
-			case '0': print_add(offset, riscv_ireg_name_sym[dec.rd]); break;
-			case '1': print_add(offset, riscv_ireg_name_sym[dec.rs1]); break;
-			case '2': print_add(offset, riscv_ireg_name_sym[dec.rs2]); break;
-			case '3': print_add(offset, riscv_freg_name_sym[dec.rd]); break;
-			case '4': print_add(offset, riscv_freg_name_sym[dec.rs1]); break;
-			case '5': print_add(offset, riscv_freg_name_sym[dec.rs2]); break;
-			case '6': print_add(offset, riscv_freg_name_sym[dec.rs3]); break;
+			case '0': print_add(offset, rv_ireg_name_sym[dec.rd]); break;
+			case '1': print_add(offset, rv_ireg_name_sym[dec.rs1]); break;
+			case '2': print_add(offset, rv_ireg_name_sym[dec.rs2]); break;
+			case '3': print_add(offset, rv_freg_name_sym[dec.rd]); break;
+			case '4': print_add(offset, rv_freg_name_sym[dec.rs1]); break;
+			case '5': print_add(offset, rv_freg_name_sym[dec.rs2]); break;
+			case '6': print_add(offset, rv_freg_name_sym[dec.rs3]); break;
 			case '7': print_fmt(offset, "%d", dec.rs1); break;
 			case 'i': print_fmt(offset, "%d", dec.imm); break;
 			case 'o':
@@ -143,36 +143,36 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 					intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm));
 				break;
 			case 'c':
-				csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
+				csr_name = rv_csr_name_sym[dec.imm & 0xfff];
 				if (csr_name) print_fmt(offset, "%s", csr_name);
 				else print_fmt(offset, "0x%03x", dec.imm & 0xfff);
 				break;
 			case 'r':
 				switch(dec.rm) {
-					case riscv_rm_rne: print_add(offset, "rne"); break;
-					case riscv_rm_rtz: print_add(offset, "rtz"); break;
-					case riscv_rm_rdn: print_add(offset, "rdn"); break;
-					case riscv_rm_rup: print_add(offset, "rup"); break;
-					case riscv_rm_rmm: print_add(offset, "rmm"); break;
-					case riscv_rm_dyn: print_add(offset, "dyn"); break;
+					case rv_rm_rne: print_add(offset, "rne"); break;
+					case rv_rm_rtz: print_add(offset, "rtz"); break;
+					case rv_rm_rdn: print_add(offset, "rdn"); break;
+					case rv_rm_rup: print_add(offset, "rup"); break;
+					case rv_rm_rmm: print_add(offset, "rmm"); break;
+					case rv_rm_dyn: print_add(offset, "dyn"); break;
 					default:           print_add(offset, "inv"); break;
 				}
 				break;
 			case 'p':
-				if (dec.pred & riscv_fence_i) print_add(offset, "i");
-				if (dec.pred & riscv_fence_o) print_add(offset, "o");
-				if (dec.pred & riscv_fence_r) print_add(offset, "r");
-				if (dec.pred & riscv_fence_w) print_add(offset, "w");
+				if (dec.pred & rv_fence_i) print_add(offset, "i");
+				if (dec.pred & rv_fence_o) print_add(offset, "o");
+				if (dec.pred & rv_fence_r) print_add(offset, "r");
+				if (dec.pred & rv_fence_w) print_add(offset, "w");
 				break;
 			case 's':
-				if (dec.succ & riscv_fence_i) print_add(offset, "i");
-				if (dec.succ & riscv_fence_o) print_add(offset, "o");
-				if (dec.succ & riscv_fence_r) print_add(offset, "r");
-				if (dec.succ & riscv_fence_w) print_add(offset, "w");
+				if (dec.succ & rv_fence_i) print_add(offset, "i");
+				if (dec.succ & rv_fence_o) print_add(offset, "o");
+				if (dec.succ & rv_fence_r) print_add(offset, "r");
+				if (dec.succ & rv_fence_w) print_add(offset, "w");
 				break;
 			case 'O':
 				printf("%s", colorize("opcode"));
-				print_add(offset, riscv_inst_name_sym[dec.op]);
+				print_add(offset, rv_inst_name_sym[dec.op]);
  				break;
 			case '\t':
 				print_pad(offset, 60, "");
@@ -203,8 +203,8 @@ void riscv::disasm_inst_print(disasm &dec, std::deque<disasm> &dec_hist,
 
 	// clear the instruction history on jump boundaries
 	switch(dec.op) {
-		case riscv_op_jal:
-		case riscv_op_jalr:
+		case rv_op_jal:
+		case rv_op_jalr:
 			dec_hist.clear();
 			break;
 		default:

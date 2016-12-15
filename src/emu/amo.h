@@ -2,8 +2,8 @@
 //  amo.h
 //
 
-#ifndef riscv_amo_h
-#define riscv_amo_h
+#ifndef rv_amo_h
+#define rv_amo_h
 
 namespace riscv {
 

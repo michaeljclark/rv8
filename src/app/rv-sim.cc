@@ -110,7 +110,7 @@ static bool allow_env_var(const char *var)
 
 /* RISC-V Emulator */
 
-struct riscv_emulator
+struct rv_emulator
 {
 	/*
 		Simple ABI/AEE RISC-V emulator that uses a machine generated interpreter
@@ -132,20 +132,20 @@ struct riscv_emulator
 	int proc_logs = 0;
 	bool help_or_error = false;
 	uint64_t initial_seed = 0;
-	int ext = rv_isa_imafdc;
+	int ext = rv_set_imafdc;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
 
-	riscv_emulator() : cpu(host_cpu::get_instance()) {}
+	rv_emulator() : cpu(host_cpu::get_instance()) {}
 
-	static rv_isa decode_isa_ext(std::string isa_ext)
+	static rv_set decode_isa_ext(std::string isa_ext)
 	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_isa_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_isa_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_isa_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_isa_imafdc;
-		else return rv_isa_none;
+		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_set_ima;
+		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_set_imac;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
+		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
+		else return rv_set_none;
 	}
 
 	static const int elf_p_flags_mmap(int v)
@@ -170,7 +170,7 @@ struct riscv_emulator
 		/* keep track of the mapped segment and set the stack_top */
 		proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
 		*(u64*)(stack_top - sizeof(u64)) = 0xfeedcafebabef00dULL;
-		proc.ireg[riscv_ireg_sp] = stack_top - sizeof(u64);
+		proc.ireg[rv_ireg_sp] = stack_top - sizeof(u64);
 
 		/* log stack creation */
 		if (proc.log & proc_log_memory) {
@@ -182,12 +182,12 @@ struct riscv_emulator
 	template <typename P>
 	void copy_to_proxy_stack(P &proc, addr_t stack_top, size_t stack_size, void *data, size_t len)
 	{
-		proc.ireg[riscv_ireg_sp] = proc.ireg[riscv_ireg_sp] - len;
-		if (size_t(stack_top - proc.ireg[riscv_ireg_sp]) > stack_size) {
+		proc.ireg[rv_ireg_sp] = proc.ireg[rv_ireg_sp] - len;
+		if (size_t(stack_top - proc.ireg[rv_ireg_sp]) > stack_size) {
 			panic("copy_to_proxy_stack: overflow: %d > %d",
-				stack_top - proc.ireg[riscv_ireg_sp], stack_size);
+				stack_top - proc.ireg[rv_ireg_sp], stack_size);
 		}
-		memcpy((void*)(uintptr_t)proc.ireg[riscv_ireg_sp].r.xu.val, data, len);
+		memcpy((void*)(uintptr_t)proc.ireg[rv_ireg_sp].r.xu.val, data, len);
 	}
 
 	template <typename P>
@@ -226,7 +226,7 @@ struct riscv_emulator
 		std::vector<typename P::ux> env_data;
 		for (auto &env : host_env) {
 			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)env.c_str(), env.size() + 1);
-			env_data.push_back(typename P::ux(proc.ireg[riscv_ireg_sp].r.xu.val));
+			env_data.push_back(typename P::ux(proc.ireg[rv_ireg_sp].r.xu.val));
 		}
 		env_data.push_back(0);
 
@@ -234,12 +234,12 @@ struct riscv_emulator
 		std::vector<typename P::ux> arg_data;
 		for (auto &arg : host_cmdline) {
 			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)arg.c_str(), arg.size() + 1);
-			arg_data.push_back(typename P::ux(proc.ireg[riscv_ireg_sp].r.xu.val));
+			arg_data.push_back(typename P::ux(proc.ireg[rv_ireg_sp].r.xu.val));
 		}
 		arg_data.push_back(0);
 
 		/* align stack to 16 bytes */
-		proc.ireg[riscv_ireg_sp] = proc.ireg[riscv_ireg_sp] & ~15;
+		proc.ireg[rv_ireg_sp] = proc.ireg[rv_ireg_sp] & ~15;
 
 		/* TODO - Add auxiliary vector to stack */
 
@@ -428,23 +428,23 @@ struct riscv_emulator
 			case ELFCLASS32:
 				switch (ext) {
 			#if ENABLE_RVIMA
-					case rv_isa_ima: start_proxy<proxy_emulator_rv32ima>(); break;
-					case rv_isa_imac: start_proxy<proxy_emulator_rv32imac>(); break;
-					case rv_isa_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
+					case rv_set_ima: start_proxy<proxy_emulator_rv32ima>(); break;
+					case rv_set_imac: start_proxy<proxy_emulator_rv32imac>(); break;
+					case rv_set_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
 			#endif
-					case rv_isa_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
+					case rv_set_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
+					case rv_set_none: panic("illegal isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
 				switch (ext) {
 			#if ENABLE_RVIMA
-					case rv_isa_ima: start_proxy<proxy_emulator_rv64ima>(); break;
-					case rv_isa_imac: start_proxy<proxy_emulator_rv64imac>(); break;
-					case rv_isa_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
+					case rv_set_ima: start_proxy<proxy_emulator_rv64ima>(); break;
+					case rv_set_imac: start_proxy<proxy_emulator_rv64imac>(); break;
+					case rv_set_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
 			#endif
-					case rv_isa_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
-					case rv_isa_none: panic("illegal isa extension"); break;
+					case rv_set_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
+					case rv_set_none: panic("illegal isa extension"); break;
 				}
 				break;
 			default: panic("illegal elf class");
@@ -457,7 +457,7 @@ struct riscv_emulator
 
 int main(int argc, const char* argv[], const char* envp[])
 {
-	riscv_emulator emulator;
+	rv_emulator emulator;
 	emulator.parse_commandline(argc, argv, envp);
 	emulator.exec();
 	return 0;

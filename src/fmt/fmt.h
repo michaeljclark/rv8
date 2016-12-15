@@ -2,8 +2,8 @@
 //  fmt.h
 //
 
-#ifndef riscv_fmt_h
-#define riscv_fmt_h
+#ifndef rv_fmt_h
+#define rv_fmt_h
 
 #include <cstdio>
 #include <cstdlib>

@@ -18,7 +18,7 @@
 #include "model.h"
 #include "gen.h"
 
-std::vector<cmdline_option> riscv_gen_fpu_test::get_cmdline_options()
+std::vector<cmdline_option> rv_gen_fpu_test::get_cmdline_options()
 {
 	return std::vector<cmdline_option>{
 		{ "-FH", "--print-fpu-test-h", cmdline_arg_type_none,
@@ -30,9 +30,9 @@ std::vector<cmdline_option> riscv_gen_fpu_test::get_cmdline_options()
 	};
 }
 
-typedef std::pair<const riscv_primitive_type*,std::string> riscv_operand_desc;
+typedef std::pair<const rv_primitive_type*,std::string> rv_operand_desc;
 
-static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
+static rv_operand_desc rv_fpu_operand_type(rv_opcode_ptr &opcode, rv_extension_ptr &ext, rv_operand_ptr &operand, size_t i)
 {
 	// create operand name
 	std::string operand_name = operand->name;
@@ -41,10 +41,10 @@ static riscv_operand_desc riscv_fpu_operand_type(riscv_opcode_ptr &opcode, riscv
 	operand_name = replace(operand_name, "frs", "s");
 	operand_name = replace(operand_name, "rs", "s");
 
-	return riscv_operand_desc(riscv_meta_model::infer_operand_primitive(opcode, ext, operand, i), operand_name);
+	return rv_operand_desc(rv_meta_model::infer_operand_primitive(opcode, ext, operand, i), operand_name);
 }
 
-template <typename T> void typed_value_set(std::set<std::string> &values, const riscv_primitive_type *primitive)
+template <typename T> void typed_value_set(std::set<std::string> &values, const rv_primitive_type *primitive)
 {
 	char fmt[16];
 	char buf[256];
@@ -61,7 +61,7 @@ template <typename T> void typed_value_set(std::set<std::string> &values, const 
 	}
 }
 
-static std::set<std::string> test_values(const riscv_primitive_type *primitive)
+static std::set<std::string> test_values(const rv_primitive_type *primitive)
 {
 	std::set<std::string> values;
 	switch (primitive->enum_type) {
@@ -78,7 +78,7 @@ static std::set<std::string> test_values(const riscv_primitive_type *primitive)
 	return values;
 }
 
-static void print_fpu_test_h(riscv_gen *gen)
+static void print_fpu_test_h(rv_gen *gen)
 {
 	static const char* kFpuHeader =
 
@@ -111,7 +111,7 @@ typedef unsigned long      ux;
 
 		// find extension with minimum isa width
 		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
-			[](riscv_extension_ptr &a, riscv_extension_ptr &b){ return a->isa_width < b->isa_width; });
+			[](rv_extension_ptr &a, rv_extension_ptr &b){ return a->isa_width < b->isa_width; });
 		if (ext_min_width_i == opcode->extensions.end()) continue;
 		auto ext = *ext_min_width_i;
 
@@ -120,7 +120,7 @@ typedef unsigned long      ux;
 
 		// infer C argument types for test function
 		bool skip_imm = false;
-		std::vector<riscv_operand_desc> operand_list;
+		std::vector<rv_operand_desc> operand_list;
 		for (size_t i = 0; i < opcode->codec->operands.size(); i++) {
 			auto operand = opcode->codec->operands[i];
 			// round mode operand not supported
@@ -128,39 +128,39 @@ typedef unsigned long      ux;
 			// instructions with immediates not supported (fld, fsw)
 			if (operand->name.find("imm") != std::string::npos) skip_imm = true;
 			// infer primitive type based on the opcode components and operand types
-			operand_list.push_back(riscv_fpu_operand_type(opcode, ext, operand, i));
+			operand_list.push_back(rv_fpu_operand_type(opcode, ext, operand, i));
 		}
 		if (skip_imm) continue;
 
 		std::vector<std::string> fn_arity;
 		std::transform(operand_list.begin() + 1, operand_list.end(),
-			std::back_inserter(fn_arity), [](const riscv_operand_desc& operand) {
+			std::back_inserter(fn_arity), [](const rv_operand_desc& operand) {
 				return format_string("%s %s", operand.first->meta_type, operand.second.c_str());
 		});
 
 		std::vector<std::string> operand_fmt;
 		std::transform(operand_list.begin() + 1, operand_list.end(),
-			std::back_inserter(operand_fmt), [](const riscv_operand_desc& operand) {
+			std::back_inserter(operand_fmt), [](const rv_operand_desc& operand) {
 				return format_string("%s%s", operand.first->c_fmt, operand.first->c_suffix);
 		});
 
 		std::vector<std::string> asm_arity;
 		std::transform(operand_list.begin(), operand_list.end(),
-			std::back_inserter(asm_arity), [](const riscv_operand_desc& operand) {
+			std::back_inserter(asm_arity), [](const rv_operand_desc& operand) {
 				return format_string("%%[%s]", operand.second.c_str());
 		});
 
 		std::vector<std::string> asm_results;
 		std::transform(operand_list.begin() + 1, operand_list.end(),
-			std::back_inserter(asm_results), [](const riscv_operand_desc& operand) {
+			std::back_inserter(asm_results), [](const rv_operand_desc& operand) {
 				return format_string("[%s]\"%s\" (%s)",
 					operand.second.c_str(), operand.first->asm_type, operand.second.c_str());
 		});
 
 		// output function
 		if (ext->isa_width == 64) printf("#if _RISCV_SZPTR != _RISCV_SZINT\n");
-		std::string opcode_dot = riscv_meta_model::opcode_format("", opcode, ".");
-		std::string opcode_name = riscv_meta_model::opcode_format("", opcode, "_");
+		std::string opcode_dot = rv_meta_model::opcode_format("", opcode, ".");
+		std::string opcode_name = rv_meta_model::opcode_format("", opcode, "_");
 		printf(
 			"#define fmt_res_%s \"%s%s\"\n"
 			"#define fmt_arg_%s \"%s\"\n"
@@ -192,7 +192,7 @@ typedef unsigned long      ux;
 	printf("#endif\n");
 }
 
-static void print_fpu_test_c(riscv_gen *gen)
+static void print_fpu_test_c(rv_gen *gen)
 {
 	static const char* kFpuSourceHeader =
 
@@ -236,7 +236,7 @@ R"C(
 
 		// find extension with minimum isa width
 		auto ext_min_width_i = std::min_element(opcode->extensions.begin(), opcode->extensions.end(),
-			[](riscv_extension_ptr &a, riscv_extension_ptr &b){ return a->isa_width < b->isa_width; });
+			[](rv_extension_ptr &a, rv_extension_ptr &b){ return a->isa_width < b->isa_width; });
 		if (ext_min_width_i == opcode->extensions.end()) continue;
 		auto ext = *ext_min_width_i;
 
@@ -245,7 +245,7 @@ R"C(
 
 		// infer C argument types for test function
 		bool skip_imm = false;
-		std::vector<riscv_operand_desc> operand_list;
+		std::vector<rv_operand_desc> operand_list;
 		for (size_t i = 0; i < opcode->codec->operands.size(); i++) {
 			auto operand = opcode->codec->operands[i];
 			// round mode operand not supported
@@ -253,7 +253,7 @@ R"C(
 			// instructions with immediates not supported (fld, fsw)
 			if (operand->name.find("imm") != std::string::npos) skip_imm = true;
 			// infer primitive type based on the opcode components and operand types
-			operand_list.push_back(riscv_fpu_operand_type(opcode, ext, operand, i));
+			operand_list.push_back(rv_fpu_operand_type(opcode, ext, operand, i));
 		}
 		if (skip_imm) continue;
 
@@ -264,7 +264,7 @@ R"C(
 				std::set<std::string> values1 = test_values(operand_list[1].first);
 				for (auto &v1 : values1) {
 					printf("\tFPU_IDENTITY(%s, %s);\n",
-						riscv_meta_model::opcode_format("", opcode, "_").c_str(),
+						rv_meta_model::opcode_format("", opcode, "_").c_str(),
 						v1.c_str());
 				}
 				break;
@@ -275,7 +275,7 @@ R"C(
 				for (auto &v1 : values1) {
 					for (auto &v2 : values2) {
 						printf("\tFPU_IDENTITY(%s, %s, %s);\n",
-							riscv_meta_model::opcode_format("", opcode, "_").c_str(),
+							rv_meta_model::opcode_format("", opcode, "_").c_str(),
 							v1.c_str(), v2.c_str());
 					}
 				}
@@ -289,7 +289,7 @@ R"C(
 					for (auto &v2 : values2) {
 						for (auto &v3 : values3) {
 							printf("\tFPU_IDENTITY(%s, %s, %s, %s);\n",
-								riscv_meta_model::opcode_format("", opcode, "_").c_str(),
+								rv_meta_model::opcode_format("", opcode, "_").c_str(),
 								v1.c_str(), v2.c_str(), v3.c_str());
 						}
 					}
@@ -303,7 +303,7 @@ R"C(
 	printf("%s", kFpuSourceFooter);
 }
 
-void riscv_gen_fpu_test::generate()
+void rv_gen_fpu_test::generate()
 {
 	if (gen->has_option("print_fpu_test_h")) print_fpu_test_h(gen);
 	if (gen->has_option("print_fpu_test_c")) print_fpu_test_c(gen);

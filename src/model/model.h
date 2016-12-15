@@ -2,70 +2,70 @@
 //  model.h
 //
 
-#ifndef riscv_model_h
-#define riscv_model_h
+#ifndef rv_model_h
+#define rv_model_h
 
-struct riscv_bitrange;
-struct riscv_bitspec;
-struct riscv_operand;
-struct riscv_enum;
-struct riscv_type;
-struct riscv_codec;
-struct riscv_extension;
-struct riscv_format;
-struct riscv_register;
-struct riscv_csr;
-struct riscv_opcode;
-struct riscv_constraint;
-struct riscv_compressed;
-struct riscv_pseudo;
-struct riscv_bitrange;
-struct riscv_latex_row;
+struct rv_bitrange;
+struct rv_bitspec;
+struct rv_operand;
+struct rv_enum;
+struct rv_type;
+struct rv_codec;
+struct rv_extension;
+struct rv_format;
+struct rv_register;
+struct rv_csr;
+struct rv_opcode;
+struct rv_constraint;
+struct rv_compressed;
+struct rv_pseudo;
+struct rv_bitrange;
+struct rv_latex_row;
 
 typedef unsigned long long inst_t;
 
-typedef std::pair<riscv_bitspec,std::string> riscv_named_bitspec;
-typedef std::shared_ptr<riscv_operand> riscv_operand_ptr;
-typedef std::vector<riscv_operand_ptr> riscv_operand_list;
-typedef std::map<std::string,riscv_operand_ptr> riscv_operand_map;
-typedef std::shared_ptr<riscv_enum> riscv_enum_ptr;
-typedef std::vector<riscv_enum_ptr> riscv_enum_list;
-typedef std::map<std::string,riscv_enum_ptr> riscv_enum_map;
-typedef std::shared_ptr<riscv_type> riscv_type_ptr;
-typedef std::vector<riscv_type_ptr> riscv_type_list;
-typedef std::map<std::string,riscv_type_ptr> riscv_type_map;
-typedef std::shared_ptr<riscv_codec> riscv_codec_ptr;
-typedef std::vector<riscv_codec_ptr> riscv_codec_list;
-typedef std::map<std::string,riscv_codec_ptr> riscv_codec_map;
-typedef std::shared_ptr<riscv_extension> riscv_extension_ptr;
-typedef std::vector<riscv_extension_ptr> riscv_extension_list;
-typedef std::map<std::string,riscv_extension_ptr> riscv_extension_map;
-typedef std::shared_ptr<riscv_format> riscv_format_ptr;
-typedef std::vector<riscv_format_ptr> riscv_format_list;
-typedef std::map<std::string,riscv_format_ptr> riscv_format_map;
-typedef std::shared_ptr<riscv_register> riscv_register_ptr;
-typedef std::vector<riscv_register_ptr> riscv_register_list;
-typedef std::map<std::string,riscv_register_ptr> riscv_register_map;
-typedef std::shared_ptr<riscv_csr> riscv_csr_ptr;
-typedef std::vector<riscv_csr_ptr> riscv_csr_list;
-typedef std::map<std::string,riscv_csr_ptr> riscv_csr_map;
-typedef std::pair<riscv_bitrange,size_t> riscv_opcode_mask;
-typedef std::vector<riscv_opcode_mask> riscv_opcode_mask_list;
-typedef std::shared_ptr<riscv_opcode> riscv_opcode_ptr;
-typedef std::vector<riscv_opcode_ptr> riscv_opcode_list;
-typedef std::shared_ptr<riscv_constraint> riscv_constraint_ptr;
-typedef std::map<std::string,riscv_constraint_ptr> riscv_constraint_map;
-typedef std::vector<riscv_constraint_ptr> riscv_constraint_list;
-typedef std::shared_ptr<riscv_compressed> riscv_compressed_ptr;
-typedef std::vector<riscv_compressed_ptr> riscv_compressed_list;
-typedef std::map<std::string,riscv_opcode_ptr> riscv_opcode_map;
-typedef std::map<std::string,riscv_opcode_list> riscv_opcode_list_map;
-typedef std::set<riscv_opcode_ptr> riscv_opcode_set;
-typedef std::shared_ptr<riscv_pseudo> riscv_pseudo_ptr;
-typedef std::map<std::string,riscv_pseudo_ptr> riscv_pseudo_map;
-typedef std::vector<riscv_pseudo_ptr> riscv_pseudo_list;
+typedef std::pair<rv_bitspec,std::string> rv_named_bitspec;
+typedef std::shared_ptr<rv_operand> rv_operand_ptr;
+typedef std::vector<rv_operand_ptr> rv_operand_list;
+typedef std::map<std::string,rv_operand_ptr> rv_operand_map;
+typedef std::shared_ptr<rv_enum> rv_enum_ptr;
+typedef std::vector<rv_enum_ptr> rv_enum_list;
+typedef std::map<std::string,rv_enum_ptr> rv_enum_map;
+typedef std::shared_ptr<rv_type> rv_type_ptr;
+typedef std::vector<rv_type_ptr> rv_type_list;
+typedef std::map<std::string,rv_type_ptr> rv_type_map;
+typedef std::shared_ptr<rv_codec> rv_codec_ptr;
+typedef std::vector<rv_codec_ptr> rv_codec_list;
+typedef std::map<std::string,rv_codec_ptr> rv_codec_map;
+typedef std::shared_ptr<rv_extension> rv_extension_ptr;
+typedef std::vector<rv_extension_ptr> rv_extension_list;
+typedef std::map<std::string,rv_extension_ptr> rv_extension_map;
+typedef std::shared_ptr<rv_format> rv_format_ptr;
+typedef std::vector<rv_format_ptr> rv_format_list;
+typedef std::map<std::string,rv_format_ptr> rv_format_map;
+typedef std::shared_ptr<rv_register> rv_register_ptr;
+typedef std::vector<rv_register_ptr> rv_register_list;
+typedef std::map<std::string,rv_register_ptr> rv_register_map;
+typedef std::shared_ptr<rv_csr> rv_csr_ptr;
+typedef std::vector<rv_csr_ptr> rv_csr_list;
+typedef std::map<std::string,rv_csr_ptr> rv_csr_map;
+typedef std::pair<rv_bitrange,size_t> rv_opcode_mask;
+typedef std::vector<rv_opcode_mask> rv_opcode_mask_list;
+typedef std::shared_ptr<rv_opcode> rv_opcode_ptr;
+typedef std::vector<rv_opcode_ptr> rv_opcode_list;
+typedef std::shared_ptr<rv_constraint> rv_constraint_ptr;
+typedef std::map<std::string,rv_constraint_ptr> rv_constraint_map;
+typedef std::vector<rv_constraint_ptr> rv_constraint_list;
+typedef std::shared_ptr<rv_compressed> rv_compressed_ptr;
+typedef std::vector<rv_compressed_ptr> rv_compressed_list;
+typedef std::map<std::string,rv_opcode_ptr> rv_opcode_map;
+typedef std::map<std::string,rv_opcode_list> rv_opcode_list_map;
+typedef std::set<rv_opcode_ptr> rv_opcode_set;
+typedef std::shared_ptr<rv_pseudo> rv_pseudo_ptr;
+typedef std::map<std::string,rv_pseudo_ptr> rv_pseudo_map;
+typedef std::vector<rv_pseudo_ptr> rv_pseudo_list;
 
-int64_t riscv_parse_value(const char* valstr);
+int64_t rv_parse_value(const char* valstr);
 
 enum rvt
 {
@@ -93,7 +93,7 @@ enum rvs
 	rvs_ext,
 };
 
-struct riscv_primitive_type
+struct rv_primitive_type
 {
 	rvs std_type;
 	rvt enum_type;
@@ -105,33 +105,33 @@ struct riscv_primitive_type
 	const char* c_type;
 };
 
-extern const riscv_primitive_type riscv_primitive_type_table[];
-extern const riscv_primitive_type* riscv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type = rvt_sx);
-extern const riscv_primitive_type* riscv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type = rvt_sx);
+extern const rv_primitive_type rv_primitive_type_table[];
+extern const rv_primitive_type* rv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type = rvt_sx);
+extern const rv_primitive_type* rv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type = rvt_sx);
 
-struct riscv_bitrange
+struct rv_bitrange
 {
 	ssize_t msb;
 	ssize_t lsb;
 
-	riscv_bitrange() : msb(0), lsb(0) {}
-	riscv_bitrange(std::string bitrange);
-	riscv_bitrange(ssize_t msb, ssize_t lsb) : msb(msb), lsb(lsb) {}
-	riscv_bitrange(const riscv_bitrange &o) : msb(o.msb), lsb(o.lsb) {}
+	rv_bitrange() : msb(0), lsb(0) {}
+	rv_bitrange(std::string bitrange);
+	rv_bitrange(ssize_t msb, ssize_t lsb) : msb(msb), lsb(lsb) {}
+	rv_bitrange(const rv_bitrange &o) : msb(o.msb), lsb(o.lsb) {}
 
 	std::string to_string(std::string sep, bool collapse_single_bit_range = true);
 };
 
-struct riscv_bitspec
+struct rv_bitspec
 {
-	typedef std::vector<riscv_bitrange> riscv_bitrange_list;
-	typedef std::pair<riscv_bitrange,riscv_bitrange_list> riscv_bitseg;
+	typedef std::vector<rv_bitrange> rv_bitrange_list;
+	typedef std::pair<rv_bitrange,rv_bitrange_list> rv_bitseg;
 
-	std::vector<riscv_bitseg> segments;
+	std::vector<rv_bitseg> segments;
 
-	riscv_bitspec() : segments() {}
-	riscv_bitspec(std::string bitspec);
-	riscv_bitspec(const riscv_bitspec &o) : segments(o.segments) {}
+	rv_bitspec() : segments() {}
+	rv_bitspec(std::string bitspec);
+	rv_bitspec(const rv_bitspec &o) : segments(o.segments) {}
 
 	bool matches_bit(ssize_t bit);
 	size_t decoded_msb();
@@ -139,16 +139,16 @@ struct riscv_bitspec
 	std::string to_template();
 };
 
-struct riscv_operand
+struct rv_operand
 {
 	std::string name;
-	riscv_bitspec bitspec;
+	rv_bitspec bitspec;
 	std::string type;
 	std::string label;
 	std::string fg_color;
 	std::string bg_color;
 
-	riscv_operand(std::string name, std::string bitspec, std::string type,
+	rv_operand(std::string name, std::string bitspec, std::string type,
 		  std::string label, std::string fg_color, std::string bg_color)
 		: name(name), bitspec(bitspec), type(type),
 		  label(label), fg_color(fg_color), bg_color(bg_color) {}
@@ -165,44 +165,44 @@ struct riscv_operand
 	}
 };
 
-struct riscv_enum
+struct rv_enum
 {
 	std::string group;
 	std::string name;
 	int64_t value;
 	std::string description;
 
-	riscv_enum(std::string group, std::string name, std::string value, std::string description)
-		: group(group), name(name), value(riscv_parse_value(value.c_str())), description(description) {}
+	rv_enum(std::string group, std::string name, std::string value, std::string description)
+		: group(group), name(name), value(rv_parse_value(value.c_str())), description(description) {}
 };
 
-struct riscv_type
+struct rv_type
 {
 	std::string name;
 	std::string description;
-	std::vector<riscv_named_bitspec> parts;
+	std::vector<rv_named_bitspec> parts;
 
-	riscv_type(std::string name, std::string description) : name(name), description(description) {}
+	rv_type(std::string name, std::string description) : name(name), description(description) {}
 
-	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
+	rv_named_bitspec find_named_bitspec(ssize_t bit) {
 		for (auto ent : parts) {
 			if (ent.first.matches_bit(bit)) return ent;
 		}
-		return riscv_named_bitspec();
+		return rv_named_bitspec();
 	}
 };
 
-struct riscv_codec
+struct rv_codec
 {
 	std::string name;
 	std::string format;
 	std::string codec_key;
-	riscv_operand_list operands;
+	rv_operand_list operands;
 
-	riscv_codec(std::string name, std::string format) : name(name), format(format) {}
+	rv_codec(std::string name, std::string format) : name(name), format(format) {}
 };
 
-struct riscv_extension
+struct rv_extension
 {
 	std::string name;
 	std::string prefix;
@@ -210,9 +210,9 @@ struct riscv_extension
 	char alpha_code;
 	ssize_t inst_width;
 	std::string description;
-	riscv_opcode_list opcodes;
+	rv_opcode_list opcodes;
 
-	riscv_extension(std::string prefix, std::string isa_width,
+	rv_extension(std::string prefix, std::string isa_width,
 		  std::string alpha_code, std::string inst_width, std::string description)
 		: name(prefix + isa_width + alpha_code), prefix(prefix),
 		  isa_width(strtoull(isa_width.c_str(), NULL, 10)),
@@ -221,16 +221,16 @@ struct riscv_extension
 		  description(description) {}
 };
 
-struct riscv_format
+struct rv_format
 {
 	std::string operands;
 	std::string description;
 
-	riscv_format(std::string operands, std::string description)
+	rv_format(std::string operands, std::string description)
 		: operands(operands), description(description) {}
 };
 
-struct riscv_register
+struct rv_register
 {
 	std::string name;
 	std::string alias;
@@ -238,22 +238,22 @@ struct riscv_register
 	std::string save;
 	std::string description;
 
-	riscv_register(std::string name, std::string alias, std::string type, std::string save, std::string description)
+	rv_register(std::string name, std::string alias, std::string type, std::string save, std::string description)
 		: name(name), alias(alias), type(type), save(save), description(description) {}
 };
 
-struct riscv_csr
+struct rv_csr
 {
 	std::string number;
 	std::string access;
 	std::string name;
 	std::string description;
 
-	riscv_csr(std::string number, std::string access, std::string name, std::string description)
+	rv_csr(std::string number, std::string access, std::string name, std::string description)
 		: number(number), access(access), name(name), description(description) {}
 };
 
-struct riscv_opcode
+struct rv_opcode
 {
 	std::string key;
 	std::string name;
@@ -261,28 +261,28 @@ struct riscv_opcode
 	std::string description;
 	std::string pseudocode_c;
 	std::string pseudocode_alt;
-	riscv_operand_list operands;
-	riscv_opcode_mask_list masks;
-	riscv_codec_ptr codec;
-	riscv_format_ptr format;
-	riscv_type_ptr type;
-	riscv_extension_list extensions;
-	riscv_compressed_ptr compressed;
-	riscv_compressed_list compressions;
-	riscv_pseudo_ptr pseudo;
-	riscv_pseudo_list pseudos;
+	rv_operand_list operands;
+	rv_opcode_mask_list masks;
+	rv_codec_ptr codec;
+	rv_format_ptr format;
+	rv_type_ptr type;
+	rv_extension_list extensions;
+	rv_compressed_ptr compressed;
+	rv_compressed_list compressions;
+	rv_pseudo_ptr pseudo;
+	rv_pseudo_list pseudos;
 
 	size_t num;
 	inst_t mask;
 	inst_t match;
 	inst_t done;
 
-	riscv_opcode(std::string key, std::string name)
+	rv_opcode(std::string key, std::string name)
 		: key(key), name(name), num(0), mask(0), match(0), done(0) {}
 
 	bool is_pseudo() { return name.find("@") == 0; }
 
-	bool match_extension(riscv_extension_list &s) {
+	bool match_extension(rv_extension_list &s) {
 		if (s.size() == 0) return true;
 		for (auto ext : extensions) {
 			if (std::find(s.begin(), s.end(), ext) != s.end()) return true;
@@ -298,106 +298,106 @@ struct riscv_opcode
 		return include_isa;
 	}
 
-	riscv_operand_ptr find_operand(ssize_t bit) {
+	rv_operand_ptr find_operand(ssize_t bit) {
 		for (auto operand : operands) {
 			if (operand->bitspec.matches_bit(bit)) return operand;
 		}
-		return riscv_operand_ptr();
+		return rv_operand_ptr();
 	}
 
-	riscv_named_bitspec find_named_bitspec(ssize_t bit) {
+	rv_named_bitspec find_named_bitspec(ssize_t bit) {
 		for (auto ent : type->parts) {
 			if (ent.first.matches_bit(bit)) return ent;
 		}
-		return riscv_named_bitspec();
+		return rv_named_bitspec();
 	}
 };
 
-struct riscv_constraint
+struct rv_constraint
 {
 	std::string name;
 	std::string expression;
 	std::string hint;
 
-	riscv_constraint(std::string name, std::string expression)
+	rv_constraint(std::string name, std::string expression)
 		: name(name), expression(expression) {}
 };
 
-struct riscv_compressed
+struct rv_compressed
 {
-	riscv_opcode_ptr comp_opcode;
-	riscv_opcode_ptr decomp_opcode;
-	riscv_constraint_list constraint_list;
+	rv_opcode_ptr comp_opcode;
+	rv_opcode_ptr decomp_opcode;
+	rv_constraint_list constraint_list;
 
-	riscv_compressed(riscv_opcode_ptr comp_opcode, riscv_opcode_ptr decomp_opcode, riscv_constraint_list constraint_list)
+	rv_compressed(rv_opcode_ptr comp_opcode, rv_opcode_ptr decomp_opcode, rv_constraint_list constraint_list)
 		: comp_opcode(comp_opcode), decomp_opcode(decomp_opcode), constraint_list(constraint_list) {}
 };
 
-struct riscv_pseudo
+struct rv_pseudo
 {
 	std::string name;
-	riscv_opcode_ptr pseudo_opcode;
-	riscv_opcode_ptr real_opcode;
-	riscv_format_ptr format;
-	riscv_constraint_list constraint_list;
+	rv_opcode_ptr pseudo_opcode;
+	rv_opcode_ptr real_opcode;
+	rv_format_ptr format;
+	rv_constraint_list constraint_list;
 
-	riscv_pseudo(std::string name, riscv_opcode_ptr pseudo_opcode, riscv_opcode_ptr real_opcode, riscv_format_ptr format, riscv_constraint_list constraint_list)
+	rv_pseudo(std::string name, rv_opcode_ptr pseudo_opcode, rv_opcode_ptr real_opcode, rv_format_ptr format, rv_constraint_list constraint_list)
 		: name(name), pseudo_opcode(pseudo_opcode), real_opcode(real_opcode), format(format), constraint_list(constraint_list) {}
 };
 
-struct riscv_meta_model
+struct rv_meta_model
 {
 	static const ssize_t DEFAULT;
 
-	riscv_operand_list       operands;
-	riscv_operand_map        operands_by_name;
-	riscv_enum_list          enums;
-	riscv_enum_map           enums_by_name;
-	riscv_type_list          types;
-	riscv_type_map           types_by_name;
-	riscv_codec_list         codecs;
-	riscv_codec_map          codecs_by_name;
-	riscv_codec_map          codecs_by_key;
-	riscv_extension_list     extensions;
-	riscv_extension_map      extensions_by_name;
-	riscv_format_list        formats;
-	riscv_format_map         formats_by_name;
-	riscv_register_list      registers;
-	riscv_register_map       registers_by_name;
-	riscv_csr_list           csrs;
-	riscv_csr_map            csrs_by_name;
-	riscv_opcode_list        opcodes;
-	riscv_opcode_map         opcodes_by_key;
-	riscv_opcode_list_map    opcodes_by_name;
-	riscv_constraint_list    constraints;
-	riscv_constraint_map     constraints_by_name;
-	riscv_compressed_list    compressions;
-	riscv_pseudo_list        pseudos;
-	riscv_pseudo_map         pseudos_by_name;
+	rv_operand_list       operands;
+	rv_operand_map        operands_by_name;
+	rv_enum_list          enums;
+	rv_enum_map           enums_by_name;
+	rv_type_list          types;
+	rv_type_map           types_by_name;
+	rv_codec_list         codecs;
+	rv_codec_map          codecs_by_name;
+	rv_codec_map          codecs_by_key;
+	rv_extension_list     extensions;
+	rv_extension_map      extensions_by_name;
+	rv_format_list        formats;
+	rv_format_map         formats_by_name;
+	rv_register_list      registers;
+	rv_register_map       registers_by_name;
+	rv_csr_list           csrs;
+	rv_csr_map            csrs_by_name;
+	rv_opcode_list        opcodes;
+	rv_opcode_map         opcodes_by_key;
+	rv_opcode_list_map    opcodes_by_name;
+	rv_constraint_list    constraints;
+	rv_constraint_map     constraints_by_name;
+	rv_compressed_list    compressions;
+	rv_pseudo_list        pseudos;
+	rv_pseudo_map         pseudos_by_name;
 
-	static riscv_opcode_mask decode_mask(std::string bit_spec);
-	static std::string opcode_mask(riscv_opcode_ptr opcode);
-	static std::string format_type(riscv_operand_ptr operand);
-	static std::string format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix = true);
-	static std::string format_format(std::string prefix, riscv_format_ptr format, char special);
-	static std::string opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key = true);
-	static std::string opcode_codec_key(riscv_opcode_ptr opcode);
-	static std::string opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key = true);
-	static std::string opcode_isa_shortname(riscv_opcode_ptr opcode);
-	static std::string codec_type_name(riscv_codec_ptr codec);
-	static std::vector<riscv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
+	static rv_opcode_mask decode_mask(std::string bit_spec);
+	static std::string opcode_mask(rv_opcode_ptr opcode);
+	static std::string format_type(rv_operand_ptr operand);
+	static std::string format_codec(std::string prefix, rv_codec_ptr codec, std::string dot, bool strip_suffix = true);
+	static std::string format_format(std::string prefix, rv_format_ptr format, char special);
+	static std::string opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool use_key = true);
+	static std::string opcode_codec_key(rv_opcode_ptr opcode);
+	static std::string opcode_comment(rv_opcode_ptr opcode, bool no_comment, bool key = true);
+	static std::string opcode_isa_shortname(rv_opcode_ptr opcode);
+	static std::string codec_type_name(rv_codec_ptr codec);
+	static std::vector<rv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
 	static std::string format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment);
-	static const riscv_primitive_type* infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i);
+	static const rv_primitive_type* infer_operand_primitive(rv_opcode_ptr &opcode, rv_extension_ptr &ext, rv_operand_ptr &operand, size_t i);
 	static std::vector<std::string> parse_line(std::string line);
 	static std::vector<std::vector<std::string>> read_file(std::string filename);
 
 	std::vector<std::string> get_unique_codecs();
 	std::vector<std::string> get_inst_mnemonics(bool isa_widths, bool isa_extensions);
 	std::vector<std::pair<size_t,std::string>> isa_width_prefixes();
-	riscv_extension_list decode_isa_extensions(std::string isa_spec);
-	riscv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
-	riscv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
-	riscv_opcode_list lookup_opcode_by_name(std::string opcode_name);
+	rv_extension_list decode_isa_extensions(std::string isa_spec);
+	rv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
+	rv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
+	rv_opcode_list lookup_opcode_by_name(std::string opcode_name);
 
 	bool is_operand(std::string mnem);
 	bool is_ignore(std::string mnem);

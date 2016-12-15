@@ -2,8 +2,8 @@
 //  processor-impl.h
 //
 
-#ifndef riscv_processor_impl_h
-#define riscv_processor_impl_h
+#ifndef rv_processor_impl_h
+#define rv_processor_impl_h
 
 namespace riscv {
 
@@ -52,16 +52,16 @@ namespace riscv {
 			return buf;
 		}
 
-		size_t regnum(T &dec, riscv_operand_name operand_name)
+		size_t regnum(T &dec, rv_operand_name operand_name)
 		{
 			switch (operand_name) {
-				case riscv_operand_name_rd: return dec.rd;
-				case riscv_operand_name_rs1: return dec.rs1;
-				case riscv_operand_name_rs2: return dec.rs2;
-				case riscv_operand_name_frd: return dec.rd;
-				case riscv_operand_name_frs1: return dec.rs1;
-				case riscv_operand_name_frs2: return dec.rs2;
-				case riscv_operand_name_frs3: return dec.rs3;
+				case rv_operand_name_rd: return dec.rd;
+				case rv_operand_name_rs1: return dec.rs1;
+				case rv_operand_name_rs2: return dec.rs2;
+				case rv_operand_name_frd: return dec.rd;
+				case rv_operand_name_frs1: return dec.rs1;
+				case rv_operand_name_frs2: return dec.rs2;
+				case rv_operand_name_frs3: return dec.rs3;
 				default: return 0;
 			}
 		}
@@ -91,7 +91,7 @@ namespace riscv {
 			/* Randomize the integer registers */
 			size_t rand_bytes = 0;
 			std::uniform_int_distribution<typename P::ux> distribution(0, std::numeric_limits<typename P::ux>::max());
-			for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
+			for (size_t i = rv_ireg_x1; i < P::ireg_count; i++) {
 				/* on buffer exhaustion sha-512 hash the seed and xor the hash back into the seed */
 				if ((rand_bytes & (SHA512_OUTPUT_BYTES - 1)) == 0) {
 					sha512_init(&sha512);
@@ -111,38 +111,38 @@ namespace riscv {
 			size_t reg;
 			std::string op;
 			std::vector<std::string> ops;
-			const riscv_operand_data *operand_data = riscv_inst_operand_data[dec.op];
-			while (operand_data->type != riscv_type_none) {
+			const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
+			while (operand_data->type != rv_type_none) {
 				op.clear();
 				switch (operand_data->type) {
-					case riscv_type_ireg:
+					case rv_type_ireg:
 						reg = regnum(dec, operand_data->operand_name);
-						sprintf(op, "%s=", riscv_ireg_name_sym[reg]);
+						sprintf(op, "%s=", rv_ireg_name_sym[reg]);
 						sprintf(op,
-							riscv_type_primitives[operand_data->primitive].format,
+							rv_type_primitives[operand_data->primitive].format,
 							P::ireg[reg].r.xu.val);
 						ops.push_back(op);
 						break;
-					case riscv_type_freg:
+					case rv_type_freg:
 						reg = regnum(dec, operand_data->operand_name);
-						sprintf(op, "%s=", riscv_freg_name_sym[reg]);
+						sprintf(op, "%s=", rv_freg_name_sym[reg]);
 						// show hex value for +/-{inf|subnorm|nan}
-						if (operand_data->primitive == riscv_primitive_f64 ?
+						if (operand_data->primitive == rv_primitive_f64 ?
 							(f64_classify(P::freg[reg].r.d.val) & 0b1110100101) :
 							(f32_classify(P::freg[reg].r.s.val) & 0b1110100101))
 						{
 							sprintf(op,
-								operand_data->primitive == riscv_primitive_f64 ?
+								operand_data->primitive == rv_primitive_f64 ?
 								"%.17g[%016llx]" : "%.9g[%08llx]",
-								operand_data->primitive == riscv_primitive_f64 ?
+								operand_data->primitive == rv_primitive_f64 ?
 								P::freg[reg].r.d.val : P::freg[reg].r.s.val,
-								operand_data->primitive == riscv_primitive_f64 ?
+								operand_data->primitive == rv_primitive_f64 ?
 								P::freg[reg].r.lu.val : P::freg[reg].r.wu.val);
 						} else {
 							sprintf(op,
-								operand_data->primitive == riscv_primitive_f64 ?
+								operand_data->primitive == rv_primitive_f64 ?
 								"%.17g" : "%.9g",
-								operand_data->primitive == riscv_primitive_f64 ?
+								operand_data->primitive == rv_primitive_f64 ?
 								P::freg[reg].r.d.val : P::freg[reg].r.s.val);
 						}
 						ops.push_back(op);
@@ -189,8 +189,8 @@ namespace riscv {
 
 		void print_int_registers()
 		{
-			for (size_t i = riscv_ireg_x1; i < P::ireg_count; i++) {
-				printf("%s%s", format_reg(riscv_ireg_name_sym[i],
+			for (size_t i = rv_ireg_x1; i < P::ireg_count; i++) {
+				printf("%s%s", format_reg(rv_ireg_name_sym[i],
 					P::ireg[i].r.xu.val).c_str(), /* 3 column layout */
 					((i - 1) % 3) == 0 ? "\n" : ((i - 1) % 3) > 0 ? " " : "");
 			}
@@ -198,16 +198,16 @@ namespace riscv {
 
 		void print_f32_registers()
 		{
-			for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
-				printf("%-4s: s %16.5f%s", riscv_freg_name_sym[i],
+			for (size_t i = rv_freg_f0; i < P::freg_count; i++) {
+				printf("%-4s: s %16.5f%s", rv_freg_name_sym[i],
 					P::freg[i].r.s.val, (i + 1) % 2 == 0 ? "\n" : " ");
 			}
 		}
 
 		void print_f64_registers()
 		{
-			for (size_t i = riscv_freg_f0; i < P::freg_count; i++) {
-				printf("%-4s: d %16.5f%s", riscv_freg_name_sym[i],
+			for (size_t i = rv_freg_f0; i < P::freg_count; i++) {
+				printf("%-4s: d %16.5f%s", rv_freg_name_sym[i],
 					P::freg[i].r.d.val, (i + 1) % 2 == 0 ? "\n" : " ");
 			}
 		}
@@ -217,7 +217,7 @@ namespace riscv {
 			const R write_mask = -1, const R read_mask = -1, const size_t shift = 0)
 		{
 			const int csr_mode = (csr >> 8) & 3, readonly = (csr >> 12) & 1;
-			if (dec.rd != riscv_ireg_x0) {
+			if (dec.rd != rv_ireg_x0) {
 				P::ireg[dec.rd] = (mode >= csr_mode) ? (reg >> shift) & read_mask : 0;
 			}
 			if (readonly) return;
@@ -232,7 +232,7 @@ namespace riscv {
 		void get_csr(D &dec, int mode, int op, int csr, R &reg, V value)
 		{
 			const int csr_mode = (csr >> 8) & 3;
-			if (dec.rd != riscv_ireg_x0) {
+			if (dec.rd != rv_ireg_x0) {
 				P::ireg[dec.rd] = (mode >= csr_mode) ? reg : 0;
 			}
 		}
@@ -241,7 +241,7 @@ namespace riscv {
 		void set_csr_hi(D &dec, int mode, int op, int csr, R &reg, V value)
 		{
 			const int csr_mode = (csr >> 8) & 3, readonly = (csr >> 12) & 1;
-			if (dec.rd != riscv_ireg_x0) {
+			if (dec.rd != rv_ireg_x0) {
 				P::ireg[dec.rd] = (mode >= csr_mode) ? s32(u32(reg >> 32)) : 0;
 			}
 			if (readonly) return;
@@ -256,7 +256,7 @@ namespace riscv {
 		void get_csr_hi(D &dec, int mode, int op, int csr, R &reg, V value)
 		{
 			const int csr_mode = (csr >> 8) & 3;
-			if (dec.rd != riscv_ireg_x0) {
+			if (dec.rd != rv_ireg_x0) {
 				P::ireg[dec.rd] = (mode >= csr_mode) ? s32(u32(reg >> 32)) : 0;
 			}
 		}

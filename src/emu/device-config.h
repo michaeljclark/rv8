@@ -2,8 +2,8 @@
 //  device-config.h
 //
 
-#ifndef riscv_device_config_h
-#define riscv_device_config_h
+#ifndef rv_device_config_h
+#define rv_device_config_h
 
 namespace riscv {
 

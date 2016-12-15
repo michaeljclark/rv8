@@ -6,7 +6,7 @@
 
 #include "strings.h"
 
-const char* riscv_ireg_name_sym[] = {
+const char* rv_ireg_name_sym[] = {
 	"zero",
 	"ra",
 	"sp",
@@ -42,7 +42,7 @@ const char* riscv_ireg_name_sym[] = {
 	nullptr
 };
 
-const char* riscv_freg_name_sym[] = {
+const char* rv_freg_name_sym[] = {
 	"ft0",
 	"ft1",
 	"ft2",
@@ -78,7 +78,7 @@ const char* riscv_freg_name_sym[] = {
 	nullptr
 };
 
-const char* riscv_inst_name_sym[] = {
+const char* rv_inst_name_sym[] = {
 	"illegal",
 	"lui",
 	"auipc",
@@ -333,7 +333,7 @@ const char* riscv_inst_name_sym[] = {
 	nullptr
 };
 
-const char* riscv_operand_name_sym[] = {
+const char* rv_operand_name_sym[] = {
 	"none",
 	"rd",
 	"rs1",
@@ -392,7 +392,7 @@ const char* riscv_operand_name_sym[] = {
 	nullptr
 };
 
-const char* riscv_operand_type_sym[] = {
+const char* rv_operand_type_sym[] = {
 	"none",
 	"ireg5",
 	"freg5",
@@ -419,7 +419,7 @@ const char* riscv_operand_type_sym[] = {
 	nullptr
 };
 
-const char* riscv_csr_name_sym[] = {
+const char* rv_csr_name_sym[] = {
 	"ustatus",
 	"fflags",
 	"frm",
@@ -4518,7 +4518,7 @@ const char* riscv_csr_name_sym[] = {
 	nullptr,
 };
 
-const char* riscv_cause_name_sym[] = {
+const char* rv_cause_name_sym[] = {
 	"misaligned_fetch",
 	"fault_fetch",
 	"illegal_instruction",
@@ -4534,7 +4534,7 @@ const char* riscv_cause_name_sym[] = {
 	nullptr
 };
 
-const char* riscv_intr_name_sym[] = {
+const char* rv_intr_name_sym[] = {
 	"u_software",
 	"s_software",
 	"h_software",

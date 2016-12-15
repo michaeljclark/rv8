@@ -2,8 +2,8 @@
 //  queue.h
 //
 
-#ifndef riscv_queue_h
-#define riscv_queue_h
+#ifndef rv_queue_h
+#define rv_queue_h
 
 /*
  * queue_atomic

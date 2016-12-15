@@ -2,8 +2,8 @@
 //  device-ipi.h
 //
 
-#ifndef riscv_device_ipi_h
-#define riscv_device_ipi_h
+#ifndef rv_device_ipi_h
+#define rv_device_ipi_h
 
 namespace riscv {
 

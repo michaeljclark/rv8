@@ -41,7 +41,7 @@ static const char* OPCODE_DESCRIPTIONS_FILE   = "opcode-descriptions";
 static const char* OPCODE_PSEUDOCODE_C_FILE   = "opcode-pseudocode-c";
 static const char* OPCODE_PSEUDOCODE_ALT_FILE = "opcode-pseudocode-alt";
 
-const riscv_primitive_type riscv_primitive_type_table[] = {
+const rv_primitive_type rv_primitive_type_table[] = {
 	{ rvs_ext, rvt_sx,   "x",      "sx",   "r", "%ld",   "l",     "signed long" },       /* LP64 and ILP32, not LLP64 */
 	{ rvs_ext, rvt_ux,   "xu",     "ux",   "r", "%lu",   "ul",    "unsigned long" },     /* LP64 and ILP32, not LLP64 */
 	{ rvs_std, rvt_s8,   "b",      "s8",   "r", "%hhd",  "",      "signed char" },
@@ -60,32 +60,32 @@ const riscv_primitive_type riscv_primitive_type_table[] = {
 	{ rvs_ext, rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
 };
 
-const riscv_primitive_type* riscv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type)
+const rv_primitive_type* rv_lookup_primitive_by_spec_type(std::string spec_type, rvt default_type)
 {
-	struct riscv_primitive_spec_type_map : std::map<std::string,const riscv_primitive_type*>
+	struct rv_primitive_spec_type_map : std::map<std::string,const rv_primitive_type*>
 	{
-		riscv_primitive_spec_type_map() {
-			for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++)
+		rv_primitive_spec_type_map() {
+			for (const auto *ent = rv_primitive_type_table; ent->enum_type != rvt_none; ent++)
 				(*this)[ent->spec_type] = ent;
 		}
 	};
-	static riscv_primitive_spec_type_map map;
+	static rv_primitive_spec_type_map map;
 	auto ti = map.find(spec_type);
-	return (ti == map.end()) ? &riscv_primitive_type_table[default_type] : ti->second;
+	return (ti == map.end()) ? &rv_primitive_type_table[default_type] : ti->second;
 }
 
-const riscv_primitive_type* riscv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type)
+const rv_primitive_type* rv_lookup_primitive_by_meta_type(std::string meta_type, rvt default_type)
 {
-	struct riscv_primitive_meta_type_map : std::map<std::string,const riscv_primitive_type*>
+	struct rv_primitive_meta_type_map : std::map<std::string,const rv_primitive_type*>
 	{
-		riscv_primitive_meta_type_map() {
-			for (const auto *ent = riscv_primitive_type_table; ent->enum_type != rvt_none; ent++)
+		rv_primitive_meta_type_map() {
+			for (const auto *ent = rv_primitive_type_table; ent->enum_type != rvt_none; ent++)
 				(*this)[ent->meta_type] = ent;
 		}
 	};
-	static riscv_primitive_meta_type_map map;
+	static rv_primitive_meta_type_map map;
 	auto ti = map.find(meta_type);
-	return (ti == map.end()) ? &riscv_primitive_type_table[default_type] : ti->second;
+	return (ti == map.end()) ? &rv_primitive_type_table[default_type] : ti->second;
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ std::string join(std::vector<T> list, std::string sep)
 	return ss.str();
 }
 
-int64_t riscv_parse_value(const char* valstr)
+int64_t rv_parse_value(const char* valstr)
 {
 	int64_t val;
 	char *endptr = nullptr;
@@ -110,12 +110,12 @@ int64_t riscv_parse_value(const char* valstr)
 		val = strtoull(valstr, &endptr, 10);
 	}
 	if (*endptr != '\0') {
-		panic("riscv_parse_value: invalid value: %s", valstr);
+		panic("rv_parse_value: invalid value: %s", valstr);
 	}
 	return val;
 }
 
-riscv_bitrange::riscv_bitrange(std::string bitrange)
+rv_bitrange::rv_bitrange(std::string bitrange)
 {
 	std::vector<std::string> comps = split(bitrange, ":");
 	if (comps.size() < 1 || comps.size() > 2) {
@@ -129,7 +129,7 @@ riscv_bitrange::riscv_bitrange(std::string bitrange)
 	}
 }
 
-std::string riscv_bitrange::to_string(std::string sep, bool collapse_single_bit_range)
+std::string rv_bitrange::to_string(std::string sep, bool collapse_single_bit_range)
 {
 	std::stringstream ss;
 	ss << msb;
@@ -139,7 +139,7 @@ std::string riscv_bitrange::to_string(std::string sep, bool collapse_single_bit_
 	return ss.str();
 }
 
-riscv_bitspec::riscv_bitspec(std::string bitspec)
+rv_bitspec::rv_bitspec(std::string bitspec)
 {
 	/*
 	 * example bitrange specs in gather[scatter](,...) format
@@ -157,22 +157,22 @@ riscv_bitspec::riscv_bitspec(std::string bitspec)
 		size_t bopen = comp.find("[");
 		size_t bclose = comp.find("]");
 		if (bopen != std::string::npos && bclose != std::string::npos) {
-			riscv_bitrange gather(comp.substr(0, bopen));
+			rv_bitrange gather(comp.substr(0, bopen));
 			std::string scatter_spec = comp.substr(bopen + 1, bclose - bopen - 1);
-			riscv_bitrange_list scatter;
+			rv_bitrange_list scatter;
 			for (auto scatter_comp : split(scatter_spec, "|")) {
-				scatter.push_back(riscv_bitrange(scatter_comp));
+				scatter.push_back(rv_bitrange(scatter_comp));
 			}
-			segments.push_back(riscv_bitseg(gather, scatter));
+			segments.push_back(rv_bitseg(gather, scatter));
 		} else {
-			riscv_bitrange gather(comp);
-			riscv_bitrange_list scatter;
-			segments.push_back(riscv_bitseg(gather, scatter));
+			rv_bitrange gather(comp);
+			rv_bitrange_list scatter;
+			segments.push_back(rv_bitseg(gather, scatter));
 		}
 	}
 }
 
-bool riscv_bitspec::matches_bit(ssize_t bit)
+bool rv_bitspec::matches_bit(ssize_t bit)
 {
 	for (auto si = segments.begin(); si != segments.end(); si++) {
 		if (bit <= si->first.msb && bit >= si->first.lsb) return true;
@@ -180,7 +180,7 @@ bool riscv_bitspec::matches_bit(ssize_t bit)
 	return false;
 }
 
-size_t riscv_bitspec::decoded_msb()
+size_t rv_bitspec::decoded_msb()
 {
 	ssize_t msb = 0;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
@@ -191,7 +191,7 @@ size_t riscv_bitspec::decoded_msb()
 	return msb;
 }
 
-std::string riscv_bitspec::to_string()
+std::string rv_bitspec::to_string()
 {
 	std::stringstream ss;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
@@ -206,7 +206,7 @@ std::string riscv_bitspec::to_string()
 	return ss.str();
 }
 
-std::string riscv_bitspec::to_template()
+std::string rv_bitspec::to_template()
 {
 	ssize_t msb = 0;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
@@ -237,9 +237,9 @@ std::string riscv_bitspec::to_template()
 	return ss.str();
 }
 
-const ssize_t riscv_meta_model::DEFAULT = std::numeric_limits<ssize_t>::max();
+const ssize_t rv_meta_model::DEFAULT = std::numeric_limits<ssize_t>::max();
 
-riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)
+rv_opcode_mask rv_meta_model::decode_mask(std::string bit_spec)
 {
 	std::vector<std::string> spart = split(bit_spec, "=");
 	if (spart.size() != 2) {
@@ -261,35 +261,35 @@ riscv_opcode_mask riscv_meta_model::decode_mask(std::string bit_spec)
 		val = strtoul(spart[1].c_str(), nullptr, 10);
 	}
 
-	return riscv_opcode_mask(riscv_bitrange(msb, lsb), val);
+	return rv_opcode_mask(rv_bitrange(msb, lsb), val);
 }
 
-std::vector<riscv_bitrange> riscv_meta_model::bitmask_to_bitrange(std::vector<ssize_t> &bits)
+std::vector<rv_bitrange> rv_meta_model::bitmask_to_bitrange(std::vector<ssize_t> &bits)
 {
-	std::vector<riscv_bitrange> v;
+	std::vector<rv_bitrange> v;
 	if (bits.size() > 0) {
-		v.push_back(riscv_bitrange(bits[0], bits[0]));
+		v.push_back(rv_bitrange(bits[0], bits[0]));
 		for (size_t i = 1; i < bits.size(); i++) {
 			if (bits[i] + 1 == v.back().lsb) {
 				v.back().lsb = bits[i];
 			} else {
-				v.push_back(riscv_bitrange(bits[i], bits[i]));
+				v.push_back(rv_bitrange(bits[i], bits[i]));
 			}
 		}
 	}
 	return v;
 }
 
-std::string riscv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment)
+std::string rv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment)
 {
-	std::vector<riscv_bitrange> v = bitmask_to_bitrange(bits);
+	std::vector<rv_bitrange> v = bitmask_to_bitrange(bits);
 	std::stringstream ss;
 
 	ssize_t total_length = bits.size();
 	ssize_t range_start = bits.size();
 
 	for (auto ri = v.begin(); ri != v.end(); ri++) {
-		riscv_bitrange r = *ri;
+		rv_bitrange r = *ri;
 		ssize_t range_end = range_start - (r.msb - r.lsb);
 		ssize_t shift = r.msb - range_start + 1;
 		if (ri != v.begin()) ss << " | ";
@@ -305,7 +305,7 @@ std::string riscv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::st
 	if (comment) {
 		ss << " /* " << var << "[";
 		for (auto ri = v.begin(); ri != v.end(); ri++) {
-			riscv_bitrange r = *ri;
+			rv_bitrange r = *ri;
 			if (ri != v.begin()) ss << "|";
 			if (r.msb == r.lsb) ss << r.msb;
 			else ss << r.msb << ":" << r.lsb;
@@ -316,7 +316,7 @@ std::string riscv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::st
 	return ss.str();
 }
 
-std::string riscv_meta_model::opcode_mask(riscv_opcode_ptr opcode)
+std::string rv_meta_model::opcode_mask(rv_opcode_ptr opcode)
 {
 	std::stringstream ss;
 	ss << std::left << std::setw(20) << "";
@@ -326,14 +326,14 @@ std::string riscv_meta_model::opcode_mask(riscv_opcode_ptr opcode)
 	return ss.str();
 }
 
-std::string riscv_meta_model::format_type(riscv_operand_ptr operand)
+std::string rv_meta_model::format_type(rv_operand_ptr operand)
 {
 	return operand->type + std::to_string((operand->type == "offset" || operand->type == "simm" || operand->type == "uimm") ?
 		operand->bitspec.decoded_msb() + 1 :
 		operand->bitspec.segments.front().first.msb - operand->bitspec.segments.front().first.lsb + 1);
 }
 
-std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr codec, std::string dot, bool strip_suffix)
+std::string rv_meta_model::format_codec(std::string prefix, rv_codec_ptr codec, std::string dot, bool strip_suffix)
 {
 	std::string name = strip_suffix ? split(codec->name, "+")[0] : codec->name;
 	name = replace(name, "·", dot);
@@ -341,7 +341,7 @@ std::string riscv_meta_model::format_codec(std::string prefix, riscv_codec_ptr c
 	return prefix + name;
 }
 
-std::string riscv_meta_model::format_format(std::string prefix, riscv_format_ptr format, char special)
+std::string rv_meta_model::format_format(std::string prefix, rv_format_ptr format, char special)
 {
 	std::string operands;
 	for (auto i = format->operands.begin(); i != format->operands.end(); i++) {
@@ -356,14 +356,14 @@ std::string riscv_meta_model::format_format(std::string prefix, riscv_format_ptr
 	return prefix + ltrim(rtrim(operands, std::ispunct), std::ispunct);
 }
 
-std::string riscv_meta_model::opcode_format(std::string prefix, riscv_opcode_ptr opcode, std::string dot, bool use_key)
+std::string rv_meta_model::opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool use_key)
 {
 	std::string name = use_key ? opcode->key : opcode->name;
 	if (name.find("@") == 0) name = name.substr(1);
 	return prefix + replace(name, ".", dot);
 }
 
-std::string riscv_meta_model::opcode_codec_key(riscv_opcode_ptr opcode)
+std::string rv_meta_model::opcode_codec_key(rv_opcode_ptr opcode)
 {
 	if (opcode->operands.size() == 0) {
 		return "none";
@@ -375,13 +375,13 @@ std::string riscv_meta_model::opcode_codec_key(riscv_opcode_ptr opcode)
 	return join(codec_operands, "·");
 }
 
-std::string riscv_meta_model::opcode_comment(riscv_opcode_ptr opcode, bool no_comment, bool key)
+std::string rv_meta_model::opcode_comment(rv_opcode_ptr opcode, bool no_comment, bool key)
 {
 	std::string opcode_name = opcode_format("", opcode, ".", key);
 	return no_comment ? "" : format_string("/* %20s */ ", opcode_name.c_str());
 }
 
-std::string riscv_meta_model::opcode_isa_shortname(riscv_opcode_ptr opcode)
+std::string rv_meta_model::opcode_isa_shortname(rv_opcode_ptr opcode)
 {
 	auto &ext = opcode->extensions.front();
 	std::string short_name = ext->prefix;
@@ -389,7 +389,7 @@ std::string riscv_meta_model::opcode_isa_shortname(riscv_opcode_ptr opcode)
 	return short_name;
 }
 
-std::string riscv_meta_model::codec_type_name(riscv_codec_ptr codec)
+std::string rv_meta_model::codec_type_name(rv_codec_ptr codec)
 {
 	size_t o = codec->name.find("·");
 	if (o == std::string::npos) o = codec->name.find("+");
@@ -397,43 +397,43 @@ std::string riscv_meta_model::codec_type_name(riscv_codec_ptr codec)
 	return codec->name.substr(0, o);
 }
 
-const riscv_primitive_type* riscv_meta_model::infer_operand_primitive(riscv_opcode_ptr &opcode, riscv_extension_ptr &ext, riscv_operand_ptr &operand, size_t i)
+const rv_primitive_type* rv_meta_model::infer_operand_primitive(rv_opcode_ptr &opcode, rv_extension_ptr &ext, rv_operand_ptr &operand, size_t i)
 {
 	// infer operand primitive type using heuristics based on RISC-V opcode names
 	// NOTE:- heuristic is designed for RISC-V FPU opcode naming convention
 	std::string opcode_name = opcode->name;
 	if (opcode_name.find("c.") == 0) opcode_name = replace(opcode_name, "c.", "c_");
 	std::vector<std::string> opcode_parts = split(opcode_name, ".");
-	const riscv_primitive_type *primitive = &riscv_primitive_type_table[rvt_sx];
+	const rv_primitive_type *primitive = &rv_primitive_type_table[rvt_sx];
 	if (operand->type == "ireg") {
 		if (i == 0 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
+			primitive = rv_lookup_primitive_by_spec_type(opcode_parts[1], rvt_sx);
 		} else if (i == 1 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
+			primitive = rv_lookup_primitive_by_spec_type(opcode_parts[2], rvt_sx);
 		}
 	} else if (operand->type == "freg") {
 		if (opcode_parts.size() == 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+			primitive = rv_lookup_primitive_by_spec_type(opcode_parts[1]);
 		} else if (i == 0 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[1]);
+			primitive = rv_lookup_primitive_by_spec_type(opcode_parts[1]);
 		} else if (i == 1 && opcode_parts.size() > 2) {
-			primitive = riscv_lookup_primitive_by_spec_type(opcode_parts[2]);
+			primitive = rv_lookup_primitive_by_spec_type(opcode_parts[2]);
 		} else {
 			if (ext->alpha_code == 's') {
-				primitive = &riscv_primitive_type_table[rvt_f32];
+				primitive = &rv_primitive_type_table[rvt_f32];
 			} else if (ext->alpha_code == 'd') {
-				primitive = &riscv_primitive_type_table[rvt_f64];
+				primitive = &rv_primitive_type_table[rvt_f64];
 			} else if (ext->alpha_code == 'q') {
-				primitive = &riscv_primitive_type_table[rvt_f128];
+				primitive = &rv_primitive_type_table[rvt_f128];
 			} else /* if (ext->alpha_code == 'c') */ {
-				primitive = &riscv_primitive_type_table[rvt_f32];
+				primitive = &rv_primitive_type_table[rvt_f32];
 			}
 		}
 	}
 	return primitive;
 }
 
-std::vector<std::string> riscv_meta_model::parse_line(std::string line)
+std::vector<std::string> rv_meta_model::parse_line(std::string line)
 {
 	// simple parsing routine that handles tokens separated by whitespace,
 	// double quoted tokens containing whitespace and # comments
@@ -494,7 +494,7 @@ std::vector<std::string> riscv_meta_model::parse_line(std::string line)
 	return comps;
 }
 
-std::vector<std::vector<std::string>> riscv_meta_model::read_file(std::string filename)
+std::vector<std::vector<std::string>> rv_meta_model::read_file(std::string filename)
 {
 	std::vector<std::vector<std::string>> data;
 	std::ifstream in(filename.c_str());
@@ -517,7 +517,7 @@ std::vector<std::vector<std::string>> riscv_meta_model::read_file(std::string fi
 	return data;
 }
 
-std::vector<std::string> riscv_meta_model::get_unique_codecs()
+std::vector<std::string> rv_meta_model::get_unique_codecs()
 {
 	std::vector<std::string> codec_names;
 	for (auto &codec : codecs) {
@@ -529,7 +529,7 @@ std::vector<std::string> riscv_meta_model::get_unique_codecs()
 	return codec_names;
 }
 
-std::vector<std::string> riscv_meta_model::get_inst_mnemonics(bool isa_widths, bool isa_extensions)
+std::vector<std::string> rv_meta_model::get_inst_mnemonics(bool isa_widths, bool isa_extensions)
 {
 	std::vector<std::string> mnems;
 
@@ -554,7 +554,7 @@ std::vector<std::string> riscv_meta_model::get_inst_mnemonics(bool isa_widths, b
 	return mnems;
 }
 
-std::vector<std::pair<size_t,std::string>> riscv_meta_model::isa_width_prefixes()
+std::vector<std::pair<size_t,std::string>> rv_meta_model::isa_width_prefixes()
 {
 	std::vector<std::pair<size_t,std::string>> widths;
 	for (auto &extension : extensions) {
@@ -567,9 +567,9 @@ std::vector<std::pair<size_t,std::string>> riscv_meta_model::isa_width_prefixes(
 	return widths;
 }
 
-riscv_extension_list riscv_meta_model::decode_isa_extensions(std::string isa_spec)
+rv_extension_list rv_meta_model::decode_isa_extensions(std::string isa_spec)
 {
-	riscv_extension_list list;
+	rv_extension_list list;
 	if (isa_spec.size() == 0) {
 		return list;
 	}
@@ -620,10 +620,10 @@ riscv_extension_list riscv_meta_model::decode_isa_extensions(std::string isa_spe
 	return list;
 }
 
-riscv_opcode_ptr riscv_meta_model::create_opcode(std::string opcode_name, std::string extension)
+rv_opcode_ptr rv_meta_model::create_opcode(std::string opcode_name, std::string extension)
 {
 	// create key for the opcode
-	riscv_opcode_ptr opcode = lookup_opcode_by_key(opcode_name);
+	rv_opcode_ptr opcode = lookup_opcode_by_key(opcode_name);
 	if (opcode) {
 		// if the opcode exists rename the previous opcode using isa extension
 		opcode->key = opcode_name + "." + opcode->extensions.front()->name;
@@ -636,13 +636,13 @@ riscv_opcode_ptr riscv_meta_model::create_opcode(std::string opcode_name, std::s
 			panic("opcode with same extension already exists: %s",
 				opcode_key.c_str());
 		}
-		opcode = opcodes_by_key[opcode_key] = std::make_shared<riscv_opcode>(
+		opcode = opcodes_by_key[opcode_key] = std::make_shared<rv_opcode>(
 			opcode_key, opcode_name
 		);
 		opcodes.push_back(opcode);
 		opcode->num = opcodes.size();
 	} else {
-		opcode = opcodes_by_key[opcode_name] = std::make_shared<riscv_opcode>(
+		opcode = opcodes_by_key[opcode_name] = std::make_shared<rv_opcode>(
 			opcode_name, opcode_name
 		);
 		opcodes.push_back(opcode);
@@ -660,88 +660,88 @@ riscv_opcode_ptr riscv_meta_model::create_opcode(std::string opcode_name, std::s
 	return opcode;
 }
 
-riscv_opcode_ptr riscv_meta_model::lookup_opcode_by_key(std::string opcode_key)
+rv_opcode_ptr rv_meta_model::lookup_opcode_by_key(std::string opcode_key)
 {
 	auto i = opcodes_by_key.find(opcode_key);
 	if (i != opcodes_by_key.end()) return i->second;
-	return riscv_opcode_ptr();
+	return rv_opcode_ptr();
 }
 
-riscv_opcode_list riscv_meta_model::lookup_opcode_by_name(std::string opcode_name)
+rv_opcode_list rv_meta_model::lookup_opcode_by_name(std::string opcode_name)
 {
 	auto i = opcodes_by_name.find(opcode_name);
 	if (i != opcodes_by_name.end()) return i->second;
-	return riscv_opcode_list();
+	return rv_opcode_list();
 }
 
-bool riscv_meta_model::is_operand(std::string mnem)
+bool rv_meta_model::is_operand(std::string mnem)
 {
 	return (operands_by_name.find(mnem) != operands_by_name.end());
 }
 
-bool riscv_meta_model::is_ignore(std::string mnem)
+bool rv_meta_model::is_ignore(std::string mnem)
 {
 	return (mnem.find("=ignore") != std::string::npos);
 }
 
-bool riscv_meta_model::is_mask(std::string mnem)
+bool rv_meta_model::is_mask(std::string mnem)
 {
 	return (mnem.find("=") != std::string::npos);
 }
 
-bool riscv_meta_model::is_codec(std::string mnem)
+bool rv_meta_model::is_codec(std::string mnem)
 {
 	return (codecs_by_name.find(mnem) != codecs_by_name.end());
 }
 
-bool riscv_meta_model::is_extension(std::string mnem)
+bool rv_meta_model::is_extension(std::string mnem)
 {
 	return (extensions_by_name.find(mnem) != extensions_by_name.end());
 }
 
-void riscv_meta_model::parse_operand(std::vector<std::string> &part)
+void rv_meta_model::parse_operand(std::vector<std::string> &part)
 {
 	if (part.size() < 6) {
 		panic("operands requires 6 parameters: %s", join(part, " ").c_str());
 	}
-	auto operand = operands_by_name[part[0]] = std::make_shared<riscv_operand>(
+	auto operand = operands_by_name[part[0]] = std::make_shared<rv_operand>(
 		part[0], part[1], part[2], part[3], part[4], part[5]
 	);
 	operands.push_back(operand);
 }
 
-void riscv_meta_model::parse_enum(std::vector<std::string> &part)
+void rv_meta_model::parse_enum(std::vector<std::string> &part)
 {
 	if (part.size() < 4) {
 		panic("operands requires 4 parameters: %s", join(part, " ").c_str());
 	}
-	auto enumv = enums_by_name[part[0]] = std::make_shared<riscv_enum>(
+	auto enumv = enums_by_name[part[0]] = std::make_shared<rv_enum>(
 		part[0], part[1], part[2], part[3]
 	);
 	enums.push_back(enumv);
 }
 
-void riscv_meta_model::parse_type(std::vector<std::string> &part)
+void rv_meta_model::parse_type(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
 		panic("types requires 2 or more parameters: %s", join(part, " ").c_str());
 	}
-	auto type = types_by_name[part[0]] = std::make_shared<riscv_type>(
+	auto type = types_by_name[part[0]] = std::make_shared<rv_type>(
 		part[0], part[1]
 	);
 	for (size_t i = 2; i < part.size(); i++) {
 		std::vector<std::string> spec = split(part[i], "=");
-		type->parts.push_back(riscv_named_bitspec(riscv_bitspec(spec[0]), spec.size() > 1 ? spec[1] : ""));
+		type->parts.push_back(rv_named_bitspec(rv_bitspec(spec[0]), spec.size() > 1 ? spec[1] : ""));
 	}
 	types.push_back(type);
 }
 
-void riscv_meta_model::parse_codec(std::vector<std::string> &part)
+void rv_meta_model::parse_codec(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
 		panic("codecs requires 2 parameters: %s", join(part, " ").c_str());
 	}
-	auto codec = codecs_by_name[part[0]] = std::make_shared<riscv_codec>(
+	auto codec = codecs_by_name[part[0]] = std::make_shared<rv_codec>(
 		part[0], part[1]
 	);
 	std::string codec_key;
@@ -763,52 +763,52 @@ void riscv_meta_model::parse_codec(std::vector<std::string> &part)
 	codecs.push_back(codec);
 }
 
-void riscv_meta_model::parse_extension(std::vector<std::string> &part)
+void rv_meta_model::parse_extension(std::vector<std::string> &part)
 {
 	if (part.size() < 5) {
 		panic("extensions requires 5 parameters: %s", join(part, " ").c_str());
 	}
 	std::string isa = part[0] + part[1] + part[2];
-	auto extension = extensions_by_name[isa] = std::make_shared<riscv_extension>(
+	auto extension = extensions_by_name[isa] = std::make_shared<rv_extension>(
 		part[0], part[1], part[2], part[3], part[4]
 	);
 	extensions.push_back(extension);
 }
 
-void riscv_meta_model::parse_format(std::vector<std::string> &part)
+void rv_meta_model::parse_format(std::vector<std::string> &part)
 {
 	if (part.size() < 1) {
 		panic("formats requires at least 1 parameters: %s", join(part, " ").c_str());
 	}
-	auto format = formats_by_name[part[0]] = std::make_shared<riscv_format>(
+	auto format = formats_by_name[part[0]] = std::make_shared<rv_format>(
 		part[0], part.size() > 1 ? part[1] : ""
 	);
 	formats.push_back(format);
 }
 
-void riscv_meta_model::parse_register(std::vector<std::string> &part)
+void rv_meta_model::parse_register(std::vector<std::string> &part)
 {
 	if (part.size() < 5) {
 		panic("registers requires 5 parameters: %s", join(part, " ").c_str());
 	}
-	auto reg = registers_by_name[part[0]] = std::make_shared<riscv_register>(
+	auto reg = registers_by_name[part[0]] = std::make_shared<rv_register>(
 		part[0], part[1], part[2], part[3], part[4]
 	);
 	registers.push_back(reg);
 }
 
-void riscv_meta_model::parse_csr(std::vector<std::string> &part)
+void rv_meta_model::parse_csr(std::vector<std::string> &part)
 {
 	if (part.size() < 4) {
 		panic("csrs requires 4 parameters: %s", join(part, " ").c_str());
 	}
-	auto csr = csrs_by_name[part[2]] = std::make_shared<riscv_csr>(
+	auto csr = csrs_by_name[part[2]] = std::make_shared<rv_csr>(
 		part[0], part[1], part[2], part[3]
 	);
 	csrs.push_back(csr);
 }
 
-void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
+void rv_meta_model::parse_opcode(std::vector<std::string> &part)
 {
 	std::vector<std::string> extensions;
 	for (size_t i = 1; i < part.size(); i++) {
@@ -885,12 +885,12 @@ void riscv_meta_model::parse_opcode(std::vector<std::string> &part)
 	}
 }
 
-void riscv_meta_model::parse_constraint(std::vector<std::string> &part)
+void rv_meta_model::parse_constraint(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
 		panic("constraints requires 2 parameters: %s", join(part, " ").c_str());
 	}
-	auto constraint = constraints_by_name[part[0]] = std::make_shared<riscv_constraint>(
+	auto constraint = constraints_by_name[part[0]] = std::make_shared<rv_constraint>(
 		part[0], part[1]
 	);
 	if (part.size() >= 3) {
@@ -899,7 +899,7 @@ void riscv_meta_model::parse_constraint(std::vector<std::string> &part)
 	constraints.push_back(constraint);
 }
 
-void riscv_meta_model::parse_compression(std::vector<std::string> &part)
+void rv_meta_model::parse_compression(std::vector<std::string> &part)
 {
 	if (part.size() < 2) {
 		panic("invalid compression file requires at least 2 parameters: %s",
@@ -914,7 +914,7 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 				opcode->extensions[0]->isa_width != comp_opcode->extensions[0]->isa_width) continue;
 
 			// create compression for this pair of opcodes
-			riscv_constraint_list constraint_list;
+			rv_constraint_list constraint_list;
 			for (size_t i = 2; i < part.size(); i++) {
 				auto ci = constraints_by_name.find(part[i]);
 				if (ci == constraints_by_name.end()) {
@@ -923,7 +923,7 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 				}
 				constraint_list.push_back(ci->second);
 			}
-			auto comp = std::make_shared<riscv_compressed>(
+			auto comp = std::make_shared<rv_compressed>(
 				comp_opcode, opcode, constraint_list
 			);
 			comp_opcode->compressed = comp;
@@ -939,7 +939,7 @@ void riscv_meta_model::parse_compression(std::vector<std::string> &part)
 	}
 }
 
-void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
+void rv_meta_model::parse_pseudo(std::vector<std::string> &part)
 {
 	if (part.size() < 3) {
 		panic("invalid pseudo file requires at least 3 parameters: %s",
@@ -958,7 +958,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		panic("pseudo %s has unknown format: %s",
 			pseudo_name.c_str(), part[2].c_str());
 	}
-	riscv_constraint_list constraint_list;
+	rv_constraint_list constraint_list;
 	for (size_t i = 3; i < part.size(); i++) {
 		auto ci = constraints_by_name.find(part[i]);
 		if (ci == constraints_by_name.end()) {
@@ -970,8 +970,8 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 
 	// create opcode (if needed)
 	std::string pseudo_opcode_name = "@" + pseudo_name;
-	riscv_opcode_ptr existing_opcode = lookup_opcode_by_key(pseudo_name);
-	riscv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_name);
+	rv_opcode_ptr existing_opcode = lookup_opcode_by_key(pseudo_name);
+	rv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_name);
 	if (existing_opcode) {
 		pseudo_opcode = existing_opcode;
 	} else {
@@ -988,7 +988,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 			// TODO - abstract this inference hack
 			if (operand_name == "none") continue;
 			if (operand_name == "offset") operand_name = "oimm20";
-			riscv_operand_ptr operand = operands_by_name[operand_name];
+			rv_operand_ptr operand = operands_by_name[operand_name];
 			if (!operand) {
 				panic("psuedo opcode %s references unknown operand %s",
 					pseudo_name.c_str(), operand_name.c_str());
@@ -1000,7 +1000,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	}
 
 	// create pseudo
-	auto pseudo = std::make_shared<riscv_pseudo>(
+	auto pseudo = std::make_shared<rv_pseudo>(
 		pseudo_name, pseudo_opcode, real_opcode, format, constraint_list
 	);
 	real_opcode->pseudos.push_back(pseudo);
@@ -1010,7 +1010,7 @@ void riscv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	pseudo_opcode->codec = real_opcode->codec;
 }
 
-void riscv_meta_model::parse_opcode_fullname(std::vector<std::string> &part)
+void rv_meta_model::parse_opcode_fullname(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
@@ -1023,7 +1023,7 @@ void riscv_meta_model::parse_opcode_fullname(std::vector<std::string> &part)
 	}
 }
 
-void riscv_meta_model::parse_opcode_description(std::vector<std::string> &part)
+void rv_meta_model::parse_opcode_description(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
@@ -1036,7 +1036,7 @@ void riscv_meta_model::parse_opcode_description(std::vector<std::string> &part)
 	}
 }
 
-void riscv_meta_model::parse_opcode_pseudocode_c(std::vector<std::string> &part)
+void rv_meta_model::parse_opcode_pseudocode_c(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
@@ -1049,7 +1049,7 @@ void riscv_meta_model::parse_opcode_pseudocode_c(std::vector<std::string> &part)
 	}
 }
 
-void riscv_meta_model::parse_opcode_pseudocode_alt(std::vector<std::string> &part)
+void rv_meta_model::parse_opcode_pseudocode_alt(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
 	std::string opcode_name = part[0];
@@ -1062,7 +1062,7 @@ void riscv_meta_model::parse_opcode_pseudocode_alt(std::vector<std::string> &par
 	}
 }
 
-bool riscv_meta_model::read_metadata(std::string dirname)
+bool rv_meta_model::read_metadata(std::string dirname)
 {
 	for (auto part : read_file(dirname + std::string("/") + OPERANDS_FILE)) parse_operand(part);
 	for (auto part : read_file(dirname + std::string("/") + ENUMS_FILE)) parse_enum(part);

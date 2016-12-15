@@ -2,22 +2,22 @@
 //  decode.h
 //
 
-#ifndef riscv_decode_h
-#define riscv_decode_h
+#ifndef rv_decode_h
+#define rv_decode_h
 
 /* Instruction decoders */
 
 /* Decode none */
 template <typename T> inline void decode_none(T &dec, inst_t inst)
 {
-	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rd = dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode C nop */
 template <typename T> inline void decode_ci_none(T &dec, inst_t inst)
 {
-	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rd = dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 }
 
@@ -33,7 +33,7 @@ template <typename T> inline void decode_cr(T &dec, inst_t inst)
 template <typename T> inline void decode_cr_mv(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_zero;
 	dec.rs2 = operand_crs2::decode(inst);
 	dec.imm = 0;
 }
@@ -41,18 +41,18 @@ template <typename T> inline void decode_cr_mv(T &dec, inst_t inst)
 /* Decode CR jalr */
 template <typename T> inline void decode_cr_jalr(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_ra;
+	dec.rd = rv_ireg_ra;
 	dec.rs1 = operand_crs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 }
 
 /* Decode CR jr */
 template <typename T> inline void decode_cr_jr(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_crs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 }
 
@@ -60,7 +60,7 @@ template <typename T> inline void decode_cr_jr(T &dec, inst_t inst)
 template <typename T> inline void decode_ci(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmi::decode(inst);
 }
 
@@ -68,7 +68,7 @@ template <typename T> inline void decode_ci(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_sh5(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmsh5::decode(inst);
 }
 
@@ -76,7 +76,7 @@ template <typename T> inline void decode_ci_sh5(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_sh6(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rd::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmsh6::decode(inst);
 }
 
@@ -84,8 +84,8 @@ template <typename T> inline void decode_ci_sh6(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_li(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = riscv_ireg_zero;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmi::decode(inst);
 }
 
@@ -93,8 +93,8 @@ template <typename T> inline void decode_ci_li(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_lui(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = riscv_ireg_zero;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmui::decode(inst);
 }
 
@@ -102,8 +102,8 @@ template <typename T> inline void decode_ci_lui(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_lwsp(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmlwsp::decode(inst);
 }
 
@@ -111,25 +111,25 @@ template <typename T> inline void decode_ci_lwsp(T &dec, inst_t inst)
 template <typename T> inline void decode_ci_ldsp(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmldsp::decode(inst);
 }
 
 /* Decode CI 16sp */
 template <typename T> inline void decode_ci_16sp(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_sp;
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rd = rv_ireg_sp;
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimm16sp::decode(inst);
 }
 
 /* Decode CSS swsp */
 template <typename T> inline void decode_css_swsp(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_ireg_sp;
+	dec.rd = rv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
 	dec.rs2 = operand_crs2::decode(inst);
 	dec.imm = operand_cimmswsp::decode(inst);
 }
@@ -137,8 +137,8 @@ template <typename T> inline void decode_css_swsp(T &dec, inst_t inst)
 /* Decode CSS sdsp */
 template <typename T> inline void decode_css_sdsp(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
-	dec.rs1 = riscv_ireg_sp;
+	dec.rd = rv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
 	dec.rs2 = operand_crs2::decode(inst);
 	dec.imm = operand_cimmsdsp::decode(inst);
 }
@@ -147,8 +147,8 @@ template <typename T> inline void decode_css_sdsp(T &dec, inst_t inst)
 template <typename T> inline void decode_ciw_4spn(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
-	dec.rs1 = riscv_ireg_sp;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimm4spn::decode(inst);
 }
 
@@ -157,7 +157,7 @@ template <typename T> inline void decode_cl_lw(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmw::decode(inst);
 }
 
@@ -166,7 +166,7 @@ template <typename T> inline void decode_cl_ld(T &dec, inst_t inst)
 {
 	dec.rd = operand_crdq::decode(inst) + 8;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmd::decode(inst);
 }
 
@@ -181,7 +181,7 @@ template <typename T> inline void decode_cs(T &dec, inst_t inst)
 /* Decode CS sd */
 template <typename T> inline void decode_cs_sd(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
 	dec.rs2 = operand_crs2q::decode(inst) + 8;
 	dec.imm = operand_cimmd::decode(inst);
@@ -190,7 +190,7 @@ template <typename T> inline void decode_cs_sd(T &dec, inst_t inst)
 /* Decode CS sw */
 template <typename T> inline void decode_cs_sw(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
 	dec.rs2 = operand_crs2q::decode(inst) + 8;
 	dec.imm = operand_cimmw::decode(inst);
@@ -199,9 +199,9 @@ template <typename T> inline void decode_cs_sw(T &dec, inst_t inst)
 /* Decode CB */
 template <typename T> inline void decode_cb(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmb::decode(inst);
 }
 
@@ -209,7 +209,7 @@ template <typename T> inline void decode_cb(T &dec, inst_t inst)
 template <typename T> inline void decode_cb_imm(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmi::decode(inst);
 }
 
@@ -217,7 +217,7 @@ template <typename T> inline void decode_cb_imm(T &dec, inst_t inst)
 template <typename T> inline void decode_cb_sh5(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmsh5::decode(inst);
 }
 
@@ -225,22 +225,22 @@ template <typename T> inline void decode_cb_sh5(T &dec, inst_t inst)
 template <typename T> inline void decode_cb_sh6(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmsh6::decode(inst);
 }
 
 /* Decode CJ */
 template <typename T> inline void decode_cj(T &dec, inst_t inst)
 {
-	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rd = dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmj::decode(inst);
 }
 
 /* Decode CJ jal */
 template <typename T> inline void decode_cj_jal(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_ra;
-	dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rd = rv_ireg_ra;
+	dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_cimmj::decode(inst);
 }
 
@@ -268,7 +268,7 @@ template <typename T> inline void decode_r_l(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 	dec.aq = operand_aq::decode(inst);
 	dec.rl = operand_rl::decode(inst);
@@ -299,7 +299,7 @@ template <typename T> inline void decode_r4_m(T &dec, inst_t inst)
 /* Decode R fence */
 template <typename T> inline void decode_r_f(T &dec, inst_t inst)
 {
-	dec.rd = dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rd = dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.pred = operand_pred::decode(inst);
 	dec.succ = operand_succ::decode(inst);
 	dec.imm = 0;
@@ -310,7 +310,7 @@ template <typename T> inline void decode_i(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_imm12::decode(inst);
 }
 
@@ -319,7 +319,7 @@ template <typename T> inline void decode_i_csr(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_csr12::decode(inst);
 }
 
@@ -328,7 +328,7 @@ template <typename T> inline void decode_i_sh5(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_shamt5::decode(inst);
 }
 
@@ -337,14 +337,14 @@ template <typename T> inline void decode_i_sh6(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
 	dec.rs1 = operand_rs1::decode(inst);
-	dec.rs2 = riscv_ireg_zero;
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_shamt6::decode(inst);
 }
 
 /* Decode S Store */
 template <typename T> inline void decode_s(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_rs1::decode(inst);
 	dec.rs2 = operand_rs2::decode(inst);
 	dec.imm = operand_simm12::decode(inst);
@@ -353,7 +353,7 @@ template <typename T> inline void decode_s(T &dec, inst_t inst)
 /* Decode SB Branch */
 template <typename T> inline void decode_sb(T &dec, inst_t inst)
 {
-	dec.rd = riscv_ireg_zero;
+	dec.rd = rv_ireg_zero;
 	dec.rs1 = operand_rs1::decode(inst);
 	dec.rs2 = operand_rs2::decode(inst);
 	dec.imm = operand_sbimm12::decode(inst);
@@ -363,7 +363,7 @@ template <typename T> inline void decode_sb(T &dec, inst_t inst)
 template <typename T> inline void decode_u(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
-	dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_imm20::decode(inst);
 }
 
@@ -371,7 +371,7 @@ template <typename T> inline void decode_u(T &dec, inst_t inst)
 template <typename T> inline void decode_uj(T &dec, inst_t inst)
 {
 	dec.rd = operand_rd::decode(inst);
-	dec.rs1 = dec.rs2 = riscv_ireg_zero;
+	dec.rs1 = dec.rs2 = rv_ireg_zero;
 	dec.imm = operand_jimm20::decode(inst);
 }
 

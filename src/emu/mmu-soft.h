@@ -2,8 +2,8 @@
 //  mmu-soft.h
 //
 
-#ifndef riscv_mmu_soft_h
-#define riscv_mmu_soft_h
+#ifndef rv_mmu_soft_h
+#define rv_mmu_soft_h
 
 namespace riscv {
 
@@ -55,8 +55,8 @@ namespace riscv {
 				(tlb_ent && (
 					!(tlb_ent->pteb & pte_flag_X) ||
 					((tlb_ent->pteb & pte_flag_U) ?
-						privilege_level > riscv_mode_U :
-						privilege_level < riscv_mode_S)
+						privilege_level > rv_mode_U :
+						privilege_level < rv_mode_S)
 				)
 			);
 		}
@@ -75,8 +75,8 @@ namespace riscv {
 					(!(tlb_ent->pteb & pte_flag_R) &&
 					 !(tlb_ent->pteb & pte_flag_X && proc.mstatus.r.mxr)) ||
 					((tlb_ent->pteb & pte_flag_U) ?
-						privilege_level > riscv_mode_U && proc.mstatus.r.pum :
-						privilege_level < riscv_mode_S)
+						privilege_level > rv_mode_U && proc.mstatus.r.pum :
+						privilege_level < rv_mode_S)
 				)
 			);
 		}
@@ -94,8 +94,8 @@ namespace riscv {
 				(tlb_ent && (
 					!(tlb_ent->pteb & pte_flag_W) ||
 					((tlb_ent->pteb & pte_flag_U) ?
-						privilege_level > riscv_mode_U && proc.mstatus.r.pum :
-						privilege_level < riscv_mode_S)
+						privilege_level > rv_mode_U && proc.mstatus.r.pum :
+						privilege_level < rv_mode_S)
 				)
 			);
 		}
@@ -109,7 +109,7 @@ namespace riscv {
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<u16>(pc))) {
-				proc.raise(riscv_cause_misaligned_fetch, pc);
+				proc.raise(rv_cause_misaligned_fetch, pc);
 			}
 
 			/* translate to machine physical (raises exception on fault) */
@@ -121,7 +121,7 @@ namespace riscv {
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
-				proc.raise(riscv_cause_fault_fetch, pc);
+				proc.raise(rv_cause_fault_fetch, pc);
 			} else {
 				/* fetch instruction using memory segment interface */
 				inst_t inst;
@@ -158,7 +158,7 @@ namespace riscv {
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
-				proc.raise(riscv_cause_misaligned_load, va);
+				proc.raise(rv_cause_misaligned_load, va);
 			}
 
 			/* translate to machine physical (raises exception on fault) */
@@ -170,7 +170,7 @@ namespace riscv {
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
-				proc.raise(riscv_cause_fault_load, va);
+				proc.raise(rv_cause_fault_load, va);
 			} else {
 				/* TODO - we need some locking magic for SMP on non RISC-V */
 				segment->load(uva, val1);
@@ -188,7 +188,7 @@ namespace riscv {
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
-				proc.raise(riscv_cause_misaligned_load, va);
+				proc.raise(rv_cause_misaligned_load, va);
 			}
 
 			/* translate to machine physical (raises exception on fault) */
@@ -200,7 +200,7 @@ namespace riscv {
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
-				proc.raise(riscv_cause_fault_load, va);
+				proc.raise(rv_cause_fault_load, va);
 			} else {
 				segment->load(uva, val);
 			}
@@ -215,7 +215,7 @@ namespace riscv {
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
-				proc.raise(riscv_cause_misaligned_store, va);
+				proc.raise(rv_cause_misaligned_store, va);
 			}
 
 			/* translate to machine physical (raises exception on fault) */
@@ -227,7 +227,7 @@ namespace riscv {
 			/* Check PTE flags and effective mode */
 			if (unlikely(!segment || store_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
-				proc.raise(riscv_cause_fault_store, va);
+				proc.raise(rv_cause_fault_store, va);
 			} else {
 				segment->store(uva, val);
 			}
@@ -240,10 +240,10 @@ namespace riscv {
 			 * privilege mode (U or S) or M mode with MPRV set and the mode in MPP
 			 * (U or S). M mode instruction fetches are not page translated
 			 */
-			return ((proc.mode >= riscv_mode_M) &&
+			return ((proc.mode >= rv_mode_M) &&
 				(proc.mstatus.r.mprv == 1) &&
 				(op != op_fetch) &&
-				(proc.mstatus.r.mpp <= riscv_mode_S))
+				(proc.mstatus.r.mpp <= rv_mode_S))
 				? proc.mstatus.r.mpp
 				: proc.mode;
 		}
@@ -253,19 +253,19 @@ namespace riscv {
 			P &proc, UX va, typename tlb_type::tlb_entry_t* &tlb_ent)
 		{
 			UX effective_privilege_level = effective_mode(proc, op);
-			if (effective_privilege_level >= riscv_mode_M) {
+			if (effective_privilege_level >= rv_mode_M) {
 				return va;
 			} else {
 				switch (proc.mstatus.r.vm) {
-					case riscv_vm_mbare:
+					case rv_vm_mbare:
 						return va;
-					case riscv_vm_sv32:
+					case rv_vm_sv32:
 						return page_translate_addr<P,sv32>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
-					case riscv_vm_sv39:
+					case rv_vm_sv39:
 						return page_translate_addr<P,sv39>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
-					case riscv_vm_sv48:
+					case rv_vm_sv48:
 						return page_translate_addr<P,sv48>(proc, va, op,
 							op == op_fetch ? l1_itlb : l1_dtlb, tlb_ent);
 					default:
@@ -404,9 +404,9 @@ namespace riscv {
 				(addr_t)vpn, (addr_t)pte.xu.val);
 
 			switch (op) {
-				case op_fetch: proc.raise(riscv_cause_fault_fetch, va);
-				case op_load:  proc.raise(riscv_cause_fault_load, va);
-				case op_store: proc.raise(riscv_cause_fault_store, va);
+				case op_fetch: proc.raise(rv_cause_fault_fetch, va);
+				case op_load:  proc.raise(rv_cause_fault_load, va);
+				case op_store: proc.raise(rv_cause_fault_store, va);
 			}
 
 			return 0; /* not reached */

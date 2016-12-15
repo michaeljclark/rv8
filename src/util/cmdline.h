@@ -2,8 +2,8 @@
 //  cmdline.h
 //
 
-#ifndef riscv_cmdline_h
-#define riscv_cmdline_h
+#ifndef rv_cmdline_h
+#define rv_cmdline_h
 
 enum cmdline_arg_type
 {

@@ -2,8 +2,8 @@
 //  pma.h
 //
 
-#ifndef riscv_pma_h
-#define riscv_pma_h
+#ifndef rv_pma_h
+#define rv_pma_h
 
 namespace riscv {
 

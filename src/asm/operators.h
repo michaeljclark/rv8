@@ -2,8 +2,8 @@
 //  operators.h
 //
 
-#ifndef riscv_operators_h
-#define riscv_operators_h
+#ifndef rv_operators_h
+#define rv_operators_h
 
 #ifdef NO_INLINE
 #define MAYBE_INLINE

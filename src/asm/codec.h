@@ -2,8 +2,8 @@
 //  codec.h
 //
 
-#ifndef riscv_codec_h
-#define riscv_codec_h
+#ifndef rv_codec_h
+#define rv_codec_h
 
 /*
  *
@@ -22,17 +22,17 @@
  * Decoding instructions
  * =====================
  * The decode functions decode the instruction passed as an argument in to
- * struct riscv_decode using: op, codec, imm, rd, rs1, rs2, etc. 
- * The encode function only depends on the fields in riscv_decode.
+ * struct rv_decode using: op, codec, imm, rd, rs1, rs2, etc.
+ * The encode function only depends on the fields in rv_decode.
  *
  *   template <typename T> inline void riscv::decode_inst_rv32(T &dec, riscv::inst_t inst)
  *   template <typename T> inline void riscv::decode_inst_rv64(T &dec, riscv::inst_t inst)
  *
  * Encoding instructions
  * =====================
- * The encode function encodes the operands in struct riscv_decode using:
+ * The encode function encodes the operands in struct rv_decode using:
  * op, imm, rd, rs1, rs2, etc. The encode function only depends on 
- * riscv_decode fields and it is up to the caller to save the instruction.
+ * rv_decode fields and it is up to the caller to save the instruction.
  * Returns the encoded instruction.
  *
  *   template <typename T> inline riscv::inst_t riscv::encode_inst(T &dec)
@@ -73,12 +73,14 @@ namespace riscv
 
 	/* Instruction Set Combinations */
 
-	enum rv_isa {
-		rv_isa_none,
-		rv_isa_ima,
-		rv_isa_imac,
-		rv_isa_imafd,
-		rv_isa_imafdc,
+	enum rv_set {
+		rv_set_none,
+		rv_set_i,
+		rv_set_im,
+		rv_set_ima,
+		rv_set_imac,
+		rv_set_imafd,
+		rv_set_imafdc,
 	};
 
 	/* CSR permissions */
@@ -162,20 +164,20 @@ namespace riscv
 	template <typename T>
 	inline void decompress_inst_rv32(T &dec)
 	{
-	    int decomp_op = riscv_inst_decomp_rv32[dec.op];
-	    if (decomp_op != riscv_op_illegal) {
+	    int decomp_op = rv_inst_decomp_rv32[dec.op];
+	    if (decomp_op != rv_op_illegal) {
 	        dec.op = decomp_op;
-	        dec.codec = riscv_inst_codec[decomp_op];
+	        dec.codec = rv_inst_codec[decomp_op];
 	    }
 	}
 
 	template <typename T>
 	inline void decompress_inst_rv64(T &dec)
 	{
-	    int decomp_op = riscv_inst_decomp_rv64[dec.op];
-	    if (decomp_op != riscv_op_illegal) {
+	    int decomp_op = rv_inst_decomp_rv64[dec.op];
+	    if (decomp_op != rv_op_illegal) {
 	        dec.op = decomp_op;
-	        dec.codec = riscv_inst_codec[decomp_op];
+	        dec.codec = rv_inst_codec[decomp_op];
 	    }
 	}
 
@@ -208,12 +210,12 @@ namespace riscv
 	template <typename T>
 	inline bool decode_pseudo_inst(T &dec)
 	{
-		const riscv_comp_data *comp_data = riscv_inst_pseudo[dec.op];
+		const rv_comp_data *comp_data = rv_inst_pseudo[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
 			if (constraint_check(dec, comp_data->constraints)) {
 				dec.op = comp_data->op;
-				dec.codec = riscv_inst_codec[dec.op];
+				dec.codec = rv_inst_codec[dec.op];
 				return true;
 			}
 			comp_data++;
@@ -227,12 +229,12 @@ namespace riscv
 	template <typename T>
 	inline bool compress_inst_rv32(T &dec)
 	{
-		const riscv_comp_data *comp_data = riscv_inst_comp_rv32[dec.op];
+		const rv_comp_data *comp_data = rv_inst_comp_rv32[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
 			if (constraint_check(dec, comp_data->constraints)) {
 				dec.op = comp_data->op;
-				dec.codec = riscv_inst_codec[dec.op];
+				dec.codec = rv_inst_codec[dec.op];
 				return true;
 			}
 			comp_data++;
@@ -243,12 +245,12 @@ namespace riscv
 	template <typename T>
 	inline bool compress_inst_rv64(T &dec)
 	{
-		const riscv_comp_data *comp_data = riscv_inst_comp_rv64[dec.op];
+		const rv_comp_data *comp_data = rv_inst_comp_rv64[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
 			if (constraint_check(dec, comp_data->constraints)) {
 				dec.op = comp_data->op;
-				dec.codec = riscv_inst_codec[dec.op];
+				dec.codec = rv_inst_codec[dec.op];
 				return true;
 			}
 			comp_data++;
@@ -262,10 +264,10 @@ namespace riscv
 	template <typename T>
 	inline bool encode_pseudo(T &dec)
 	{
-		const riscv_comp_data *comp_data = &riscv_inst_depseudo[dec.op];
+		const rv_comp_data *comp_data = &rv_inst_depseudo[dec.op];
 		if (!comp_data->constraints) return false;
 		dec.op = comp_data->op;
-		dec.codec = riscv_inst_codec[dec.op];
+		dec.codec = rv_inst_codec[dec.op];
 		constraint_set(dec, comp_data->constraints);
 		return true;
 	}

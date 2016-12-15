@@ -2,8 +2,8 @@
 //  assembler.h
 //
 
-#ifndef riscv_assembler_h
-#define riscv_assembler_h
+#ifndef rv_assembler_h
+#define rv_assembler_h
 
 namespace riscv {
 

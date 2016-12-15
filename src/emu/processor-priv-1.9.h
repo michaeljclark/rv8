@@ -2,8 +2,8 @@
 //  processor-priv.h
 //
 
-#ifndef riscv_processor_priv_1_9_h
-#define riscv_processor_priv_1_9_h
+#ifndef rv_processor_priv_1_9_h
+#define rv_processor_priv_1_9_h
 
 namespace riscv {
 
@@ -155,15 +155,15 @@ namespace riscv {
 
 		/* Privileged Control and Status Registers */
 
-		UX           misa;            /* Extensions misa[25:0], Base misa[XLEN-1:XLEN-2] (enum riscv_isa) */
+		UX           misa;            /* Extensions misa[25:0], Base misa[XLEN-1:XLEN-2] (enum rv_isa) */
 		UX           mvendorid;       /* Vendor ID, (0 = not implemented) */
 		UX           marchid;         /* Architecture ID, (0 = not implemented) */
 		UX           mimpid;          /* Implementation ID, (0 = not implemented) */
 		UX           mhartid;         /* Hardware Thread ID */
 		status<UX>   mstatus;         /* Machine Status Register */
 		UX           mtvec;           /* Machine Mode Trap Vector Base-Address Register */
-		UX           medeleg;         /* Machine Exception Delegation Mask (enum riscv_cause) */
-		UX           mideleg;         /* Machine Interrupt Delegation Mask (enum riscv_intr) */
+		UX           medeleg;         /* Machine Exception Delegation Mask (enum rv_cause) */
+		UX           mideleg;         /* Machine Interrupt Delegation Mask (enum rv_intr) */
 		ip<UX>       mip;             /* Machine Interrupt Pending Register */
 		ie<UX>       mie;             /* Machine Interrupt Enable Register */
 		counten<UX>  mhcounteren;     /* Hypervisor Counter-enable Register */
@@ -180,15 +180,15 @@ namespace riscv {
 		UX           mdbase;          /* Mbbid: Separate Data Base Register */
 		UX           mdbound;         /* Mbbid: Separate Data Bound Register */
 		UX           htvec;           /* Hypervisor Trap Vector Base-Address Register */
-		UX           hedeleg;         /* Hypervisor Exception Delegation Mask (enum riscv_cause) */
-		UX           hideleg;         /* Hypervisor Interrupt Delegation Mask (enum riscv_intr) */
+		UX           hedeleg;         /* Hypervisor Exception Delegation Mask (enum rv_cause) */
+		UX           hideleg;         /* Hypervisor Interrupt Delegation Mask (enum rv_intr) */
 		UX           hscratch;        /* Hypervisor Scratch Register */
 		UX           hepc;            /* Hypervisor Exception Program Counter */
 		UX           hcause;          /* Hypervisor Cause Register */
 		UX           hbadaddr;        /* Hypervisor Bad Address Register */
 		UX           stvec;           /* Supervisor Trap Vector Base-Address Register */
-		UX           sedeleg;         /* Supervisor Exception Delegation Mask (enum riscv_cause) */
-		UX           sideleg;         /* Supervisor Interrupt Delegation Mask (enum riscv_intr) */
+		UX           sedeleg;         /* Supervisor Exception Delegation Mask (enum rv_cause) */
+		UX           sideleg;         /* Supervisor Interrupt Delegation Mask (enum rv_intr) */
 		UX           sscratch;        /* Supervisor Scratch Register */
 		UX           sepc;            /* Supervisor Exception Program Counter */
 		UX           scause;          /* Supervisor Cause Register */
@@ -200,7 +200,7 @@ namespace riscv {
 		UX           ucause;          /* User Cause Register */
 		UX           ubadaddr;        /* User Bad Address Register */
 
-		processor_priv() : processor_type(), pdid(0), mode(riscv_mode_M), resetvec(0x1000) {}
+		processor_priv() : processor_type(), pdid(0), mode(rv_mode_M), resetvec(0x1000) {}
 
 		inline bool mstatus_uie() { return (mstatus.xu.val >> uie_shift) & 1; }
 		inline bool mstatus_sie() { return (mstatus.xu.val >> sie_shift) & 1; }
@@ -513,96 +513,96 @@ namespace riscv {
 			const typename P::ux tvec_wmask    = typename P::ux(-1) << 2;
 
 			switch (csr) {
-				case riscv_csr_fflags:   fenv_getflags(P::fcsr);
-				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
+				case rv_csr_fflags:   fenv_getflags(P::fcsr);
+				                         P::set_csr(dec, rv_mode_U, op, csr, P::fcsr, value,
 				                             fflags_mask, fflags_mask);
 				                         fenv_clearflags(P::fcsr);                                break;
-				case riscv_csr_frm:      P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
+				case rv_csr_frm:      P::set_csr(dec, rv_mode_U, op, csr, P::fcsr, value,
 				                             frm_mask, frm_mask, /* shift >> */ 5);
 				                         fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
-				case riscv_csr_fcsr:     fenv_getflags(P::fcsr);
-				                         P::set_csr(dec, riscv_mode_U, op, csr, P::fcsr, value,
+				case rv_csr_fcsr:     fenv_getflags(P::fcsr);
+				                         P::set_csr(dec, rv_mode_U, op, csr, P::fcsr, value,
 				                             fcsr_mask, fcsr_mask);
 				                         fenv_clearflags(P::fcsr);
 				                         fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
-				case riscv_csr_cycle:    P::get_csr(dec, riscv_mode_U, op, csr, P::cycle, value); break;
-				case riscv_csr_time:     P::time = cpu_cycle_clock();
-				                         P::get_csr(dec, riscv_mode_U, op, csr, P::time, value);  break;
-				case riscv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
-				case riscv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
-				case riscv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
-				case riscv_csr_instreth: P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
-				case riscv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa,
+				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::cycle, value); break;
+				case rv_csr_time:     P::time = cpu_cycle_clock();
+				                         P::get_csr(dec, rv_mode_U, op, csr, P::time, value);  break;
+				case rv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
+				case rv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+				case rv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
+				case rv_csr_instreth: P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
+				case rv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa,
 				                             value, misa_wmask, misa_rmask);                      break;
-				case riscv_csr_mvendorid:P::get_csr(dec, P::mode, op, csr, P::mvendorid, value);  break;
-				case riscv_csr_marchid:  P::get_csr(dec, P::mode, op, csr, P::marchid, value);    break;
-				case riscv_csr_mimpid:   P::get_csr(dec, P::mode, op, csr, P::mimpid, value);     break;
-				case riscv_csr_mhartid:  P::get_csr(dec, P::mode, op, csr, P::mhartid, value);    break;
-				case riscv_csr_mstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+				case rv_csr_mvendorid:P::get_csr(dec, P::mode, op, csr, P::mvendorid, value);  break;
+				case rv_csr_marchid:  P::get_csr(dec, P::mode, op, csr, P::marchid, value);    break;
+				case rv_csr_mimpid:   P::get_csr(dec, P::mode, op, csr, P::mimpid, value);     break;
+				case rv_csr_mhartid:  P::get_csr(dec, P::mode, op, csr, P::mhartid, value);    break;
+				case rv_csr_mstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, mstatus_wmask, mstatus_rmask);                break;
-				case riscv_csr_mtvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec,
+				case rv_csr_mtvec:    P::set_csr(dec, P::mode, op, csr, P::mtvec,
 					                         value, tvec_rmask, tvec_wmask);                      break;
-				case riscv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
-				case riscv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
-				case riscv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+				case rv_csr_medeleg:  P::set_csr(dec, P::mode, op, csr, P::medeleg, value);    break;
+				case rv_csr_mideleg:  P::set_csr(dec, P::mode, op, csr, P::mideleg, value);    break;
+				case rv_csr_mip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
 				                             value, mi_mask, mi_mask);                            break;
-				case riscv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+				case rv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
 				                             value, mi_mask, mi_mask);                            break;
-				case riscv_csr_mscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
-				case riscv_csr_mepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
-				case riscv_csr_mcause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
-				case riscv_csr_mbadaddr: P::set_csr(dec, P::mode, op, csr, P::mbadaddr, value);   break;
-				case riscv_csr_mbase:    P::set_csr(dec, P::mode, op, csr, P::mbase, value);      break;
-				case riscv_csr_mbound:   P::set_csr(dec, P::mode, op, csr, P::mbound, value);     break;
-				case riscv_csr_mibase:   P::set_csr(dec, P::mode, op, csr, P::mibase, value);     break;
-				case riscv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
-				case riscv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
-				case riscv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
-				case riscv_csr_mcycle:   P::set_csr(dec, riscv_mode_U, op, csr, P::cycle, value); break;
-				case riscv_csr_minstret: P::set_csr(dec, P::mode, op, csr, P::instret, value);    break;
-				case riscv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
-				case riscv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
-				case riscv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+				case rv_csr_mscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
+				case rv_csr_mepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
+				case rv_csr_mcause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
+				case rv_csr_mbadaddr: P::set_csr(dec, P::mode, op, csr, P::mbadaddr, value);   break;
+				case rv_csr_mbase:    P::set_csr(dec, P::mode, op, csr, P::mbase, value);      break;
+				case rv_csr_mbound:   P::set_csr(dec, P::mode, op, csr, P::mbound, value);     break;
+				case rv_csr_mibase:   P::set_csr(dec, P::mode, op, csr, P::mibase, value);     break;
+				case rv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
+				case rv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
+				case rv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
+				case rv_csr_mcycle:   P::set_csr(dec, rv_mode_U, op, csr, P::cycle, value); break;
+				case rv_csr_minstret: P::set_csr(dec, P::mode, op, csr, P::instret, value);    break;
+				case rv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+				case rv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
+				case rv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, hstatus_wmask, hstatus_rmask);                break;
-				case riscv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec,
+				case rv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec,
 					                         value, tvec_rmask, tvec_wmask);                      break;
-				case riscv_csr_hedeleg:  P::set_csr(dec, P::mode, op, csr, P::hedeleg, value);    break;
-				case riscv_csr_hideleg:  P::set_csr(dec, P::mode, op, csr, P::hideleg, value);    break;
-				case riscv_csr_hip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+				case rv_csr_hedeleg:  P::set_csr(dec, P::mode, op, csr, P::hedeleg, value);    break;
+				case rv_csr_hideleg:  P::set_csr(dec, P::mode, op, csr, P::hideleg, value);    break;
+				case rv_csr_hip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
 				                             value, hi_mask, hi_mask);                            break;
-				case riscv_csr_hie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+				case rv_csr_hie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
 				                             value, hi_mask, hi_mask);                            break;
-				case riscv_csr_hscratch: P::set_csr(dec, P::mode, op, csr, P::hscratch, value);   break;
-				case riscv_csr_hepc:     P::set_csr(dec, P::mode, op, csr, P::hepc, value);       break;
-				case riscv_csr_hcause:   P::set_csr(dec, P::mode, op, csr, P::hcause, value);     break;
-				case riscv_csr_hbadaddr: P::set_csr(dec, P::mode, op, csr, P::hbadaddr, value);   break;
-				case riscv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+				case rv_csr_hscratch: P::set_csr(dec, P::mode, op, csr, P::hscratch, value);   break;
+				case rv_csr_hepc:     P::set_csr(dec, P::mode, op, csr, P::hepc, value);       break;
+				case rv_csr_hcause:   P::set_csr(dec, P::mode, op, csr, P::hcause, value);     break;
+				case rv_csr_hbadaddr: P::set_csr(dec, P::mode, op, csr, P::hbadaddr, value);   break;
+				case rv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, sstatus_wmask, sstatus_rmask);                break;
-				case riscv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec,
+				case rv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec,
 					                         value, tvec_rmask, tvec_wmask);                      break;
-				case riscv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::sedeleg, value);    break;
-				case riscv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::sideleg, value);    break;
-				case riscv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+				case rv_csr_sedeleg:  P::set_csr(dec, P::mode, op, csr, P::sedeleg, value);    break;
+				case rv_csr_sideleg:  P::set_csr(dec, P::mode, op, csr, P::sideleg, value);    break;
+				case rv_csr_sip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
 				                             value, si_mask, si_mask);                            break;
-				case riscv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+				case rv_csr_sie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
 				                             value, si_mask, si_mask);                            break;
-				case riscv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
-				case riscv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
-				case riscv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
-				case riscv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
-				case riscv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
-				case riscv_csr_ustatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
+				case rv_csr_sscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
+				case rv_csr_sepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
+				case rv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
+				case rv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
+				case rv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
+				case rv_csr_ustatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val,
 				                             value, ustatus_wmask, ustatus_rmask);                break;
-				case riscv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::utvec,
+				case rv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::utvec,
 					                         value, tvec_rmask, tvec_wmask);                      break;
-				case riscv_csr_uip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
+				case rv_csr_uip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val,
 				                             value, ui_mask, ui_mask);                            break;
-				case riscv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
+				case rv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val,
 				                             value, ui_mask, ui_mask);                            break;
-				case riscv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
-				case riscv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
-				case riscv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
-				case riscv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
+				case rv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
+				case rv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
+				case rv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
+				case rv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
 				default: return 0; /* illegal instruction */
 			}
 			return pc_offset;
@@ -610,35 +610,35 @@ namespace riscv {
 
 		addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
 			switch (dec.op) {
-				case riscv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrc:     return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
-				case riscv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
-				case riscv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
-				case riscv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
-				case riscv_op_uret:
+				case rv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case rv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case rv_op_csrrc:     return inst_csr(dec, csr_rc, dec.imm, P::ireg[dec.rs1], pc_offset);
+				case rv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
+				case rv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
+				case rv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
+				case rv_op_uret:
 					P::mstatus.r.uie = P::mstatus.r.upie;
 					return P::uepc - P::pc;
-				case riscv_op_sret:
+				case rv_op_sret:
 					P::mode = P::mstatus.r.spp;
-					P::mstatus.r.spp = riscv_mode_U;
+					P::mstatus.r.spp = rv_mode_U;
 					P::mstatus.r.sie = P::mstatus.r.spie;
 					return P::sepc - P::pc;
-				case riscv_op_hret:
+				case rv_op_hret:
 					P::mode = P::mstatus.r.hpp;
-					P::mstatus.r.hpp = riscv_mode_U;
+					P::mstatus.r.hpp = rv_mode_U;
 					P::mstatus.r.hie = P::mstatus.r.hpie;
 					return P::hepc - P::pc;
-				case riscv_op_mret:
+				case rv_op_mret:
 					P::mode = P::mstatus.r.mpp;
-					P::mstatus.r.mpp = riscv_mode_U;
+					P::mstatus.r.mpp = rv_mode_U;
 					P::mstatus.r.mie = P::mstatus.r.mpie;
 					return P::mepc - P::pc;
-				case riscv_op_sfence_vm:
+				case rv_op_sfence_vm:
 					P::mmu.l1_itlb.flush(P::pdid);
 					P::mmu.l1_dtlb.flush(P::pdid);
 					return pc_offset;
-				case riscv_op_wfi:
+				case rv_op_wfi:
 					std::this_thread::yield();
 					return pc_offset;
 				default: break;
@@ -652,7 +652,7 @@ namespace riscv {
 			P::ucause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
 			P::mstatus.r.upie = P::mstatus.r.uie;
 			P::mstatus.r.uie = 0;
-			P::mode = riscv_mode_U;
+			P::mode = rv_mode_U;
 			P::pc = P::utvec;
 			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
@@ -666,7 +666,7 @@ namespace riscv {
 			P::mstatus.r.spp = P::mode;
 			P::mstatus.r.spie = P::mstatus.r.sie;
 			P::mstatus.r.sie = 0;
-			P::mode = riscv_mode_S;
+			P::mode = rv_mode_S;
 			P::pc = P::stvec;
 			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
@@ -680,7 +680,7 @@ namespace riscv {
 			P::mstatus.r.hpp = P::mode;
 			P::mstatus.r.hpie = P::mstatus.r.hie;
 			P::mstatus.r.hie = 0;
-			P::mode = riscv_mode_H;
+			P::mode = rv_mode_H;
 			P::pc = P::htvec;
 			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
@@ -694,7 +694,7 @@ namespace riscv {
 			P::mstatus.r.mpp = P::mode;
 			P::mstatus.r.mpie = P::mstatus.r.mie;
 			P::mstatus.r.mie = 0;
-			P::mode = riscv_mode_M;
+			P::mode = rv_mode_M;
 			P::pc = P::mtvec;
 			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
@@ -714,23 +714,23 @@ namespace riscv {
 
 			bool eip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
 			if (eip) {
-				if (P::medeleg & (1 << riscv_intr_m_external)) {
-					if (P::hedeleg & (1 << riscv_intr_h_external)) {
-						if (P::sedeleg & (1 << riscv_intr_s_external) &&
+				if (P::medeleg & (1 << rv_intr_m_external)) {
+					if (P::hedeleg & (1 << rv_intr_h_external)) {
+						if (P::sedeleg & (1 << rv_intr_s_external) &&
 								P::mstatus.r.uie && P::mie.r.ueie) {
 							P::mip.r.ueip = 1;
-							utrap(riscv_intr_u_external, false);
+							utrap(rv_intr_u_external, false);
 						} else if (P::mstatus.r.sie && P::mie.r.seie) {
 							P::mip.r.seip = 1;
-							strap(riscv_intr_s_external, false);
+							strap(rv_intr_s_external, false);
 						}
 					} else if (P::mstatus.r.hie && P::mie.r.heie) {
 						P::mip.r.heip = 1;
-						htrap(riscv_intr_h_external, false);
+						htrap(rv_intr_h_external, false);
 					}
 				} else if (P::mstatus.r.mie && P::mie.r.meie) {
 					P::mip.r.meip = 1;
-					mtrap(riscv_intr_m_external, false);
+					mtrap(rv_intr_m_external, false);
 				}
 			}
 
@@ -740,23 +740,23 @@ namespace riscv {
 
 			bool tip = device_time->timer_pending(P::time);
 			if (tip) {
-				if (P::medeleg & (1 << riscv_intr_m_timer)) {
-					if (P::hedeleg & (1 << riscv_intr_h_timer)) {
-						if (P::sedeleg & (1 << riscv_intr_s_timer) &&
+				if (P::medeleg & (1 << rv_intr_m_timer)) {
+					if (P::hedeleg & (1 << rv_intr_h_timer)) {
+						if (P::sedeleg & (1 << rv_intr_s_timer) &&
 								P::mstatus.r.uie && P::mie.r.utie) {
 							P::mip.r.utip = 1;
-							utrap(riscv_intr_u_timer, false);
+							utrap(rv_intr_u_timer, false);
 						} else if (P::mstatus.r.sie && P::mie.r.stie) {
 							P::mip.r.stip = 1;
-							strap(riscv_intr_s_timer, false);
+							strap(rv_intr_s_timer, false);
 						}
 					} else if (P::mstatus.r.hie && P::mie.r.htie) {
 						P::mip.r.htip = 1;
-						htrap(riscv_intr_h_timer, false);
+						htrap(rv_intr_h_timer, false);
 					}
 				} else if (P::mstatus.r.mie && P::mie.r.mtie) {
 					P::mip.r.mtip = 1;
-					mtrap(riscv_intr_m_timer, false);
+					mtrap(rv_intr_m_timer, false);
 				}
 			}
 
@@ -766,24 +766,24 @@ namespace riscv {
 
 			bool sip = device_mipi->ipi_pending(P::hart_id);
 			if (sip) {
-				if (P::medeleg & (1 << riscv_intr_m_software)) {
-					if (P::hedeleg & (1 << riscv_intr_h_software)) {
-						if (P::sedeleg & (1 << riscv_intr_s_software) &&
+				if (P::medeleg & (1 << rv_intr_m_software)) {
+					if (P::hedeleg & (1 << rv_intr_h_software)) {
+						if (P::sedeleg & (1 << rv_intr_s_software) &&
 								P::mstatus.r.uie && P::mie.r.usie)
 						{
 							P::mip.r.usip = 1;
-							utrap(riscv_intr_u_software, false);
+							utrap(rv_intr_u_software, false);
 						} else if (P::mstatus.r.sie && P::mie.r.ssie) {
 							P::mip.r.ssip = 1;
-							strap(riscv_intr_s_software, false);
+							strap(rv_intr_s_software, false);
 						}
 					} else if (P::mstatus.r.hie && P::mie.r.hsie) {
 						P::mip.r.hsip = 1;
-						htrap(riscv_intr_h_software, false);
+						htrap(rv_intr_h_software, false);
 					}
 				} else if (P::mstatus.r.mie && P::mie.r.msie) {
 					P::mip.r.msip = 1;
-					mtrap(riscv_intr_m_software, false);
+					mtrap(rv_intr_m_software, false);
 				}
 			}
 
@@ -807,24 +807,24 @@ namespace riscv {
 			if (cause == P::internal_cause_reset) return;
 
 			/* translate causes that we catch as illegal instructions */
-			if (cause == riscv_cause_illegal_instruction) {
+			if (cause == rv_cause_illegal_instruction) {
 				switch (dec.op) {
-					case riscv_op_ebreak:
-						cause = riscv_cause_breakpoint;
+					case rv_op_ebreak:
+						cause = rv_cause_breakpoint;
 						break;
-					case riscv_op_ecall:
+					case rv_op_ecall:
 						switch (P::mode) {
-							case riscv_mode_U:
-								cause = riscv_cause_user_ecall;
+							case rv_mode_U:
+								cause = rv_cause_user_ecall;
 								break;
-							case riscv_mode_S:
-								cause = riscv_cause_supervisor_ecall;
+							case rv_mode_S:
+								cause = rv_cause_supervisor_ecall;
 								break;
-							case riscv_mode_H:
-								cause = riscv_cause_hypervisor_ecall;
+							case rv_mode_H:
+								cause = rv_cause_hypervisor_ecall;
 								break;
-							case riscv_mode_M:
-								cause = riscv_cause_machine_ecall;
+							case rv_mode_M:
+								cause = rv_cause_machine_ecall;
 								break;
 						}
 						break;
@@ -833,11 +833,11 @@ namespace riscv {
 
 			/* ebreak is used to start the CLI or terminate */
 			bool terminate = false;
-			if (dec.op == riscv_op_ebreak) {
+			if (dec.op == rv_op_ebreak) {
 				if (P::log & proc_log_ebreak_cli) {
 					print_log(dec, 0);
 					printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
-						riscv_cause_name_sym[cause],
+						rv_cause_name_sym[cause],
 						addr_t(P::pc), addr_t(P::badaddr));
 					P::raise(P::internal_cause_cli, P::pc);
 				} else {
@@ -849,7 +849,7 @@ namespace riscv {
 			if ((P::log & proc_log_trap) || terminate) {
 				print_log(dec, 0);
 				printf("TRAP     :%s pc:0x%0llx badaddr:0x%0llx\n",
-					riscv_cause_name_sym[cause],
+					rv_cause_name_sym[cause],
 					addr_t(P::pc), addr_t(P::badaddr));
 			}
 
@@ -863,12 +863,12 @@ namespace riscv {
 
 			/* only set badaddr for load, store or fetch faults */
 			bool set_badaddr =
-				(cause == riscv_cause_misaligned_fetch) ||
-				(cause == riscv_cause_misaligned_load) ||
-				(cause == riscv_cause_misaligned_store) ||
-				(cause == riscv_cause_fault_fetch) ||
-				(cause == riscv_cause_fault_load) ||
-				(cause == riscv_cause_fault_store);
+				(cause == rv_cause_misaligned_fetch) ||
+				(cause == rv_cause_misaligned_load) ||
+				(cause == rv_cause_misaligned_store) ||
+				(cause == rv_cause_fault_fetch) ||
+				(cause == rv_cause_fault_load) ||
+				(cause == rv_cause_fault_store);
 
 			/* check {m,h,s}edeleg for cause and dispatch to {m,h,s,u}tvec */
 			typename P::ux deleg = 1 << cause;
@@ -927,8 +927,8 @@ namespace riscv {
 
 		void reset()
 		{
-			P::mode = riscv_mode_M;
-			P::mstatus.r.vm = riscv_vm_mbare;
+			P::mode = rv_mode_M;
+			P::mstatus.r.vm = rv_vm_mbare;
 			P::mstatus.r.mprv = 0;
 			P::mstatus.r.mie = 0;
 			P::mcause = 0;

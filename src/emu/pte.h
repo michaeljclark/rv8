@@ -2,8 +2,8 @@
 //  pte.h
 //
 
-#ifndef riscv_pte_h
-#define riscv_pte_h
+#ifndef rv_pte_h
+#define rv_pte_h
 
 namespace riscv {
 

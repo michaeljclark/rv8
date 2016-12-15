@@ -2,8 +2,8 @@
 //  disasm.h
 //
 
-#ifndef riscv_disasm_h
-#define riscv_disasm_h
+#ifndef rv_disasm_h
+#define rv_disasm_h
 
 namespace riscv {
 
@@ -22,32 +22,32 @@ namespace riscv {
 	};
 
 	struct rvx {
-		riscv_op op1;
-		riscv_op op2;
+		rv_op op1;
+		rv_op op2;
 		rva addr;
 	};
 
 	// instruction pair constraints
 	const rvx rvx_constraints[] = {
-		{ riscv_op_lui,     riscv_op_addi,     rva_abs   },
-		{ riscv_op_auipc,   riscv_op_addi,     rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_jalr,     rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_ld,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lb,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lh,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lw,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lbu,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lhu,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_lwu,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_flw,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_fld,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_sd,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_sb,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_sh,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_sw,       rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_fsw,      rva_pcrel },
-		{ riscv_op_auipc,   riscv_op_fsd,      rva_pcrel },
-		{ riscv_op_illegal, riscv_op_illegal,  rva_none  },
+		{ rv_op_lui,     rv_op_addi,     rva_abs   },
+		{ rv_op_auipc,   rv_op_addi,     rva_pcrel },
+		{ rv_op_auipc,   rv_op_jalr,     rva_pcrel },
+		{ rv_op_auipc,   rv_op_ld,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_lb,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_lh,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_lw,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_lbu,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_lhu,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_lwu,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_flw,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_fld,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_sd,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_sb,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_sh,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_sw,       rva_pcrel },
+		{ rv_op_auipc,   rv_op_fsw,      rva_pcrel },
+		{ rv_op_auipc,   rv_op_fsd,      rva_pcrel },
+		{ rv_op_illegal, rv_op_illegal,  rva_none  },
 	};
 
 	// instruction buffer length
@@ -58,8 +58,8 @@ namespace riscv {
 	bool decode_pcrel(T &dec, addr_t &addr, addr_t pc, addr_t pc_bias)
 	{
 		switch (dec.codec) {
-			case riscv_codec_uj:
-			case riscv_codec_sb:
+			case rv_codec_uj:
+			case rv_codec_sb:
 				addr = pc - pc_bias + dec.imm;
 				return true;
 			default:
@@ -101,24 +101,24 @@ namespace riscv {
 	template <typename T>
 	bool deocde_gprel(T &dec, addr_t &addr, addr_t gp)
 	{
-		if (!gp || dec.rs1 != riscv_ireg_gp) return false;
+		if (!gp || dec.rs1 != rv_ireg_gp) return false;
 		switch (dec.op) {
-			case riscv_op_addi:
-			case riscv_op_lb:
-			case riscv_op_lh:
-			case riscv_op_lw:
-			case riscv_op_ld:
-			case riscv_op_lbu:
-			case riscv_op_lhu:
-			case riscv_op_lwu:
-			case riscv_op_flw:
-			case riscv_op_fld:
-			case riscv_op_sb:
-			case riscv_op_sh:
-			case riscv_op_sw:
-			case riscv_op_sd:
-			case riscv_op_fsw:
-			case riscv_op_fsd:
+			case rv_op_addi:
+			case rv_op_lb:
+			case rv_op_lh:
+			case rv_op_lw:
+			case rv_op_ld:
+			case rv_op_lbu:
+			case rv_op_lhu:
+			case rv_op_lwu:
+			case rv_op_flw:
+			case rv_op_fld:
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
 				addr = intptr_t(gp + dec.imm);
 				return true;
 			default:
@@ -137,53 +137,53 @@ namespace riscv {
 	std::string disasm_inst_simple(T &dec)
 	{
 		std::string args;
-		const char *fmt = riscv_inst_format[dec.op];
+		const char *fmt = rv_inst_format[dec.op];
 		while (*fmt) {
 			switch (*fmt) {
-				case 'O': args += riscv_inst_name_sym[dec.op]; break;
+				case 'O': args += rv_inst_name_sym[dec.op]; break;
 				case '(': args += "("; break;
 				case ',': args += ", "; break;
 				case ')': args += ")"; break;
-				case '0': args += riscv_ireg_name_sym[dec.rd]; break;
-				case '1': args += riscv_ireg_name_sym[dec.rs1]; break;
-				case '2': args += riscv_ireg_name_sym[dec.rs2]; break;
-				case '3': args += riscv_freg_name_sym[dec.rd]; break;
-				case '4': args += riscv_freg_name_sym[dec.rs1]; break;
-				case '5': args += riscv_freg_name_sym[dec.rs2]; break;
-				case '6': args += riscv_freg_name_sym[dec.rs3]; break;
+				case '0': args += rv_ireg_name_sym[dec.rd]; break;
+				case '1': args += rv_ireg_name_sym[dec.rs1]; break;
+				case '2': args += rv_ireg_name_sym[dec.rs2]; break;
+				case '3': args += rv_freg_name_sym[dec.rd]; break;
+				case '4': args += rv_freg_name_sym[dec.rs1]; break;
+				case '5': args += rv_freg_name_sym[dec.rs2]; break;
+				case '6': args += rv_freg_name_sym[dec.rs3]; break;
 				case '7': args += format_string("%d", dec.rs1); break;
 				case 'i': args += format_string("%d", dec.imm); break;
 				case 'o': args += format_string("pc %c %td",
 					intptr_t(dec.imm) < 0 ? '-' : '+',
 					intptr_t(dec.imm) < 0 ? -intptr_t(dec.imm) : intptr_t(dec.imm)); break;
 				case 'c': {
-					const char * csr_name = riscv_csr_name_sym[dec.imm & 0xfff];
+					const char * csr_name = rv_csr_name_sym[dec.imm & 0xfff];
 					if (csr_name) args += format_string("%s", csr_name);
 					else args += format_string("0x%03x", dec.imm & 0xfff);
 					break;
 				}
 				case 'r':
 					switch(dec.rm) {
-						case riscv_rm_rne: args += "rne"; break;
-						case riscv_rm_rtz: args += "rtz"; break;
-						case riscv_rm_rdn: args += "rdn"; break;
-						case riscv_rm_rup: args += "rup"; break;
-						case riscv_rm_rmm: args += "rmm"; break;
-						case riscv_rm_dyn: args += "dyn"; break;
+						case rv_rm_rne: args += "rne"; break;
+						case rv_rm_rtz: args += "rtz"; break;
+						case rv_rm_rdn: args += "rdn"; break;
+						case rv_rm_rup: args += "rup"; break;
+						case rv_rm_rmm: args += "rmm"; break;
+						case rv_rm_dyn: args += "dyn"; break;
 						default:           args += "inv"; break;
 					}
 					break;
 				case 'p':
-					if (dec.pred & riscv_fence_i) args += "i";
-					if (dec.pred & riscv_fence_o) args += "o";
-					if (dec.pred & riscv_fence_r) args += "r";
-					if (dec.pred & riscv_fence_w) args += "w";
+					if (dec.pred & rv_fence_i) args += "i";
+					if (dec.pred & rv_fence_o) args += "o";
+					if (dec.pred & rv_fence_r) args += "r";
+					if (dec.pred & rv_fence_w) args += "w";
 					break;
 				case 's':
-					if (dec.succ & riscv_fence_i) args += "i";
-					if (dec.succ & riscv_fence_o) args += "o";
-					if (dec.succ & riscv_fence_r) args += "r";
-					if (dec.succ & riscv_fence_w) args += "w";
+					if (dec.succ & rv_fence_i) args += "i";
+					if (dec.succ & rv_fence_o) args += "o";
+					if (dec.succ & rv_fence_r) args += "r";
+					if (dec.succ & rv_fence_w) args += "w";
 					break;
 				case '\t': while (args.length() < 12) args += " "; break;
 				case 'A': if (dec.aq) args += ".aq"; break;

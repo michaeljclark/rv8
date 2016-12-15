@@ -2,8 +2,8 @@
 //  proxy.h
 //
 
-#ifndef riscv_proxy_h
-#define riscv_proxy_h
+#ifndef rv_proxy_h
+#define rv_proxy_h
 
 namespace riscv {
 
@@ -87,54 +87,54 @@ namespace riscv {
 
 	template <typename P> void abi_sys_close(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = close(proc.ireg[riscv_ireg_a0]);
+		proc.ireg[rv_ireg_a0] = close(proc.ireg[rv_ireg_a0]);
 	}
 
 	template <typename P> void abi_sys_lseek(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = lseek(proc.ireg[riscv_ireg_a0],
-			proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = lseek(proc.ireg[rv_ireg_a0],
+			proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
 	}
 
 	template <typename P> void abi_sys_read(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = read(proc.ireg[riscv_ireg_a0],
-			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = read(proc.ireg[rv_ireg_a0],
+			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
 	}
 
 	template <typename P> void abi_sys_write(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = write(proc.ireg[riscv_ireg_a0],
-			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = write(proc.ireg[rv_ireg_a0],
+			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
 	}
 
 	template <typename P> void abi_sys_pread(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = pread(proc.ireg[riscv_ireg_a0],
-			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
-			proc.ireg[riscv_ireg_a3]);
+		proc.ireg[rv_ireg_a0] = pread(proc.ireg[rv_ireg_a0],
+			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2],
+			proc.ireg[rv_ireg_a3]);
 	}
 
 	template <typename P> void abi_sys_pwrite(P &proc)
 	{
-		proc.ireg[riscv_ireg_a0] = pwrite(proc.ireg[riscv_ireg_a0],
-			(void*)(addr_t)proc.ireg[riscv_ireg_a1], proc.ireg[riscv_ireg_a2],
-			proc.ireg[riscv_ireg_a3]);
+		proc.ireg[rv_ireg_a0] = pwrite(proc.ireg[rv_ireg_a0],
+			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2],
+			proc.ireg[rv_ireg_a3]);
 	}
 
 	template <typename P> void abi_sys_fstat(P &proc)
 	{
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
-		if ((proc.ireg[riscv_ireg_a0] = fstat(proc.ireg[riscv_ireg_a0], &host_stat)) == 0) {
-			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+		if ((proc.ireg[rv_ireg_a0] = fstat(proc.ireg[rv_ireg_a0], &host_stat)) == 0) {
+			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 			cvt_abi_stat(guest_stat, &host_stat);
 		}
 	}
 
 	template <typename P> void abi_sys_exit(P &proc)
 	{
-		exit(proc.ireg[riscv_ireg_a0]);
+		exit(proc.ireg[rv_ireg_a0]);
 	}
 
 	template <typename P> void abi_sys_gettimeofday(P &proc)
@@ -143,14 +143,14 @@ namespace riscv {
 		struct timezone host_tzp;
 		memset(&host_tp, 0, sizeof(host_tp));
 		memset(&host_tzp, 0, sizeof(host_tzp));
-		if ((proc.ireg[riscv_ireg_a0] = gettimeofday(&host_tp, &host_tzp)) == 0) {
-			if (proc.ireg[riscv_ireg_a0].r.xu.val != 0) {
-				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(addr_t)proc.ireg[riscv_ireg_a0].r.xu.val;
+		if ((proc.ireg[rv_ireg_a0] = gettimeofday(&host_tp, &host_tzp)) == 0) {
+			if (proc.ireg[rv_ireg_a0].r.xu.val != 0) {
+				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
 				guest_tp->tv_sec = host_tp.tv_sec;
 				guest_tp->tv_usec = host_tp.tv_usec;
 			}
-			if (proc.ireg[riscv_ireg_a1].r.xu.val != 0) {
-				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[riscv_ireg_a1].r.xu.val;
+			if (proc.ireg[rv_ireg_a1].r.xu.val != 0) {
+				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 				guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
 				guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
 			}
@@ -160,13 +160,13 @@ namespace riscv {
 	template <typename P> void abi_sys_brk(P &proc)
 	{
 		// calculate the new heap address rounded up to the nearest page
-		addr_t new_addr = proc.ireg[riscv_ireg_a0];
+		addr_t new_addr = proc.ireg[rv_ireg_a0];
 		addr_t curr_heap_end = round_up(proc.mmu.mem->heap_end, page_size);
 		addr_t new_heap_end = round_up(new_addr, page_size);
 
 		// return if the heap is already big enough
 		if (proc.mmu.mem->heap_end >= new_heap_end || new_heap_end == curr_heap_end) {
-			proc.ireg[riscv_ireg_a0] = new_addr;
+			proc.ireg[rv_ireg_a0] = new_addr;
 			return;
 		}
 
@@ -175,7 +175,7 @@ namespace riscv {
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
 			debug("brk: error: mmap: %s", strerror(errno));
-			proc.ireg[riscv_ireg_a0] = -ENOMEM;
+			proc.ireg[rv_ireg_a0] = -ENOMEM;
 		} else {
 			// keep track of the mapped segment and set the new heap_end
 			proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
@@ -184,13 +184,13 @@ namespace riscv {
 				debug("mmap brk :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
 					curr_heap_end, new_heap_end);
 			}
-			proc.ireg[riscv_ireg_a0] = new_addr;
+			proc.ireg[rv_ireg_a0] = new_addr;
 		}
 	}
 
 	template <typename P> void proxy_syscall(P &proc)
 	{
-		switch (proc.ireg[riscv_ireg_a7]) {
+		switch (proc.ireg[rv_ireg_a7]) {
 			case abi_syscall_close:         abi_sys_close(proc); break;
 			case abi_syscall_lseek:         abi_sys_lseek(proc); break;
 			case abi_syscall_read:          abi_sys_read(proc);  break;
@@ -201,7 +201,7 @@ namespace riscv {
 			case abi_syscall_exit:          abi_sys_exit(proc); break;
 			case abi_syscall_gettimeofday:  abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:           abi_sys_brk(proc); break;
-			default: panic("unknown syscall: %d", proc.ireg[riscv_ireg_a7]);
+			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7]);
 		}
 	}
 

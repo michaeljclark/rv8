@@ -2,8 +2,8 @@
 //  node.h
 //
 
-#ifndef riscv_node_h
-#define riscv_node_h
+#ifndef rv_node_h
+#define rv_node_h
 
 namespace riscv {
 
