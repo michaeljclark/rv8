@@ -162,7 +162,7 @@ m_ecall_trap:
 
 bad_trap:
 	# can't handle bad trep
-	ebreak;
+	ebreak
 
 wait:
 	wfi
@@ -204,15 +204,15 @@ mcall_console_getchar:
 
 mcall_htif_syscall:
 	# unimplemented
-	ebreak;
+	ebreak
 
 mcall_send_ipi:
 	# unimplemented
-	ebreak;
+	ebreak
 
 mcall_clear_ipi:
 	# unimplemented
-	ebreak;
+	ebreak
 
 mcall_shutdown:
 	li      t1, GPIO_MMIO_BASE
@@ -237,11 +237,11 @@ mcall_set_timer:
 mcall_remote_sfence_vm:
 mcall_remote_sfence_vm_range:
 	# unimplemented
-	ebreak;
+	ebreak
 
 mcall_remote_fence_i:
 	# unimplemented
-	ebreak;
+	ebreak
 
 mcall_num_harts:
 	li      a1, CONFIG_MMIO_BASE
