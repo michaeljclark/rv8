@@ -370,7 +370,7 @@ struct riscv_assembler
 			printf("%s invalid number\n", line->ref().c_str());
 			return false;
 		}
-		as.align(val);
+		as.balign(val);
 		return true;
 	}
 
