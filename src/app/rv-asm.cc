@@ -44,6 +44,7 @@
 #define DEBUG 1
 
 using namespace riscv;
+using namespace std::placeholders;
 
 struct asm_filename;
 struct asm_line;
@@ -76,9 +77,9 @@ struct asm_line
 		return file->filename + ":" + std::to_string(line_num);
 	}
 
-	std::vector<std::vector<std::string>> split_args(std::string sep)
+	std::deque<std::vector<std::string>> split_args(std::string sep)
 	{
-		std::vector<std::vector<std::string>> vec;
+		std::deque<std::vector<std::string>> vec;
 		vec.push_back(std::vector<std::string>());
 		for (auto i = args.begin() + 1; i != args.end(); i++) {
 			if (*i == sep) {
@@ -110,17 +111,16 @@ struct rv_assembler
 	int ext = rv_set_imafdc;
 	int width = rv_isa_rv64;
 
-	TokenMap vars;
 	assembler as;
+	TokenMap vars;
 	asm_macro_ptr defining_macro;
 	std::vector<asm_macro_ptr> macro_stack;
-
 	std::map<std::string,size_t> ireg_map;
 	std::map<std::string,size_t> freg_map;
 	std::map<std::string,size_t> csr_map;
 	std::map<std::string,size_t> opcode_map;
 	std::map<std::string,asm_macro_ptr> macro_map;
-	std::map<std::string,asm_directive> map;
+	std::map<std::string,asm_directive> directive_map;
 
 	rv_assembler()
 	{
@@ -161,37 +161,37 @@ struct rv_assembler
 
 	void configure_directives()
 	{
-		map[".align"] = std::bind(&rv_assembler::handle_p2align, this, std::placeholders::_1);
-		map[".p2align"] = std::bind(&rv_assembler::handle_p2align, this, std::placeholders::_1);
-		map[".balign"] = std::bind(&rv_assembler::handle_balign, this, std::placeholders::_1);
-		map[".equ"] = std::bind(&rv_assembler::handle_equ, this, std::placeholders::_1);
-		map[".eqv"] = std::bind(&rv_assembler::handle_equ, this, std::placeholders::_1);
-		map[".file"] = std::bind(&rv_assembler::handle_file, this, std::placeholders::_1);
-		map[".globl"] = std::bind(&rv_assembler::handle_globl, this, std::placeholders::_1);
-		map[".ident"] = std::bind(&rv_assembler::handle_ident, this, std::placeholders::_1);
-		map[".macro"] = std::bind(&rv_assembler::handle_macro, this, std::placeholders::_1);
-		map[".endm"] = std::bind(&rv_assembler::handle_endm, this, std::placeholders::_1);
-		map[".section"] = std::bind(&rv_assembler::handle_section, this, std::placeholders::_1);
-		map[".text"] = std::bind(&rv_assembler::handle_text, this, std::placeholders::_1);
-		map[".data"] = std::bind(&rv_assembler::handle_data, this, std::placeholders::_1);
-		map[".rodata"] = std::bind(&rv_assembler::handle_rodata, this, std::placeholders::_1);
-		map[".bss"] = std::bind(&rv_assembler::handle_bss, this, std::placeholders::_1);
-		map[".size"] = std::bind(&rv_assembler::handle_size, this, std::placeholders::_1);
-		map[".string"] = std::bind(&rv_assembler::handle_string, this, std::placeholders::_1);
-		map[".type"] = std::bind(&rv_assembler::handle_type, this, std::placeholders::_1);
-		map[".byte"] = std::bind(&rv_assembler::handle_byte, this, std::placeholders::_1);
-		map[".half"] = std::bind(&rv_assembler::handle_half, this, std::placeholders::_1);
-		map[".word"] = std::bind(&rv_assembler::handle_word, this, std::placeholders::_1);
-		map[".dword"] = std::bind(&rv_assembler::handle_dword, this, std::placeholders::_1);
-		map[".dtprelword"] = std::bind(&rv_assembler::handle_dtprelword, this, std::placeholders::_1);
-		map[".dtpreldword"] = std::bind(&rv_assembler::handle_dtpreldword, this, std::placeholders::_1);
-		map[".option"] = std::bind(&rv_assembler::handle_option, this, std::placeholders::_1);
-		map[".zero"] = std::bind(&rv_assembler::handle_zero, this, std::placeholders::_1);
-		map["la"] = std::bind(&rv_assembler::handle_la, this, std::placeholders::_1);
-		map["lla"] = std::bind(&rv_assembler::handle_lla, this, std::placeholders::_1);
-		map["li"] = std::bind(&rv_assembler::handle_li, this, std::placeholders::_1);
-		map["call"] = std::bind(&rv_assembler::handle_call, this, std::placeholders::_1);
-		map["tail"] = std::bind(&rv_assembler::handle_tail, this, std::placeholders::_1);
+		directive_map[".align"] = std::bind(&rv_assembler::handle_p2align, this, _1);
+		directive_map[".p2align"] = std::bind(&rv_assembler::handle_p2align, this, _1);
+		directive_map[".balign"] = std::bind(&rv_assembler::handle_balign, this, _1);
+		directive_map[".equ"] = std::bind(&rv_assembler::handle_equ, this, _1);
+		directive_map[".eqv"] = std::bind(&rv_assembler::handle_equ, this, _1);
+		directive_map[".file"] = std::bind(&rv_assembler::handle_file, this, _1);
+		directive_map[".globl"] = std::bind(&rv_assembler::handle_globl, this, _1);
+		directive_map[".ident"] = std::bind(&rv_assembler::handle_ident, this, _1);
+		directive_map[".macro"] = std::bind(&rv_assembler::handle_macro, this, _1);
+		directive_map[".endm"] = std::bind(&rv_assembler::handle_endm, this, _1);
+		directive_map[".section"] = std::bind(&rv_assembler::handle_section, this, _1);
+		directive_map[".text"] = std::bind(&rv_assembler::handle_text, this, _1);
+		directive_map[".data"] = std::bind(&rv_assembler::handle_data, this, _1);
+		directive_map[".rodata"] = std::bind(&rv_assembler::handle_rodata, this, _1);
+		directive_map[".bss"] = std::bind(&rv_assembler::handle_bss, this, _1);
+		directive_map[".size"] = std::bind(&rv_assembler::handle_size, this, _1);
+		directive_map[".string"] = std::bind(&rv_assembler::handle_string, this, _1);
+		directive_map[".type"] = std::bind(&rv_assembler::handle_type, this, _1);
+		directive_map[".byte"] = std::bind(&rv_assembler::handle_byte, this, _1);
+		directive_map[".half"] = std::bind(&rv_assembler::handle_half, this, _1);
+		directive_map[".word"] = std::bind(&rv_assembler::handle_word, this, _1);
+		directive_map[".dword"] = std::bind(&rv_assembler::handle_dword, this, _1);
+		directive_map[".dtprelword"] = std::bind(&rv_assembler::handle_dtprelword, this, _1);
+		directive_map[".dtpreldword"] = std::bind(&rv_assembler::handle_dtpreldword, this, _1);
+		directive_map[".option"] = std::bind(&rv_assembler::handle_option, this, _1);
+		directive_map[".zero"] = std::bind(&rv_assembler::handle_zero, this, _1);
+		directive_map["la"] = std::bind(&rv_assembler::handle_la, this, _1);
+		directive_map["lla"] = std::bind(&rv_assembler::handle_lla, this, _1);
+		directive_map["li"] = std::bind(&rv_assembler::handle_li, this, _1);
+		directive_map["call"] = std::bind(&rv_assembler::handle_call, this, _1);
+		directive_map["tail"] = std::bind(&rv_assembler::handle_tail, this, _1);
 	}
 
 	static rv_set decode_isa_ext(std::string isa_ext)
@@ -389,13 +389,33 @@ struct rv_assembler
 		return true;
 	}
 
-	packToken eval(std::vector<std::string> tokens)
+	packToken eval(asm_line_ptr &line, std::vector<std::string> tokens)
 	{
+		/*
+		 * TODO - handle % expansions
+		 *
+		 * %hi(symbol)               Absolute imm20
+		 * %lo(symbol)               Absolute imm12
+		 * %pcrel_hi(symbol)         PC-relative imm20
+		 * %pcrel_lo(label)          PC-relative imm12
+		 * %tls_ie_pcrel_hi(symbol)  TLS IE GOT "Initial Exec"
+		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
+		 * %tprel_hi(symbol)         TLS LE "Local Exec"
+		 * %tprel_lo(label)          TLS LE "Local Exec"
+		 * %tprel_add(x)             TLS LE "Local Exec"
+		 * %gprel(symbol)            GP-relative
+		 *
+		 */
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
 				return packToken(int64_t(val));
 			}
+		}
+		if (tokens.size() > 1 && tokens[0] == "%") {
+			printf("%s unimplemented function %%%s\n", line->ref().c_str(),
+				tokens[1].c_str());
+			return packToken(0);
 		}
 		std::string expr = join(tokens, " ");
 		calculator calc(expr.c_str());
@@ -411,7 +431,7 @@ struct rv_assembler
 			return false;
 		}
 		std::string var_name = argv[0][0];
-		auto result = eval(argv[1]);
+		auto result = eval(line, argv[1]);
 		vars[var_name] = result;
 		return true;
 	}
@@ -473,15 +493,16 @@ struct rv_assembler
 
 	bool handle_section(asm_line_ptr &line)
 	{
-		if (line->args.size() != 2) {
+		auto argv = line->split_args(",");
+		if (argv.size() < 1 || argv[0].size() < 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
-		if (line->args[1].size() ==0 || line->args[1][0] != '.') {
+		if (argv[0][0][0] != '.') {
 			printf("%s section must begin with '.'\n", line->ref().c_str());
 			return false;
 		}
-		as.get_section(line->args[1]);
+		as.get_section(argv[0][0]);
 		return true;
 	}
 
@@ -560,7 +581,7 @@ struct rv_assembler
 			return false;
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
-			auto result = eval(argv[0]);
+			auto result = eval(line, argv[0]);
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
 				printf("%s warning: value out of range\n", line->ref().c_str());
@@ -610,13 +631,14 @@ struct rv_assembler
 
 	bool handle_zero(asm_line_ptr &line)
 	{
-		if (line->args.size() < 2) {
+		auto argv = line->split_args(",");
+		if (argv.size() != 1 || argv[0].size() != 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
 		/* TODO - handle expression */
 		s64 val;
-		if (!parse_integral(line->args[1], val)) {
+		if (!parse_integral(argv[0][0], val)) {
 			printf("%s invalid number\n", line->ref().c_str());
 			return false;
 		}
@@ -659,6 +681,35 @@ struct rv_assembler
 		 *
 		 * lui, addiw, slli, addi
 		 */
+		auto argv = line->split_args(",");
+		if (argv.size() != 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+
+		/* register parameter */
+		auto ri = argv[0].size() == 1 ? ireg_map.find(argv[0][0]) : ireg_map.end();
+		if (ri == ireg_map.end()) {
+			printf("%s invalid register %s\n", line->ref().c_str(),
+				join(argv[0], " ").c_str());
+			return false;
+		}
+
+		/* immediate parameter */
+		auto result = eval(line, argv[1]);
+		s64 imm = result.asInt();
+		if (imm < -2048 || imm > 2047) {
+			printf("%s unimplemented large immediate\n", line->ref().c_str());
+			return false;
+		}
+
+		decode dec{};
+        dec.op = rv_op_addi;
+        dec.rd = ri->second;
+        dec.rs1 = rv_ireg_zero;
+        dec.imm = imm;
+
+		as.append(u32(encode_inst(dec)));
 		return true;
 	}
 
@@ -692,14 +743,194 @@ struct rv_assembler
 		return line;
 	}
 
+	std::vector<rv_operand_data> opcode_operand_data(size_t op)
+	{
+		std::vector<rv_operand_data> op_data;
+		const rv_operand_data *data = rv_inst_operand_data[op];
+		while(data->type != rv_type_none) {
+			op_data.push_back(*data++);
+		}
+		return op_data;
+	}
+
+	bool remove_operand(std::vector<rv_operand_data> &op_data, rv_type type)
+	{
+		for (auto oi = op_data.begin(); oi != op_data.end(); ) {
+			if (oi->type == type) {
+				oi = op_data.erase(oi);
+				return true;
+			} else {
+				oi++;
+			}
+		}
+		return false;
+	}
+
 	bool handle_opcode(size_t op, asm_line_ptr &line)
 	{
 		auto argv = line->split_args(",");
-		/* TODO */
-		const rv_operand_data *data = rv_inst_operand_data[op];
-		while(data->type != rv_type_none) {
-			data++;
+
+		decode dec{};
+		dec.op = op;
+		auto op_data = opcode_operand_data(op);
+		const char *fmt = rv_inst_format[op];
+
+		while (*fmt) {
+			switch (*fmt) {
+				case '(': break;
+				case ',': break;
+				case ')': break;
+				case '0':
+				case '1':
+				case '2':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing register parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
+					if (ri == ireg_map.end()) {
+						printf("%s invalid register %s\n", line->ref().c_str(),
+							join(argv[0], " ").c_str());
+						return false;
+					}
+					switch (*fmt) {
+						case '0': dec.rd = ri->second; break;
+						case '1': dec.rs1 = ri->second; break;
+						case '2': dec.rs2 = ri->second; break;
+					}
+					remove_operand(op_data, rv_type_ireg);
+					argv.pop_front();
+					break;
+				}
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing register parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
+					if (ri == freg_map.end()) {
+						printf("%s invalid register %s\n", line->ref().c_str(),
+							join(argv[0], " ").c_str());
+						return false;
+					}
+					switch (*fmt) {
+						case '3': dec.rd = ri->second; break;
+						case '4': dec.rs1 = ri->second; break;
+						case '5': dec.rs2 = ri->second; break;
+						case '6': dec.rs2 = ri->second; break;
+					}
+					remove_operand(op_data, rv_type_freg);
+					argv.pop_front();
+					break;
+				}
+				case '7':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing immediate parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					auto result = eval(line, arg);
+					dec.rs1 = result.asInt();
+					remove_operand(op_data, rv_type_simm);
+					remove_operand(op_data, rv_type_uimm);
+					argv.pop_front();
+					break;
+				}
+				case 'i':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing immediate parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					auto result = eval(line, arg);
+					dec.imm = result.asInt();
+					remove_operand(op_data, rv_type_simm);
+					remove_operand(op_data, rv_type_uimm);
+					argv.pop_front();
+					break;
+				}
+				case 'o':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing immediate parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					auto result = eval(line, arg);
+					dec.imm = result.asInt() - as.current_offset();
+					remove_operand(op_data, rv_type_simm);
+					argv.pop_front();
+					break;
+				}
+				case 'c':
+				{
+					if (argv.size() == 0) {
+						printf("%s missing csr parameter\n", line->ref().c_str());
+						return false;
+					}
+					auto arg = argv.front();
+					if (arg.size() != 1) {
+						printf("%s invalid csr parameter\n", line->ref().c_str());
+						return false;
+					}
+					s64 val;
+					if (parse_integral(arg[0], val)) {
+						dec.imm = val;
+					} else {
+						auto ci = csr_map.find(arg[0]);
+						if (ci == csr_map.end()) {
+							printf("%s unknown csr parameter\n", line->ref().c_str());
+							return false;
+						}
+						dec.imm = ci->second;
+					}
+					remove_operand(op_data, rv_type_uimm);
+					argv.pop_front();
+					break;
+				}
+				case 'r':
+					switch(dec.rm) {
+						case rv_rm_rne: /* */; break;
+						case rv_rm_rtz: /* */; break;
+						case rv_rm_rdn: /* */; break;
+						case rv_rm_rup: /* */; break;
+						case rv_rm_rmm: /* */; break;
+						case rv_rm_dyn: /* */; break;
+					}
+					break;
+				case 'p':
+					/* (dec.pred & rv_fence_i); */
+					/* (dec.pred & rv_fence_o); */
+					/* (dec.pred & rv_fence_r); */
+					/* (dec.pred & rv_fence_w); */
+					break;
+				case 's':
+					/* (dec.succ & rv_fence_i); */
+					/* (dec.succ & rv_fence_o); */
+					/* (dec.succ & rv_fence_r); */
+					/* (dec.succ & rv_fence_w); */
+					break;
+				case 'O': break;
+				case '\t': break;
+				case 'A': /* if (dec.aq) */ break;
+				case 'R': /* if (dec.rl) */ break;
+				default:
+					break;
+			}
+			fmt++;
 		}
+		/* translate pseudo instruction to regular instruction */
+		encode_pseudo(dec);
+		as.append(u32(encode_inst(dec)));
 		return true;
 	}
 
@@ -739,8 +970,8 @@ struct rv_assembler
 		}
 
 		/* check for internal directives */
-		auto di = map.find(line->args[0]);
-		if (di != map.end()) {
+		auto di = directive_map.find(line->args[0]);
+		if (di != directive_map.end()) {
 			if (!di->second(line)) {
 				printf("%s invalid directive: %s\n",
 					line->ref().c_str(), join(line->args, " ").c_str());
