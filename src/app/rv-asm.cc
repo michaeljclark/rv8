@@ -171,6 +171,7 @@ struct riscv_assembler
 		map[".size"] = std::bind(&riscv_assembler::handle_size, this, std::placeholders::_1);
 		map[".string"] = std::bind(&riscv_assembler::handle_string, this, std::placeholders::_1);
 		map[".type"] = std::bind(&riscv_assembler::handle_type, this, std::placeholders::_1);
+		map[".byte"] = std::bind(&riscv_assembler::handle_byte, this, std::placeholders::_1);
 		map[".half"] = std::bind(&riscv_assembler::handle_half, this, std::placeholders::_1);
 		map[".word"] = std::bind(&riscv_assembler::handle_word, this, std::placeholders::_1);
 		map[".dword"] = std::bind(&riscv_assembler::handle_dword, this, std::placeholders::_1);
@@ -410,18 +411,30 @@ struct riscv_assembler
 
 	bool handle_file(asm_line_ptr &line)
 	{
+		if (line->args.size() != 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
 		/* TODO */
 		return true;
 	}
 
 	bool handle_globl(asm_line_ptr &line)
 	{
+		if (line->args.size() != 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
 		/* TODO */
 		return true;
 	}
 
 	bool handle_ident(asm_line_ptr &line)
 	{
+		if (line->args.size() != 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
 		/* ignore */
 		return true;
 	}
@@ -531,22 +544,43 @@ struct riscv_assembler
 		return true;
 	}
 
+	template <typename T>
+	bool handle_words(asm_line_ptr &line)
+	{
+		auto argv = line->split_args(",");
+		if (argv.size() != 1 || argv[0].size() < 1) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+		for (size_t i = 0; i < argv.size(); i++) {
+			auto result = eval(argv[0]);
+			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
+				T(result.asInt()) < std::numeric_limits<T>::min()) {
+				printf("%s warning: value out of range\n", line->ref().c_str());
+			}
+			as.append(T(result.asInt()));
+		}
+		return true;
+	}
+
+	bool handle_byte(asm_line_ptr &line)
+	{
+		return handle_words<u8>(line);
+	}
+
 	bool handle_half(asm_line_ptr &line)
 	{
-		/* TODO */
-		return true;
+		return handle_words<u16>(line);
 	}
 
 	bool handle_word(asm_line_ptr &line)
 	{
-		/* TODO */
-		return true;
+		return handle_words<u32>(line);
 	}
 
 	bool handle_dword(asm_line_ptr &line)
 	{
-		/* TODO */
-		return true;
+		return handle_words<u64>(line);
 	}
 
 	bool handle_dtprelword(asm_line_ptr &line)
@@ -603,15 +637,21 @@ struct riscv_assembler
 		return line;
 	}
 
-	bool handle_opcode(size_t opcode, asm_line_ptr &line)
+	bool handle_opcode(size_t op, asm_line_ptr &line)
 	{
+		auto argv = line->split_args(",");
 		/* TODO */
+		const riscv_operand_data *data = riscv_inst_operand_data[op];
+		while(data->type != riscv_type_none) {
+			data++;
+		}
 		return true;
 	}
 
 	bool handle_label(std::string label)
 	{
 		as.add_label(label);
+		vars[label] = packToken(size_t(as.current_offset()));
 		return true;
 	}
 

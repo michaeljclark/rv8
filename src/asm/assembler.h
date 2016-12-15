@@ -50,7 +50,6 @@ namespace riscv {
 
 		std::map<size_t,label_ptr> labels_byoffset;
 		std::map<std::string,label_ptr> labels_byname;
-
 		std::map<size_t,reloc_ptr> relocs_byoffset;
 		std::map<std::string,reloc_ptr> relocs_byname;
 
@@ -59,6 +58,11 @@ namespace riscv {
 		assembler()
 		{
 			get_section(".text");
+		}
+
+		size_t current_offset()
+		{
+			return current->buf.size();
 		}
 
 		section_ptr get_section(std::string name)
