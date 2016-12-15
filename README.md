@@ -134,6 +134,8 @@ Build Instructions
 
 The meta compiler has been tested on Linux, Darwin and FreeBSD.
 
+To checkout submodules: ```git submodule update --init --recursive```
+
 To build the utilities, simulator, emulator and tests: ```make all test-build```
 
 To print a colour opcode map: ```make map```
