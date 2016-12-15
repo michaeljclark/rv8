@@ -615,7 +615,7 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 
 # binary targets
 
-$(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB)
+$(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(LIBEXPR_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
