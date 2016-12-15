@@ -76,11 +76,11 @@ struct rv_comp_data
 /* Instruction operand structure */
 struct rv_operand_data
 {
-	const rv_operand_name operand_name;
-	const rv_operand_type operand_type;
-	const rv_primitive primitive;
-	const rv_type type;
-	const unsigned int width;
+	rv_operand_name operand_name;
+	rv_operand_type operand_type;
+	rv_primitive primitive;
+	rv_type type;
+	unsigned int width;
 };
 
 /* Opcode metadata tables */
