@@ -610,31 +610,61 @@ struct riscv_assembler
 
 	bool handle_la(asm_line_ptr &line)
 	{
-		/* TODO */
+		/*
+		 * TODO
+		 *
+		 * .1: auipc r,    %pcrel_hi(symbol)
+		 *     addi  r, r, %pcrel_lo(1b)
+		 *
+		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
+		 */
 		return true;
 	}
 
 	bool handle_lla(asm_line_ptr &line)
 	{
-		/* TODO */
+		/*
+		 * TODO
+		 *
+		 * .1: auipc r,    %pcrel_hi(symbol)
+		 *     addi  r, r, %pcrel_lo(1b)
+		 *
+		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
+		 */
 		return true;
 	}
 
 	bool handle_li(asm_line_ptr &line)
 	{
-		/* TODO */
+		/*
+		 * TODO
+		 *
+		 * lui, addiw, slli, addi
+		 */
 		return true;
 	}
 
 	bool handle_call(asm_line_ptr &line)
 	{
-		/* TODO */
+		/*
+		 * TODO
+		 *
+		 * .1: auipc t1,     %pcrel_hi(symbol)
+		 *     jalr  ra, t1, %pcrel_lo(1b)
+		 *
+		 * relocs: R_RISCV_CALL_PLT
+		 */
 		return true;
 	}
 
 	bool handle_tail(asm_line_ptr &line)
 	{
-		/* TODO */
+		/*
+		 * TODO
+		 *
+		 * .1: auipc t1,       %pcrel_hi(symbol)
+		 *     jalr  zero, t1, %pcrel_lo(1b)
+		 */
 		return true;
 	}
 
