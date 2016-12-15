@@ -162,6 +162,7 @@ struct riscv_assembler
 	void configure_directives()
 	{
 		map[".align"] = std::bind(&riscv_assembler::handle_align, this, std::placeholders::_1);
+		map[".balign"] = std::bind(&riscv_assembler::handle_align, this, std::placeholders::_1);
 		map[".p2align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
 		map[".equ"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
 		map[".eqv"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
@@ -185,6 +186,7 @@ struct riscv_assembler
 		map[".dtprelword"] = std::bind(&riscv_assembler::handle_dtprelword, this, std::placeholders::_1);
 		map[".dtpreldword"] = std::bind(&riscv_assembler::handle_dtpreldword, this, std::placeholders::_1);
 		map[".option"] = std::bind(&riscv_assembler::handle_option, this, std::placeholders::_1);
+		map[".zero"] = std::bind(&riscv_assembler::handle_zero, this, std::placeholders::_1);
 		map["la"] = std::bind(&riscv_assembler::handle_la, this, std::placeholders::_1);
 		map["lla"] = std::bind(&riscv_assembler::handle_lla, this, std::placeholders::_1);
 		map["li"] = std::bind(&riscv_assembler::handle_li, this, std::placeholders::_1);
@@ -363,13 +365,12 @@ struct riscv_assembler
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
-		/* TODO - handle expression */
-		s64 i;
-		if (!parse_integral(line->args[1], i)) {
-			printf("%s invalid integral\n", line->ref().c_str());
+		s64 val;
+		if (!parse_integral(line->args[1], val)) {
+			printf("%s invalid number\n", line->ref().c_str());
 			return false;
 		}
-		as.align(i);
+		as.align(val);
 		return true;
 	}
 
@@ -379,13 +380,12 @@ struct riscv_assembler
 			printf("%s missing parameter\n", line->ref().c_str());
 			return false;
 		}
-		/* TODO - handle expression */
-		s64 i;
-		if (!parse_integral(line->args[1], i)) {
+		s64 val;
+		if (!parse_integral(line->args[1], val)) {
 			printf("%s invalid number\n", line->ref().c_str());
 			return false;
 		}
-		as.p2align(i);
+		as.p2align(val);
 		return true;
 	}
 
@@ -605,6 +605,24 @@ struct riscv_assembler
 	bool handle_option(asm_line_ptr &line)
 	{
 		/* TODO - rvc,norvc,push,pop */
+		return true;
+	}
+
+	bool handle_zero(asm_line_ptr &line)
+	{
+		if (line->args.size() < 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+		/* TODO - handle expression */
+		s64 val;
+		if (!parse_integral(line->args[1], val)) {
+			printf("%s invalid number\n", line->ref().c_str());
+			return false;
+		}
+		for (s64 i = 0; i < val; i++) {
+			as.append(u8(0));
+		}
 		return true;
 	}
 
