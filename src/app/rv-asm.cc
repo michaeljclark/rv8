@@ -75,6 +75,29 @@ struct asm_line
 	{
 		return file->filename + ":" + std::to_string(line_num);
 	}
+
+	std::vector<std::vector<std::string>> split_args(std::string sep)
+	{
+		std::vector<std::vector<std::string>> vec;
+		vec.push_back(std::vector<std::string>());
+		for (auto i = args.begin() + 1; i != args.end(); i++) {
+			if (*i == sep) {
+				vec.push_back(std::vector<std::string>());
+			} else {
+				vec.back().push_back(*i);
+			}
+		}
+		return vec;
+	}
+};
+
+struct asm_macro
+{
+	asm_line_ptr macro_def;
+	std::vector<asm_line_ptr> macro_lines;
+
+	asm_macro(asm_line_ptr macro_def) :
+		macro_def(macro_def) {}
 };
 
 struct asm_macro
@@ -143,7 +166,7 @@ struct riscv_assembler
 		map[".align"] = std::bind(&riscv_assembler::handle_align, this, std::placeholders::_1);
 		map[".p2align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
 		map[".equ"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
-		map[".eqv"] = std::bind(&riscv_assembler::handle_eqv, this, std::placeholders::_1);
+		map[".eqv"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
 		map[".file"] = std::bind(&riscv_assembler::handle_file, this, std::placeholders::_1);
 		map[".globl"] = std::bind(&riscv_assembler::handle_globl, this, std::placeholders::_1);
 		map[".ident"] = std::bind(&riscv_assembler::handle_ident, this, std::placeholders::_1);
@@ -367,15 +390,30 @@ struct riscv_assembler
 		return true;
 	}
 
-	bool handle_equ(asm_line_ptr &line)
+	packToken eval(std::vector<std::string> tokens)
 	{
-		/* TODO */
-		return true;
+		if (tokens.size() == 1) {
+			s64 val;
+			if (parse_integral(tokens[0], val)) {
+				return packToken(int64_t(val));
+			}
+		}
+		std::string expr = join(tokens, " ");
+		calculator calc(expr.c_str());
+		auto result = calc.eval(vars);
+		return result;
 	}
 
-	bool handle_eqv(asm_line_ptr &line)
+	bool handle_equ(asm_line_ptr &line)
 	{
-		/* TODO */
+		auto argv = line->split_args(",");
+		if (argv.size() != 2 || argv[0].size() != 1 || argv[1].size() < 1) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+		std::string var_name = argv[0][0];
+		auto result = eval(argv[1]);
+		vars[var_name] = result;
 		return true;
 	}
 
