@@ -47,8 +47,13 @@ namespace riscv {
 	struct assembler
 	{
 		std::map<std::string,section_ptr> sections;
-		std::vector<label_ptr> labels;
-		std::vector<reloc_ptr> relocs;
+
+		std::map<size_t,label_ptr> labels_byoffset;
+		std::map<std::string,label_ptr> labels_byname;
+
+		std::map<size_t,reloc_ptr> relocs_byoffset;
+		std::map<std::string,reloc_ptr> relocs_byname;
+
 		section_ptr current;
 
 		assembler()
@@ -117,6 +122,20 @@ namespace riscv {
 					append(inst);
 					break;
 			}
+		}
+
+		void add_label(std::string label_name)
+		{
+			auto l = std::make_shared<label>(label_name, current, current->buf.size());
+			labels_byname[label_name] = l;
+			labels_byoffset[current->buf.size()] = l;
+		}
+
+		void add_reloc(std::string label_name)
+		{
+			auto r = std::make_shared<reloc>(current->buf.size(), current, label_name);
+			relocs_byname[label_name] = r;
+			relocs_byoffset[current->buf.size()] = r;
 		}
 
 		void align(int align)
