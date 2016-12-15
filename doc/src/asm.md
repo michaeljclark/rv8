@@ -10,7 +10,7 @@ The following table lists assembler directives:
 
 Directive    | Arguments                    | Description
 :----------- | :-------------               | :---------------
-.align       | integer                      | section alignment
+.align       | integer                      | align to power of 2 (alias for .p2align)
 .file        | "filename"                   | emit filename FILE LOCAL symbol table
 .globl       | symbol_name                  | emit symbol_name NOTYPE? GLOBAL to symbol table
 .ident       | "string"                     | ignore
@@ -32,7 +32,7 @@ Directive    | Arguments                    | Description
 .dword       |                              | 64-bit comma separated words
 .dtprelword  |                              | 32-bit thread local word
 .dtpreldword |                              | 64-bit thread local word
-.p2align     | p2,[pad_val=0],max           | power of 2 align
+.p2align     | p2,[pad_val=0],max           | align to power of 2
 .balign      | b,[pad_val=0]                | byte align
 .zero        | integer                      | zero bytes
 

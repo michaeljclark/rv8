@@ -161,9 +161,9 @@ struct riscv_assembler
 
 	void configure_directives()
 	{
-		map[".align"] = std::bind(&riscv_assembler::handle_align, this, std::placeholders::_1);
-		map[".balign"] = std::bind(&riscv_assembler::handle_align, this, std::placeholders::_1);
+		map[".align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
 		map[".p2align"] = std::bind(&riscv_assembler::handle_p2align, this, std::placeholders::_1);
+		map[".balign"] = std::bind(&riscv_assembler::handle_balign, this, std::placeholders::_1);
 		map[".equ"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
 		map[".eqv"] = std::bind(&riscv_assembler::handle_equ, this, std::placeholders::_1);
 		map[".file"] = std::bind(&riscv_assembler::handle_file, this, std::placeholders::_1);
@@ -359,7 +359,7 @@ struct riscv_assembler
 
 	/* handlers */
 
-	bool handle_align(asm_line_ptr &line)
+	bool handle_balign(asm_line_ptr &line)
 	{
 		if (line->args.size() < 2) {
 			printf("%s invalid parameters\n", line->ref().c_str());
