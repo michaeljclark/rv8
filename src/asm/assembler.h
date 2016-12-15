@@ -52,12 +52,17 @@ namespace riscv {
 		std::map<std::string,label_ptr> labels_byname;
 		std::map<size_t,reloc_ptr> relocs_byoffset;
 		std::map<std::string,reloc_ptr> relocs_byname;
-
+		std::vector<std::string> exports;
 		section_ptr current;
 
 		assembler()
 		{
 			get_section(".text");
+		}
+
+		void global(std::string label)
+		{
+			exports.push_back(label);
 		}
 
 		size_t current_offset()

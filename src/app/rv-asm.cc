@@ -432,7 +432,7 @@ struct riscv_assembler
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
-		/* TODO */
+		as.global(line->args[1]);
 		return true;
 	}
 
