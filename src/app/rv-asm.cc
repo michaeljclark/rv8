@@ -39,13 +39,19 @@
 #include "elf.h"
 #include "elf-file.h"
 #include "elf-format.h"
+#include "shunting-yard.h"
+
+#define DEBUG 1
 
 using namespace riscv;
 
 struct asm_filename;
 struct asm_line;
+struct asm_macro;
+
 typedef std::shared_ptr<asm_filename> asm_filename_ptr;
 typedef std::shared_ptr<asm_line> asm_line_ptr;
+typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
 
 struct asm_filename
@@ -60,10 +66,10 @@ struct asm_line
 {
 	asm_filename_ptr file;
 	int line_num;
-	std::vector<std::string> comps;
+	std::vector<std::string> args;
 
-	asm_line(asm_filename_ptr file, int line_num, std::vector<std::string> comps) :
-		file(file), line_num(line_num), comps(comps) {}
+	asm_line(asm_filename_ptr file, int line_num, std::vector<std::string> args) :
+		file(file), line_num(line_num), args(args) {}
 
 	std::string ref()
 	{
@@ -71,20 +77,34 @@ struct asm_line
 	}
 };
 
+struct asm_macro
+{
+	asm_line_ptr macro_def;
+	std::vector<asm_line_ptr> macro_lines;
+
+	asm_macro(asm_line_ptr macro_def) :
+		macro_def(macro_def) {}
+};
+
 struct riscv_assembler
 {
 	std::string input_filename;
 	std::string output_filename = "a.out";
 	bool help_or_error = false;
+	bool bail_on_errors = true;
 
 	int ext = rv_isa_imafdc;
 	int width = riscv_isa_rv64;
 
+	TokenMap vars;
 	assembler as;
+	asm_macro_ptr defining_macro;
+	std::vector<asm_macro_ptr> macro_stack;
 
 	std::map<std::string,size_t> reg_map;
 	std::map<std::string,size_t> csr_map;
 	std::map<std::string,size_t> opcode_map;
+	std::map<std::string,asm_macro_ptr> macro_map;
 	std::map<std::string,asm_directive> map;
 
 	riscv_assembler()
@@ -142,6 +162,7 @@ struct riscv_assembler
 		map[".dword"] = std::bind(&riscv_assembler::handle_dword, this, std::placeholders::_1);
 		map[".dtprelword"] = std::bind(&riscv_assembler::handle_dtprelword, this, std::placeholders::_1);
 		map[".dtpreldword"] = std::bind(&riscv_assembler::handle_dtpreldword, this, std::placeholders::_1);
+		map[".option"] = std::bind(&riscv_assembler::handle_option, this, std::placeholders::_1);
 		map["la"] = std::bind(&riscv_assembler::handle_la, this, std::placeholders::_1);
 		map["lla"] = std::bind(&riscv_assembler::handle_lla, this, std::placeholders::_1);
 		map["li"] = std::bind(&riscv_assembler::handle_li, this, std::placeholders::_1);
@@ -215,7 +236,7 @@ struct riscv_assembler
 
 		std::string specials = "%:,+-*/()";
 		std::vector<char> token;
-		std::vector<std::string> comps;
+		std::vector<std::string> args;
 		enum {
 			whitespace,
 			quoted_token,
@@ -242,7 +263,7 @@ struct riscv_assembler
 				}
 				case quoted_token: {
 					if (c == '"') {
-						comps.push_back(std::string(token.begin(), token.end()));
+						args.push_back(std::string(token.begin(), token.end()));
 						token.resize(0);
 						state = whitespace;
 					} else {
@@ -255,13 +276,13 @@ struct riscv_assembler
 					auto s = specials.find(c);
 					if (s != std::string::npos) {
 						if (token.size() > 0) {
-							comps.push_back(std::string(token.begin(), token.end()));
+							args.push_back(std::string(token.begin(), token.end()));
 						}
-						comps.push_back(specials.substr(s, 1));
+						args.push_back(specials.substr(s, 1));
 						token.resize(0);
 					} else if (::isspace(c)) {
 						if (token.size() > 0) {
-							comps.push_back(std::string(token.begin(), token.end()));
+							args.push_back(std::string(token.begin(), token.end()));
 						}
 						token.resize(0);
 						state = whitespace;
@@ -278,9 +299,9 @@ struct riscv_assembler
 			}
 		}
 		if (token.size() > 0) {
-			comps.push_back(std::string(token.begin(), token.end()));
+			args.push_back(std::string(token.begin(), token.end()));
 		}
-		return comps;
+		return args;
 	}
 
 	void read_source(std::vector<asm_line_ptr> &data, std::string filename)
@@ -300,13 +321,13 @@ struct riscv_assembler
 			if (hoffset != std::string::npos) {
 				line = ltrim(rtrim(line.substr(0, hoffset)));
 			}
-			std::vector<std::string> comps = parse_line(line);
-			if (comps.size() == 0) continue;
-			if (comps.size() == 2 && comps[0] == ".include") {
+			std::vector<std::string> args = parse_line(line);
+			if (args.size() == 0) continue;
+			if (args.size() == 2 && args[0] == ".include") {
 				/* NOTE: we don't do any loop detection */
-				read_source(data, comps[1]);
+				read_source(data, args[1]);
 			} else {
-				data.push_back(std::make_shared<asm_line>(file, line_num, comps));
+				data.push_back(std::make_shared<asm_line>(file, line_num, args));
 			}
 		}
 		in.close();
@@ -316,13 +337,13 @@ struct riscv_assembler
 
 	bool handle_align(asm_line_ptr &line)
 	{
-		if (line->comps.size() < 2) {
+		if (line->args.size() < 2) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
 		/* TODO - handle expression */
 		s64 i;
-		if (!parse_integral(line->comps[1], i)) {
+		if (!parse_integral(line->args[1], i)) {
 			printf("%s invalid integral\n", line->ref().c_str());
 			return false;
 		}
@@ -332,13 +353,13 @@ struct riscv_assembler
 
 	bool handle_p2align(asm_line_ptr &line)
 	{
-		if (line->comps.size() < 2) {
+		if (line->args.size() < 2) {
 			printf("%s missing parameter\n", line->ref().c_str());
 			return false;
 		}
 		/* TODO - handle expression */
 		s64 i;
-		if (!parse_integral(line->comps[1], i)) {
+		if (!parse_integral(line->args[1], i)) {
 			printf("%s invalid number\n", line->ref().c_str());
 			return false;
 		}
@@ -378,33 +399,46 @@ struct riscv_assembler
 
 	bool handle_macro(asm_line_ptr &line)
 	{
-		/* TODO */
+		if (line->args.size() < 2) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+		if (defining_macro) {
+			printf("%s already defining macro\n", line->ref().c_str());
+			return false;
+		}
+		defining_macro = std::make_shared<asm_macro>(line);
+		macro_map[line->args[1]] = defining_macro;
 		return true;
 	}
 
 	bool handle_endm(asm_line_ptr &line)
 	{
-		/* TODO */
+		if (line->args.size() != 1) {
+			printf("%s invalid parameters\n", line->ref().c_str());
+			return false;
+		}
+		defining_macro = asm_macro_ptr();
 		return true;
 	}
 
 	bool handle_section(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 2) {
+		if (line->args.size() != 2) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
-		if (line->comps[1].size() ==0 || line->comps[1][0] != '.') {
+		if (line->args[1].size() ==0 || line->args[1][0] != '.') {
 			printf("%s section must begin with '.'\n", line->ref().c_str());
 			return false;
 		}
-		as.get_section(line->comps[1]);
+		as.get_section(line->args[1]);
 		return true;
 	}
 
 	bool handle_text(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 1) {
+		if (line->args.size() != 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
@@ -414,7 +448,7 @@ struct riscv_assembler
 
 	bool handle_data(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 1) {
+		if (line->args.size() != 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
@@ -424,7 +458,7 @@ struct riscv_assembler
 
 	bool handle_rodata(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 1) {
+		if (line->args.size() != 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
@@ -434,7 +468,7 @@ struct riscv_assembler
 
 	bool handle_bss(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 1) {
+		if (line->args.size() != 1) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
@@ -450,11 +484,11 @@ struct riscv_assembler
 
 	bool handle_string(asm_line_ptr &line)
 	{
-		if (line->comps.size() != 2) {
+		if (line->args.size() != 2) {
 			printf("%s invalid parameters\n", line->ref().c_str());
 			return false;
 		}
-		std::string str =  line->comps[1];
+		std::string str =  line->args[1];
 		for (size_t i = 0; i < str.size(); i++) {
 			as.append(u8(str[i]));
 		}
@@ -498,6 +532,12 @@ struct riscv_assembler
 		return true;
 	}
 
+	bool handle_option(asm_line_ptr &line)
+	{
+		/* TODO - rvc,norvc,push,pop */
+		return true;
+	}
+
 	bool handle_la(asm_line_ptr &line)
 	{
 		/* TODO */
@@ -528,14 +568,21 @@ struct riscv_assembler
 		return true;
 	}
 
+	asm_line_ptr macro_substitute(asm_line_ptr &line)
+	{
+		/* TODO - use macro_stack.back()->macro_def to substitute args */
+		return line;
+	}
+
 	bool handle_opcode(size_t opcode, asm_line_ptr &line)
 	{
+		/* TODO */
 		return true;
 	}
 
 	bool handle_label(std::string label)
 	{
-		/* TODO (numeric or symbolic with or without dot prefix) */
+		as.add_label(label);
 		return true;
 	}
 
@@ -544,47 +591,84 @@ struct riscv_assembler
 		/* TODO */
 	}
 
+	bool process_line(asm_line_ptr line)
+	{
+		#if DEBUG
+		printf("%-30s %s\n",
+			format_string("%s:%05d", line->file->filename.c_str(), line->line_num).c_str(),
+			join(line->args, " ").c_str());
+		#endif
+
+		/* check if we are defining a macro */
+		if (defining_macro && !(line->args.size() > 0 && line->args[0] == ".endm")) {
+			defining_macro->macro_lines.push_back(line);
+			return true;
+		}
+
+		/* check for label */
+		if (line->args.size() >= 2 && line->args[1] == ":") {
+			handle_label(line->args[0]);
+			line->args.erase(line->args.begin(), line->args.begin() + 2);
+		}
+		if (line->args.size() == 0) {
+			return true;
+		}
+
+		/* check for internal directives */
+		auto di = map.find(line->args[0]);
+		if (di != map.end()) {
+			if (!di->second(line)) {
+				printf("%s invalid directive: %s\n",
+					line->ref().c_str(), join(line->args, " ").c_str());
+			}
+			return true;
+		}
+
+		/* check for opcode */
+		auto oi = opcode_map.find(line->args[0]);
+		if (oi != opcode_map.end()) {
+			if (!handle_opcode(oi->second, line)) {
+				printf("%s invalid statement: %s\n",
+					line->ref().c_str(), join(line->args, " ").c_str());
+			}
+			return true;
+		}
+
+		/* check for macro */
+		auto mi = macro_map.find(line->args[0]);
+		if (mi != macro_map.end()) {
+			macro_stack.push_back(mi->second);
+			for (auto macro_line : mi->second->macro_lines) {
+				process_line(macro_substitute(macro_line));
+			}
+			macro_stack.pop_back();
+			return true;
+		}
+
+		printf("%s unknown statement: %s\n",
+			line->ref().c_str(), join(line->args, " ").c_str());
+
+		return false;
+	}
+
 	void assemble()
 	{
+		/*
+		 * TODO
+		 *
+		 * as allows mixed case
+		 * as allows trailing semicolons
+		 */
+
 		std::vector<asm_line_ptr> data;
 		read_source(data, input_filename);
 		for (auto &line : data)
 		{
-			#if DEBUG
-			printf("%-30s %s\n",
-				format_string("%s:%05d", line->file->filename.c_str(), line->line_num).c_str(),
-				join(line->comps, " ").c_str());
-			#endif
-
-			/* check for label */
-			if (line->comps.size() >= 2 && line->comps[1] == ":") {
-				handle_label(line->comps[0]);
-				line->comps.erase(line->comps.begin(), line->comps.begin() + 2);
-			}
-			if (line->comps.size() == 0) continue;
-
-			/* check for internal directives */
-			auto di = map.find(line->comps[0]);
-			if (di != map.end()) {
-				if (!di->second(line)) {
-					printf("%s invalid directive: %s\n",
-						line->ref().c_str(), join(line->comps, " ").c_str());
+			if (!process_line(line)) {
+				if (bail_on_errors) {
+					exit(9);
 				}
-				continue;
 			}
-
-			/* check for opcode */
-			auto oi = opcode_map.find(line->comps[0]);
-			if (oi != opcode_map.end()) {
-				if (!handle_opcode(oi->second, line)) {
-					printf("%s invalid statement: %s\n",
-						line->ref().c_str(), join(line->comps, " ").c_str());
-				}
-				continue;
-			}
-
-			printf("%s unknown statement: %s\n",
-				line->ref().c_str(), join(line->comps, " ").c_str());
 		}
 		write_elf(output_filename);
 	}
