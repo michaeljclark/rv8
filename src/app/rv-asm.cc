@@ -115,7 +115,8 @@ struct riscv_assembler
 	asm_macro_ptr defining_macro;
 	std::vector<asm_macro_ptr> macro_stack;
 
-	std::map<std::string,size_t> reg_map;
+	std::map<std::string,size_t> ireg_map;
+	std::map<std::string,size_t> freg_map;
 	std::map<std::string,size_t> csr_map;
 	std::map<std::string,size_t> opcode_map;
 	std::map<std::string,asm_macro_ptr> macro_map;
@@ -146,8 +147,14 @@ struct riscv_assembler
 
 	void configure_maps()
 	{
-		populate_map(reg_map, riscv_ireg_name_sym);
-		populate_map(reg_map, riscv_freg_name_sym);
+		for (size_t i = 0; i < 32; i++) {
+			std::string ireg = "x" + std::to_string(i);
+			std::string freg = "f" + std::to_string(i);
+			ireg_map[ireg] = i;
+			freg_map[freg] = i;
+		}
+		populate_map(ireg_map, riscv_ireg_name_sym);
+		populate_map(freg_map, riscv_freg_name_sym);
 		populate_map(opcode_map, riscv_inst_name_sym);
 		populate_csr_map(csr_map, riscv_csr_name_sym);
 	}
