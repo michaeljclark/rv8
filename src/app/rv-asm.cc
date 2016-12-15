@@ -100,15 +100,6 @@ struct asm_macro
 		macro_def(macro_def) {}
 };
 
-struct asm_macro
-{
-	asm_line_ptr macro_def;
-	std::vector<asm_line_ptr> macro_lines;
-
-	asm_macro(asm_line_ptr macro_def) :
-		macro_def(macro_def) {}
-};
-
 struct riscv_assembler
 {
 	std::string input_filename;
