@@ -59,7 +59,7 @@ reset:
 	csrrs   zero, mstatus, t0
 
 	# return to the ROM
-	LX      ra, CONFIG_ROM_ENTRY(gp)
+	lx      ra, CONFIG_ROM_ENTRY(gp)
 	csrrw   sp, mscratch, sp
 	csrrw   zero, mepc, ra
 	mret                      # MPIE -> MIE after mret
