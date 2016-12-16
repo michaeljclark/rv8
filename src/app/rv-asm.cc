@@ -107,6 +107,7 @@ struct rv_assembler
 	std::string output_filename = "a.out";
 	bool help_or_error = false;
 	bool bail_on_errors = true;
+	bool debug = false;
 
 	int ext = rv_set_imafdc;
 	int width = rv_isa_rv64;
@@ -220,6 +221,9 @@ struct rv_assembler
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
+			{ "-d", "--debug", cmdline_arg_type_none,
+				"Show help",
+				[&](std::string s) { return (debug = true); } },
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
@@ -948,11 +952,11 @@ struct rv_assembler
 
 	bool process_line(asm_line_ptr line)
 	{
-		#if DEBUG
-		printf("%-30s %s\n",
-			format_string("%s:%05d", line->file->filename.c_str(), line->line_num).c_str(),
-			join(line->args, " ").c_str());
-		#endif
+		if (debug) {
+			printf("%-30s %s\n",
+				format_string("%s:%05d", line->file->filename.c_str(), line->line_num).c_str(),
+				join(line->args, " ").c_str());
+		}
 
 		/* check if we are defining a macro */
 		if (defining_macro && !(line->args.size() > 0 && line->args[0] == ".endm")) {
@@ -1025,7 +1029,26 @@ struct rv_assembler
 				}
 			}
 		}
+		if (debug) {
+			dump();
+		}
 		write_elf(output_filename);
+	}
+
+	void dump()
+	{
+		std::vector<u8> &buf = as.get_section(".text")->buf;
+		addr_t pc = 0, end = buf.size();
+		addr_t pc_offset;
+		decode dec;
+		while (pc < end) {
+			inst_t inst = inst_fetch(addr_t(buf.data() + pc), pc_offset);
+			decode_inst_rv64(dec, inst);
+			decode_pseudo_inst(dec);
+			std::string args = disasm_inst_simple(dec);
+			printf("%16s\t%s\n", format_string("0x%llx", pc).c_str(), args.c_str());
+			pc += pc_offset;
+		}
 	}
 };
 
