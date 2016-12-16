@@ -39,9 +39,10 @@ namespace riscv {
 		u32 offset;
 		section_ptr section;
 		std::string name;
+		int rela_type;
 
-		reloc(u32 offset, section_ptr section, std::string name) :
-			offset(offset), section(section), name(name) {}
+		reloc(u32 offset, section_ptr section, std::string name, int rela_type) :
+			offset(offset), section(section), name(name), rela_type(rela_type) {}
 	};
 
 	struct assembler
@@ -140,9 +141,9 @@ namespace riscv {
 			labels_byoffset[current->buf.size()] = l;
 		}
 
-		void add_reloc(std::string label_name)
+		void add_reloc(std::string label_name, int rela_type)
 		{
-			auto r = std::make_shared<reloc>(current->buf.size(), current, label_name);
+			auto r = std::make_shared<reloc>(current->buf.size(), current, label_name, rela_type);
 			relocs_byname[label_name] = r;
 			relocs_byoffset[current->buf.size()] = r;
 		}
