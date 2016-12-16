@@ -49,11 +49,23 @@ using namespace std::placeholders;
 struct asm_filename;
 struct asm_line;
 struct asm_macro;
+struct asm_macro_expand;
 
 typedef std::shared_ptr<asm_filename> asm_filename_ptr;
 typedef std::shared_ptr<asm_line> asm_line_ptr;
 typedef std::shared_ptr<asm_macro> asm_macro_ptr;
+typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
+
+template <typename T>
+std::string join(std::vector<T> list, std::string sep)
+{
+	std::stringstream ss;
+	for (auto i = list.begin(); i != list.end(); i++) {
+		ss << (i != list.begin() ? sep : "") << *i;
+	}
+	return ss.str();
+}
 
 struct asm_filename
 {
@@ -92,13 +104,52 @@ struct asm_line
 	}
 };
 
+struct asm_macro_expand
+{
+	std::map<std::string,std::string> map;
+
+	asm_macro_expand(std::deque<std::vector<std::string>> macro_args,
+		std::deque<std::vector<std::string>> param_args)
+	{
+		/* create substitution map */
+		for (auto mi = macro_args.begin(), pi = param_args.begin();
+			mi != macro_args.end() && pi != param_args.end(); mi++, pi++)
+		{
+			map[std::string("\\") + join(*mi, " ")] = join(*pi, " ");
+		}
+	}
+
+	asm_line_ptr substitute(asm_line_ptr &line)
+	{
+		std::vector<std::string> args;
+		for (auto arg : line->args) {
+			for (auto &ent : map) {
+				arg = replace(arg, ent.first, ent.second);
+			}
+			args.push_back(arg);
+		}
+		return std::make_shared<asm_line>(line->file, line->line_num, args);
+	}
+};
+
 struct asm_macro
 {
-	asm_line_ptr macro_def;
+	std::deque<std::vector<std::string>> macro_args;
 	std::vector<asm_line_ptr> macro_lines;
 
-	asm_macro(asm_line_ptr macro_def) :
-		macro_def(macro_def) {}
+	asm_macro(asm_line_ptr macro_def)
+	{
+		macro_args = macro_def->split_args(",");
+		macro_args[0].erase(macro_args[0].begin());
+	}
+
+	asm_macro_expand_ptr get_expander(asm_line_ptr &param_line)
+	{
+		auto param_args = param_line->split_args(",");
+		return macro_args.size() == param_args.size() ?
+			std::make_shared<asm_macro_expand>(macro_args, param_args) :
+			asm_macro_expand_ptr();
+	}
 };
 
 struct rv_assembler
@@ -115,7 +166,6 @@ struct rv_assembler
 	assembler as;
 	TokenMap vars;
 	asm_macro_ptr defining_macro;
-	std::vector<asm_macro_ptr> macro_stack;
 	std::map<std::string,size_t> ireg_map;
 	std::map<std::string,size_t> freg_map;
 	std::map<std::string,size_t> csr_map;
@@ -202,16 +252,6 @@ struct rv_assembler
 		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
 		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
 		else return rv_set_none;
-	}
-
-	template <typename T>
-	std::string join(std::vector<T> list, std::string sep)
-	{
-		std::stringstream ss;
-		for (auto i = list.begin(); i != list.end(); i++) {
-			ss << (i != list.begin() ? sep : "") << *i;
-		}
-		return ss.str();
 	}
 
 	void parse_commandline(int argc, const char *argv[])
@@ -741,12 +781,6 @@ struct rv_assembler
 		return true;
 	}
 
-	asm_line_ptr macro_substitute(asm_line_ptr &line)
-	{
-		/* TODO - use macro_stack.back()->macro_def to substitute args */
-		return line;
-	}
-
 	std::vector<rv_operand_data> opcode_operand_data(size_t op)
 	{
 		std::vector<rv_operand_data> op_data;
@@ -977,7 +1011,7 @@ struct rv_assembler
 		auto di = directive_map.find(line->args[0]);
 		if (di != directive_map.end()) {
 			if (!di->second(line)) {
-				printf("%s invalid directive: %s\n",
+				printf("%s invalid statement: %s\n",
 					line->ref().c_str(), join(line->args, " ").c_str());
 			}
 			return true;
@@ -996,15 +1030,19 @@ struct rv_assembler
 		/* check for macro */
 		auto mi = macro_map.find(line->args[0]);
 		if (mi != macro_map.end()) {
-			macro_stack.push_back(mi->second);
-			for (auto macro_line : mi->second->macro_lines) {
-				process_line(macro_substitute(macro_line));
+			auto expander = mi->second->get_expander(line);
+			if (!expander) {
+				printf("%s invalid macro arguments: %s\n",
+					line->ref().c_str(), join(line->args, " ").c_str());
+				return false;
 			}
-			macro_stack.pop_back();
+			for (auto macro_line : mi->second->macro_lines) {
+				process_line(expander->substitute(macro_line));
+			}
 			return true;
 		}
 
-		printf("%s unknown statement: %s\n",
+		printf("%s invalid statement: %s\n",
 			line->ref().c_str(), join(line->args, " ").c_str());
 
 		return false;
