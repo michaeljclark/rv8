@@ -150,6 +150,7 @@ namespace riscv {
 		void balign(int align)
 		{
 			if (!ispow2(align)) return;
+			if ((current->buf.size() & (align-1)) == 0) return;
 			size_t sz = align - (current->buf.size() & ~align);
 			for(size_t i = 0; i < sz; i++) {
 				current->buf.push_back(0);
