@@ -138,6 +138,7 @@ struct asm_macro_expand
 
 	asm_line_ptr substitute(asm_line_ptr &line)
 	{
+		/* substitute macro parameters */
 		std::vector<std::string> args;
 		for (auto arg : line->args) {
 			for (auto &ent : map) {
@@ -156,12 +157,14 @@ struct asm_macro
 
 	asm_macro(asm_line_ptr macro_def)
 	{
+		/* save the macro args removing .macro prefix */
 		macro_args = macro_def->split_args(",");
 		macro_args[0].erase(macro_args[0].begin());
 	}
 
 	asm_macro_expand_ptr get_expander(asm_line_ptr &param_line)
 	{
+		/* return expander if macro has the same number of parameters */
 		auto param_args = param_line->split_args(",");
 		return macro_args.size() == param_args.size() ?
 			std::make_shared<asm_macro_expand>(macro_args, param_args) :
