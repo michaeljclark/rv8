@@ -57,6 +57,23 @@ typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
 
+const char* kInvalidOperands = "%s *** invalid operands\n";
+const char* kMissingOperands = "%s *** missing operand\n";
+const char* kInvalidNumber = "%s *** invalid number\n";
+const char* kUnimplementedFunction = "%s *** unimplemented function %%%s\n";
+const char* kAlreadyDefiningMacro = "%s *** already defining macro\n";
+const char* kSectionMustBeginWithDot = "%s *** section must begin with '.'\n";
+const char* kValueOutOfRange = "%s *** value out of range\n";
+const char* kInvalidRegister = "%s *** invalid register %s\n";
+const char* kUnimplementedLargeImmediate = "%s *** unimplemented large immediate\n";
+const char* kMissingRegisterOperand = "%s *** missing register operand\n";
+const char* kMissingImmediateOperand = "%s *** missing immediate operand\n";
+const char* kMissingCSROperand = "%s *** missing csr operand\n";
+const char* kInvalidCSROperand = "%s *** invalid csr operand\n";
+const char* kUnknownCSROperand = "%s *** unknown csr operand\n";
+const char* kInvalidStatement = "%s *** invalid statement: %s\n";
+const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
+
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
 {
@@ -406,12 +423,12 @@ struct rv_assembler
 	bool handle_balign(asm_line_ptr &line)
 	{
 		if (line->args.size() < 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		s64 val;
 		if (!parse_integral(line->args[1], val)) {
-			printf("%s invalid number\n", line->ref().c_str());
+			printf(kInvalidNumber, line->ref().c_str());
 			return false;
 		}
 		as.balign(val);
@@ -421,12 +438,12 @@ struct rv_assembler
 	bool handle_p2align(asm_line_ptr &line)
 	{
 		if (line->args.size() < 2) {
-			printf("%s missing parameter\n", line->ref().c_str());
+			printf(kMissingOperands, line->ref().c_str());
 			return false;
 		}
 		s64 val;
 		if (!parse_integral(line->args[1], val)) {
-			printf("%s invalid number\n", line->ref().c_str());
+			printf(kInvalidNumber, line->ref().c_str());
 			return false;
 		}
 		as.p2align(val);
@@ -457,7 +474,7 @@ struct rv_assembler
 			}
 		}
 		if (tokens.size() > 1 && tokens[0] == "%") {
-			printf("%s unimplemented function %%%s\n", line->ref().c_str(),
+			printf(kUnimplementedFunction, line->ref().c_str(),
 				tokens[1].c_str());
 			return packToken(0);
 		}
@@ -471,7 +488,7 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() != 2 || argv[0].size() != 1 || argv[1].size() < 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		std::string var_name = argv[0][0];
@@ -483,7 +500,7 @@ struct rv_assembler
 	bool handle_file(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		/* TODO */
@@ -493,7 +510,7 @@ struct rv_assembler
 	bool handle_globl(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		as.global(line->args[1]);
@@ -503,7 +520,7 @@ struct rv_assembler
 	bool handle_ident(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		/* ignore */
@@ -513,11 +530,11 @@ struct rv_assembler
 	bool handle_macro(asm_line_ptr &line)
 	{
 		if (line->args.size() < 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		if (defining_macro) {
-			printf("%s already defining macro\n", line->ref().c_str());
+			printf(kAlreadyDefiningMacro, line->ref().c_str());
 			return false;
 		}
 		defining_macro = std::make_shared<asm_macro>(line);
@@ -528,7 +545,7 @@ struct rv_assembler
 	bool handle_endm(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		defining_macro = asm_macro_ptr();
@@ -539,11 +556,11 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1 || argv[0].size() < 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		if (argv[0][0][0] != '.') {
-			printf("%s section must begin with '.'\n", line->ref().c_str());
+			printf(kSectionMustBeginWithDot, line->ref().c_str());
 			return false;
 		}
 		as.get_section(argv[0][0]);
@@ -553,7 +570,7 @@ struct rv_assembler
 	bool handle_text(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		as.get_section(".text");
@@ -563,7 +580,7 @@ struct rv_assembler
 	bool handle_data(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		as.get_section(".data");
@@ -573,7 +590,7 @@ struct rv_assembler
 	bool handle_rodata(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		as.get_section(".rodata");
@@ -583,7 +600,7 @@ struct rv_assembler
 	bool handle_bss(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		as.get_section(".bss");
@@ -599,7 +616,7 @@ struct rv_assembler
 	bool handle_string(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		std::string str =  line->args[1];
@@ -621,14 +638,15 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() != 1 || argv[0].size() < 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
 			auto result = eval(line, argv[0]);
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
-				printf("%s warning: value out of range\n", line->ref().c_str());
+				printf(kValueOutOfRange, line->ref().c_str());
+				return false;
 			}
 			as.append(T(result.asInt()));
 		}
@@ -677,13 +695,13 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() != 1 || argv[0].size() != 1) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 		/* TODO - handle expression */
 		s64 val;
 		if (!parse_integral(argv[0][0], val)) {
-			printf("%s invalid number\n", line->ref().c_str());
+			printf(kInvalidNumber, line->ref().c_str());
 			return false;
 		}
 		for (s64 i = 0; i < val; i++) {
@@ -721,29 +739,29 @@ struct rv_assembler
 	bool handle_li(asm_line_ptr &line)
 	{
 		/*
-		 * TODO
+		 * TODO - implement large immediates
 		 *
-		 * lui, addiw, slli, addi
+		 * { lui, addiw, slli, addi }
 		 */
 		auto argv = line->split_args(",");
 		if (argv.size() != 2) {
-			printf("%s invalid parameters\n", line->ref().c_str());
+			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
 
-		/* register parameter */
+		/* register operand */
 		auto ri = argv[0].size() == 1 ? ireg_map.find(argv[0][0]) : ireg_map.end();
 		if (ri == ireg_map.end()) {
-			printf("%s invalid register %s\n", line->ref().c_str(),
+			printf(kInvalidRegister, line->ref().c_str(),
 				join(argv[0], " ").c_str());
 			return false;
 		}
 
-		/* immediate parameter */
+		/* immediate operand */
 		auto result = eval(line, argv[1]);
 		s64 imm = result.asInt();
 		if (imm < -2048 || imm > 2047) {
-			printf("%s unimplemented large immediate\n", line->ref().c_str());
+			printf(kUnimplementedLargeImmediate, line->ref().c_str());
 			return false;
 		}
 
@@ -823,13 +841,13 @@ struct rv_assembler
 				case '2':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing register parameter\n", line->ref().c_str());
+						printf(kMissingRegisterOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == ireg_map.end()) {
-						printf("%s invalid register %s\n", line->ref().c_str(),
+						printf(kInvalidRegister, line->ref().c_str(),
 							join(argv[0], " ").c_str());
 						return false;
 					}
@@ -848,13 +866,13 @@ struct rv_assembler
 				case '6':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing register parameter\n", line->ref().c_str());
+						printf(kMissingRegisterOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == freg_map.end()) {
-						printf("%s invalid register %s\n", line->ref().c_str(),
+						printf(kInvalidRegister, line->ref().c_str(),
 							join(argv[0], " ").c_str());
 						return false;
 					}
@@ -871,7 +889,7 @@ struct rv_assembler
 				case '7':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing immediate parameter\n", line->ref().c_str());
+						printf(kMissingImmediateOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
@@ -885,7 +903,7 @@ struct rv_assembler
 				case 'i':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing immediate parameter\n", line->ref().c_str());
+						printf(kMissingImmediateOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
@@ -899,7 +917,7 @@ struct rv_assembler
 				case 'o':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing immediate parameter\n", line->ref().c_str());
+						printf(kMissingImmediateOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
@@ -912,12 +930,12 @@ struct rv_assembler
 				case 'c':
 				{
 					if (argv.size() == 0) {
-						printf("%s missing csr parameter\n", line->ref().c_str());
+						printf(kMissingCSROperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
 					if (arg.size() != 1) {
-						printf("%s invalid csr parameter\n", line->ref().c_str());
+						printf(kInvalidCSROperand, line->ref().c_str());
 						return false;
 					}
 					s64 val;
@@ -926,7 +944,7 @@ struct rv_assembler
 					} else {
 						auto ci = csr_map.find(arg[0]);
 						if (ci == csr_map.end()) {
-							printf("%s unknown csr parameter\n", line->ref().c_str());
+							printf(kUnknownCSROperand, line->ref().c_str());
 							return false;
 						}
 						dec.imm = ci->second;
@@ -988,7 +1006,7 @@ struct rv_assembler
 	{
 		if (debug) {
 			printf("%-30s %s\n",
-				format_string("%s:%05d", line->file->filename.c_str(), line->line_num).c_str(),
+				format_string("%s:%d", line->file->filename.c_str(), line->line_num).c_str(),
 				join(line->args, " ").c_str());
 		}
 
@@ -1011,7 +1029,7 @@ struct rv_assembler
 		auto di = directive_map.find(line->args[0]);
 		if (di != directive_map.end()) {
 			if (!di->second(line)) {
-				printf("%s invalid statement: %s\n",
+				printf(kInvalidStatement,
 					line->ref().c_str(), join(line->args, " ").c_str());
 			}
 			return true;
@@ -1021,7 +1039,7 @@ struct rv_assembler
 		auto oi = opcode_map.find(line->args[0]);
 		if (oi != opcode_map.end()) {
 			if (!handle_opcode(oi->second, line)) {
-				printf("%s invalid statement: %s\n",
+				printf(kInvalidStatement,
 					line->ref().c_str(), join(line->args, " ").c_str());
 			}
 			return true;
@@ -1032,7 +1050,7 @@ struct rv_assembler
 		if (mi != macro_map.end()) {
 			auto expander = mi->second->get_expander(line);
 			if (!expander) {
-				printf("%s invalid macro arguments: %s\n",
+				printf(kInvalidMacroOperands,
 					line->ref().c_str(), join(line->args, " ").c_str());
 				return false;
 			}
@@ -1042,7 +1060,7 @@ struct rv_assembler
 			return true;
 		}
 
-		printf("%s invalid statement: %s\n",
+		printf(kInvalidStatement,
 			line->ref().c_str(), join(line->args, " ").c_str());
 
 		return false;
