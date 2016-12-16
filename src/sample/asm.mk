@@ -49,6 +49,8 @@ ASSEMBLY = \
 	$(ASM_DIR)/test-module-2a-amd64.s \
 	$(ASM_DIR)/test-module-2b-rv64.s \
 	$(ASM_DIR)/test-module-2b-amd64.s \
+	$(ASM_DIR)/test-shift-1-rv64.s \
+	$(ASM_DIR)/test-shift-1-amd64.s \
 	$(ASM_DIR)/test-thread-1-rv64.s \
 	$(ASM_DIR)/test-thread-1-amd64.s
 
@@ -71,6 +73,8 @@ OBJECTS = \
 	$(OBJ_DIR)/test-module-2a-amd64.o \
 	$(OBJ_DIR)/test-module-2b-rv64.o \
 	$(OBJ_DIR)/test-module-2b-amd64.o \
+	$(OBJ_DIR)/test-shift-1-rv64.o \
+	$(OBJ_DIR)/test-shift-1-amd64.o \
 	$(OBJ_DIR)/test-thread-1-rv64.o \
 	$(OBJ_DIR)/test-thread-1-amd64.o
 
@@ -125,6 +129,11 @@ $(ASM_DIR)/test-module-2b-rv64.s: $(SRC_DIR)/test-module-2b.cc ; $(TARGET_CXX) $
 $(OBJ_DIR)/test-module-2b-rv64.o: $(SRC_DIR)/test-module-2b.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
 $(ASM_DIR)/test-module-2b-amd64.s: $(SRC_DIR)/test-module-2b.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
 $(OBJ_DIR)/test-module-2b-amd64.o: $(SRC_DIR)/test-module-2b.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
+
+$(ASM_DIR)/test-shift-1-rv64.s: $(SRC_DIR)/test-shift-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-shift-1-rv64.o: $(SRC_DIR)/test-shift-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
+$(ASM_DIR)/test-shift-1-amd64.s: $(SRC_DIR)/test-shift-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-shift-1-amd64.o: $(SRC_DIR)/test-shift-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
 
 $(ASM_DIR)/test-thread-1-rv64.s: $(SRC_DIR)/test-thread-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
 $(OBJ_DIR)/test-thread-1-rv64.o: $(SRC_DIR)/test-thread-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
