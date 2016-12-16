@@ -147,17 +147,17 @@ namespace riscv {
 			relocs_byoffset[current->buf.size()] = r;
 		}
 
-		void balign(int align)
+		void balign(size_t align)
 		{
 			if (!ispow2(align)) return;
 			if ((current->buf.size() & (align-1)) == 0) return;
-			size_t sz = align - (current->buf.size() & ~align);
+			size_t sz = align - (current->buf.size() & (align-1));
 			for(size_t i = 0; i < sz; i++) {
 				current->buf.push_back(0);
 			}
 		}
 
-		void p2align(int s)
+		void p2align(size_t s)
 		{
 			balign(1 << s);
 		}

@@ -422,30 +422,26 @@ struct rv_assembler
 
 	bool handle_balign(asm_line_ptr &line)
 	{
-		if (line->args.size() < 2) {
+		auto argv = line->split_args(",");
+		if (argv.size() < 1) {
 			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
-		s64 val;
-		if (!parse_integral(line->args[1], val)) {
-			printf(kInvalidNumber, line->ref().c_str());
-			return false;
-		}
+		auto result = eval(line, argv[0]);
+		s64 val = result.asInt();
 		as.balign(val);
 		return true;
 	}
 
 	bool handle_p2align(asm_line_ptr &line)
 	{
-		if (line->args.size() < 2) {
+		auto argv = line->split_args(",");
+		if (argv.size() < 1) {
 			printf(kMissingOperands, line->ref().c_str());
 			return false;
 		}
-		s64 val;
-		if (!parse_integral(line->args[1], val)) {
-			printf(kInvalidNumber, line->ref().c_str());
-			return false;
-		}
+		auto result = eval(line, argv[0]);
+		s64 val = result.asInt();
 		as.p2align(val);
 		return true;
 	}
@@ -642,7 +638,7 @@ struct rv_assembler
 			return false;
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
-			auto result = eval(line, argv[0]);
+			auto result = eval(line, argv[i]);
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
 				printf(kValueOutOfRange, line->ref().c_str());
@@ -694,16 +690,12 @@ struct rv_assembler
 	bool handle_zero(asm_line_ptr &line)
 	{
 		auto argv = line->split_args(",");
-		if (argv.size() != 1 || argv[0].size() != 1) {
+		if (argv.size() != 1) {
 			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
-		/* TODO - handle expression */
-		s64 val;
-		if (!parse_integral(argv[0][0], val)) {
-			printf(kInvalidNumber, line->ref().c_str());
-			return false;
-		}
+		auto result = eval(line, argv[0]);
+		s64 val = result.asInt();
 		for (s64 i = 0; i < val; i++) {
 			as.append(u8(0));
 		}
