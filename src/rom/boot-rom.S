@@ -38,7 +38,7 @@ reset:
 	lx      t0, CONFIG_RAM_BASE(gp)
 	lx      t1, CONFIG_RAM_SIZE(gp)
 	add     sp, t0, t1
-	addi    sp, sp, -(xlenb*32)
+	addi    sp, sp, -xlenb*32
 
 	# set mstatus.MPP = 0b11 (Machine mode)
 	csrrs   t1, mstatus, zero
