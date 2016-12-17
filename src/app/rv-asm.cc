@@ -68,12 +68,14 @@ const char* kInvalidRegister = "%s *** invalid register %s\n";
 const char* kUnimplementedLargeImmediate = "%s *** unimplemented large immediate\n";
 const char* kMissingRegisterOperand = "%s *** missing register operand\n";
 const char* kMissingImmediateOperand = "%s *** missing immediate operand\n";
+const char* kInvalidImmediateOperand = "%s *** invalid immediate operand\n";
 const char* kMissingCSROperand = "%s *** missing csr operand\n";
 const char* kInvalidCSROperand = "%s *** invalid csr operand\n";
 const char* kUnknownCSROperand = "%s *** unknown csr operand\n";
 const char* kInvalidStatement = "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
 const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand\n";
+const char* kUnimplementedRelocation = "%s *** unimplemented relocation\n";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -428,10 +430,14 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1) {
-			printf(kInvalidOperands, line->ref().c_str());
+			printf(kMissingOperands, line->ref().c_str());
 			return false;
 		}
 		auto result = eval(line, argv[0]);
+		if (result->type == VAR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
 		s64 val = result.asInt();
 		as.balign(val);
 		return true;
@@ -445,6 +451,10 @@ struct rv_assembler
 			return false;
 		}
 		auto result = eval(line, argv[0]);
+		if (result->type == VAR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
 		s64 val = result.asInt();
 		as.p2align(val);
 		return true;
@@ -637,12 +647,16 @@ struct rv_assembler
 	bool handle_words(asm_line_ptr &line)
 	{
 		auto argv = line->split_args(",");
-		if (argv.size() != 1 || argv[0].size() < 1) {
-			printf(kInvalidOperands, line->ref().c_str());
+		if (argv.size() < 1 ) {
+			printf(kMissingOperands, line->ref().c_str());
 			return false;
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
 			auto result = eval(line, argv[i]);
+			if (result->type == VAR) {
+				printf(kInvalidOperands, line->ref().c_str());
+				return false;
+			}
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
 				printf(kValueOutOfRange, line->ref().c_str());
@@ -699,6 +713,10 @@ struct rv_assembler
 			return false;
 		}
 		auto result = eval(line, argv[0]);
+		if (result->type == VAR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
 		s64 val = result.asInt();
 		for (s64 i = 0; i < val; i++) {
 			as.append(u8(0));
@@ -755,6 +773,10 @@ struct rv_assembler
 
 		/* immediate operand */
 		auto result = eval(line, argv[1]);
+		if (result->type == VAR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
 		s64 imm = result.asInt();
 		if (imm < -2048 || imm > 2047) {
 			printf(kUnimplementedLargeImmediate, line->ref().c_str());
@@ -890,6 +912,10 @@ struct rv_assembler
 					}
 					auto arg = argv.front();
 					auto result = eval(line, arg);
+					if (result->type == VAR) {
+						printf(kInvalidImmediateOperand, line->ref().c_str());
+						return false;
+					}
 					dec.rs1 = result.asInt();
 					remove_operand(op_data, rv_type_simm);
 					remove_operand(op_data, rv_type_uimm);
@@ -909,8 +935,11 @@ struct rv_assembler
 						return false;
 					}
 					auto arg = argv.front();
-					/* TODO - defer unresolved labels and symbols to 2nd pass */
 					auto result = eval(line, arg);
+					if (result->type == VAR) {
+						printf(kUnimplementedRelocation, line->ref().c_str());
+						return false;
+					}
 					dec.imm = result.asInt();
 					remove_operand(op_data, rv_type_simm);
 					remove_operand(op_data, rv_type_uimm);
@@ -924,8 +953,11 @@ struct rv_assembler
 						return false;
 					}
 					auto arg = argv.front();
-					/* TODO - defer unresolved labels and symbols to 2nd pass */
 					auto result = eval(line, arg);
+					if (result->type == VAR) {
+						printf(kUnimplementedRelocation, line->ref().c_str());
+						return false;
+					}
 					dec.imm = result.asInt() - as.current_offset();
 					remove_operand(op_data, rv_type_simm);
 					argv.pop_front();
