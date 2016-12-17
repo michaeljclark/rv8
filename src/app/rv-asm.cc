@@ -761,10 +761,10 @@ struct rv_assembler
 		}
 
 		decode dec{};
-        dec.op = rv_op_addi;
-        dec.rd = ri->second;
-        dec.rs1 = rv_ireg_zero;
-        dec.imm = imm;
+		dec.op = rv_op_addi;
+		dec.rd = ri->second;
+		dec.rs1 = rv_ireg_zero;
+		dec.imm = imm;
 
 		as.append(u32(encode_inst(dec)));
 		return true;
