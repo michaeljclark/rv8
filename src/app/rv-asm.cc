@@ -73,6 +73,7 @@ const char* kInvalidCSROperand = "%s *** invalid csr operand\n";
 const char* kUnknownCSROperand = "%s *** unknown csr operand\n";
 const char* kInvalidStatement = "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
+const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand\n";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -897,11 +898,18 @@ struct rv_assembler
 				}
 				case 'i':
 				{
+					/* check for load store address format imm(rs1) */
+					if (*(fmt + 1) && *(fmt + 1) == '(' && *(fmt + 2) == '1' && *(fmt + 3) == ')') {
+						/* TODO */
+						printf(kUnimplementedAddressOperand, line->ref().c_str());
+						return false;
+					}
 					if (argv.size() == 0) {
 						printf(kMissingImmediateOperand, line->ref().c_str());
 						return false;
 					}
 					auto arg = argv.front();
+					/* TODO - defer unresolved labels and symbols to 2nd pass */
 					auto result = eval(line, arg);
 					dec.imm = result.asInt();
 					remove_operand(op_data, rv_type_simm);
@@ -916,6 +924,7 @@ struct rv_assembler
 						return false;
 					}
 					auto arg = argv.front();
+					/* TODO - defer unresolved labels and symbols to 2nd pass */
 					auto result = eval(line, arg);
 					dec.imm = result.asInt() - as.current_offset();
 					remove_operand(op_data, rv_type_simm);
@@ -979,9 +988,11 @@ struct rv_assembler
 			}
 			fmt++;
 		}
+
 		/* translate pseudo instruction to regular instruction */
 		encode_pseudo(dec);
 		as.append(u32(encode_inst(dec)));
+
 		return true;
 	}
 
