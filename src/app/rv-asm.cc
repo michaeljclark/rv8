@@ -926,7 +926,7 @@ struct rv_assembler
 				{
 					/* check for load store address format imm(rs1) */
 					if (*(fmt + 1) && *(fmt + 1) == '(' && *(fmt + 2) == '1' && *(fmt + 3) == ')') {
-						/* TODO */
+						/* TODO - implement address operand decoding */
 						printf(kUnimplementedAddressOperand, line->ref().c_str());
 						return false;
 					}
@@ -937,6 +937,7 @@ struct rv_assembler
 					auto arg = argv.front();
 					auto result = eval(line, arg);
 					if (result->type == VAR) {
+						/* TODO - emit relocation */
 						printf(kUnimplementedRelocation, line->ref().c_str());
 						return false;
 					}
@@ -955,6 +956,7 @@ struct rv_assembler
 					auto arg = argv.front();
 					auto result = eval(line, arg);
 					if (result->type == VAR) {
+						/* TODO - emit relocation */
 						printf(kUnimplementedRelocation, line->ref().c_str());
 						return false;
 					}
