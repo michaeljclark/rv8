@@ -57,25 +57,25 @@ typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
 
-const char* kInvalidOperands = "%s *** invalid operands\n";
-const char* kMissingOperands = "%s *** missing operand\n";
-const char* kInvalidNumber = "%s *** invalid number\n";
-const char* kUnimplementedFunction = "%s *** unimplemented function %%%s\n";
-const char* kAlreadyDefiningMacro = "%s *** already defining macro\n";
-const char* kSectionMustBeginWithDot = "%s *** section must begin with '.'\n";
-const char* kValueOutOfRange = "%s *** value out of range\n";
-const char* kInvalidRegister = "%s *** invalid register %s\n";
-const char* kUnimplementedLargeImmediate = "%s *** unimplemented large immediate\n";
-const char* kMissingRegisterOperand = "%s *** missing register operand\n";
-const char* kMissingImmediateOperand = "%s *** missing immediate operand\n";
-const char* kInvalidImmediateOperand = "%s *** invalid immediate operand\n";
-const char* kMissingCSROperand = "%s *** missing csr operand\n";
-const char* kInvalidCSROperand = "%s *** invalid csr operand\n";
-const char* kUnknownCSROperand = "%s *** unknown csr operand\n";
+const char* kInvalidOperands = "%s *** invalid operands: %s\n";
+const char* kMissingOperands = "%s *** missing operand: %s\n";
+const char* kInvalidNumber = "%s *** invalid number: %s\n";
+const char* kUnimplementedFunction = "%s *** unimplemented function: %s\n";
+const char* kAlreadyDefiningMacro = "%s *** already defining macro: %s\n";
+const char* kSectionMustBeginWithDot = "%s *** section must begin with '.': %s\n";
+const char* kValueOutOfRange = "%s *** value out of range: %s\n";
+const char* kInvalidRegister = "%s *** invalid register: %s\n";
+const char* kUnimplementedLargeImmediate = "%s *** unimplemented large immediate: %s\n";
+const char* kMissingRegisterOperand = "%s *** missing register operand: %s\n";
+const char* kMissingImmediateOperand = "%s *** missing immediate operand: %s\n";
+const char* kInvalidImmediateOperand = "%s *** invalid immediate operand: %s\n";
+const char* kMissingCSROperand = "%s *** missing csr operand: %s\n";
+const char* kInvalidCSROperand = "%s *** invalid csr operand: %s\n";
+const char* kUnknownCSROperand = "%s *** unknown csr operand: %s\n";
 const char* kInvalidStatement = "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
-const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand\n";
-const char* kUnimplementedRelocation = "%s *** unimplemented relocation\n";
+const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand: %s\n";
+const char* kUnimplementedRelocation = "%s *** unimplemented relocation: %s\n";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -99,10 +99,11 @@ struct asm_line
 {
 	asm_filename_ptr file;
 	int line_num;
+	bool has_error;
 	std::vector<std::string> args;
 
 	asm_line(asm_filename_ptr file, int line_num, std::vector<std::string> args) :
-		file(file), line_num(line_num), args(args) {}
+		file(file), line_num(line_num), has_error(false), args(args) {}
 
 	std::string ref()
 	{
@@ -112,6 +113,13 @@ struct asm_line
 	std::string str()
 	{
 		return join(args, " ");
+	}
+
+	bool error(const char *fmt)
+	{
+		has_error = true;
+		printf(fmt, ref().c_str(), str().c_str());
+		return false;
 	}
 
 	std::deque<std::vector<std::string>> split_args(std::string sep)
@@ -185,7 +193,7 @@ struct rv_assembler
 	std::string input_filename;
 	std::string output_filename = "a.out";
 	bool help_or_error = false;
-	bool bail_on_errors = true;
+	bool bail_on_errors = false;
 	bool debug = false;
 
 	int ext = rv_set_imafdc;
@@ -429,8 +437,7 @@ struct rv_assembler
 		in.close();
 	}
 
-
-	packToken eval(asm_line_ptr &line, std::vector<std::string> tokens)
+	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
 		/*
 		 * TODO - handle % expansions
@@ -448,23 +455,23 @@ struct rv_assembler
 		 *
 		 */
 		if (tokens.size() > 1 && tokens[0] == "%") {
-			printf(kUnimplementedFunction, line->ref().c_str(),
-				tokens[1].c_str());
-			return packToken(0);
+			return line->error(kUnimplementedFunction);
 		}
 		if (tokens.size() == 1 && tokens[0][0] == '.') {
-			return packToken(tokens[0]);
+			result = packToken(tokens[0]);
+			return false;
 		}
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
-				return packToken(int64_t(val));
+				result = packToken(int64_t(val));
+				return true;
 			}
 		}
 		std::string expr = join(tokens, " ");
 		calculator calc(expr.c_str());
-		auto result = calc.eval(vars);
-		return result;
+		result = calc.eval(vars);
+		return (result->type == NUM || result->type == INT || result->type == REAL);
 	}
 
 	/* handlers */
@@ -473,13 +480,11 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1) {
-			printf(kMissingOperands, line->ref().c_str());
-			return false;
+			return line->error(kMissingOperands);
 		}
-		auto result = eval(line, argv[0]);
-		if (result->type == VAR || result->type == STR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+		packToken result;
+		if (!eval(line, argv[0], result)) {
+			return line->error(kInvalidOperands);
 		}
 		s64 val = result.asInt();
 		as.balign(val);
@@ -490,13 +495,11 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1) {
-			printf(kMissingOperands, line->ref().c_str());
-			return false;
+			return line->error(kMissingOperands);
 		}
-		auto result = eval(line, argv[0]);
-		if (result->type == VAR || result->type == STR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+		packToken result;
+		if (!eval(line, argv[0], result)) {
+			return line->error(kInvalidOperands);
 		}
 		s64 val = result.asInt();
 		as.p2align(val);
@@ -506,21 +509,21 @@ struct rv_assembler
 	bool handle_equ(asm_line_ptr &line)
 	{
 		auto argv = line->split_args(",");
-		if (argv.size() != 2 || argv[0].size() != 1 || argv[1].size() < 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+		if (argv.size() != 2 || argv[0].size() != 1) {
+			return line->error(kMissingOperands);
 		}
-		std::string var_name = argv[0][0];
-		auto result = eval(line, argv[1]);
-		vars[var_name] = result;
+		packToken result;
+		if (!eval(line, argv[1], result)) {
+			return line->error(kInvalidOperands);
+		}
+		vars[argv[0][0]] = result;
 		return true;
 	}
 
 	bool handle_file(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		/* TODO */
 		return true;
@@ -529,8 +532,7 @@ struct rv_assembler
 	bool handle_globl(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		as.global(line->args[1]);
 		return true;
@@ -539,8 +541,7 @@ struct rv_assembler
 	bool handle_ident(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		/* ignore */
 		return true;
@@ -549,12 +550,10 @@ struct rv_assembler
 	bool handle_macro(asm_line_ptr &line)
 	{
 		if (line->args.size() < 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		if (defining_macro) {
-			printf(kAlreadyDefiningMacro, line->ref().c_str());
-			return false;
+			return line->error(kAlreadyDefiningMacro);
 		}
 		defining_macro = std::make_shared<asm_macro>(line);
 		macro_map[line->args[1]] = defining_macro;
@@ -564,8 +563,7 @@ struct rv_assembler
 	bool handle_endm(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		defining_macro = asm_macro_ptr();
 		return true;
@@ -575,12 +573,10 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1 || argv[0].size() < 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		if (argv[0][0][0] != '.') {
-			printf(kSectionMustBeginWithDot, line->ref().c_str());
-			return false;
+			return line->error(kSectionMustBeginWithDot);
 		}
 		as.get_section(argv[0][0]);
 		return true;
@@ -589,8 +585,7 @@ struct rv_assembler
 	bool handle_text(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		as.get_section(".text");
 		return true;
@@ -599,8 +594,7 @@ struct rv_assembler
 	bool handle_data(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		as.get_section(".data");
 		return true;
@@ -609,8 +603,7 @@ struct rv_assembler
 	bool handle_rodata(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		as.get_section(".rodata");
 		return true;
@@ -619,8 +612,7 @@ struct rv_assembler
 	bool handle_bss(asm_line_ptr &line)
 	{
 		if (line->args.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		as.get_section(".bss");
 		return true;
@@ -635,8 +627,7 @@ struct rv_assembler
 	bool handle_string(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 		std::string str =  line->args[1];
 		for (size_t i = 0; i < str.size(); i++) {
@@ -657,19 +648,17 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() < 1 ) {
-			printf(kMissingOperands, line->ref().c_str());
-			return false;
+			return line->error(kMissingOperands);
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
-			auto result = eval(line, argv[i]);
-			if (result->type == VAR || result->type == STR) {
-				printf(kInvalidOperands, line->ref().c_str());
-				return false;
+			packToken result;
+			if (!eval(line, argv[i], result)) {
+				/* TODO - emit relocation */
+				return line->error(kUnimplementedRelocation);
 			}
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
-				printf(kValueOutOfRange, line->ref().c_str());
-				return false;
+				return line->error(kValueOutOfRange);
 			}
 			as.append(T(result.asInt()));
 		}
@@ -718,13 +707,11 @@ struct rv_assembler
 	{
 		auto argv = line->split_args(",");
 		if (argv.size() != 1) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
-		auto result = eval(line, argv[0]);
-		if (result->type == VAR || result->type == STR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+		packToken result;
+		if (!eval(line, argv[0], result)) {
+			return line->error(kInvalidOperands);
 		}
 		s64 val = result.asInt();
 		for (s64 i = 0; i < val; i++) {
@@ -768,28 +755,23 @@ struct rv_assembler
 		 */
 		auto argv = line->split_args(",");
 		if (argv.size() != 2) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+			return line->error(kInvalidOperands);
 		}
 
 		/* register operand */
 		auto ri = argv[0].size() == 1 ? ireg_map.find(argv[0][0]) : ireg_map.end();
 		if (ri == ireg_map.end()) {
-			printf(kInvalidRegister, line->ref().c_str(),
-				join(argv[0], " ").c_str());
-			return false;
+			return line->error(kInvalidRegister);
 		}
 
 		/* immediate operand */
-		auto result = eval(line, argv[1]);
-		if (result->type == VAR || result->type == STR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
+		packToken result;
+		if (!eval(line, argv[1], result)) {
+			return line->error(kInvalidOperands);
 		}
 		s64 imm = result.asInt();
 		if (imm < -2048 || imm > 2047) {
-			printf(kUnimplementedLargeImmediate, line->ref().c_str());
-			return false;
+			return line->error(kUnimplementedLargeImmediate);
 		}
 
 		decode dec{};
@@ -868,15 +850,12 @@ struct rv_assembler
 				case '2':
 				{
 					if (argv.size() == 0) {
-						printf(kMissingRegisterOperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingRegisterOperand);
 					}
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == ireg_map.end()) {
-						printf(kInvalidRegister, line->ref().c_str(),
-							join(argv[0], " ").c_str());
-						return false;
+						return line->error(kInvalidRegister);
 					}
 					switch (*fmt) {
 						case '0': dec.rd = ri->second; break;
@@ -893,15 +872,12 @@ struct rv_assembler
 				case '6':
 				{
 					if (argv.size() == 0) {
-						printf(kMissingRegisterOperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingRegisterOperand);
 					}
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == freg_map.end()) {
-						printf(kInvalidRegister, line->ref().c_str(),
-							join(argv[0], " ").c_str());
-						return false;
+						return line->error(kInvalidRegister);
 					}
 					switch (*fmt) {
 						case '3': dec.rd = ri->second; break;
@@ -916,14 +892,12 @@ struct rv_assembler
 				case '7':
 				{
 					if (argv.size() == 0) {
-						printf(kMissingImmediateOperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingImmediateOperand);
 					}
 					auto arg = argv.front();
-					auto result = eval(line, arg);
-					if (result->type == VAR || result->type == STR) {
-						printf(kInvalidImmediateOperand, line->ref().c_str());
-						return false;
+					packToken result;
+					if (!eval(line, arg, result)) {
+						return line->error(kInvalidImmediateOperand);
 					}
 					dec.rs1 = result.asInt();
 					remove_operand(op_data, rv_type_simm);
@@ -936,19 +910,16 @@ struct rv_assembler
 					/* check for load store address format imm(rs1) */
 					if (*(fmt + 1) && *(fmt + 1) == '(' && *(fmt + 2) == '1' && *(fmt + 3) == ')') {
 						/* TODO - implement address operand decoding */
-						printf(kUnimplementedAddressOperand, line->ref().c_str());
-						return false;
+						return line->error(kUnimplementedAddressOperand);
 					}
 					if (argv.size() == 0) {
-						printf(kMissingImmediateOperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingImmediateOperand);
 					}
 					auto arg = argv.front();
-					auto result = eval(line, arg);
-					if (result->type == VAR || result->type == STR) {
+					packToken result;
+					if (!eval(line, arg, result)) {
 						/* TODO - emit relocation */
-						printf(kUnimplementedRelocation, line->ref().c_str());
-						return false;
+						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt();
 					remove_operand(op_data, rv_type_simm);
@@ -959,15 +930,13 @@ struct rv_assembler
 				case 'o':
 				{
 					if (argv.size() == 0) {
-						printf(kMissingImmediateOperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingImmediateOperand);
 					}
 					auto arg = argv.front();
-					auto result = eval(line, arg);
-					if (result->type == VAR || result->type == STR) {
+					packToken result;
+					if (!eval(line, arg, result)) {
 						/* TODO - emit relocation */
-						printf(kUnimplementedRelocation, line->ref().c_str());
-						return false;
+						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt() - as.current_offset();
 					remove_operand(op_data, rv_type_simm);
@@ -977,13 +946,11 @@ struct rv_assembler
 				case 'c':
 				{
 					if (argv.size() == 0) {
-						printf(kMissingCSROperand, line->ref().c_str());
-						return false;
+						return line->error(kMissingCSROperand);
 					}
 					auto arg = argv.front();
 					if (arg.size() != 1) {
-						printf(kInvalidCSROperand, line->ref().c_str());
-						return false;
+						return line->error(kInvalidCSROperand);
 					}
 					s64 val;
 					if (parse_integral(arg[0], val)) {
@@ -991,8 +958,7 @@ struct rv_assembler
 					} else {
 						auto ci = csr_map.find(arg[0]);
 						if (ci == csr_map.end()) {
-							printf(kUnknownCSROperand, line->ref().c_str());
-							return false;
+							return line->error(kUnknownCSROperand);
 						}
 						dec.imm = ci->second;
 					}
@@ -1077,21 +1043,13 @@ struct rv_assembler
 		/* check for internal directives */
 		auto di = directive_map.find(line->args[0]);
 		if (di != directive_map.end()) {
-			if (!di->second(line)) {
-				printf(kInvalidStatement,
-					line->ref().c_str(), line->str().c_str());
-			}
-			return true;
+			return di->second(line);
 		}
 
 		/* check for opcode */
 		auto oi = opcode_map.find(line->args[0]);
 		if (oi != opcode_map.end()) {
-			if (!handle_opcode(oi->second, line)) {
-				printf(kInvalidStatement,
-					line->ref().c_str(), line->str().c_str());
-			}
-			return true;
+			return handle_opcode(oi->second, line);
 		}
 
 		/* check for macro */
@@ -1099,9 +1057,7 @@ struct rv_assembler
 		if (mi != macro_map.end()) {
 			auto expander = mi->second->get_expander(line);
 			if (!expander) {
-				printf(kInvalidMacroOperands,
-					line->ref().c_str(), line->str().c_str());
-				return false;
+				return line->error(kInvalidMacroOperands);
 			}
 			for (auto macro_line : mi->second->macro_lines) {
 				process_line(expander->substitute(macro_line));
@@ -1109,10 +1065,7 @@ struct rv_assembler
 			return true;
 		}
 
-		printf(kInvalidStatement,
-			line->ref().c_str(), line->str().c_str());
-
-		return false;
+		return line->error(kInvalidStatement);
 	}
 
 	void assemble()
