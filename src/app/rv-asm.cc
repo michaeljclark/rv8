@@ -109,6 +109,11 @@ struct asm_line
 		return file->filename + ":" + std::to_string(line_num);
 	}
 
+	std::string str()
+	{
+		return join(args, " ");
+	}
+
 	std::deque<std::vector<std::string>> split_args(std::string sep)
 	{
 		std::deque<std::vector<std::string>> vec;
@@ -424,41 +429,6 @@ struct rv_assembler
 		in.close();
 	}
 
-	/* handlers */
-
-	bool handle_balign(asm_line_ptr &line)
-	{
-		auto argv = line->split_args(",");
-		if (argv.size() < 1) {
-			printf(kMissingOperands, line->ref().c_str());
-			return false;
-		}
-		auto result = eval(line, argv[0]);
-		if (result->type == VAR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
-		}
-		s64 val = result.asInt();
-		as.balign(val);
-		return true;
-	}
-
-	bool handle_p2align(asm_line_ptr &line)
-	{
-		auto argv = line->split_args(",");
-		if (argv.size() < 1) {
-			printf(kMissingOperands, line->ref().c_str());
-			return false;
-		}
-		auto result = eval(line, argv[0]);
-		if (result->type == VAR) {
-			printf(kInvalidOperands, line->ref().c_str());
-			return false;
-		}
-		s64 val = result.asInt();
-		as.p2align(val);
-		return true;
-	}
 
 	packToken eval(asm_line_ptr &line, std::vector<std::string> tokens)
 	{
@@ -477,21 +447,60 @@ struct rv_assembler
 		 * %gprel(symbol)            GP-relative
 		 *
 		 */
+		if (tokens.size() > 1 && tokens[0] == "%") {
+			printf(kUnimplementedFunction, line->ref().c_str(),
+				tokens[1].c_str());
+			return packToken(0);
+		}
+		if (tokens.size() == 1 && tokens[0][0] == '.') {
+			return packToken(tokens[0]);
+		}
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
 				return packToken(int64_t(val));
 			}
 		}
-		if (tokens.size() > 1 && tokens[0] == "%") {
-			printf(kUnimplementedFunction, line->ref().c_str(),
-				tokens[1].c_str());
-			return packToken(0);
-		}
 		std::string expr = join(tokens, " ");
 		calculator calc(expr.c_str());
 		auto result = calc.eval(vars);
 		return result;
+	}
+
+	/* handlers */
+
+	bool handle_balign(asm_line_ptr &line)
+	{
+		auto argv = line->split_args(",");
+		if (argv.size() < 1) {
+			printf(kMissingOperands, line->ref().c_str());
+			return false;
+		}
+		auto result = eval(line, argv[0]);
+		if (result->type == VAR || result->type == STR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
+		s64 val = result.asInt();
+		as.balign(val);
+		return true;
+	}
+
+	bool handle_p2align(asm_line_ptr &line)
+	{
+		auto argv = line->split_args(",");
+		if (argv.size() < 1) {
+			printf(kMissingOperands, line->ref().c_str());
+			return false;
+		}
+		auto result = eval(line, argv[0]);
+		if (result->type == VAR || result->type == STR) {
+			printf(kInvalidOperands, line->ref().c_str());
+			return false;
+		}
+		s64 val = result.asInt();
+		as.p2align(val);
+		return true;
 	}
 
 	bool handle_equ(asm_line_ptr &line)
@@ -653,7 +662,7 @@ struct rv_assembler
 		}
 		for (size_t i = 0; i < argv.size(); i++) {
 			auto result = eval(line, argv[i]);
-			if (result->type == VAR) {
+			if (result->type == VAR || result->type == STR) {
 				printf(kInvalidOperands, line->ref().c_str());
 				return false;
 			}
@@ -713,7 +722,7 @@ struct rv_assembler
 			return false;
 		}
 		auto result = eval(line, argv[0]);
-		if (result->type == VAR) {
+		if (result->type == VAR || result->type == STR) {
 			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
@@ -773,7 +782,7 @@ struct rv_assembler
 
 		/* immediate operand */
 		auto result = eval(line, argv[1]);
-		if (result->type == VAR) {
+		if (result->type == VAR || result->type == STR) {
 			printf(kInvalidOperands, line->ref().c_str());
 			return false;
 		}
@@ -912,7 +921,7 @@ struct rv_assembler
 					}
 					auto arg = argv.front();
 					auto result = eval(line, arg);
-					if (result->type == VAR) {
+					if (result->type == VAR || result->type == STR) {
 						printf(kInvalidImmediateOperand, line->ref().c_str());
 						return false;
 					}
@@ -936,7 +945,7 @@ struct rv_assembler
 					}
 					auto arg = argv.front();
 					auto result = eval(line, arg);
-					if (result->type == VAR) {
+					if (result->type == VAR || result->type == STR) {
 						/* TODO - emit relocation */
 						printf(kUnimplementedRelocation, line->ref().c_str());
 						return false;
@@ -955,7 +964,7 @@ struct rv_assembler
 					}
 					auto arg = argv.front();
 					auto result = eval(line, arg);
-					if (result->type == VAR) {
+					if (result->type == VAR || result->type == STR) {
 						/* TODO - emit relocation */
 						printf(kUnimplementedRelocation, line->ref().c_str());
 						return false;
@@ -1047,7 +1056,7 @@ struct rv_assembler
 		if (debug) {
 			printf("%-30s %s\n",
 				format_string("%s:%d", line->file->filename.c_str(), line->line_num).c_str(),
-				join(line->args, " ").c_str());
+				line->str().c_str());
 		}
 
 		/* check if we are defining a macro */
@@ -1070,7 +1079,7 @@ struct rv_assembler
 		if (di != directive_map.end()) {
 			if (!di->second(line)) {
 				printf(kInvalidStatement,
-					line->ref().c_str(), join(line->args, " ").c_str());
+					line->ref().c_str(), line->str().c_str());
 			}
 			return true;
 		}
@@ -1080,7 +1089,7 @@ struct rv_assembler
 		if (oi != opcode_map.end()) {
 			if (!handle_opcode(oi->second, line)) {
 				printf(kInvalidStatement,
-					line->ref().c_str(), join(line->args, " ").c_str());
+					line->ref().c_str(), line->str().c_str());
 			}
 			return true;
 		}
@@ -1091,7 +1100,7 @@ struct rv_assembler
 			auto expander = mi->second->get_expander(line);
 			if (!expander) {
 				printf(kInvalidMacroOperands,
-					line->ref().c_str(), join(line->args, " ").c_str());
+					line->ref().c_str(), line->str().c_str());
 				return false;
 			}
 			for (auto macro_line : mi->second->macro_lines) {
@@ -1101,7 +1110,7 @@ struct rv_assembler
 		}
 
 		printf(kInvalidStatement,
-			line->ref().c_str(), join(line->args, " ").c_str());
+			line->ref().c_str(), line->str().c_str());
 
 		return false;
 	}
