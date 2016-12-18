@@ -31,9 +31,10 @@ namespace riscv {
 	{
 		std::string name;
 		section_offset offset;
+		s64 num;
 
 		label(std::string name, section_offset offset) :
-			name(name), offset(offset) {}
+			name(name), offset(offset), num(0) {}
 	};
 
 	struct reloc
@@ -152,6 +153,21 @@ namespace riscv {
 			labels_byname[label_name] = l;
 			labels_byoffset[l->offset] = l;
 			return l;
+		}
+
+		label_ptr add_label(s64 num)
+		{
+			size_t i = 0;
+			for (;;) {
+				std::string num_label = ".L" + std::to_string(num) + std::to_string(i);
+				auto li = labels_byname.find(num_label);
+				if (li == labels_byname.end()) {
+					auto l = add_label(num_label);
+					l->num = num;
+					return l;
+				}
+				i++;
+			}
 		}
 
 		reloc_ptr lookup_reloc(section_offset offset)

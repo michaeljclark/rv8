@@ -76,6 +76,7 @@ const char* kInvalidStatement = "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
 const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand: %s\n";
 const char* kUnimplementedRelocation = "%s *** unimplemented relocation: %s\n";
+const char* kDuplicateSymbol = "%s *** duplicate symbol %s";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -1005,9 +1006,18 @@ struct rv_assembler
 		return true;
 	}
 
-	bool handle_label(std::string label)
+	bool handle_label(asm_line_ptr line)
 	{
-		label_ptr l = as.add_label(label);
+		s64 num;
+		std::string label = line->args[0];
+		if (parse_integral(label, num)) {
+			as.add_label(num);
+		} else {
+			auto l = as.lookup_label(label);
+			if (l) return line->error(kDuplicateSymbol);
+			as.add_label(label);
+		}
+		line->args.erase(line->args.begin(), line->args.begin() + 2);
 		return true;
 	}
 
@@ -1032,8 +1042,7 @@ struct rv_assembler
 
 		/* check for label */
 		if (line->args.size() >= 2 && line->args[1] == ":") {
-			handle_label(line->args[0]);
-			line->args.erase(line->args.begin(), line->args.begin() + 2);
+			handle_label(line);
 		}
 		if (line->args.size() == 0) {
 			return true;
