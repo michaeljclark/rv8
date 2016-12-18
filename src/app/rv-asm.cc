@@ -1012,7 +1012,8 @@ load_store:
 			return line->error(kInvalidOperands);
 		}
 		std::vector<std::string> args = argv[0];
-		if (args.size() < 4 || (args[args.size() - 3] != "(") || (args[args.size() - 1] != ")")) {
+
+		if (args.size() < 3 || (*(args.end() - 3) != "(") || (*(args.end() - 1) != ")")) {
 			return line->error(kInvalidOperands);
 		}
 
@@ -1022,13 +1023,18 @@ load_store:
 		}
 		dec.rs2 = ri->second;
 
-		args.erase(args.begin() + args.size() - 3, args.end());
-		packToken result;
-		if (!eval(line, args, result)) {
-			/* TODO - emit relocation */
-			return line->error(kUnimplementedRelocation);
+		if (args.size() > 3) {
+			args.erase(args.begin() + args.size() - 3, args.end());
+			packToken result;
+			if (!eval(line, args, result)) {
+				/* TODO - emit relocation */
+				return line->error(kUnimplementedRelocation);
+			}
+			dec.imm = result.asInt();
+		} else {
+			dec.imm = 0;
 		}
-		dec.imm = result.asInt();
+
 		goto out;
 	}
 
