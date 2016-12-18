@@ -57,26 +57,26 @@ typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
 
-const char* kInvalidOperands = "%s *** invalid operands: %s\n";
-const char* kMissingOperands = "%s *** missing operand: %s\n";
-const char* kInvalidNumber = "%s *** invalid number: %s\n";
-const char* kUnimplementedFunction = "%s *** unimplemented function: %s\n";
-const char* kAlreadyDefiningMacro = "%s *** already defining macro: %s\n";
-const char* kSectionMustBeginWithDot = "%s *** section must begin with '.': %s\n";
-const char* kValueOutOfRange = "%s *** value out of range: %s\n";
-const char* kInvalidRegister = "%s *** invalid register: %s\n";
+const char* kInvalidOperands =             "%s *** invalid operands: %s\n";
+const char* kMissingOperands =             "%s *** missing operand: %s\n";
+const char* kInvalidNumber =               "%s *** invalid number: %s\n";
+const char* kUnimplementedFunction =       "%s *** unimplemented function: %s\n";
+const char* kAlreadyDefiningMacro =        "%s *** already defining macro: %s\n";
+const char* kSectionMustBeginWithDot =     "%s *** section must begin with '.': %s\n";
+const char* kValueOutOfRange =             "%s *** value out of range: %s\n";
+const char* kInvalidRegister =             "%s *** invalid register: %s\n";
 const char* kUnimplementedLargeImmediate = "%s *** unimplemented large immediate: %s\n";
-const char* kMissingRegisterOperand = "%s *** missing register operand: %s\n";
-const char* kMissingImmediateOperand = "%s *** missing immediate operand: %s\n";
-const char* kInvalidImmediateOperand = "%s *** invalid immediate operand: %s\n";
-const char* kMissingCSROperand = "%s *** missing csr operand: %s\n";
-const char* kInvalidCSROperand = "%s *** invalid csr operand: %s\n";
-const char* kUnknownCSROperand = "%s *** unknown csr operand: %s\n";
-const char* kInvalidStatement = "%s *** invalid statement: %s\n";
-const char* kInvalidMacroOperands = "%s *** invalid macro operands: %s\n";
+const char* kMissingRegisterOperand =      "%s *** missing register operand: %s\n";
+const char* kMissingImmediateOperand =     "%s *** missing immediate operand: %s\n";
+const char* kInvalidImmediateOperand =     "%s *** invalid immediate operand: %s\n";
+const char* kMissingCSROperand =           "%s *** missing csr operand: %s\n";
+const char* kInvalidCSROperand =           "%s *** invalid csr operand: %s\n";
+const char* kUnknownCSROperand =           "%s *** unknown csr operand: %s\n";
+const char* kInvalidStatement =            "%s *** invalid statement: %s\n";
+const char* kInvalidMacroOperands =        "%s *** invalid macro operands: %s\n";
 const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand: %s\n";
-const char* kUnimplementedRelocation = "%s *** unimplemented relocation: %s\n";
-const char* kDuplicateSymbol = "%s *** duplicate symbol %s";
+const char* kUnimplementedRelocation =     "%s *** unimplemented relocation: %s\n";
+const char* kDuplicateSymbol =             "%s *** duplicate symbol %s";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
