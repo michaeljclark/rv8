@@ -999,15 +999,37 @@ struct rv_assembler
 			fmt++;
 		}
 out:
-		/* translate pseudo instruction to regular instruction */
+		/* translate pseudo instructions to regular instruction */
 		encode_pseudo(dec);
+
+		/* encode instruction */
 		as.append(u32(encode_inst(dec)));
 
 		return true;
 
 load_store:
-		/* TODO - implement address operand decoding */
-		return line->error(kUnimplementedAddressOperand);
+		if (argv.size() != 1) {
+			return line->error(kInvalidOperands);
+		}
+		std::vector<std::string> args = argv[0];
+		if (args.size() < 4 || (args[args.size() - 3] != "(") || (args[args.size() - 1] != ")")) {
+			return line->error(kInvalidOperands);
+		}
+
+		auto ri = ireg_map.find(args[args.size() - 2]);
+		if (ri == ireg_map.end()) {
+			return line->error(kInvalidRegister);
+		}
+		dec.rs2 = ri->second;
+
+		args.erase(args.begin() + args.size() - 3, args.end());
+		packToken result;
+		if (!eval(line, args, result)) {
+			/* TODO - emit relocation */
+			return line->error(kUnimplementedRelocation);
+		}
+		dec.imm = result.asInt();
+		goto out;
 	}
 
 	bool handle_label(asm_line_ptr line)
