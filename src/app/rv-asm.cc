@@ -839,7 +839,25 @@ struct rv_assembler
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == ireg_map.end()) {
-						return line->error(kInvalidRegister);
+						if (dec.op == rv_op_add) {
+							dec.op = rv_op_addi;
+							packToken result;
+							if (!eval(line, arg, result)) {
+								return line->error(kInvalidImmediateOperand);
+							}
+							dec.imm = result.asInt();
+							goto out;
+						} else if (dec.op == rv_op_addw) {
+							dec.op = rv_op_addiw;
+							packToken result;
+							if (!eval(line, arg, result)) {
+								return line->error(kInvalidImmediateOperand);
+							}
+							dec.imm = result.asInt();
+							goto out;
+						} else {
+							return line->error(kInvalidRegister);
+						}
 					}
 					switch (*fmt) {
 						case '0': dec.rd = ri->second; break;
@@ -893,8 +911,7 @@ struct rv_assembler
 				{
 					/* check for load store address format imm(rs1) */
 					if (*(fmt + 1) && *(fmt + 1) == '(' && *(fmt + 2) == '1' && *(fmt + 3) == ')') {
-						/* TODO - implement address operand decoding */
-						return line->error(kUnimplementedAddressOperand);
+						goto load_store;
 					}
 					if (argv.size() == 0) {
 						return line->error(kMissingImmediateOperand);
@@ -981,12 +998,16 @@ struct rv_assembler
 			}
 			fmt++;
 		}
-
+out:
 		/* translate pseudo instruction to regular instruction */
 		encode_pseudo(dec);
 		as.append(u32(encode_inst(dec)));
 
 		return true;
+
+load_store:
+		/* TODO - implement address operand decoding */
+		return line->error(kUnimplementedAddressOperand);
 	}
 
 	bool handle_label(asm_line_ptr line)
