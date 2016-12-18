@@ -143,6 +143,26 @@ namespace riscv {
 			return (li != labels_byname.end()) ? li->second : label_ptr();
 		}
 
+		label_ptr lookup_label_f(reloc_ptr reloc, s64 num)
+		{
+			auto li = labels_byoffset.upper_bound(reloc->offset);
+			while (li != labels_byoffset.end()) {
+				if (li->second->num == num) return li->second;
+				li++;
+			}
+			return label_ptr();
+		}
+
+		label_ptr lookup_label_b(reloc_ptr reloc, s64 num)
+		{
+			auto li = labels_byoffset.lower_bound(reloc->offset);
+			while (li != labels_byoffset.begin()) {
+				if (li->second->num == num) return li->second;
+				li--;
+			}
+			return label_ptr();
+		}
+
 		label_ptr add_label(std::string label_name)
 		{
 			if (labels_byname.find(label_name) != labels_byname.end()) {
