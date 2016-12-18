@@ -440,26 +440,9 @@ struct rv_assembler
 
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
-		/*
-		 * TODO - handle % expansions
-		 *
-		 * %hi(symbol)               Absolute imm20
-		 * %lo(symbol)               Absolute imm12
-		 * %pcrel_hi(symbol)         PC-relative imm20
-		 * %pcrel_lo(label)          PC-relative imm12
-		 * %tls_ie_pcrel_hi(symbol)  TLS IE GOT "Initial Exec"
-		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
-		 * %tprel_hi(symbol)         TLS LE "Local Exec"
-		 * %tprel_lo(label)          TLS LE "Local Exec"
-		 * %tprel_add(x)             TLS LE "Local Exec"
-		 * %gprel(symbol)            GP-relative
-		 *
-		 */
-		if (tokens.size() > 1 && tokens[0] == "%") {
-			return line->error(kUnimplementedFunction);
-		}
-		if (tokens.size() == 1 && tokens[0][0] == '.') {
-			result = packToken(tokens[0]);
+		if ((tokens.size() > 1 && tokens[0] == "%") ||
+			(tokens.size() == 1 && tokens[0][0] == '.'))
+		{
 			return false;
 		}
 		if (tokens.size() == 1) {
@@ -1076,6 +1059,26 @@ struct rv_assembler
 		return line->error(kInvalidStatement);
 	}
 
+	bool handle_reloc(reloc_ptr reloc)
+	{
+		/*
+		 * TODO - handle symbol lookup and % expansions
+		 *
+		 * %hi(symbol)               Absolute imm20
+		 * %lo(symbol)               Absolute imm12
+		 * %pcrel_hi(symbol)         PC-relative imm20
+		 * %pcrel_lo(label)          PC-relative imm12
+		 * %tls_ie_pcrel_hi(symbol)  TLS IE GOT "Initial Exec"
+		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
+		 * %tprel_hi(symbol)         TLS LE "Local Exec"
+		 * %tprel_lo(label)          TLS LE "Local Exec"
+		 * %tprel_add(x)             TLS LE "Local Exec"
+		 * %gprel(symbol)            GP-relative
+		 *
+		 */
+		return true;
+	}
+
 	void assemble()
 	{
 		/*
@@ -1090,6 +1093,13 @@ struct rv_assembler
 		for (auto &line : data)
 		{
 			if (!process_line(line)) {
+				if (bail_on_errors) {
+					exit(9);
+				}
+			}
+		}
+		for (auto &ent : as.relocs_byoffset) {
+			if (!handle_reloc(ent.second)) {
 				if (bail_on_errors) {
 					exit(9);
 				}
