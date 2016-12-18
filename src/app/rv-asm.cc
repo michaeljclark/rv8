@@ -56,6 +56,7 @@ typedef std::shared_ptr<asm_line> asm_line_ptr;
 typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
+typedef std::function<bool(reloc_ptr&)> reloc_directive;
 
 const char* kInvalidOperands =             "%s *** invalid operands: %s\n";
 const char* kMissingOperands =             "%s *** missing operand: %s\n";
@@ -317,11 +318,13 @@ struct rv_assembler
 	std::map<std::string,size_t> opcode_map;
 	std::map<std::string,asm_macro_ptr> macro_map;
 	std::map<std::string,asm_directive> directive_map;
+	std::map<std::string,reloc_directive> reloc_map;
 
 	rv_assembler()
 	{
 		configure_maps();
 		configure_directives();
+		configure_relocs();
 	}
 
 	void populate_map(std::map<std::string,size_t> &map, const char** arr)
@@ -388,6 +391,32 @@ struct rv_assembler
 		directive_map["li"] = std::bind(&rv_assembler::handle_li, this, _1);
 		directive_map["call"] = std::bind(&rv_assembler::handle_call, this, _1);
 		directive_map["tail"] = std::bind(&rv_assembler::handle_tail, this, _1);
+	}
+
+	void configure_relocs()
+	{
+		/*
+		 * %hi(symbol)               Absolute imm20
+		 * %lo(symbol)               Absolute imm12
+		 * %pcrel_hi(symbol)         PC-relative imm20
+		 * %pcrel_lo(label)          PC-relative imm12
+		 * %tls_ie_pcrel_hi(symbol)  TLS IE GOT "Initial Exec"
+		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
+		 * %tprel_hi(symbol)         TLS LE "Local Exec"
+		 * %tprel_lo(label)          TLS LE "Local Exec"
+		 * %tprel_add(expr)          TLS LE "Local Exec"
+		 * %gprel(symbol)            GP-relative
+		 */
+		reloc_map["hi"] = std::bind(&rv_assembler::handle_reloc_hi, this, _1);
+		reloc_map["lo"] = std::bind(&rv_assembler::handle_reloc_lo, this, _1);
+		reloc_map["pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_pcrel_hi, this, _1);
+		reloc_map["pcrel_lo"] = std::bind(&rv_assembler::handle_reloc_pcrel_lo, this, _1);
+		reloc_map["tls_ie_pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_tls_ie_pcrel_hi, this, _1);
+		reloc_map["tls_gd_pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_tls_gd_pcrel_hi, this, _1);
+		reloc_map["tprel_hi"] = std::bind(&rv_assembler::handle_reloc_tprel_hi, this, _1);
+		reloc_map["tprel_lo"] = std::bind(&rv_assembler::handle_reloc_tprel_lo, this, _1);
+		reloc_map["tprel_add"] = std::bind(&rv_assembler::handle_reloc_tprel_add, this, _1);
+		reloc_map["gprel"] = std::bind(&rv_assembler::handle_reloc_gprel, this, _1);
 	}
 
 	static rv_set decode_isa_ext(std::string isa_ext)
@@ -1112,7 +1141,57 @@ load_store:
 		return line->error(kInvalidStatement);
 	}
 
-	bool handle_reloc(reloc_ptr reloc)
+	bool handle_reloc_hi(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_lo(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_pcrel_hi(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_pcrel_lo(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_tls_ie_pcrel_hi(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_tls_gd_pcrel_hi(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_tprel_hi(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_tprel_lo(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_tprel_add(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc_gprel(reloc_ptr &reloc)
+	{
+		return false; /* TODO */
+	}
+
+	bool handle_reloc(reloc_ptr &reloc)
 	{
 		/*
 		 * TODO - handle symbol lookup and % expansions
@@ -1125,7 +1204,7 @@ load_store:
 		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
 		 * %tprel_hi(symbol)         TLS LE "Local Exec"
 		 * %tprel_lo(label)          TLS LE "Local Exec"
-		 * %tprel_add(x)             TLS LE "Local Exec"
+		 * %tprel_add(expr)          TLS LE "Local Exec"
 		 * %gprel(symbol)            GP-relative
 		 *
 		 */
