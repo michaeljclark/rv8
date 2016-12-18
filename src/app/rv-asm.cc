@@ -938,7 +938,7 @@ struct rv_assembler
 						/* TODO - emit relocation */
 						return line->error(kUnimplementedRelocation);
 					}
-					dec.imm = result.asInt() - as.current_offset();
+					dec.imm = result.asInt();
 					remove_operand(op_data, rv_type_simm);
 					argv.pop_front();
 					break;
@@ -1007,8 +1007,7 @@ struct rv_assembler
 
 	bool handle_label(std::string label)
 	{
-		as.add_label(label);
-		vars[label] = packToken(size_t(as.current_offset()));
+		label_ptr l = as.add_label(label);
 		return true;
 	}
 

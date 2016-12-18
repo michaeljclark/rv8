@@ -15,8 +15,11 @@ namespace riscv {
 	typedef std::shared_ptr<label> label_ptr;
 	typedef std::shared_ptr<reloc> reloc_ptr;
 
+	typedef std::pair<size_t,size_t> section_offset;
+
 	struct section
 	{
+		size_t index;
 		std::string name;
 		std::vector<u8> buf;
 
@@ -27,31 +30,30 @@ namespace riscv {
 	struct label
 	{
 		std::string name;
-		section_ptr section;
-		u32 offset;
+		section_offset offset;
 
-		label(std::string name, section_ptr section, u32 offset) :
-			name(name), section(section), offset(offset) {}
+		label(std::string name, section_offset offset) :
+			name(name), offset(offset) {}
 	};
 
 	struct reloc
 	{
-		u32 offset;
+		section_offset offset;
 		section_ptr section;
 		std::string name;
 		int rela_type;
 
-		reloc(u32 offset, section_ptr section, std::string name, int rela_type) :
-			offset(offset), section(section), name(name), rela_type(rela_type) {}
+		reloc(section_offset offset, std::string name, int rela_type) :
+			offset(offset), name(name), rela_type(rela_type) {}
 	};
 
 	struct assembler
 	{
 		std::map<std::string,section_ptr> sections;
 
-		std::map<size_t,label_ptr> labels_byoffset;
+		std::map<section_offset,label_ptr> labels_byoffset;
 		std::map<std::string,label_ptr> labels_byname;
-		std::map<size_t,reloc_ptr> relocs_byoffset;
+		std::map<section_offset,reloc_ptr> relocs_byoffset;
 		std::map<std::string,reloc_ptr> relocs_byname;
 		std::vector<std::string> exports;
 		section_ptr current;
@@ -66,9 +68,9 @@ namespace riscv {
 			exports.push_back(label);
 		}
 
-		size_t current_offset()
+		section_offset current_offset()
 		{
-			return current->buf.size();
+			return section_offset(current->index, current->buf.size());
 		}
 
 		section_ptr get_section(std::string name)
@@ -76,6 +78,7 @@ namespace riscv {
 			auto si = sections.find(name);
 			if (si == sections.end()) {
 				auto s = std::make_shared<section>(".text");
+				s->index = sections.size();
 				sections.insert(sections.end(), std::pair<std::string,section_ptr>(name, s));
 				return (current = s);
 			} else {
@@ -134,18 +137,38 @@ namespace riscv {
 			}
 		}
 
-		void add_label(std::string label_name)
+		label_ptr lookup_label(std::string label_name)
 		{
-			auto l = std::make_shared<label>(label_name, current, current->buf.size());
-			labels_byname[label_name] = l;
-			labels_byoffset[current->buf.size()] = l;
+			auto li = labels_byname.find(label_name);
+			return (li != labels_byname.end()) ? li->second : label_ptr();
 		}
 
-		void add_reloc(std::string label_name, int rela_type)
+		label_ptr add_label(std::string label_name)
 		{
-			auto r = std::make_shared<reloc>(current->buf.size(), current, label_name, rela_type);
+			if (labels_byname.find(label_name) != labels_byname.end()) {
+				return label_ptr();
+			}
+			auto l = std::make_shared<label>(label_name, current_offset());
+			labels_byname[label_name] = l;
+			labels_byoffset[l->offset] = l;
+			return l;
+		}
+
+		reloc_ptr lookup_reloc(section_offset offset)
+		{
+			auto ri = relocs_byoffset.find(offset);
+			return (ri != relocs_byoffset.end()) ? ri->second : reloc_ptr();
+		}
+
+		reloc_ptr add_reloc(std::string label_name, int rela_type)
+		{
+			if (relocs_byoffset.find(current_offset()) != relocs_byoffset.end()) {
+				return reloc_ptr();
+			}
+			auto r = std::make_shared<reloc>(current_offset(), label_name, rela_type);
 			relocs_byname[label_name] = r;
-			relocs_byoffset[current->buf.size()] = r;
+			relocs_byoffset[r->offset] = r;
+			return r;
 		}
 
 		void balign(size_t align)
