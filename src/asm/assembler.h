@@ -52,6 +52,7 @@ namespace riscv {
 	{
 		std::map<std::string,section_ptr> sections;
 
+		std::map<section_offset,label_ptr> labels_byoffset;
 		std::map<std::string,label_ptr> labels_byname;
 		std::map<section_offset,reloc_ptr> relocs_byoffset;
 		std::vector<std::string> exports;
@@ -149,6 +150,7 @@ namespace riscv {
 			}
 			auto l = std::make_shared<label>(label_name, current_offset());
 			labels_byname[label_name] = l;
+			labels_byoffset[l->offset] = l;
 			return l;
 		}
 
