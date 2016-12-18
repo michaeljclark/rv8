@@ -88,6 +88,9 @@ std::string join(std::vector<T> list, std::string sep)
 	return ss.str();
 }
 
+static std::vector<std::string> parse_line(std::string line);
+static void read_source(std::vector<asm_line_ptr> &data, std::string filename);
+
 struct asm_filename
 {
 	std::string filename;
@@ -163,7 +166,8 @@ struct asm_macro_expand
 			}
 			args.push_back(arg);
 		}
-		return std::make_shared<asm_line>(line->file, line->line_num, args);
+		return std::make_shared<asm_line>(line->file, line->line_num,
+			parse_line(join(args, " ")));
 	}
 };
 
@@ -188,6 +192,110 @@ struct asm_macro
 			asm_macro_expand_ptr();
 	}
 };
+
+std::vector<std::string> parse_line(std::string line)
+{
+	// simple parsing routine that handles tokens separated by whitespace
+	// separator characters, double quoted tokens containing and # comments
+
+	std::string specials = "%:,+-*/()";
+	std::vector<char> token;
+	std::vector<std::string> args;
+	enum {
+		whitespace,
+		quoted_token,
+		unquoted_token,
+		comment
+	} state = whitespace;
+
+	size_t i = 0;
+	while (i < line.size()) {
+		char c = line[i];
+		switch (state) {
+			case whitespace: {
+				if (::isspace(c)) {
+					i++;
+				} else if (c == '#') {
+					state = comment;
+				} else if (c == '"') {
+					state = quoted_token;
+					i++;
+				} else {
+					state = unquoted_token;
+				}
+				break;
+			}
+			case quoted_token: {
+				if (c == '"') {
+					args.push_back(std::string(token.begin(), token.end()));
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			}
+			case unquoted_token: {
+				auto s = specials.find(c);
+				if (s != std::string::npos) {
+					if (token.size() > 0) {
+						args.push_back(std::string(token.begin(), token.end()));
+					}
+					args.push_back(specials.substr(s, 1));
+					token.resize(0);
+				} else if (::isspace(c)) {
+					if (token.size() > 0) {
+						args.push_back(std::string(token.begin(), token.end()));
+					}
+					token.resize(0);
+					state = whitespace;
+				} else {
+					token.push_back(c);
+				}
+				i++;
+				break;
+			}
+			case comment: {
+				i++;
+				break;
+			}
+		}
+	}
+	if (token.size() > 0) {
+		args.push_back(std::string(token.begin(), token.end()));
+	}
+	return args;
+}
+
+void read_source(std::vector<asm_line_ptr> &data, std::string filename)
+{
+	asm_filename_ptr file = std::make_shared<asm_filename>(filename);
+	std::ifstream in(filename.c_str());
+	std::string line;
+	if (!in.is_open()) {
+		panic("error opening %s\n", filename.c_str());
+	}
+	int line_num = 0;
+	while (in.good())
+	{
+		line_num++;
+		std::getline(in, line);
+		size_t hoffset = line.find("#");
+		if (hoffset != std::string::npos) {
+			line = ltrim(rtrim(line.substr(0, hoffset)));
+		}
+		std::vector<std::string> args = parse_line(line);
+		if (args.size() == 0) continue;
+		if (args.size() == 2 && args[0] == ".include") {
+			/* NOTE: we don't do any loop detection */
+			read_source(data, args[1]);
+		} else {
+			data.push_back(std::make_shared<asm_line>(file, line_num, args));
+		}
+	}
+	in.close();
+}
 
 struct rv_assembler
 {
@@ -332,110 +440,6 @@ struct rv_assembler
 		}
 
 		input_filename = result.first[0];
-	}
-
-	std::vector<std::string> parse_line(std::string line)
-	{
-		// simple parsing routine that handles tokens separated by whitespace
-		// separator characters, double quoted tokens containing and # comments
-
-		std::string specials = "%:,+-*/()";
-		std::vector<char> token;
-		std::vector<std::string> args;
-		enum {
-			whitespace,
-			quoted_token,
-			unquoted_token,
-			comment
-		} state = whitespace;
-
-		size_t i = 0;
-		while (i < line.size()) {
-			char c = line[i];
-			switch (state) {
-				case whitespace: {
-					if (::isspace(c)) {
-						i++;
-					} else if (c == '#') {
-						state = comment;
-					} else if (c == '"') {
-						state = quoted_token;
-						i++;
-					} else {
-						state = unquoted_token;
-					}
-					break;
-				}
-				case quoted_token: {
-					if (c == '"') {
-						args.push_back(std::string(token.begin(), token.end()));
-						token.resize(0);
-						state = whitespace;
-					} else {
-						token.push_back(c);
-					}
-					i++;
-					break;
-				}
-				case unquoted_token: {
-					auto s = specials.find(c);
-					if (s != std::string::npos) {
-						if (token.size() > 0) {
-							args.push_back(std::string(token.begin(), token.end()));
-						}
-						args.push_back(specials.substr(s, 1));
-						token.resize(0);
-					} else if (::isspace(c)) {
-						if (token.size() > 0) {
-							args.push_back(std::string(token.begin(), token.end()));
-						}
-						token.resize(0);
-						state = whitespace;
-					} else {
-						token.push_back(c);
-					}
-					i++;
-					break;
-				}
-				case comment: {
-					i++;
-					break;
-				}
-			}
-		}
-		if (token.size() > 0) {
-			args.push_back(std::string(token.begin(), token.end()));
-		}
-		return args;
-	}
-
-	void read_source(std::vector<asm_line_ptr> &data, std::string filename)
-	{
-		asm_filename_ptr file = std::make_shared<asm_filename>(filename);
-		std::ifstream in(filename.c_str());
-		std::string line;
-		if (!in.is_open()) {
-			panic("error opening %s\n", filename.c_str());
-		}
-		int line_num = 0;
-		while (in.good())
-		{
-			line_num++;
-			std::getline(in, line);
-			size_t hoffset = line.find("#");
-			if (hoffset != std::string::npos) {
-				line = ltrim(rtrim(line.substr(0, hoffset)));
-			}
-			std::vector<std::string> args = parse_line(line);
-			if (args.size() == 0) continue;
-			if (args.size() == 2 && args[0] == ".include") {
-				/* NOTE: we don't do any loop detection */
-				read_source(data, args[1]);
-			} else {
-				data.push_back(std::make_shared<asm_line>(file, line_num, args));
-			}
-		}
-		in.close();
 	}
 
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
