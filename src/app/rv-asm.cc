@@ -521,7 +521,7 @@ struct rv_assembler
 	bool check_function(std::vector<std::string> &args)
 	{
 		bool result = (args.size() == 5 && args[0] == "%" &&
-			args[1].size() > 0 && std::isalpha(args[1][0]) &&
+			(reloc_map.find(args[1]) != reloc_map.end()) &&
 			args[2] == "(" &&args[4] == ")" &&
 			(check_symbol(args[3]) || check_local(args[3]) || check_private(args[3])));
 		return result;
