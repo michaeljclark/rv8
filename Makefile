@@ -287,7 +287,8 @@ TEST_CC_SRC =   $(SRC_DIR)/app/test-cc.cc
 TEST_CC_ASM =   $(ASM_DIR)/test-cc.s
 
 # libriscv_asm
-RV_ASM_SRCS =   $(SRC_DIR)/asm/disasm.cc \
+RV_ASM_SRCS =   $(SRC_DIR)/asm/assembler.cc \
+                $(SRC_DIR)/asm/disasm.cc \
                 $(SRC_DIR)/asm/format.cc \
                 $(SRC_DIR)/asm/jit.cc \
                 $(SRC_DIR)/asm/meta.cc \

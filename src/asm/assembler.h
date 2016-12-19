@@ -137,6 +137,9 @@ namespace riscv {
 			}
 		}
 
+		void load_imm_r(ireg5 rd, s64 val);
+		void load_imm(ireg5 rd, s64 val);
+
 		label_ptr lookup_label(std::string label_name)
 		{
 			auto li = labels_byname.find(label_name);

@@ -849,11 +849,8 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 		s64 imm = result.asInt();
-		if (imm < -2048 || imm > 2047) {
-			return line->error(kUnimplementedLargeImmediate);
-		}
+		as.load_imm(ri->second, imm);
 
-		as.append(u32(emit_addi(ri->second, rv_ireg_zero, imm)));
 		return true;
 	}
 
