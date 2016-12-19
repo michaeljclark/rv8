@@ -36,6 +36,7 @@
 #include "strings.h"
 #include "disasm.h"
 #include "assembler.h"
+#include "jit.h"
 #include "elf.h"
 #include "elf-file.h"
 #include "elf-format.h"
@@ -852,13 +853,7 @@ struct rv_assembler
 			return line->error(kUnimplementedLargeImmediate);
 		}
 
-		decode dec{};
-		dec.op = rv_op_addi;
-		dec.rd = ri->second;
-		dec.rs1 = rv_ireg_zero;
-		dec.imm = imm;
-
-		as.append(u32(encode_inst(dec)));
+		as.append(u32(emit_addi(ri->second, rv_ireg_zero, imm)));
 		return true;
 	}
 
