@@ -471,13 +471,74 @@ struct rv_assembler
 		input_filename = result.first[0];
 	}
 
+
+	bool check_symbol(std::string arg)
+	{
+		// [_\w][_\w\d]*
+		if (arg.size() < 1 || !(std::isalpha(arg[0]) || arg[0] == '_')) return false;
+		for (auto ci = arg.begin() + 1; ci != arg.end(); ci++) {
+			if (!(std::isalnum(*ci) || *ci == '_')) return false;
+		}
+		return true;
+	}
+
+	bool check_symbol(std::vector<std::string> &args)
+	{
+		return (args.size() == 1 && check_symbol(args[0]));
+	}
+
+	bool check_private(std::string arg)
+	{
+		// \.[_\w][_\w\d]*
+		if (arg.size() < 2 || arg[0] != '.' ||
+			!(std::isalpha(arg[1]) || arg[1] == '_')) return false;
+		for (auto ci = arg.begin() + 2; ci != arg.end(); ci++) {
+			if (!(std::isalnum(*ci) || *ci == '_')) return false;
+		}
+		return true;
+	}
+
+	bool check_private(std::vector<std::string> &args)
+	{
+		return (args.size() == 1 && check_private(args[0]));
+	}
+
+	bool check_local(std::string arg)
+	{
+		// \d+[fb]
+		if (arg.size() < 2 || !(arg.back() == 'b' || arg.back() == 'f')) return false;
+		for (auto ci = arg.begin(); ci != arg.end() - 1; ci++) {
+			if (!std::isdigit(*ci)) return false;
+		}
+		return true;
+	}
+
+	bool check_local(std::vector<std::string> &args)
+	{
+		return (args.size() == 1 && check_local(args[0]));
+	}
+
+	bool check_function(std::vector<std::string> &args)
+	{
+		bool result = (args.size() == 5 && args[0] == "%" &&
+			args[1].size() > 0 && std::isalpha(args[1][0]) &&
+			args[2] == "(" &&args[4] == ")" &&
+			(check_symbol(args[3]) || check_local(args[3]) || check_private(args[3])));
+		return result;
+	}
+
+	bool check_reloc(std::vector<std::string> &args)
+	{
+		if (check_symbol(args)) return true;
+		if (check_private(args)) return true;
+		if (check_local(args)) return true;
+		if (check_function(args)) return true;
+		return false;
+	}
+
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
-		if ((tokens.size() > 1 && tokens[0] == "%") ||
-			(tokens.size() == 1 && tokens[0][0] == '.'))
-		{
-			return false;
-		}
+		if (check_reloc(tokens)) return false;
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
