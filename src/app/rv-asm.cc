@@ -539,7 +539,7 @@ struct rv_assembler
 
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
-		if (check_reloc(tokens)) return false;
+		if (check_function(tokens) || check_private(tokens) || check_local(tokens)) return false;
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
