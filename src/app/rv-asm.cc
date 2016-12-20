@@ -1027,7 +1027,6 @@ struct rv_assembler
 						 * %lo(symbol)
 						 * %pcrel_lo(symbol)
 						 */
-						printf("reloc i %s\n", rv_inst_name_sym[dec.op]);
 						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt();
@@ -1055,7 +1054,6 @@ struct rv_assembler
 						 * %hi(symbol)
 						 * %pcrel_hi(symbol)
 						 */
-						printf("reloc o %s\n", rv_inst_name_sym[dec.op]);
 						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt();
