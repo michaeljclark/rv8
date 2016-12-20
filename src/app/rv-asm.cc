@@ -41,6 +41,7 @@
 #include "elf-file.h"
 #include "elf-format.h"
 #include "shunting-yard.h"
+#include "fmt.h"
 
 #define DEBUG 1
 
@@ -1432,6 +1433,19 @@ load_store:
 		write_elf(output_filename);
 	}
 
+	std::string format_inst(inst_t inst)
+	{
+		std::string buf;
+		switch (inst_length(inst)) {
+			case 2:  sprintf(buf, "%04llx    ", inst); break;
+			case 4:  sprintf(buf, "%08llx", inst); break;
+			case 6:  sprintf(buf, "%012llx", inst); break;
+			case 8:  sprintf(buf, "%016llx", inst); break;
+			default: sprintf(buf, "(invalid)"); break;
+		}
+		return buf;
+	}
+
 	void dump()
 	{
 		std::vector<u8> &buf = as.get_section(".text")->buf;
@@ -1443,7 +1457,8 @@ load_store:
 			decode_inst_rv64(dec, inst);
 			decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
-			printf("%16s\t%s\n", format_string("0x%llx", pc).c_str(), args.c_str());
+			printf("%8llx\t(%8s)\t%s\n",
+				pc, format_inst(inst).c_str(), args.c_str());
 			pc += pc_offset;
 		}
 	}
