@@ -57,7 +57,7 @@ typedef std::shared_ptr<asm_line> asm_line_ptr;
 typedef std::shared_ptr<asm_macro> asm_macro_ptr;
 typedef std::shared_ptr<asm_macro_expand> asm_macro_expand_ptr;
 typedef std::function<bool(asm_line_ptr&)>asm_directive;
-typedef std::function<bool(reloc_ptr&)> reloc_directive;
+typedef std::function<int(decode&)> reloc_directive;
 
 const char* kInvalidOperands =             "%s *** invalid operands: %s\n";
 const char* kMissingOperands =             "%s *** missing operand: %s\n";
@@ -78,6 +78,7 @@ const char* kInvalidStatement =            "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands =        "%s *** invalid macro operands: %s\n";
 const char* kUnimplementedAddressOperand = "%s *** unimplemented address operand: %s\n";
 const char* kUnimplementedRelocation =     "%s *** unimplemented relocation: %s\n";
+const char* kUnknownRelocation =           "%s *** unknown relocation: %s\n";
 const char* kDuplicateSymbol =             "%s *** duplicate symbol %s";
 
 template <typename T>
@@ -1225,60 +1226,112 @@ load_store:
 		return line->error(kInvalidStatement);
 	}
 
-	bool handle_reloc_hi(reloc_ptr &reloc)
+	int handle_reloc_hi(decode &dec)
 	{
-		return false; /* TODO */
+		switch (dec.op) {
+			case rv_op_lui:
+			case rv_op_auipc:
+				return R_RISCV_HI20;
+		}
+		return R_RISCV_NONE;
 	}
 
-	bool handle_reloc_lo(reloc_ptr &reloc)
+	int handle_reloc_lo(decode &dec)
 	{
-		return false; /* TODO */
+		switch (dec.op) {
+			case rv_op_addi:
+			case rv_op_addiw:
+			case rv_op_lb:
+			case rv_op_lbu:
+			case rv_op_lh:
+			case rv_op_lhu:
+			case rv_op_lw:
+			case rv_op_lwu:
+			case rv_op_ld:
+			case rv_op_fld:
+			case rv_op_flw:
+				return R_RISCV_LO12_I;
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
+				return R_RISCV_LO12_S;
+		}
+		return R_RISCV_NONE;
 	}
 
-	bool handle_reloc_pcrel_hi(reloc_ptr &reloc)
+	int handle_reloc_pcrel_hi(decode &dec)
 	{
-		return false; /* TODO */
+		switch (dec.op) {
+			case rv_op_lui:
+			case rv_op_auipc:
+				return R_RISCV_PCREL_HI20;
+		}
+		return R_RISCV_NONE;
 	}
 
-	bool handle_reloc_pcrel_lo(reloc_ptr &reloc)
+	int handle_reloc_pcrel_lo(decode &dec)
 	{
-		return false; /* TODO */
+		switch (dec.op) {
+			case rv_op_addi:
+			case rv_op_addiw:
+			case rv_op_lb:
+			case rv_op_lbu:
+			case rv_op_lh:
+			case rv_op_lhu:
+			case rv_op_lw:
+			case rv_op_lwu:
+			case rv_op_ld:
+			case rv_op_fld:
+			case rv_op_flw:
+				return R_RISCV_PCREL_LO12_I;
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
+				return R_RISCV_PCREL_LO12_S;
+		}
+		return R_RISCV_NONE;
 	}
 
-	bool handle_reloc_tls_ie_pcrel_hi(reloc_ptr &reloc)
+	int handle_reloc_tls_ie_pcrel_hi(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc_tls_gd_pcrel_hi(reloc_ptr &reloc)
+	int handle_reloc_tls_gd_pcrel_hi(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc_tprel_hi(reloc_ptr &reloc)
+	int handle_reloc_tprel_hi(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc_tprel_lo(reloc_ptr &reloc)
+	int handle_reloc_tprel_lo(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc_tprel_add(reloc_ptr &reloc)
+	int handle_reloc_tprel_add(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc_gprel(reloc_ptr &reloc)
+	int handle_reloc_gprel(decode &dec)
 	{
-		return false; /* TODO */
+		return R_RISCV_NONE; /* TODO */
 	}
 
-	bool handle_reloc(reloc_ptr &reloc)
+	bool handle_reloc(asm_line_ptr &line, decode &dec, std::vector<std::string> args)
 	{
 		/*
-		 * TODO - handle symbol lookup and % expansions
+		 * handle % function relocations
 		 *
 		 * %hi(symbol)               Absolute imm20
 		 * %lo(symbol)               Absolute imm12
@@ -1288,11 +1341,26 @@ load_store:
 		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
 		 * %tprel_hi(symbol)         TLS LE "Local Exec"
 		 * %tprel_lo(label)          TLS LE "Local Exec"
-		 * %tprel_add(expr)          TLS LE "Local Exec"
+		 * %tprel_add(symbol)        TLS LE "Local Exec"
 		 * %gprel(symbol)            GP-relative
-		 *
 		 */
-		return true;
+		if (!check_function(args)) return line->error(kUnknownRelocation);
+		auto ri = reloc_map.find(args[4]);
+		if (ri != reloc_map.end()) {
+			int reloc_type = ri->second(dec);
+			if (reloc_type != R_RISCV_NONE) {
+				as.add_reloc(args[4], reloc_type);
+				return true;
+			} else {
+				return line->error(kInvalidOperands);
+			}
+		}
+		return false;
+	}
+
+	bool perform_reloc(reloc_ptr reloc)
+	{
+		return false; /* TODO */
 	}
 
 	void assemble()
@@ -1315,7 +1383,7 @@ load_store:
 			}
 		}
 		for (auto &ent : as.relocs_byoffset) {
-			if (!handle_reloc(ent.second)) {
+			if (!perform_reloc(ent.second)) {
 				if (bail_on_errors) {
 					exit(9);
 				}
