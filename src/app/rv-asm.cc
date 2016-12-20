@@ -733,12 +733,20 @@ struct rv_assembler
 		for (size_t i = 0; i < argv.size(); i++) {
 			packToken result;
 			if (!eval(line, argv[i], result)) {
-				/*
-				 * TODO - emit relocation
-				 *
-				 * addresses of symbols (R_RISCV_32, R_RISCV_64)
-				 */
-				return line->error(kUnimplementedRelocation);
+				if (!(check_symbol(argv[i]) || check_private(argv[i]))) {
+					return line->error(kInvalidOperands);
+				}
+				if (sizeof(T) == 4) {
+					as.add_reloc(argv[i][0], R_RISCV_32);
+					as.append(T(0));
+					return true;
+				} else if (sizeof(T) == 8) {
+					as.add_reloc(argv[i][0], R_RISCV_64);
+					as.append(T(0));
+					return true;
+				} else {
+					return line->error(kInvalidOperands);
+				}
 			}
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
 				T(result.asInt()) < std::numeric_limits<T>::min()) {
@@ -1325,7 +1333,28 @@ load_store:
 
 	int handle_reloc_gprel(decode &dec)
 	{
-		return R_RISCV_NONE; /* TODO */
+		switch (dec.op) {
+			case rv_op_addi:
+			case rv_op_addiw:
+			case rv_op_lb:
+			case rv_op_lbu:
+			case rv_op_lh:
+			case rv_op_lhu:
+			case rv_op_lw:
+			case rv_op_lwu:
+			case rv_op_ld:
+			case rv_op_fld:
+			case rv_op_flw:
+				return R_RISCV_GPREL_I;
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
+				return R_RISCV_GPREL_S;
+		}
+		return R_RISCV_NONE;
 	}
 
 	bool handle_reloc(asm_line_ptr &line, decode &dec, std::vector<std::string> args)
@@ -1360,6 +1389,14 @@ load_store:
 
 	bool perform_reloc(reloc_ptr reloc)
 	{
+		switch (reloc->rela_type) {
+			case R_RISCV_HI20: break;
+			case R_RISCV_LO12_I: break;
+			case R_RISCV_LO12_S: break;
+			case R_RISCV_PCREL_HI20: break;
+			case R_RISCV_PCREL_LO12_I: break;
+			case R_RISCV_PCREL_LO12_S: break;
+		}
 		return false; /* TODO */
 	}
 
