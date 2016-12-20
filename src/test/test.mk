@@ -64,6 +64,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-jump-tables-yes \
 	$(BIN_DIR)/test-jump-tables-no \
 	$(BIN_DIR)/test-large-imm \
+	$(BIN_DIR)/test-reloc-imm \
 	$(BIN_DIR)/test-m-ecall-trap \
 	$(BIN_DIR)/test-m-hartid \
 	$(BIN_DIR)/test-m-mret-user \
@@ -145,6 +146,9 @@ $(BIN_DIR)/test-jump-tables-no: $(OBJ_DIR)/test-jump-tables-no.o ; $(CC) $(CFLAG
 
 $(OBJ_DIR)/test-large-imm.o: $(SRC_DIR)/test-large-imm.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-large-imm: $(OBJ_DIR)/test-large-imm.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-reloc-imm.o: $(SRC_DIR)/test-reloc-imm.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-reloc-imm: $(OBJ_DIR)/test-reloc-imm.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-ecall-trap.o: $(SRC_DIR)/test-m-ecall-trap.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-ecall-trap: $(OBJ_DIR)/test-m-ecall-trap.o ; $(LD) $^ -o $@
