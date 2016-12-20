@@ -1010,7 +1010,12 @@ struct rv_assembler
 						goto load_store;
 					}
 					if (argv.size() == 0) {
-						return line->error(kMissingImmediateOperand);
+						if (op == rv_op_jalr) {
+							dec.imm = 0;
+							break;
+						} else {
+							return line->error(kMissingImmediateOperand);
+						}
 					}
 					auto arg = argv.front();
 					packToken result;
