@@ -939,16 +939,15 @@ struct rv_assembler
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
 					if (ri == ireg_map.end()) {
-						if (dec.op == rv_op_add) {
-							dec.op = rv_op_addi;
-							packToken result;
-							if (!eval(line, arg, result)) {
-								return line->error(kInvalidImmediateOperand);
-							}
-							dec.imm = result.asInt();
-							goto out;
-						} else if (dec.op == rv_op_addw) {
-							dec.op = rv_op_addiw;
+						bool has_imm = false;
+						switch (dec.op) {
+							case rv_op_sll: dec.op = rv_op_slli_rv64i; has_imm = true; break;
+							case rv_op_srl: dec.op = rv_op_srli_rv64i; has_imm = true; break;
+							case rv_op_sra: dec.op = rv_op_srai_rv64i; has_imm = true; break;
+							case rv_op_add: dec.op = rv_op_addi; has_imm = true; break;
+							case rv_op_addw: dec.op = rv_op_addiw; has_imm = true; break;
+						}
+						if (has_imm) {
 							packToken result;
 							if (!eval(line, arg, result)) {
 								return line->error(kInvalidImmediateOperand);
