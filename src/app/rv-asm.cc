@@ -732,7 +732,11 @@ struct rv_assembler
 		for (size_t i = 0; i < argv.size(); i++) {
 			packToken result;
 			if (!eval(line, argv[i], result)) {
-				/* TODO - emit relocation */
+				/*
+				 * TODO - emit relocation
+				 *
+				 * addresses of symbols (R_RISCV_32, R_RISCV_64)
+				 */
 				return line->error(kUnimplementedRelocation);
 			}
 			if (T(result.asInt()) > std::numeric_limits<T>::max() ||
@@ -1005,7 +1009,15 @@ struct rv_assembler
 					auto arg = argv.front();
 					packToken result;
 					if (!eval(line, arg, result)) {
-						/* TODO - emit relocation */
+						/*
+						 * TODO - emit relocation
+						 *
+						 * I-Type (addi)
+						 *
+						 * %lo(symbol)
+						 * %pcrel_lo(symbol)
+						 */
+						printf("reloc i %s\n", rv_inst_name_sym[dec.op]);
 						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt();
@@ -1022,7 +1034,18 @@ struct rv_assembler
 					auto arg = argv.front();
 					packToken result;
 					if (!eval(line, arg, result)) {
-						/* TODO - emit relocation */
+						/*
+						 * TODO - emit relocation
+						 *
+						 * UJ-Type (jal) R_RISCV_JAL
+						 * SB-Type (beq,bne,nlt,bge,bltu,bgeu) R_RISCV_BRANCH
+						 * U-Type  (auipc,lui) R_RISCV_HI20, R_RISCV_PCREL_HI20
+						 *
+						 * label
+						 * %hi(symbol)
+						 * %pcrel_hi(symbol)
+						 */
+						printf("reloc o %s\n", rv_inst_name_sym[dec.op]);
 						return line->error(kUnimplementedRelocation);
 					}
 					dec.imm = result.asInt();
@@ -1113,7 +1136,15 @@ load_store:
 			args.erase(args.begin() + args.size() - 3, args.end());
 			packToken result;
 			if (!eval(line, args, result)) {
-				/* TODO - emit relocation */
+				/*
+				 * TODO - emit relocation
+				 *
+				 * I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld) R_RISCV_LO12_I, R_RISCV_PCREL_LO12_I
+				 * S-Type (sb,sh,sw,fsw,fsd) R_RISCV_PCREL_LO12_S, R_RISCV_LO12_S
+				 *
+				 * %lo(symbol)
+				 * %pcrel_lo(symbol)
+				 */
 				return line->error(kUnimplementedRelocation);
 			}
 			dec.imm = result.asInt();
