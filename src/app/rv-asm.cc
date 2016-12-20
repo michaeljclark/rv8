@@ -1480,6 +1480,7 @@ load_store:
 		addr_t pc = 0, end = buf.size();
 		addr_t pc_offset;
 		decode dec;
+		printf("\nDissasembly\n\n");
 		while (pc < end) {
 			inst_t inst = inst_fetch(addr_t(buf.data() + pc), pc_offset);
 			decode_inst_rv64(dec, inst);
@@ -1488,6 +1489,14 @@ load_store:
 			printf("%8llx\t(%8s)\t%s\n",
 				pc, format_inst(inst).c_str(), args.c_str());
 			pc += pc_offset;
+		}
+		printf("\nRelocations\n\n");
+		for (auto ent : as.relocs_byoffset) {
+			auto &reloc = ent.second;
+			printf("%8zx\t%-20s\t%s\n",
+				reloc->offset.second,
+				elf_rela_type_name(reloc->rela_type),
+				reloc->name.c_str());
 		}
 	}
 };
