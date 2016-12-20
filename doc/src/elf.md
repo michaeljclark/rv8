@@ -105,8 +105,8 @@ R_RISCV_ALIGN        | Alignment statement        |                     |
 R_RISCV_RVC_BRANCH   | PC-relative branch offset  |                     | CB-Type (c.beqz,c.bnez)
 R_RISCV_RVC_JUMP     | PC-relative jump offset    |                     | CJ-Type (c.j)
 R_RISCV_RVC_LUI      | Absolute address           |                     | CI-Type (c.lui)
-R_RISCV_GPREL_I      | PC-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
-R_RISCV_GPREL_S      | PC-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,fsw,fsd)
+R_RISCV_GPREL_I      | GP-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
+R_RISCV_GPREL_S      | GP-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,fsw,fsd)
 
 ## Glossary
 
