@@ -82,14 +82,14 @@ R_RISCV_GOT_HI20     | PC-relative GOT offset     |                     | MACRO 
 R_RISCV_TLS_GOT_HI20 | PC-relative TLS IE GOT ref | %tls_ie_pcrel_hi(x) | MACRO la.tls.ie
 R_RISCV_TLS_GD_HI20  | PC-relative TLS GD GOT ref | %tls_gd_pcrel_hi(x) | MACRO la.tls.gd
 R_RISCV_PCREL_HI20   | PC-relative reference      | %pcrel_hi(symbol)   | U-Type (auipc)
-R_RISCV_PCREL_LO12_I | PC-relative reference      | %pcrel_lo(label)    | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
-R_RISCV_PCREL_LO12_S | PC-relative reference      | %pcrel_lo(label)    | S-Type (sb,sh,sw,fsw,fsd)
+R_RISCV_PCREL_LO12_I | PC-relative reference      | %pcrel_lo(label)    | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
+R_RISCV_PCREL_LO12_S | PC-relative reference      | %pcrel_lo(label)    | S-Type (sb,sh,sw,sd,fsw,fsd)
 R_RISCV_HI20         | Absolute address           | %hi(symbol)         | U-Type (lui)
-R_RISCV_LO12_I       | Absolute address           | %lo(symbol)         | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
-R_RISCV_LO12_S       | Absolute address           | %lo(symbol)         | S-Type (sb,sh,sw,fsw,fsd)
+R_RISCV_LO12_I       | Absolute address           | %lo(symbol)         | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
+R_RISCV_LO12_S       | Absolute address           | %lo(symbol)         | S-Type (sb,sh,sw,sd,fsw,fsd)
 R_RISCV_TPREL_HI20   | TLS LE thread offset       | %tprel_hi(symbol)   | U-Type (auipc)
-R_RISCV_TPREL_LO12_I | TLS LE thread offset       | %tprel_lo(label)    | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
-R_RISCV_TPREL_LO12_S | TLS LE thread offset       | %tprel_lo(label)    | S-Type (sb,sh,sw,fsw,fsd)
+R_RISCV_TPREL_LO12_I | TLS LE thread offset       | %tprel_lo(label)    | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
+R_RISCV_TPREL_LO12_S | TLS LE thread offset       | %tprel_lo(label)    | S-Type (sb,sh,sw,sd,fsw,fsd)
 R_RISCV_TPREL_ADD    | TLS LE thread usage        | %tprel_add(label)   | I-Type (addi)
 R_RISCV_ADD8         | 8-bit label addition       |                     | word8 = S + A
 R_RISCV_ADD16        | 16-bit label addition      |                     | word16 = S + A
@@ -105,8 +105,8 @@ R_RISCV_ALIGN        | Alignment statement        |                     |
 R_RISCV_RVC_BRANCH   | PC-relative branch offset  |                     | CB-Type (c.beqz,c.bnez)
 R_RISCV_RVC_JUMP     | PC-relative jump offset    |                     | CJ-Type (c.j)
 R_RISCV_RVC_LUI      | Absolute address           |                     | CI-Type (c.lui)
-R_RISCV_GPREL_I      | GP-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)
-R_RISCV_GPREL_S      | GP-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,fsw,fsd)
+R_RISCV_GPREL_I      | GP-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
+R_RISCV_GPREL_S      | GP-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,sd,fsw,fsd)
 
 ## Glossary
 
