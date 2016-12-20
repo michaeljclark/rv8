@@ -1116,24 +1116,29 @@ load_store:
 		if (argv.size() != 1) {
 			return line->error(kInvalidOperands);
 		}
-		std::vector<std::string> args = argv[0];
+		std::vector<std::string> arg = argv[0];
 
-		if (args.size() < 3 || (*(args.end() - 3) != "(") || (*(args.end() - 1) != ")")) {
+		if (arg.size() < 3 || (*(arg.end() - 3) != "(") || (*(arg.end() - 1) != ")")) {
 			return line->error(kInvalidOperands);
 		}
 
-		auto ri = ireg_map.find(args[args.size() - 2]);
+		auto ri = ireg_map.find(arg[arg.size() - 2]);
 		if (ri == ireg_map.end()) {
 			return line->error(kInvalidRegister);
 		}
 		dec.rs2 = ri->second;
 
-		if (args.size() > 3) {
-			args.erase(args.begin() + args.size() - 3, args.end());
+		if (arg.size() > 3) {
+			arg.erase(arg.begin() + arg.size() - 3, arg.end());
 			packToken result;
-			if (!eval(line, args, result)) {
+
+			bool do_reloc = false;
+			if (!eval(line, arg, result) && !(do_reloc = check_reloc(arg))) {
+				return line->error(kInvalidOperands);
+			}
+			if (do_reloc) {
 				/*
-				 * TODO - emit relocation
+				 * emit relocation
 				 *
 				 * I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld) R_RISCV_LO12_I, R_RISCV_PCREL_LO12_I
 				 * S-Type (sb,sh,sw,fsw,fsd) R_RISCV_PCREL_LO12_S, R_RISCV_LO12_S
@@ -1141,9 +1146,13 @@ load_store:
 				 * %lo(symbol)
 				 * %pcrel_lo(symbol)
 				 */
-				return line->error(kUnimplementedRelocation);
+				if (!handle_reloc(line, dec, arg)) {
+					return line->error(kInvalidOperands);
+				}
+				dec.imm = 0;
+			} else {
+				dec.imm = result.asInt();
 			}
-			dec.imm = result.asInt();
 		} else {
 			dec.imm = 0;
 		}
