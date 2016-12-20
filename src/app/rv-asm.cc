@@ -1008,6 +1008,7 @@ struct rv_assembler
 					break;
 				}
 				case 'i':
+				case 'o':
 				{
 					/* check for load store address format imm(rs1) */
 					if (*(fmt + 1) && *(fmt + 1) == '(' && *(fmt + 2) == '1' && *(fmt + 3) == ')') {
@@ -1018,46 +1019,34 @@ struct rv_assembler
 					}
 					auto arg = argv.front();
 					packToken result;
-					if (!eval(line, arg, result)) {
-						/*
-						 * TODO - emit relocation
-						 *
-						 * I-Type (addi)
-						 *
-						 * %lo(symbol)
-						 * %pcrel_lo(symbol)
-						 */
-						return line->error(kUnimplementedRelocation);
+					bool do_reloc = false;
+					if (!eval(line, arg, result) && !(do_reloc = check_reloc(arg))) {
+						return line->error(kInvalidOperands);
 					}
-					dec.imm = result.asInt();
-					remove_operand(op_data, rv_type_simm);
-					remove_operand(op_data, rv_type_uimm);
-					argv.pop_front();
-					break;
-				}
-				case 'o':
-				{
-					if (argv.size() == 0) {
-						return line->error(kMissingImmediateOperand);
-					}
-					auto arg = argv.front();
-					packToken result;
-					if (!eval(line, arg, result)) {
+					if (do_reloc) {
 						/*
-						 * TODO - emit relocation
+						 * emit relocation
 						 *
+						 * I-Type  (addi)
 						 * UJ-Type (jal) R_RISCV_JAL
 						 * SB-Type (beq,bne,nlt,bge,bltu,bgeu) R_RISCV_BRANCH
 						 * U-Type  (auipc,lui) R_RISCV_HI20, R_RISCV_PCREL_HI20
 						 *
+						 * 1f
+						 * .L11
 						 * label
-						 * %hi(symbol)
-						 * %pcrel_hi(symbol)
+						 * %lo(symbol)
+						 * %pcrel_lo(symbol)
 						 */
-						return line->error(kUnimplementedRelocation);
+						if (!handle_reloc(line, dec, arg)) {
+							return line->error(kInvalidOperands);
+						}
+						dec.imm = 0;
+					} else {
+						dec.imm = result.asInt();
 					}
-					dec.imm = result.asInt();
 					remove_operand(op_data, rv_type_simm);
+					remove_operand(op_data, rv_type_uimm);
 					argv.pop_front();
 					break;
 				}
@@ -1356,10 +1345,34 @@ load_store:
 		return R_RISCV_NONE;
 	}
 
+	int handle_reloc_other(decode &dec)
+	{
+		switch (dec.op) {
+			case rv_op_beq:
+			case rv_op_bne:
+			case rv_op_blt:
+			case rv_op_bge:
+			case rv_op_bltu:
+			case rv_op_bgeu:
+			case rv_op_beqz:
+			case rv_op_bnez:
+			case rv_op_blez:
+			case rv_op_bgez:
+			case rv_op_bltz:
+			case rv_op_bgtz:
+				return R_RISCV_BRANCH;
+			case rv_op_j:
+			case rv_op_jal:
+				return R_RISCV_JAL;
+		}
+		return R_RISCV_NONE;
+	}
+
 	bool handle_reloc(asm_line_ptr &line, decode &dec, std::vector<std::string> args)
 	{
 		/*
 		 * handle % function relocations
+		 *
 		 *
 		 * %hi(symbol)               Absolute imm20
 		 * %lo(symbol)               Absolute imm12
@@ -1372,15 +1385,24 @@ load_store:
 		 * %tprel_add(symbol)        TLS LE "Local Exec"
 		 * %gprel(symbol)            GP-relative
 		 */
-		if (!check_function(args)) return line->error(kUnknownRelocation);
-		auto ri = reloc_map.find(args[4]);
-		if (ri != reloc_map.end()) {
-			int reloc_type = ri->second(dec);
+		if (check_function(args)) {
+			auto ri = reloc_map.find(args[1]);
+			if (ri != reloc_map.end()) {
+				int reloc_type = ri->second(dec);
+				if (reloc_type != R_RISCV_NONE) {
+					as.add_reloc(args[3], reloc_type);
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} else if (check_symbol(args) || check_private(args) || check_local(args)) {
+			int reloc_type = handle_reloc_other(dec);
 			if (reloc_type != R_RISCV_NONE) {
-				as.add_reloc(args[4], reloc_type);
+				as.add_reloc(args[0], reloc_type);
 				return true;
 			} else {
-				return line->error(kInvalidOperands);
+				return false;
 			}
 		}
 		return false;
