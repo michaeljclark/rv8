@@ -36,6 +36,7 @@
 
 using namespace riscv;
 
+
 bool assembler::check_symbol(std::string arg)
 {
 	// [_\w][_\w\d]*
@@ -65,6 +66,87 @@ bool assembler::check_local(std::string arg)
 		if (!std::isdigit(*ci)) return false;
 	}
 	return true;
+}
+
+assembler::assembler()
+{
+	get_section("");
+	get_section(".text");
+}
+
+void assembler::global(std::string label)
+{
+	exports.push_back(label);
+}
+
+section_offset assembler::current_offset()
+{
+	return section_offset(current->index, current->buf.size());
+}
+
+section_ptr assembler::get_section(std::string name)
+{
+	auto si = section_map.find(name);
+	if (si == section_map.end()) {
+		auto s = std::make_shared<section>(".text");
+		s->index = sections.size();
+		section_map.insert(section_map.end(), std::pair<std::string,section_ptr>(name, s));
+		sections.push_back(s);
+		return (current = s);
+	} else {
+		return (current = si->second);
+	}
+}
+
+void assembler::append(u8 d)
+{
+	current->buf.push_back(d);
+}
+
+void assembler::append(u16 d)
+{
+	current->buf.push_back(d & 0xff);
+	current->buf.push_back(d >> 8);
+}
+
+void assembler::append(u32 d)
+{
+	current->buf.push_back(d & 0xff);
+	current->buf.push_back((d >> 8) & 0xff);
+	current->buf.push_back((d >> 16) & 0xff);
+	current->buf.push_back((d >> 24) & 0xff);
+}
+
+void assembler::append(u64 d)
+{
+	current->buf.push_back(d & 0xff);
+	current->buf.push_back((d >> 8) & 0xff);
+	current->buf.push_back((d >> 16) & 0xff);
+	current->buf.push_back((d >> 24) & 0xff);
+	current->buf.push_back((d >> 32) & 0xff);
+	current->buf.push_back((d >> 40) & 0xff);
+	current->buf.push_back((d >> 48) & 0xff);
+	current->buf.push_back((d >> 56) & 0xff);
+}
+
+void assembler::add_inst(u64 inst)
+{
+	size_t len = inst_length(inst);
+	switch (len) {
+		case 2:
+			append(u16(inst));
+			break;
+		case 4:
+			append(u32(inst));
+			break;
+		case 6:
+			append(u32(inst));
+			append(u16(inst >> 32));
+			break;
+		case 8:
+			append(inst);
+			break;
+	}
 }
 
 void assembler::load_imm_r(ireg5 rd, s64 val)
@@ -98,6 +180,126 @@ void assembler::load_imm(ireg5 rd, s64 val)
 	} else {
 		load_imm_r(rd, val);
 	}
+}
+
+label_ptr assembler::lookup_label(std::string label_name)
+{
+	auto li = labels_byname.find(label_name);
+	return (li != labels_byname.end()) ? li->second : label_ptr();
+}
+
+label_ptr assembler::lookup_label_f(reloc_ptr reloc, s64 num)
+{
+	auto li = labels_byoffset.upper_bound(reloc->offset);
+	while (li != labels_byoffset.end()) {
+		if (li->second->num == num) return li->second;
+		li++;
+	}
+	return label_ptr();
+}
+
+label_ptr assembler::lookup_label_b(reloc_ptr reloc, s64 num)
+{
+	auto li = labels_byoffset.lower_bound(reloc->offset);
+	while (li != labels_byoffset.begin()) {
+		if (li->second->num == num) return li->second;
+		li--;
+	}
+	return label_ptr();
+}
+
+label_ptr assembler::lookup_label(reloc_ptr reloc, std::string name)
+{
+	if (check_local(name)) {
+		if (name.back() == 'f') {
+			name.erase(name.end()-1);
+			s64 val = strtoull(name.c_str(), nullptr, 10);
+			return lookup_label_f(reloc, val);
+		}
+		if (name.back() == 'b') {
+			name.erase(name.end()-1);
+			s64 val = strtoull(name.c_str(), nullptr, 10);
+			return lookup_label_b(reloc, val);
+		}
+	}
+	return lookup_label(name);
+}
+
+label_ptr assembler::add_label(std::string label_name)
+{
+	if (labels_byname.find(label_name) != labels_byname.end()) {
+		return label_ptr();
+	}
+	auto l = std::make_shared<label>(label_name, current_offset());
+	labels_byname[label_name] = l;
+	labels_byoffset[l->offset] = l;
+	return l;
+}
+
+label_ptr assembler::add_label(s64 num)
+{
+	size_t i = 0;
+	for (;;) {
+		std::string num_label = ".L" + std::to_string(num) + std::to_string(i);
+		auto li = labels_byname.find(num_label);
+		if (li == labels_byname.end()) {
+			auto l = add_label(num_label);
+			l->num = num;
+			return l;
+		}
+		i++;
+	}
+}
+
+reloc_ptr assembler::lookup_reloc(section_offset offset)
+{
+	auto ri = relocs_byoffset.find(offset);
+	return (ri != relocs_byoffset.end()) ? ri->second : reloc_ptr();
+}
+
+reloc_ptr assembler::add_reloc(std::string label_name, int rela_type)
+{
+	if (relocs_byoffset.find(current_offset()) != relocs_byoffset.end()) {
+		return reloc_ptr();
+	}
+	auto r = std::make_shared<reloc>(current_offset(), label_name, rela_type);
+	relocs_byoffset[r->offset] = r;
+	return r;
+}
+
+void assembler::balign(size_t align)
+{
+	if (!ispow2(align)) return;
+	if ((current->buf.size() & (align-1)) == 0) return;
+	size_t sz = align - (current->buf.size() & (align-1));
+	for(size_t i = 0; i < sz; i++) {
+		current->buf.push_back(0);
+	}
+}
+
+void assembler::p2align(size_t s)
+{
+	balign(1 << s);
+}
+
+size_t assembler::label_offset(label_ptr label)
+{
+	return sections[label->offset.first]->offset + label->offset.second;
+}
+
+u8* assembler::label_buffer(label_ptr label)
+{
+	return &sections[label->offset.first]->buf[label->offset.second];
+}
+
+size_t assembler::reloc_offset(reloc_ptr reloc)
+{
+	return sections[reloc->offset.first]->offset + reloc->offset.second;
+}
+
+u8* assembler::reloc_buffer(reloc_ptr reloc)
+{
+	return &sections[reloc->offset.first]->buf[reloc->offset.second];
 }
 
 bool assembler::relocate(reloc_ptr reloc)
