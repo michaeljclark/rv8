@@ -470,60 +470,29 @@ struct rv_assembler
 		input_filename = result.first[0];
 	}
 
-
-	bool check_symbol(std::string arg)
-	{
-		// [_\w][_\w\d]*
-		if (arg.size() < 1 || !(std::isalpha(arg[0]) || arg[0] == '_')) return false;
-		for (auto ci = arg.begin() + 1; ci != arg.end(); ci++) {
-			if (!(std::isalnum(*ci) || *ci == '_')) return false;
-		}
-		return true;
-	}
-
 	bool check_symbol(std::vector<std::string> &args)
 	{
-		return (args.size() == 1 && check_symbol(args[0]));
-	}
-
-	bool check_private(std::string arg)
-	{
-		// \.[_\w][_\w\d]*
-		if (arg.size() < 2 || arg[0] != '.' ||
-			!(std::isalpha(arg[1]) || arg[1] == '_')) return false;
-		for (auto ci = arg.begin() + 2; ci != arg.end(); ci++) {
-			if (!(std::isalnum(*ci) || *ci == '_')) return false;
-		}
-		return true;
+		return (args.size() == 1 && assembler::check_symbol(args[0]));
 	}
 
 	bool check_private(std::vector<std::string> &args)
 	{
-		return (args.size() == 1 && check_private(args[0]));
-	}
-
-	bool check_local(std::string arg)
-	{
-		// \d+[fb]
-		if (arg.size() < 2 || !(arg.back() == 'b' || arg.back() == 'f')) return false;
-		for (auto ci = arg.begin(); ci != arg.end() - 1; ci++) {
-			if (!std::isdigit(*ci)) return false;
-		}
-		return true;
+		return (args.size() == 1 && assembler::check_private(args[0]));
 	}
 
 	bool check_local(std::vector<std::string> &args)
 	{
-		return (args.size() == 1 && check_local(args[0]));
+		return (args.size() == 1 && assembler::check_local(args[0]));
 	}
 
 	bool check_function(std::vector<std::string> &args)
 	{
-		bool result = (args.size() == 5 && args[0] == "%" &&
+		return (args.size() == 5 && args[0] == "%" &&
 			(reloc_map.find(args[1]) != reloc_map.end()) &&
-			args[2] == "(" &&args[4] == ")" &&
-			(check_symbol(args[3]) || check_local(args[3]) || check_private(args[3])));
-		return result;
+			args[2] == "(" && args[4] == ")" &&
+			(assembler::check_symbol(args[3]) ||
+			assembler::check_local(args[3]) ||
+			assembler::check_private(args[3])));
 	}
 
 	bool check_reloc(std::vector<std::string> &args)
@@ -1417,19 +1386,6 @@ load_store:
 		return false;
 	}
 
-	bool perform_reloc(reloc_ptr reloc)
-	{
-		switch (reloc->rela_type) {
-			case R_RISCV_HI20: break;
-			case R_RISCV_LO12_I: break;
-			case R_RISCV_LO12_S: break;
-			case R_RISCV_PCREL_HI20: break;
-			case R_RISCV_PCREL_LO12_I: break;
-			case R_RISCV_PCREL_LO12_S: break;
-		}
-		return false; /* TODO */
-	}
-
 	void assemble()
 	{
 		/*
@@ -1449,13 +1405,7 @@ load_store:
 				}
 			}
 		}
-		for (auto &ent : as.relocs_byoffset) {
-			if (!perform_reloc(ent.second)) {
-				if (bail_on_errors) {
-					exit(9);
-				}
-			}
-		}
+		as.link();
 		if (debug) {
 			dump();
 		}

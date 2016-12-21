@@ -20,11 +20,12 @@ namespace riscv {
 	struct section
 	{
 		size_t index;
+		size_t offset;
 		std::string name;
 		std::vector<u8> buf;
 
 		section(std::string name) :
-			name(name) {}
+			index(0), offset(0), name(name) {}
 	};
 
 	struct label
@@ -50,7 +51,8 @@ namespace riscv {
 
 	struct assembler
 	{
-		std::map<std::string,section_ptr> sections;
+		std::vector<section_ptr> sections;
+		std::map<std::string,section_ptr> section_map;
 
 		std::map<section_offset,label_ptr> labels_byoffset;
 		std::map<std::string,label_ptr> labels_byname;
@@ -58,8 +60,13 @@ namespace riscv {
 		std::vector<std::string> exports;
 		section_ptr current;
 
+		static bool check_symbol(std::string arg);
+		static bool check_private(std::string arg);
+		static bool check_local(std::string arg);
+
 		assembler()
 		{
+			get_section("");
 			get_section(".text");
 		}
 
@@ -75,11 +82,12 @@ namespace riscv {
 
 		section_ptr get_section(std::string name)
 		{
-			auto si = sections.find(name);
-			if (si == sections.end()) {
+			auto si = section_map.find(name);
+			if (si == section_map.end()) {
 				auto s = std::make_shared<section>(".text");
 				s->index = sections.size();
-				sections.insert(sections.end(), std::pair<std::string,section_ptr>(name, s));
+				section_map.insert(section_map.end(), std::pair<std::string,section_ptr>(name, s));
+				sections.push_back(s);
 				return (current = s);
 			} else {
 				return (current = si->second);
@@ -166,6 +174,23 @@ namespace riscv {
 			return label_ptr();
 		}
 
+		label_ptr lookup_label(reloc_ptr reloc, std::string name)
+		{
+			if (check_local(name)) {
+				if (name.back() == 'f') {
+					name.erase(name.end()-1);
+					s64 val = strtoull(name.c_str(), nullptr, 10);
+					return lookup_label_f(reloc, val);
+				}
+				if (name.back() == 'b') {
+					name.erase(name.end()-1);
+					s64 val = strtoull(name.c_str(), nullptr, 10);
+					return lookup_label_b(reloc, val);
+				}
+			}
+			return lookup_label(name);
+		}
+
 		label_ptr add_label(std::string label_name)
 		{
 			if (labels_byname.find(label_name) != labels_byname.end()) {
@@ -207,6 +232,30 @@ namespace riscv {
 			relocs_byoffset[r->offset] = r;
 			return r;
 		}
+
+		size_t label_offset(label_ptr label)
+		{
+			return sections[label->offset.first]->offset + label->offset.second;
+		}
+
+		u8* label_buffer(label_ptr label)
+		{
+			return &sections[label->offset.first]->buf[label->offset.second];
+		}
+
+		size_t reloc_offset(reloc_ptr reloc)
+		{
+			return sections[reloc->offset.first]->offset + reloc->offset.second;
+		}
+
+		u8* reloc_buffer(reloc_ptr reloc)
+		{
+			return &sections[reloc->offset.first]->buf[reloc->offset.second];
+		}
+
+		bool relocate(reloc_ptr reloc);
+
+		void link();
 
 		void balign(size_t align)
 		{
