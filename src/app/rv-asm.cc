@@ -914,10 +914,18 @@ struct rv_assembler
 						}
 						if (has_imm) {
 							packToken result;
-							if (!eval(line, arg, result)) {
+							bool do_reloc = false;
+							if (!eval(line, arg, result) && !(do_reloc = check_reloc(arg))) {
 								return line->error(kInvalidImmediateOperand);
 							}
-							dec.imm = result.asInt();
+							if (do_reloc) {
+								if (!handle_reloc(line, dec, arg)) {
+									return line->error(kInvalidOperands);
+								}
+								dec.imm = 0;
+							} else {
+								dec.imm = result.asInt();
+							}
 							goto out;
 						} else {
 							return line->error(kInvalidRegister);
