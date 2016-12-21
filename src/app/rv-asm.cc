@@ -77,6 +77,7 @@ const char* kInvalidStatement =            "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands =        "%s *** invalid macro operands: %s\n";
 const char* kUnknownRelocation =           "%s *** unknown relocation: %s\n";
 const char* kDuplicateSymbol =             "%s *** duplicate symbol %s";
+const char* kUnimplementedOperation =      "%s *** unimplemented operation %s";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
@@ -788,7 +789,7 @@ struct rv_assembler
 		 *
 		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
 		 */
-		return true;
+		return line->error(kUnimplementedOperation);
 	}
 
 	bool handle_lla(asm_line_ptr &line)
@@ -801,7 +802,7 @@ struct rv_assembler
 		 *
 		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
 		 */
-		return true;
+		return line->error(kUnimplementedOperation);
 	}
 
 	bool handle_li(asm_line_ptr &line)
@@ -843,7 +844,7 @@ struct rv_assembler
 		 *
 		 * relocs: R_RISCV_CALL_PLT
 		 */
-		return true;
+		return line->error(kUnimplementedOperation);
 	}
 
 	bool handle_tail(asm_line_ptr &line)
@@ -854,7 +855,7 @@ struct rv_assembler
 		 * .1: auipc t1,       %pcrel_hi(symbol)
 		 *     jalr  zero, t1, %pcrel_lo(1b)
 		 */
-		return true;
+		return line->error(kUnimplementedOperation);
 	}
 
 	std::vector<rv_operand_data> opcode_operand_data(size_t op)
