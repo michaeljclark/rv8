@@ -182,7 +182,10 @@ void assembler::link()
 		(*si)->offset = (*(si-1))->offset + (*(si-1))->buf.size();
 	}
 	for (auto &ent : relocs_byoffset) {
-		if (!relocate(ent.second)) unresolved_relocs++;
+		if (!relocate(ent.second)) {
+			printf("unresolved symbol: %s\n", ent.second->name.c_str());
+			unresolved_relocs++;
+		}
 	}
 	if (unresolved_relocs > 0) {
 		printf("%d unresolved relocations during link\n", unresolved_relocs);
