@@ -308,6 +308,7 @@ bool assembler::relocate(reloc_ptr reloc)
 	/* find target label */
 	label_ptr label = lookup_label(reloc, reloc->name);
 	if (!label) return false;
+	reloc->name = label->name;
 	size_t label_off = label_offset(label);
 
 	/* decode instruction being relocated */
