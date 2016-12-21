@@ -190,22 +190,22 @@ label_ptr assembler::lookup_label(std::string label_name)
 
 label_ptr assembler::lookup_label_f(reloc_ptr reloc, s64 num)
 {
-	auto li = labels_byoffset.upper_bound(reloc->offset);
-	while (li != labels_byoffset.end()) {
-		if (li->second->num == num) return li->second;
-		li++;
+	bool found = false;
+	for (auto ent : labels_byoffset) {
+		if (ent.first > reloc->offset) found = true;
+		if (found && ent.second->num == num) return ent.second;
 	}
 	return label_ptr();
 }
 
 label_ptr assembler::lookup_label_b(reloc_ptr reloc, s64 num)
 {
-	auto li = labels_byoffset.lower_bound(reloc->offset);
-	while (li != labels_byoffset.begin()) {
-		if (li->second->num == num) return li->second;
-		li--;
+	label_ptr found;
+	for (auto ent : labels_byoffset) {
+		if (ent.first > reloc->offset) break;
+		if (ent.second->num == num) found = ent.second;
 	}
-	return label_ptr();
+	return found;
 }
 
 label_ptr assembler::lookup_label(reloc_ptr reloc, std::string name)
@@ -238,6 +238,7 @@ label_ptr assembler::add_label(std::string label_name)
 
 label_ptr assembler::add_label(s64 num)
 {
+	printf("add_label: %lld\n", num);
 	size_t i = 0;
 	for (;;) {
 		std::string num_label = ".L" + std::to_string(num) + std::to_string(i);
