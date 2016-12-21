@@ -899,7 +899,13 @@ struct rv_assembler
 				case '2':
 				{
 					if (argv.size() == 0) {
-						return line->error(kMissingRegisterOperand);
+						if (op == rv_op_jalr) {
+							dec.rs1 = dec.rd;
+							dec.rd = rv_ireg_ra;
+							break;
+						} else {
+							return line->error(kMissingRegisterOperand);
+						}
 					}
 					auto arg = argv.front();
 					auto ri = arg.size() == 1 ? ireg_map.find(arg[0]) : ireg_map.end();
