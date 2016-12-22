@@ -57,6 +57,7 @@ namespace riscv {
 			if (device == 1 && cmd == 1) {
 				u8 c = htif_tohost & 0xff;
 				console->write_char(c);
+				htif_tohost = 0;
 			}
 		}
 
