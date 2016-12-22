@@ -259,10 +259,10 @@ namespace riscv {
 		std::shared_ptr<sbi_mmio_device<processor_privileged>> device_sbi;
 		std::shared_ptr<boot_mmio_device<processor_privileged>> device_boot;
 		std::shared_ptr<time_mmio_device<processor_privileged>> device_time;
-		std::shared_ptr<config_mmio_device<processor_privileged>> device_config;
+		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
 		std::shared_ptr<plic_mmio_device<processor_privileged>> device_plic;
 		std::shared_ptr<uart_mmio_device<processor_privileged>> device_uart;
-		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
+		std::shared_ptr<config_mmio_device<processor_privileged>> device_config;
 		std::shared_ptr<gpio_mmio_device<processor_privileged>> device_gpio;
 		std::shared_ptr<rand_mmio_device<processor_privileged>> device_rand;
 		std::shared_ptr<htif_mmio_device<processor_privileged>> device_htif;
@@ -279,10 +279,10 @@ namespace riscv {
 			device_sbi = std::make_shared<sbi_mmio_device<processor_privileged>>(*this, s32(0xfffff000));
 			device_boot = std::make_shared<boot_mmio_device<processor_privileged>>(*this, 0x1000);
 			device_time = std::make_shared<time_mmio_device<processor_privileged>>(*this, 0x40000000);
-			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x40001000);
+			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40001000);
 			device_plic = std::make_shared<plic_mmio_device<processor_privileged>>(*this, 0x40002000);
 			device_uart = std::make_shared<uart_mmio_device<processor_privileged>>(*this, 0x40003000, device_plic, 3, console);
-			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40004000);
+			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x40004000);
 			device_gpio = std::make_shared<gpio_mmio_device<processor_privileged>>(*this, 0x40005000, device_plic, 4);
 			device_rand = std::make_shared<rand_mmio_device<processor_privileged>>(*this, 0x40006000);
 			device_htif = std::make_shared<htif_mmio_device<processor_privileged>>(*this, 0x40008000, console);
@@ -291,10 +291,10 @@ namespace riscv {
 			P::mmu.mem->add_segment(device_sbi);
 			P::mmu.mem->add_segment(device_boot);
 			P::mmu.mem->add_segment(device_time);
-			P::mmu.mem->add_segment(device_config);
+			P::mmu.mem->add_segment(device_mipi);
 			P::mmu.mem->add_segment(device_plic);
 			P::mmu.mem->add_segment(device_uart);
-			P::mmu.mem->add_segment(device_mipi);
+			P::mmu.mem->add_segment(device_config);
 			P::mmu.mem->add_segment(device_gpio);
 			P::mmu.mem->add_segment(device_rand);
 			P::mmu.mem->add_segment(device_htif);
