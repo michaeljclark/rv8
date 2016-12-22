@@ -1,0 +1,22 @@
+platform {
+  vendor meta;
+  arch anarch;
+};
+rtc {
+  addr 0x40000000;
+};
+ram {
+  0 {
+    addr 0x80000000;
+    size 0x40000000;
+  };
+};
+core {
+  0 {
+    0 {
+      isa rv64imafd;
+      timecmp 0x40000008;
+      ipi 0x40001000;
+    };
+  };
+};
