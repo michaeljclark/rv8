@@ -225,10 +225,6 @@ mcall_set_timer:
 	ld      t1, TIMER_MTIME(t0)    # read from mtime
 	add     t2, t1, a0             # add arg0 to current time
 	sd      t2, TIMER_MTIMECMP(t0) # write to mtimecmp
-	li      t0, 128                # set mie.MTIE=1
-	csrrs   zero, mie, t0
-	li      t0, 128                # set mstatus.MPIE=1
-	csrrs   zero, mstatus, t0
 	lx      t0, 0*xlenb(sp)        # restore regs to avoid
 	lx      t1, 1*xlenb(sp)        # information leakage
 	csrrw   sp, mscratch, sp
