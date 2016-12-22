@@ -270,7 +270,6 @@ The ABI Proxy Simulator command line options:
 ```
 $ rv-sim -h
 usage: rv-sim [<options>] <elf_file>
-                      --config, -c <string>   Configuration strung
                          --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
@@ -297,8 +296,6 @@ The Privilged ISA System Emulator command line options:
 ```
 $ rv-sys -h
 usage: rv-sys [<options>] <elf_file>
-                      --config, -c <string>   Configuration strung
-                         --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
                     --log-mmio, -O            Log Memory Mapped IO
@@ -314,6 +311,7 @@ usage: rv-sys [<options>] <elf_file>
                   --debug-trap, -T            Start up in debugger and enter debugger on trap
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                 --map-physical, -p <string>   Map execuatable at physical address
+                         --bbl, -b <string>   BBL Boot ( 32, 64 )
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
 ```
