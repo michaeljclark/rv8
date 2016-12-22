@@ -186,7 +186,6 @@ namespace riscv {
 				}
 			}
 			size_t i = 0;
-			printf("Ws=%zu\n", ws);
 			while (i++ < 20) {
 				std::string line = format_addr(P::xlen, addr) + ":";
 				size_t words = 32 / (ws << 1);
