@@ -297,6 +297,7 @@ namespace riscv {
 			P::mmu.mem->add_segment(device_mipi);
 			P::mmu.mem->add_segment(device_gpio);
 			P::mmu.mem->add_segment(device_rand);
+			P::mmu.mem->add_segment(device_htif);
 		}
 
 		void print_device_registers()
