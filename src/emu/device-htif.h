@@ -47,28 +47,28 @@ namespace riscv {
 			debug("htif_mmio:htif_fromhost    %llu", htif_fromhost);
 		}
 
-		void handle_command()
+		void handle_output()
 		{
-			/* TODO */
+			if (htif_tohost == 1) {
+				proc.raise(P::internal_cause_poweroff, proc.pc);
+			}
+			u8 device = htif_tohost >> 56;
+			u8 cmd = (htif_tohost >> 48) & 0xff;
+			if (device == 1 && cmd == 1) {
+				u8 c = htif_tohost & 0xff;
+				console->write_char(c);
+			}
+		}
+
+		void handle_input()
+		{
+			htif_fromhost = 0;
+			if (console->has_char()) {
+				htif_fromhost = ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | console->read_char();
+			}
 		}
 
 		/* HTIF MMIO */
-
-		void load_8 (UX va, u8  &val)
-		{
-			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx -> invalid\n", addr_t(va));
-			}
-			val = 0;
-		}
-
-		void load_16(UX va, u16 &val)
-		{
-			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx -> invalid\n", addr_t(va));
-			}
-			val = 0;
-		}
 
 		void load_32(UX va, u32 &val)
 		{
@@ -79,6 +79,7 @@ namespace riscv {
 				val = u32(htif_tohost >> 32);
 			}
 			else if (va == 8) {
+				handle_input();
 				val = u32(htif_fromhost);
 			}
 			else if (va == 12) {
@@ -95,24 +96,11 @@ namespace riscv {
 				val = htif_tohost;
 			}
 			else if (va == 8) {
+				handle_input();
 				val = htif_fromhost;
 			}
 			if (proc.log & proc_log_mmio) {
 				printf("htif_mmio:0x%04llx -> 0x%08llx\n", addr_t(va), val);
-			}
-		}
-
-		void store_8 (UX va, u8  val)
-		{
-			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx <- invalid\n", addr_t(va));
-			}
-		}
-
-		void store_16(UX va, u16 val)
-		{
-			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx <- invalid\n", addr_t(va));
 			}
 		}
 
@@ -126,7 +114,7 @@ namespace riscv {
 			}
 			else if (va == 4) {
 				htif_tohost = (htif_tohost & (u64(-1) >> 32)) | (u64(val) << 32);
-				handle_command();
+				handle_output();
 			}
 			else if (va == 8) {
 				htif_fromhost = (htif_fromhost & (u64(-1) << 32)) | val;
@@ -143,7 +131,7 @@ namespace riscv {
 			}
 			if (va == 0) {
 				htif_tohost = val;
-				handle_command();
+				handle_output();
 			}
 			else if (va == 8) {
 				htif_fromhost = val;
