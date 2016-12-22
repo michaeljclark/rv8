@@ -28,19 +28,6 @@ _start:
 	slli    t0, t0, 11
 	csrrs   zero, mie, t0
 
-# enable IRQ 3 in the PLIC for node_id=0, hart_id=0
-	li      a3, 8           # irq3
-	li      a0, 0x40002000
-	lw      a1, 20(a0)      # priority0 offset
-	add     a2, a0, a1      # priority0 node_id=0, hart_id=0
-	sw      a3, 0(a2)       # store priority0 word to PLIC
-	lw      a1, 24(a0)      # priority1 offset
-	add     a2, a0, a1      # priority1 node_id=0, hart_id=0
-	sw      a3, 0(a2)       # store priority1 word to PLIC
-	lw      a1, 28(a0)      # enabled offset
-	add     a2, a0, a1      # enabled node_id=0, hart_id=0
-	sw      a3, 0(a2)       # store enabled word to PLIC
-
 # program uart to raise interrupts on recieved data
 	li      a0, 0x40003000
 	li      a1, 1           # Load IER_ERBDA bit
@@ -71,10 +58,8 @@ mtvec:
 
 # clear pending interrupt in the PLIC
 	li      a0, 0x40002000
-	lw      a1, 16(a0)      # pending offset
-	add     a2, a0, a1      # pending node_id=0, hart_id=0
-	li      a3, 0
-	sw      a3, 0(a2)       # store pending word to PLIC
+	ld      a1, 0(a0)       # read interrupt
+	sd      a1, 0(a0)       # acknowledge
 	mret                    # return to faulting instruction
 
 .section .rodata

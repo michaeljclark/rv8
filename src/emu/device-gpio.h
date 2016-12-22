@@ -65,9 +65,7 @@ namespace riscv {
 
 		void service()
 		{
-			if (gpio.ie & gpio.ip) {
-				plic->signal_irq(irq);
-			}
+			plic->set_irq(irq, (gpio.ie & gpio.ip) ? 1 : 0);
 		}
 
 		void trigger()

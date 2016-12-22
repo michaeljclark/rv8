@@ -135,9 +135,7 @@ namespace riscv {
 
 		void service()
 		{
-			if ((com.ier & IER_ERBDA) && console->has_char()) {
-				plic->signal_irq(irq);
-			}
+			plic->set_irq(irq, ((com.ier & IER_ERBDA) && console->has_char()) ? 1 : 0);
 		}
 
 		void print_registers()

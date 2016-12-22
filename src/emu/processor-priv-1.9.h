@@ -716,26 +716,18 @@ namespace riscv {
 			 * service external interrupts from the PLIC if enabled
 			 */
 
-			bool eip = device_plic->irq_pending(P::mode, P::node_id, P::hart_id);
+			bool eip = device_plic->irq_pending();
 			if (eip) {
-				if (P::medeleg & (1 << rv_intr_m_external)) {
-					if (P::hedeleg & (1 << rv_intr_h_external)) {
-						if (P::sedeleg & (1 << rv_intr_s_external) &&
-								P::mstatus.r.uie && P::mie.r.ueie) {
-							P::mip.r.ueip = 1;
-							utrap(rv_intr_u_external, false);
-						} else if (P::mstatus.r.sie && P::mie.r.seie) {
-							P::mip.r.seip = 1;
-							strap(rv_intr_s_external, false);
-						}
-					} else if (P::mstatus.r.hie && P::mie.r.heie) {
-						P::mip.r.heip = 1;
-						htrap(rv_intr_h_external, false);
-					}
-				} else if (P::mstatus.r.mie && P::mie.r.meie) {
-					P::mip.r.meip = 1;
+				P::mip.r.meip = 1;
+				P::mip.r.seip = 1;
+				if (P::mstatus.r.mie && P::mie.r.meie) {
 					mtrap(rv_intr_m_external, false);
+				} else if (P::mstatus.r.sie && P::mie.r.seie) {
+					strap(rv_intr_s_external, false);
 				}
+			} else {
+				P::mip.r.meip = 0;
+				P::mip.r.seip = 0;
 			}
 
 			/*
@@ -744,24 +736,16 @@ namespace riscv {
 
 			bool tip = device_time->timer_pending(P::time);
 			if (tip) {
-				if (P::medeleg & (1 << rv_intr_m_timer)) {
-					if (P::hedeleg & (1 << rv_intr_h_timer)) {
-						if (P::sedeleg & (1 << rv_intr_s_timer) &&
-								P::mstatus.r.uie && P::mie.r.utie) {
-							P::mip.r.utip = 1;
-							utrap(rv_intr_u_timer, false);
-						} else if (P::mstatus.r.sie && P::mie.r.stie) {
-							P::mip.r.stip = 1;
-							strap(rv_intr_s_timer, false);
-						}
-					} else if (P::mstatus.r.hie && P::mie.r.htie) {
-						P::mip.r.htip = 1;
-						htrap(rv_intr_h_timer, false);
-					}
-				} else if (P::mstatus.r.mie && P::mie.r.mtie) {
-					P::mip.r.mtip = 1;
+				P::mip.r.mtip = 1;
+				P::mip.r.stip = 1;
+				if (P::mstatus.r.mie && P::mie.r.mtie) {
 					mtrap(rv_intr_m_timer, false);
+				} else if (P::mstatus.r.sie && P::mie.r.stie) {
+					strap(rv_intr_s_timer, false);
 				}
+			} else {
+				P::mip.r.mtip = 0;
+				P::mip.r.stip = 0;
 			}
 
 			/*
@@ -770,25 +754,16 @@ namespace riscv {
 
 			bool sip = device_mipi->ipi_pending(P::hart_id);
 			if (sip) {
-				if (P::medeleg & (1 << rv_intr_m_software)) {
-					if (P::hedeleg & (1 << rv_intr_h_software)) {
-						if (P::sedeleg & (1 << rv_intr_s_software) &&
-								P::mstatus.r.uie && P::mie.r.usie)
-						{
-							P::mip.r.usip = 1;
-							utrap(rv_intr_u_software, false);
-						} else if (P::mstatus.r.sie && P::mie.r.ssie) {
-							P::mip.r.ssip = 1;
-							strap(rv_intr_s_software, false);
-						}
-					} else if (P::mstatus.r.hie && P::mie.r.hsie) {
-						P::mip.r.hsip = 1;
-						htrap(rv_intr_h_software, false);
-					}
-				} else if (P::mstatus.r.mie && P::mie.r.msie) {
-					P::mip.r.msip = 1;
+				P::mip.r.msip = 1;
+				P::mip.r.ssip = 1;
+				if (P::mstatus.r.mie && P::mie.r.msie) {
 					mtrap(rv_intr_m_software, false);
+				} else if (P::mstatus.r.sie && P::mie.r.ssie) {
+					strap(rv_intr_s_software, false);
 				}
+			} else {
+				P::mip.r.msip = 0;
+				P::mip.r.ssip = 0;
 			}
 
 		}
