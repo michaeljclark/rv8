@@ -129,9 +129,10 @@ namespace riscv {
 		/* print segment */
 		void print_memory_segment(memory_segment_type &seg)
 		{
-			debug("soft-mmu :%016llx-%016llx %s (0x%04llx-0x%04llx) %s%s%s%s%s",
-				(u64)seg->mpa, (u64)seg->mpa + seg->size, seg->name,
+			debug("soft-mmu :%016llx-%016llx (0x%04llx-0x%04llx) %s %s%s%s%s%s",
+				(u64)seg->mpa, (u64)seg->mpa + seg->size,
 				(u64)seg->uva, (u64)seg->uva + seg->size,
+				seg->name,
 				(seg->flags & pma_type_io) ? "+IO" : "",
 				(seg->flags & pma_type_main) ? "+MAIN" : "",
 				(seg->flags & pma_prot_read) ? "+R" : "",
@@ -150,7 +151,7 @@ namespace riscv {
 
 		void add_mmap(UX mpa, intptr_t uva, size_t size, UX flags)
 		{
-			add_segment(std::make_shared<mmap_memory_segment<UX>>("ROM0", mpa, uva, size, flags));
+			add_segment(std::make_shared<mmap_memory_segment<UX>>("ELF", mpa, uva, size, flags));
 		}
 
 		/* mmap new main memory segment using fixed user physical address and size */
@@ -161,7 +162,7 @@ namespace riscv {
 			if (addr == MAP_FAILED) {
 				panic("memory: error: mmap: %s", strerror(errno));
 			}
-			add_segment(std::make_shared<mmap_memory_segment<UX>>("RAM0", mpa, uintptr_t(addr), size,
+			add_segment(std::make_shared<mmap_memory_segment<UX>>("RAM", mpa, uintptr_t(addr), size,
 				pma_type_main | pma_prot_read | pma_prot_write | pma_prot_execute));
 		}
 

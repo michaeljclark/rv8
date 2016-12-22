@@ -40,7 +40,7 @@ namespace riscv {
 		/* Config constructor */
 
 		config_mmio_device(P &proc, UX mpa) :
-			memory_segment<UX>("CFG0", mpa, /*uva*/0, /*size*/total_size,
+			memory_segment<UX>("CONFIG", mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read), proc(proc)
 			{}
 

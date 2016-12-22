@@ -27,7 +27,7 @@ namespace riscv {
 		/* BOOT constructor */
 
 		boot_mmio_device(P &proc, UX mpa) :
-			memory_segment<UX>("RST0", mpa, /*uva*/0,
+			memory_segment<UX>("ROM", mpa, /*uva*/0,
 				/*size*/build_riscv64_unknown_elf_bin_boot_rom_bin_len,
 				pma_type_main | pma_prot_read | pma_prot_execute), proc(proc) {}
 
