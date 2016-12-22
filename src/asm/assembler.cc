@@ -76,7 +76,12 @@ assembler::assembler()
 
 void assembler::global(std::string label)
 {
-	exports.push_back(label);
+	strong_exports.push_back(label);
+}
+
+void assembler::weak(std::string label)
+{
+	weak_exports.push_back(label);
 }
 
 section_offset assembler::current_offset()

@@ -57,7 +57,8 @@ namespace riscv {
 		std::map<section_offset,label_ptr> labels_byoffset;
 		std::map<std::string,label_ptr> labels_byname;
 		std::map<section_offset,reloc_ptr> relocs_byoffset;
-		std::vector<std::string> exports;
+		std::vector<std::string> strong_exports;
+		std::vector<std::string> weak_exports;
 		section_ptr current;
 
 		static bool check_symbol(std::string arg);
@@ -67,6 +68,7 @@ namespace riscv {
 		assembler();
 
 		void global(std::string label);
+		void weak(std::string label);
 
 		section_offset current_offset();
 		section_ptr get_section(std::string name);

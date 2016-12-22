@@ -367,6 +367,7 @@ struct rv_assembler
 		directive_map[".eqv"] = std::bind(&rv_assembler::handle_equ, this, _1);
 		directive_map[".file"] = std::bind(&rv_assembler::handle_file, this, _1);
 		directive_map[".globl"] = std::bind(&rv_assembler::handle_globl, this, _1);
+		directive_map[".weak"] = std::bind(&rv_assembler::handle_weak, this, _1);
 		directive_map[".ident"] = std::bind(&rv_assembler::handle_ident, this, _1);
 		directive_map[".macro"] = std::bind(&rv_assembler::handle_macro, this, _1);
 		directive_map[".endm"] = std::bind(&rv_assembler::handle_endm, this, _1);
@@ -386,6 +387,11 @@ struct rv_assembler
 		directive_map[".dtpreldword"] = std::bind(&rv_assembler::handle_dtpreldword, this, _1);
 		directive_map[".option"] = std::bind(&rv_assembler::handle_option, this, _1);
 		directive_map[".zero"] = std::bind(&rv_assembler::handle_zero, this, _1);
+		directive_map[".cfi_startproc"] = std::bind(&rv_assembler::handle_none, this, _1);
+		directive_map[".cfi_endproc"] = std::bind(&rv_assembler::handle_none, this, _1);
+		directive_map[".cfi_offset"] = std::bind(&rv_assembler::handle_none, this, _1);
+		directive_map[".cfi_def_cfa"] = std::bind(&rv_assembler::handle_none, this, _1);
+		directive_map[".cfi_def_cfa_offset"] = std::bind(&rv_assembler::handle_none, this, _1);
 		directive_map["la"] = std::bind(&rv_assembler::handle_la, this, _1);
 		directive_map["lla"] = std::bind(&rv_assembler::handle_lla, this, _1);
 		directive_map["li"] = std::bind(&rv_assembler::handle_li, this, _1);
@@ -585,6 +591,15 @@ struct rv_assembler
 		return true;
 	}
 
+	bool handle_weak(asm_line_ptr &line)
+	{
+		if (line->args.size() != 2) {
+			return line->error(kInvalidOperands);
+		}
+		as.weak(line->args[1]);
+		return true;
+	}
+
 	bool handle_ident(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
@@ -776,6 +791,11 @@ struct rv_assembler
 		for (s64 i = 0; i < val; i++) {
 			as.append(u8(0));
 		}
+		return true;
+	}
+
+	bool handle_none(asm_line_ptr &line)
+	{
 		return true;
 	}
 
