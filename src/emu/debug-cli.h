@@ -81,6 +81,7 @@ namespace riscv {
 			add_command(cmd_disasm, 2, 2, "disasm", "<addr>",           "Disassemble Memory");
 			add_command(cmd_help,   1, 1, "help",   "",                 "Help");
 			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Hex Dump Memory");
+			add_command(cmd_ascii,  2, 2, "ascii",  "<addr>",           "ASCII Dump Memory");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
@@ -227,6 +228,29 @@ namespace riscv {
 					addr += ws;
 				}
 				printf("%s\n", line.c_str());
+			}
+			return 0;
+		}
+
+		static size_t cmd_ascii(cmd_state &st, args_t &args)
+		{
+			addr_t addr;
+			if (!parse_integral(args[1], addr)) {
+				printf("%s: invalid address: %s\n",
+					args[0].c_str(), args[1].c_str());
+				return 0;
+			}
+			size_t i = 0;
+			while (i++ < 20) {
+				printf("%s: ", format_addr(P::xlen, addr).c_str());
+				for (size_t j = 0; j < 32; j++) {
+					u8 val;
+					st.proc->mmu.load(*st.proc, typename P::ux(addr), val);
+					if (val < 32) val = '.';
+					printf("%c", val);
+					addr++;
+				}
+				printf("\n");
 			}
 			return 0;
 		}
