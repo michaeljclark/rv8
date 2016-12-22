@@ -72,6 +72,7 @@
 #include "interp.h"
 #include "processor-model.h"
 #include "queue.h"
+#include "console.h"
 #include "device-rom-boot.h"
 #include "device-rom-sbi.h"
 #include "device-config.h"

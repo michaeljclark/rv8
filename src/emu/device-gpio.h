@@ -13,7 +13,6 @@ namespace riscv {
 	struct gpio_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
-		typedef std::shared_ptr<console_thread<P>> console_thread_ptr;
 		typedef std::shared_ptr<plic_mmio_device<P>> plic_mmio_device_ptr;
 
 		P &proc;
