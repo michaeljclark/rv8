@@ -81,6 +81,7 @@
 #include "device-mipi.h"
 #include "device-gpio.h"
 #include "device-rand.h"
+#include "device-htif.h"
 #include "processor-priv-1.9.h"
 #include "debug-cli.h"
 #include "processor-runloop.h"

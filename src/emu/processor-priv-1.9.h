@@ -264,6 +264,7 @@ namespace riscv {
 		std::shared_ptr<mipi_mmio_device<processor_privileged>> device_mipi;
 		std::shared_ptr<gpio_mmio_device<processor_privileged>> device_gpio;
 		std::shared_ptr<rand_mmio_device<processor_privileged>> device_rand;
+		std::shared_ptr<htif_mmio_device<processor_privileged>> device_htif;
 
 		const char* name() { return "rv-sys"; }
 
@@ -282,6 +283,7 @@ namespace riscv {
 			device_mipi = std::make_shared<mipi_mmio_device<processor_privileged>>(*this, 0x40004000);
 			device_gpio = std::make_shared<gpio_mmio_device<processor_privileged>>(*this, 0x40005000, device_plic, 4);
 			device_rand = std::make_shared<rand_mmio_device<processor_privileged>>(*this, 0x40006000);
+			device_htif = std::make_shared<htif_mmio_device<processor_privileged>>(*this, 0x40008000);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem->add_segment(device_sbi);
