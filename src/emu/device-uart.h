@@ -123,16 +123,15 @@ namespace riscv {
 
 		/* UART constructor */
 
-		uart_mmio_device(P &proc, UX mpa, plic_mmio_device_ptr plic, UX irq) :
+		uart_mmio_device(P &proc, UX mpa, plic_mmio_device_ptr plic, UX irq, console_device_ptr console) :
 			memory_segment<UX>("UART", mpa, /*uva*/0, /*size*/8,
 				pma_type_io | pma_prot_read | pma_prot_write),
 			proc(proc),
 			plic(plic),
 			irq(irq),
+			console(console),
 			com{0}
-		{
-			console = std::make_shared<console_device<P>>(proc);
-		}
+		{}
 
 		void service()
 		{

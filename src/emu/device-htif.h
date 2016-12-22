@@ -13,6 +13,7 @@ namespace riscv {
 	struct htif_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
+		typedef std::shared_ptr<console_device<P>> console_device_ptr;
 
 		enum {
 			total_size = sizeof(u64) * 2
@@ -20,19 +21,22 @@ namespace riscv {
 
 		P &proc;
 
-		/* Timer registers */
+		/* HTIF registers */
 
 		u64 htif_tohost;
 		u64 htif_fromhost;
 
+		console_device_ptr console;
+
 		/* HTIF constructor */
 
-		htif_mmio_device(P &proc, UX mpa) :
+		htif_mmio_device(P &proc, UX mpa, console_device_ptr console) :
 			memory_segment<UX>("HTIF", mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write),
 			proc(proc),
 			htif_tohost(0),
-			htif_fromhost(0)
+			htif_fromhost(0),
+			console(console)
 		{}
 
 		/* HTIF interface */
