@@ -64,4 +64,4 @@ mtvec:
 
 .section .rodata
 msg:
-        .string "UART echo demo v0.0.0\n$ "
+        .string "UART Console Echo Demo v0.0.0\n$ "
