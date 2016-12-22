@@ -938,6 +938,11 @@ struct rv_assembler
 							case rv_op_sra: dec.op = rv_op_srai_rv64i; has_imm = true; break;
 							case rv_op_add: dec.op = rv_op_addi; has_imm = true; break;
 							case rv_op_addw: dec.op = rv_op_addiw; has_imm = true; break;
+							case rv_op_and: dec.op = rv_op_andi; has_imm = true; break;
+							case rv_op_xor: dec.op = rv_op_xori; has_imm = true; break;
+							case rv_op_or: dec.op = rv_op_ori; has_imm = true; break;
+							case rv_op_slt: dec.op = rv_op_slti; has_imm = true; break;
+							case rv_op_sltu: dec.op = rv_op_sltiu; has_imm = true; break;
 						}
 						if (has_imm) {
 							packToken result;
