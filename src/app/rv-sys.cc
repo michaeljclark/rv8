@@ -50,8 +50,6 @@
 #include "color.h"
 #include "host.h"
 #include "cmdline.h"
-#include "config-parser.h"
-#include "config-string.h"
 #include "codec.h"
 #include "elf.h"
 #include "elf-file.h"
@@ -143,29 +141,18 @@ struct rv_emulator
 	static const uintmax_t default_ram_size = 0x40000000ULL; /* 1GiB */
 
 	elf_file elf;
-	std::string elf_filename;
-	config_string cfg;
-	std::string config_filename;
+	std::string boot_filename;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
 	addr_t map_physical = 0;
+	s64 ram_boot = 0;
 	uint64_t initial_seed = 0;
-	int ext = rv_set_imafdc;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
 
 	rv_emulator() : cpu(host_cpu::get_instance()) {}
-
-	static rv_set decode_isa_ext(std::string isa_ext)
-	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_set_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_set_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
-		else return rv_set_none;
-	}
 
 	static const int elf_p_flags_mmap(int v)
 	{
@@ -200,13 +187,6 @@ struct rv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		/* log elf load segment virtual address range */
-		if (proc.log & proc_log_memory) {
-			debug("mmap-elf :%016" PRIxPTR "-%016" PRIxPTR " %s",
-				addr_t(map_addr), addr_t(map_addr + phdr.p_memsz),
-				elf_p_flags_name(phdr.p_flags).c_str());
-		}
-
 		/* add the mmap to the emulator soft_mmu */
 		proc.mmu.mem->add_mmap(map_addr, addr_t(addr), phdr.p_memsz,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
@@ -216,12 +196,6 @@ struct rv_emulator
 	{
 		cmdline_option options[] =
 		{
-			{ "-c", "--config", cmdline_arg_type_string,
-				"Configuration strung",
-				[&](std::string s) { config_filename = s; return true; } },
-			{ "-i", "--isa", cmdline_arg_type_string,
-				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
-				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap)); } },
@@ -267,6 +241,9 @@ struct rv_emulator
 			{ "-p", "--map-physical", cmdline_arg_type_string,
 				"Map execuatable at physical address",
 				[&](std::string s) { return parse_integral(s, map_physical); } },
+			{ "-b", "--bbl", cmdline_arg_type_string,
+				"BBL Boot ( 32, 64 )",
+				[&](std::string s) { return parse_integral(s, ram_boot); } },
 			{ "-s", "--seed", cmdline_arg_type_string,
 				"Random seed",
 				[&](std::string s) { initial_seed = strtoull(s.c_str(), nullptr, 10); return true; } },
@@ -291,7 +268,7 @@ struct rv_emulator
 		}
 
 		/* get command line options */
-		elf_filename = result.first[0];
+		boot_filename = result.first[0];
 		for (size_t i = 0; i < result.first.size(); i++) {
 			host_cmdline.push_back(result.first[i]);
 		}
@@ -303,13 +280,10 @@ struct rv_emulator
 			}
 		}
 
-		/* read config */
-		if (config_filename.size() > 0) {
-			cfg.read(config_filename);
-		}
-
 		/* load ELF (headers only) */
-		elf.load(elf_filename, true);
+		if (ram_boot == 0) {
+			elf.load(boot_filename, true);
+		}
 	}
 
 	/* Start the execuatable with the given privileged processor template */
@@ -327,36 +301,65 @@ struct rv_emulator
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
 
-		/* Find the ELF executable PT_LOAD segment base address */
-		typename P::ux rom_base = 0, rom_size = 0;
-		for (size_t i = 0; i < elf.phdrs.size(); i++) {
-			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
-				if (rom_base == 0) rom_base = phdr.p_vaddr;
-				rom_size = phdr.p_vaddr + phdr.p_memsz - rom_base;
-			}
-		}
-
-		/* Map the ELF executable PT_LOAD segments into the emulator mmu */
-		typename P::ux map_offset = map_physical == 0 ? 0 : rom_base - map_physical;
-		for (size_t i = 0; i < elf.phdrs.size(); i++) {
-			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
-				map_load_segment_priv(proc, elf_filename.c_str(), phdr, phdr.p_vaddr - map_offset);
-			}
-		}
-
-		/* Add 1GB RAM to the mmu (TODO - read from config string) */
+		/* Add 1GB RAM to the mmu */
 		proc.mmu.mem->add_ram(default_ram_base, default_ram_size);
+
+		/* ROM/FLASH exposed in the Config MMIO region */
+		typename P::ux rom_base = 0, rom_size = 0, rom_entry = 0;
+
+		if (ram_boot == 32 || ram_boot == 64) {
+			struct stat statbuf;
+			FILE *file = nullptr;
+			memory_segment<typename P::ux> *segment = nullptr;
+
+			addr_t ram_base = proc.mmu.mem->mpa_to_uva(segment, default_ram_base);
+			if (segment == nullptr) {
+				panic("unable to locate ram");
+			}
+			if (stat(boot_filename.c_str(), &statbuf) < 0) {
+				panic("unable to stat boot file: %s", boot_filename.c_str());
+			}
+			if (!(file = fopen(boot_filename.c_str(), "r"))) {
+				panic("unable to open boot file: %s", boot_filename.c_str());
+			}
+			ssize_t len = fread((void*)ram_base, 1, statbuf.st_size, file);
+			if (len != statbuf.st_size) {
+				panic("unable to read boot file: %s", boot_filename.c_str());
+			}
+			fclose(file);
+			rom_base = default_ram_base;
+			rom_size = statbuf.st_size;
+			rom_entry = default_ram_base;
+		} else {
+			/* Find the ELF executable PT_LOAD segment base address */
+			for (size_t i = 0; i < elf.phdrs.size(); i++) {
+				Elf64_Phdr &phdr = elf.phdrs[i];
+				if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
+					if (rom_base == 0) rom_base = phdr.p_vaddr;
+					rom_size = phdr.p_vaddr + phdr.p_memsz - rom_base;
+				}
+			}
+
+			/* Map the ELF executable PT_LOAD segments into the emulator mmu */
+			typename P::ux map_offset = map_physical == 0 ? 0 : rom_base - map_physical;
+			for (size_t i = 0; i < elf.phdrs.size(); i++) {
+				Elf64_Phdr &phdr = elf.phdrs[i];
+				if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
+					map_load_segment_priv(proc, boot_filename.c_str(), phdr, phdr.p_vaddr - map_offset);
+				}
+			}
+			rom_base = rom_base - map_offset;
+			rom_entry = elf.ehdr.e_entry - map_offset;
+		}
 
 		/* Initialize interpreter */
 		proc.init();
 		proc.reset(); /* Reset code calls mapped ROM image */
 		proc.device_config->num_harts = 1;
 		proc.device_config->time_base = 1000000000;
-		proc.device_config->rom_base = rom_base - map_offset;
+		proc.device_config->rom_base = rom_base;
 		proc.device_config->rom_size = rom_size;
-		proc.device_config->rom_entry = elf.ehdr.e_entry - map_offset;
+		proc.device_config->rom_entry = rom_entry;
 		proc.device_config->ram_base = default_ram_base;
 		proc.device_config->ram_size = default_ram_size;
 
@@ -388,30 +391,21 @@ struct rv_emulator
 		#endif
 
 		/* execute */
-		switch (elf.ei_class) {
-			case ELFCLASS32:
-				switch (ext) {
-			#if ENABLE_RVIMA
-					case rv_set_ima: start_priv<priv_emulator_rv32ima>(); break;
-					case rv_set_imac: start_priv<priv_emulator_rv32imac>(); break;
-					case rv_set_imafd: start_priv<priv_emulator_rv32imafd>(); break;
-			#endif
-					case rv_set_imafdc: start_priv<priv_emulator_rv32imafdc>(); break;
-					case rv_set_none: panic("illegal isa extension"); break;
-				}
-				break;
-			case ELFCLASS64:
-				switch (ext) {
-			#if ENABLE_RVIMA
-					case rv_set_ima: start_priv<priv_emulator_rv64ima>(); break;
-					case rv_set_imac: start_priv<priv_emulator_rv64imac>(); break;
-					case rv_set_imafd: start_priv<priv_emulator_rv64imafd>(); break;
-			#endif
-					case rv_set_imafdc: start_priv<priv_emulator_rv64imafdc>(); break;
-					case rv_set_none: panic("illegal isa extension"); break;
-				}
-				break;
-			default: panic("illegal elf class");
+		if (ram_boot == 0) {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					start_priv<priv_emulator_rv32imafdc>(); break;
+				case ELFCLASS64:
+					start_priv<priv_emulator_rv64imafdc>(); break;
+			}
+		}
+		else if (ram_boot == 32) {
+			start_priv<priv_emulator_rv32imafdc>();
+		}
+		else if (ram_boot == 64) {
+			start_priv<priv_emulator_rv64imafdc>();
+		} else {
+			panic("--boot option must be 32 or 64");
 		}
 	}
 };
