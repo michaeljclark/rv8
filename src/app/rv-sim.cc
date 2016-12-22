@@ -49,8 +49,6 @@
 #include "util.h"
 #include "host.h"
 #include "cmdline.h"
-#include "config-parser.h"
-#include "config-string.h"
 #include "codec.h"
 #include "elf.h"
 #include "elf-file.h"
@@ -126,8 +124,6 @@ struct rv_emulator
 
 	elf_file elf;
 	std::string elf_filename;
-	config_string cfg;
-	std::string config_filename;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
@@ -290,9 +286,6 @@ struct rv_emulator
 	{
 		cmdline_option options[] =
 		{
-			{ "-c", "--config", cmdline_arg_type_string,
-				"Configuration strung",
-				[&](std::string s) { config_filename = s; return true; } },
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
@@ -348,11 +341,6 @@ struct rv_emulator
 			if (allow_env_var(*env)) {
 				host_env.push_back(*env);
 			}
-		}
-
-		/* read config */
-		if (config_filename.size() > 0) {
-			cfg.read(config_filename);
 		}
 
 		/* load ELF (headers only) */
