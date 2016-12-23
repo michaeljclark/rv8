@@ -39,22 +39,15 @@ should be in `e_ident[EI_DATA]`. ARM is using e_flags for ABI version
 
 ## Address calculation
 
-The following tables describes the standard ELF address mnemonics
-used in symbol relocation address calculations (see reference documents):
+The following table provides details on the variables used in address calculation:
 
-- A Represents the addend used to compute the value of the relocatable field.
-- B Represents the base address at which a shared object has been loaded into memory
-	during execution. Generally, a shared object is built with a 0 base virtual
-	address, but the execution address will be different.
-- G Represents the offset into the global offset table at which the relocation entry’s
-	symbol will reside during execution.
-	GOT Represents the address of the global offset table.
-- L Represents the place (section offset or address) of the Procedure Linkage Table
-	entry for a symbol.
-- P Represents the place (section offset or address) of the storage unit being relocated
-	(computed using r_offset).
-- S Represents the value of the symbol whose index resides in the relocation entry.
-- Z Represents the size of the symbol whose index resides in the relocation entry.
+Variable       | Description
+:------------- | :----------------
+A              | Addend field in the relocation entry associated with the symbol
+B              | Base address of a shared object loaded into memory
+G              | Offset of the symbol into the GOT (Global Offset Table)
+S              | Value of the symbol in the symbol table
+GP             | Global Pointer register (x3)
 
 ## Relocations
 
