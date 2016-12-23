@@ -15,16 +15,15 @@ RISC-V Privileged Specification. The MIPI device is a simple bitfield
 with one bit per hart, which when set will raise a software interrupt
 on the destiniation hart.
 
-## Example memory layout for `rv-sim`
+## Example memory layout for `rv-sys`
 
 ```
-soft-mmu :0000000000001000-0000000000002000 BOOT (0x0000-0x1000) +MAIN+R
-soft-mmu :0000000000010000-000000000001115c ROM0 (0x34000-0x3515c) +MAIN+R+X
-soft-mmu :0000000040000000-0000000040000010 TIME (0x0000-0x0010) +IO+R+W
-soft-mmu :0000000040001000-0000000040001008 MIPI (0x0000-0x0008) +IO+R+W
-soft-mmu :0000000040002000-0000000040002078 PLIC (0x0000-0x0078) +IO+R+W
-soft-mmu :0000000040003000-0000000040003008 UART (0x0000-0x0008) +IO+R+W
-soft-mmu :0000000080000000-00000000c0000000 RAM0 (0x81c00000-0xc1c00000) +MAIN+R+W+X
+soft-mmu :0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
+soft-mmu :fffffffffffff000-0000000000000000 (0x0000-0x1000) SBI +MAIN+R+X
+soft-mmu :0000000040000000-0000000040000010 (0x0000-0x0010) TIME +IO+R+W
+soft-mmu :0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W
+soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
+soft-mmu :0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
 ```
 
 _Note: the addresses here are just examples and it is expected that
@@ -53,7 +52,7 @@ when set will raise a software interrupt on the destiniation hart.
 
 Example MIPI device at offset `0x40001000`.
 
-`0000000040001000-0000000040001008 MIPI (0x0000-0x0008) +IO+R+W`
+`0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W`
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
@@ -70,73 +69,13 @@ potentially there may be one MIPI device per node._
 
 ## PLIC MMIO Layout
 
-The PLIC device has a custom scalable layout based on principles
-outlined in the RISC-V Privileged Specification. The PLIC MMIO
-apeture is designed to be scalable. It can be configured with
-variables for number of nodes, hardware threads and IRQs.
+Example PLIC device aperture at offset `0x40002000`
 
-Example PLIC device aperture at offset `0x40002000`, with 1 node,
-32 harts, 64 irqs.
+`soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W`
 
-`0000000040002000-0000000040002078 PLIC (0x0000-0x0078) +IO+R+W`
-
-Offset           | Type | Name             | Value
-:--------------- | :--- | :--------------  | :-----
-0                | u32  | num_irqs         | NUM_IRQS
-4                | u32  | num_nodes        | NUM_NODES
-8                | u32  | num_harts        | NUM_HARTS
-12               | u32  | num_priorities   | 4
-16               | u32  | pending_offset   | 12 * sizeof(u32)
-20               | u32  | priority0_offset | pending_offset + pending_length
-24               | u32  | priority1_offset | priority0_offset + priority0_length
-28               | u32  | enabled_offset   | priority1_offset + priority1_length
-pending_offset   | u32  | pending          | irq_words * sizeof(u32)
-priority0_offset | u32  | priority0        | irq_words * sizeof(u32)
-priority1_offset | u32  | priority1        | irq_words * sizeof(u32)
-enabled_offset   | u32  | enabled          | enabled_words * sizeof(u32)
-
-The following constants describe the length of the MMIO apetures:
-
-Constant         | Expression
-:--------------- | :----------------
-irq_words        | num_irqs / bits_per_word
-pending_length   | irq_words * sizeof(u32)
-priority0_length | irq_words * sizeof(u32)
-priority1_length | irq_words * sizeof(u32)
-enabled_words    | num_irqs * num_nodes * num_harts / bits_per_word
-enabled_length   | enabled_words * sizeof(u32)
-
-### PLIC MMIO Registers
-
-The offset into the pending, priority0 and priority1 bit fields
-is based on the least significant IRQ (e.g. irq 0) being in the
-least significant bit of the first word:
-
-	pending[irq >> word_shift] & (1ULL << (irq & (bits_per_word-1)))
-
-where word_shift = 5 and bits_per_word = 32.
-
-The enabled bit field order is `node_id, hart_id, irq_word` so that
-the offset into the enabled bit field can be calculated using the
-node_id and hart_id, which locates the start of the bit field that
-is encoded in the same order as the pending and priority bit fields.
-
-The enabled bit field for a given node_id and hart_id combination
-starts at an offset based on the node_id and hart_id and the
-encoding then follows the same scheme as the pending bit field:
-
-	(node_id * NUM_HARTS * irq_words) + (hart_id * irq_words)
-
-### PLIC Priority Encoding
-
-implements 4 priority levels using 2 bits ([p0][p1])
-
-Priority | Mode | Enabled ([p0][p1])
-:------  | ---- | :------
-highest  | M    | (11)
-         | H    | (10,11)
-         | S    | (01,10,11)
-lowest   | U    | (00,01,10,11)
+There is a single 64-bit register which when read returns an IRQ number
+for which an interrupted has beed triggered on, and when written to with
+an IRQ number, claims or acknowledges that interrupt.
 
 ## UART MMIO Layout
 
