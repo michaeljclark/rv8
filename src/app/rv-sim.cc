@@ -135,12 +135,12 @@ struct rv_emulator
 
 	rv_emulator() : cpu(host_cpu::get_instance()) {}
 
-	static rv_set decode_isa_ext(std::string isa_ext)
+	static rv_set decode_isa_ext(std::string ext)
 	{
-		if (strncasecmp(isa_ext.c_str(), "IMA", isa_ext.size()) == 0) return rv_set_ima;
-		else if (strncasecmp(isa_ext.c_str(), "IMAC", isa_ext.size()) == 0) return rv_set_imac;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFD", isa_ext.size()) == 0) return rv_set_imafd;
-		else if (strncasecmp(isa_ext.c_str(), "IMAFDC", isa_ext.size()) == 0) return rv_set_imafdc;
+		if (ext == "IMA" || ext == "ima") return rv_set_ima;
+		else if (ext == "IMAC" || ext == "imac") return rv_set_imac;
+		else if (ext == "IMAFD" || ext == "imafd") return rv_set_imafd;
+		else if (ext == "IMAFDC" || ext == "imafdc") return rv_set_imafdc;
 		else return rv_set_none;
 	}
 

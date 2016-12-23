@@ -62,13 +62,13 @@ static u32 decode_flags(const char *flagstr)
 
 static u64 decode_pte(const char *ptemode, u64 pa, u32 flags)
 {
-	if (strncasecmp(ptemode, "sv32", 4) == 0) {
+	if (ptemode == "sv32") {
 		sv32_pte pte = { .val = { .flags = flags, .ppn = u32(pa >> 12) } };
 		return pte.xu.val;
-	} else if (strncasecmp(ptemode, "sv39", 4) == 0) {
+	} else if (ptemode == "sv39") {
 		sv39_pte pte = { .val = {.flags = flags, .ppn = pa >> 12 } };
 		return pte.xu.val;
-	} else if (strncasecmp(ptemode, "sv48", 4) == 0) {
+	} else if (ptemode == "sv48") {
 		sv48_pte pte = { .val = {.flags = flags, .ppn = pa >> 12 } };
 		return pte.xu.val;
 	} else {
