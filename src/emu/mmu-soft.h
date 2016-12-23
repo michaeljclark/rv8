@@ -398,18 +398,18 @@ namespace riscv {
 					/* translate address taking into account PTE level */
 					return page_translate_offset<PTM>(pte.val.ppn, va, level);
 				}
+			}
 
 		fault:
-				debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
-					"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
-					(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
-					(addr_t)vpn, (addr_t)pte.xu.val);
+			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
+				"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
+				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
+				(addr_t)vpn, (addr_t)pte.xu.val);
 
-				switch (op) {
-					case op_fetch: proc.raise(rv_cause_fault_fetch, va);
-					case op_load:  proc.raise(rv_cause_fault_load, va);
-					case op_store: proc.raise(rv_cause_fault_store, va);
-				}
+			switch (op) {
+				case op_fetch: proc.raise(rv_cause_fault_fetch, va);
+				case op_load:  proc.raise(rv_cause_fault_load, va);
+				case op_store: proc.raise(rv_cause_fault_store, va);
 			}
 
 			return 0; /* not reached */
