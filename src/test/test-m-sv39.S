@@ -15,7 +15,7 @@ _start:
 
 # copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_l1_rw)  # load sv39_pte_l1_rw(hi)
-	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_l1_rw(lo)
+	addi    t0, t0, %pcrel_lo(1b)          # load sv39_pte_l1_rw(lo)
 	li      t1, 0x80000000
 	ld      t2, 0(t0)
 	sd      t2, 0(t1)
@@ -89,7 +89,7 @@ _start:
 
 # copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_l1_r)   # load sv39_pte_l1_r(hi)
-	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_l1_r(lo)
+	addi    t0, t0, %pcrel_lo(1b)          # load sv39_pte_l1_r(lo)
 	li      t1, 0x80000000
 	ld      t2, 0(t0)
 	sd      t2, 0(t1)
@@ -136,7 +136,7 @@ _start:
 
 # copy pte to RAM
 1:	auipc   t0, %pcrel_hi(sv39_pte_l1_x)   # load sv39_pte_l1_x(hi)
-	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_l1_x(lo)
+	addi    t0, t0, %pcrel_lo(1b)          # load sv39_pte_l1_x(lo)
 	li      t1, 0x80000000
 	ld      t2, 0(t0)
 	sd      t2, 0(t1)
@@ -189,19 +189,17 @@ _start:
 	bne     t4, t3, fail
 
 #
-# test load and store to RW megapage
+# test load and store to RW 2MiB page
 #
 
 # copy pte to RAM
-1:	auipc   t0, %pcrel_hi(sv39_pte_l2_mrw1)  # load sv39_pte_l2_mrw1(hi)
-	addi    t0, t0, %pcrel_lo(1b)         # load sv39_pte_l2_mrw1(lo)
+1:	auipc   t0, %pcrel_hi(sv39_pte_l2)  # load sv39_pte_l2(hi)
+	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_l2(lo)
 	li      t1, 0x80000000
 	ld      t2, 0(t0)
 	sd      t2, 0(t1)
-1:	auipc   t0, %pcrel_hi(sv39_pte_l2_mrw2)  # load sv39_pte_l2_mrw2(hi)
-	addi    t0, t0, %pcrel_lo(1b)         # load sv39_pte_l2_mrw2(lo)
 	li      t1, 0x80001000
-	ld      t2, 0(t0)
+	ld      t2, 8(t0)
 	sd      t2, 0(t1)
 
 # load sptbr ppn
@@ -238,6 +236,59 @@ _start:
 	lbu     a1, 0(a0)
 	bne     a1, a2, fail
 
+#
+# test load and store to RW 4 KiB page
+#
+
+# copy pte to RAM
+1:	auipc   t0, %pcrel_hi(sv39_pte_l3)  # load sv39_pte_l3(hi)
+	addi    t0, t0, %pcrel_lo(1b)       # load sv39_pte_l3(lo)
+	li      t1, 0x80000000
+	ld      t2, 0(t0)
+	sd      t2, 0(t1)
+	li      t1, 0x80001000
+	ld      t2, 8(t0)
+	sd      t2, 0(t1)
+	li      t1, 0x80002000
+	ld      t2, 16(t0)
+	sd      t2, 0(t1)
+	ld      t2, 24(t0)
+	sd      t2, 8(t1)
+
+# load sptbr ppn
+	li      t1, 0x80000000
+	csrrw   zero, sptbr, t1
+	sfence.vm
+
+# set mstatus.MPRV=1 (enable M mode paging)
+	li      t0, 1
+	slli    t0, t0, 17
+	csrrs   zero, mstatus, t0
+
+# write 0xcc to 0x1000
+	li      a0, 0x1000
+	li      a2, 0xcc
+	sb      a2, 0(a0)
+
+# read from 0x2000
+	lbu     a3, 0(a0)
+	bne     a2, a3, fail
+
+# set mstatus.MPRV=0 (Disable M mode Paging)
+	li      t1, 1
+	slli    t1, t1, 17
+	or      t0, t0, t1
+	csrrc   zero, mstatus, t0
+
+#
+# test reading from physical memory
+#
+
+# read from 0x80003000 and compare to 0xcc
+	li      a0, 0x80003000
+	lbu     a1, 0(a0)
+	bne     a1, a2, fail
+
 # success
 	li      a0, 0
 	ebreak
@@ -264,23 +315,40 @@ mtvec:
 
 # 1 GiB gigapage mapping (URW)
 sv39_pte_l1_rw:
+	# 0x8000_0000
 	# rv-bin pte sv39 0x80000000 URWV
 	.dword 0x20000017   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
 # gigapage mapping (UR)
 sv39_pte_l1_r:
+	# 0x8000_0000
 	# rv-bin pte sv39 0x80000000 URV
 	.dword 0x20000013   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
 # gigapage mapping (UX)
 sv39_pte_l1_x:
+	# 0x8000_0000
 	# rv-bin pte sv39 0x80000000 UXV
 	.dword 0x20000019   # 0x0000 -> 0x8000_0000 - 0xC000_0000
 
 # 2 MiB megapage mapping (URW)
-sv39_pte_l2_mrw1:
+sv39_pte_l2:
+	# 0x8000_0000
 	# rv-bin pte sv39 0x80001000 U
 	.dword 0x20000410   # 0x8000_0000 -> 0x8000_1000
-sv39_pte_l2_mrw2:
+	# 0x8000_1000
 	# rv-bin pte sv39 0x80200000 URWV
-	.dword 0x20080017   # 0x0000 -> 0x80200000 -> 0x8000_2000
+	.dword 0x20080017   # 0x0000 -> 0x8020_0000 - 0x8040_0000
+
+# 4 KiB megapage mapping (URW)
+sv39_pte_l3:
+	# 0x8000_0000
+	# rv-bin pte sv39 0x80001000 U
+	.dword 0x20000410   # 0x8000_0000 -> 0x8000_1000
+	# 0x8000_1000
+	# rv-bin pte sv39 0x80002000 U
+	.dword 0x20000810   # 0x8000_1000 -> 0x8000_2000
+	# 0x8000_2000
+	# rv-bin pte sv39 0x80003000 URWV
+	.dword 0x0         # 0x0000 -> invalid
+	.dword 0x20000c17  # 0x1000 -> 0x8000_3000 - 0x8000_4000
