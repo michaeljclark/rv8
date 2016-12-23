@@ -646,6 +646,8 @@ namespace riscv {
 				case rv_op_wfi:
 					std::this_thread::yield();
 					return pc_offset;
+				case rv_op_fence:
+					return pc_offset;
 				default: break;
 			}
 			return 0;
