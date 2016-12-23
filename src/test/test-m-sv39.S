@@ -233,8 +233,8 @@ _start:
 # test reading from physical memory
 #
 
-# read from 0x80002000 and compare to 0xcc
-	li      a0, 0x80002000
+# read from 0x80202000 and compare to 0xcc
+	li      a0, 0x80202000
 	lbu     a1, 0(a0)
 	bne     a1, a2, fail
 
@@ -279,8 +279,8 @@ sv39_pte_l1_x:
 
 # 2 MiB megapage mapping (URW)
 sv39_pte_l2_mrw1:
-	# rv-bin pte sv39 0x80001000 URW
-	.dword 0x20000416   # 0x8000_0000 -> 0x8000_1000
+	# rv-bin pte sv39 0x80001000 U
+	.dword 0x20000410   # 0x8000_0000 -> 0x8000_1000
 sv39_pte_l2_mrw2:
 	# rv-bin pte sv39 0x80200000 URWV
 	.dword 0x20080017   # 0x0000 -> 0x80200000 -> 0x8000_2000

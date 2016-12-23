@@ -365,12 +365,21 @@ namespace riscv {
 				/* map the ppn into the host address space */
 				memory_segment<UX> *segment = nullptr;
 				pte_uva = mem->mpa_to_uva(segment, pte_mpa);
-				if (!segment) goto out;
+				if (!segment) goto fault;
 				segment->load(pte_uva, pte);
+
+				/* check if this is a pointer PTE */
+				if ((((pte.xu.val >> pte_shift_R) |
+					  (pte.xu.val >> pte_shift_W) |
+					  (pte.xu.val >> pte_shift_X)) & 1) == 0)
+				{
+					ppn = pte.val.ppn << page_shift;
+					continue;
+				};
 
 				/* If pte.v = 0, or if pte.r = 0 and pte.w = 1, raise an access exception */
 				if (((~pte.val.flags >> pte_shift_V) |
-					((~pte.val.flags >> pte_shift_R) & (pte.val.flags >> pte_shift_W))) & 1) goto out;
+					((~pte.val.flags >> pte_shift_R) & (pte.val.flags >> pte_shift_W))) & 1) goto fault;
 
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
@@ -390,23 +399,17 @@ namespace riscv {
 					return page_translate_offset<PTM>(pte.val.ppn, va, level);
 				}
 
-				/* step to the next entry */
-				ppn = pte.val.ppn;
+		fault:
+				debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
+					"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
+					(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
+					(addr_t)vpn, (addr_t)pte.xu.val);
 
-				/* clearing the pte holder so translation fault messages contain zeros */
-				pte.xu.val = 0;
-			}
-
-		out:
-			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
-				"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
-				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
-				(addr_t)vpn, (addr_t)pte.xu.val);
-
-			switch (op) {
-				case op_fetch: proc.raise(rv_cause_fault_fetch, va);
-				case op_load:  proc.raise(rv_cause_fault_load, va);
-				case op_store: proc.raise(rv_cause_fault_store, va);
+				switch (op) {
+					case op_fetch: proc.raise(rv_cause_fault_fetch, va);
+					case op_load:  proc.raise(rv_cause_fault_load, va);
+					case op_store: proc.raise(rv_cause_fault_store, va);
+				}
 			}
 
 			return 0; /* not reached */
