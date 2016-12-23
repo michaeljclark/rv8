@@ -725,8 +725,10 @@ namespace riscv {
 				P::mip.r.seip = 1;
 				if (P::mstatus.r.mie && P::mie.r.meie) {
 					mtrap(rv_intr_m_external, false);
+					return;
 				} else if (P::mstatus.r.sie && P::mie.r.seie) {
 					strap(rv_intr_s_external, false);
+					return;
 				}
 			} else {
 				P::mip.r.meip = 0;
@@ -743,8 +745,10 @@ namespace riscv {
 				P::mip.r.stip = 1;
 				if (P::mstatus.r.mie && P::mie.r.mtie) {
 					mtrap(rv_intr_m_timer, false);
+					return;
 				} else if (P::mstatus.r.sie && P::mie.r.stie) {
 					strap(rv_intr_s_timer, false);
+					return;
 				}
 			} else {
 				P::mip.r.mtip = 0;
@@ -761,8 +765,10 @@ namespace riscv {
 				P::mip.r.ssip = 1;
 				if (P::mstatus.r.mie && P::mie.r.msie) {
 					mtrap(rv_intr_m_software, false);
+					return;
 				} else if (P::mstatus.r.sie && P::mie.r.ssie) {
 					strap(rv_intr_s_software, false);
+					return;
 				}
 			} else {
 				P::mip.r.msip = 0;
