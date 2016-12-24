@@ -26,13 +26,13 @@ Enum | Name
 
 ### e_ident[EI_OSABI]
 
-Host triples are in the form: `machine` - `vendor` - `operatingsystem`
-
 Enum | Name                        | RISC-V Description
 :--- | :---                        | :---
 0    | `ELFOSABI_SYSV`             | e.g. `riscv64-unknown-elf`
 3    | `ELFOSABI_LINUX`            | e.g. `riscv64-linux-gnu`
 9    | `ELFOSABI_FREEBSD`          | e.g. `riscv64-generic-freebsd`
+
+_Note: Host triples are in the form:_ `machine-vendor-operatingsystem`
 
 ### e_ident[EI_ABIVERSION]
 
