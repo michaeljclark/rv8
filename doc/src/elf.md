@@ -120,6 +120,22 @@ Enum | ELF Reloc Type       | Description                | Assembler           |
 47   | R_RISCV_GPREL_I      | GP-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
 48   | R_RISCV_GPREL_S      | GP-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,sd,fsw,fsd)
 
+### Position Independent Code
+
+R_RISCV_PCREL_HI20, and R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S pairs are relocations used in position independent code.
+
+The R_RISCV_PCREL_HI20 relocation associates a symbol with an AUIPC instruction where the high 20-bits are relocated to point to a symbol relative to the PC of the instruction.
+
+The AUIPC instruction and relocation is followed by an I-Type instruction (add immediate, load) and R_RISCV_PCREL_LO12_I relocation or S-Type instruction (store) and R_RISCV_PCREL_LO12_S relocation.
+
+The R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S relocations contains a (typically private) local label symbol that points to the AUIPC instruction which has the R_RISCV_PCREL_HI20 relocation entry that then points to the actual symbol. The relocation takes three steps:
+
+ - R_RISCV_PCREL_LO12_I relocation entry ⟶ label
+ - label ⟶ labeled instruction R_RISCV_PCREL_HI20 reloc
+ - labeled instruction R_RISCV_PCREL_HI20 reloc ⟶ symbol
+
+To get the symbol address to perform the calculation to fill the 12-bit immediate on the add, load or store instruction we have to find the R_RISCV_PCREL_HI20 relocation entry associated with the AUIPC instruction offset pointed to by the R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S symbol.
+
 ## Glossary
 
 - TLS LE (Thread Local Storage - Local Exec), Compiler flag: `-ftls-model=local-exec`
