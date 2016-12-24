@@ -60,7 +60,7 @@ static u32 decode_flags(const char *flagstr)
 	return flags;
 }
 
-static u64 decode_pte(const char *ptemode, u64 pa, u32 flags)
+static u64 decode_pte(std::string ptemode, u64 pa, u32 flags)
 {
 	if (ptemode == "sv32") {
 		sv32_pte pte = { .val = { .flags = flags, .ppn = u32(pa >> 12) } };
@@ -72,7 +72,7 @@ static u64 decode_pte(const char *ptemode, u64 pa, u32 flags)
 		sv48_pte pte = { .val = {.flags = flags, .ppn = pa >> 12 } };
 		return pte.xu.val;
 	} else {
-		panic("invalid pte mode: %s", ptemode);
+		panic("invalid pte mode: %s", ptemode.c_str());
 	}
 }
 
