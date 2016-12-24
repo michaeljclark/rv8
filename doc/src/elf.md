@@ -26,6 +26,8 @@ Enum | Name
 
 ### e_ident[EI_OSABI]
 
+Host triples are in the form: `machine` - `vendor` - `operatingsystem`
+
 Enum | Name                        | RISC-V Description
 :--- | :---                        | :---
 0    | `ELFOSABI_SYSV`             | `riscv-unknown-elf`
@@ -83,7 +85,7 @@ Enum | ELF Reloc Type       | Description                | Assembler           |
 7    | R_RISCV_TLS_DTPMOD64 | TLS relocation             |                     | word64 = S->TLSINDEX
 8    | R_RISCV_TLS_DTPREL32 | TLS relocation             |                     | word32 = TLS + S + A - TLS_TP_OFFSET
 9    | R_RISCV_TLS_DTPREL64 | TLS relocation             |                     | word64 = TLS + S + A - TLS_TP_OFFSET
-10    | R_RISCV_TLS_TPREL32  | TLS relocation             |                     | word32 = TLS + S + A + S_TLS_OFFSET - TLS_DTV_OFFSET
+10   | R_RISCV_TLS_TPREL32  | TLS relocation             |                     | word32 = TLS + S + A + S_TLS_OFFSET - TLS_DTV_OFFSET
 11   | R_RISCV_TLS_TPREL64  | TLS relocation             |                     | word64 = TLS + S + A + S_TLS_OFFSET - TLS_DTV_OFFSET
 16   | R_RISCV_BRANCH       | PC-relative branch offset  |                     | SB-Type (beq,bne,blt,bge,bltu,bgeu)
 17   | R_RISCV_JAL          | PC-relative jump offset    |                     | UJ-Type (jal)
