@@ -12,30 +12,48 @@ The following is a list of ELF header fields and potential RISC-V mappings.
 
 ### e_ident[EI_DATA]
 
-- ELFDATA2LSB for little-endian
-- ELFDATA2MSB for big-endian (not applicable to RISC-V)
+Enum | Name                        | RISC-V Description
+:--- | :---                        | :---
+0    | `ELFDATANONE`               |
+1    | `ELFDATA2LSB`               | RISC-V little-endian
+1    | `ELFDATA2MSB`               |
 
-### e_flags
+### e_ident[EI_VERSION]
 
-MISA could potentially be stored in `e_flags` i.e. `-march` compiler flags.
-This would be similar to the SPARC ELF Headers.
-
-- EF_RISCV_EXT_MASK = 0x03ffffff (Processor extension mask from `misa` CSR)
-
-ARM is using e_flags (`EF_ARM_BE8` and `EF_ARM_LE8`) for endianness but this
-should be in `e_ident[EI_DATA]`. ARM is using e_flags for ABI version
-(`EF_ARM_EABIMASK`) but this should be in `e_ident[EI_OSABI]` and/or
-`e_ident[EI_ABIVERSION]`.
+Enum | Name
+:--- | :---
+1    | `EV_CURRENT`
 
 ### e_ident[EI_OSABI]
 
-- ELFOSABI_SYSV = 0  
+Enum | Name                        | RISC-V Description
+:--- | :---                        | :---
+0    | `ELFOSABI_SYSV`             | `riscv-unknown-elf`
+3    | `ELFOSABI_LINUX`            | `riscv-linux-gnu`
+6    | `ELFOSABI_SOLARIS`          | `riscv-oracle-solaris`
+9    | `ELFOSABI_FREEBSD`          | `riscv-unknown-freebsd`
 
 ### e_ident[EI_ABIVERSION]
 
-- RVABI_HARD = 0
-- RVABI_V1 = 1 (soft float via library dispatch, 64-bit fill in function on RV32)
+Enum | Name
+:--- | :---
+0    | `ELFABIVERSION_NONE`
 
+### e_flags
+
+Enum | Name                        | RISC-V Description
+:--- | :---                        | :---
+1    | `EF_RISCV_RVC`              | RVC Compression
+2    | `EF_RISCV_FLOAT_ABI_SINGLE` | Single-precision float ABI
+4    | `EF_RISCV_FLOAT_ABI_DOUBLE` | Double-precision float ABI
+6    | `EF_RISCV_FLOAT_ABI_QUAD`   | Quad-precision float ABI
+8    | `EF_RISCV_RVE`              |
+
+### e_version
+
+Enum | Name                        | RISC-V Description
+:--- | :---                        | :---
+1    | `EV_CURRENT`                | (same as `e_ident[EI_VERSION]`)
 
 ## Address calculation
 

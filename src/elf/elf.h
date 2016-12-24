@@ -160,7 +160,15 @@ enum {
 
 // EI_OSABI
 enum {
-	ELFOSABI_SYSV = 0                /* e_ident[EI_OSABI] == ELFOSABI_SYSV */
+	ELFOSABI_SYSV = 0,               /* e_ident[EI_OSABI] == ELFOSABI_SYSV */
+	ELFOSABI_LINUX = 3,              /* e_ident[EI_OSABI] == ELFOSABI_LINUX */
+	ELFOSABI_SOLARIS = 6,            /* e_ident[EI_OSABI] == ELFOSABI_SOLARIS */
+	ELFOSABI_FREEBSD = 9             /* e_ident[EI_OSABI] == ELFOSABI_FREEBSD */
+};
+
+// EI_ABIVERSION
+enum {
+	ELFABIVERSION_NONE = 0
 };
 
 // Elf32_Ehdr
