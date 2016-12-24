@@ -16,7 +16,7 @@ Enum | Name                        | RISC-V Description
 :--- | :---                        | :---
 0    | `ELFDATANONE`               |
 1    | `ELFDATA2LSB`               | RISC-V little-endian
-1    | `ELFDATA2MSB`               |
+2    | `ELFDATA2MSB`               |
 
 ### e_ident[EI_VERSION]
 
