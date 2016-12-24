@@ -30,10 +30,9 @@ Host triples are in the form: `machine` - `vendor` - `operatingsystem`
 
 Enum | Name                        | RISC-V Description
 :--- | :---                        | :---
-0    | `ELFOSABI_SYSV`             | `riscv-unknown-elf`
-3    | `ELFOSABI_LINUX`            | `riscv-linux-gnu`
-6    | `ELFOSABI_SOLARIS`          | `riscv-oracle-solaris`
-9    | `ELFOSABI_FREEBSD`          | `riscv-unknown-freebsd`
+0    | `ELFOSABI_SYSV`             | e.g. `riscv64-unknown-elf`
+3    | `ELFOSABI_LINUX`            | e.g. `riscv64-linux-gnu`
+9    | `ELFOSABI_FREEBSD`          | e.g. `riscv64-generic-freebsd`
 
 ### e_ident[EI_ABIVERSION]
 
