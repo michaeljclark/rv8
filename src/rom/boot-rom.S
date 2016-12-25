@@ -285,13 +285,7 @@ mcall_mask_interrupt:
 	li      t4, -1
 	xor     t5, t5, t4             # invert irq mask
 
-	li      t0, PLIC_MMIO_BASE
-
-	lw      t1, 28(t0)             # enabled offset
-	add     t2, t0, t1             # enabled node_id=0, hart_id=0
-	lw      t4, 0(t2)              # load enabled word from PLIC
-	and     t4, t4, t5
-	sw      t4, 0(t2)              # store enabled word to PLIC
+	# todo
 
 	li      a0, 0                  # success
 	lx      t0, 0*xlenb(sp)        # restore regs to avoid
@@ -305,25 +299,7 @@ mcall_unmask_interrupt:
 	li      t1, 1                  # set irq bit
 	sll     t5, t1, a0             # a5 contains shifted mask
 
-	li      t0, PLIC_MMIO_BASE
-
-	lw      t1, 20(t0)             # priority0 offset
-	add     t2, t0, t1             # priority0 node_id=0, hart_id=0
-	lw      t4, 0(t2)              # load priority0 word from PLIC
-	or      t4, t4, t5
-	sw      t4, 0(t2)              # store priority0 word to PLIC
-
-	lw      t1, 24(t0)             # priority1 offset
-	add     t2, t0, t1             # priority1 node_id=0, hart_id=0
-	lw      t4, 0(t2)              # load priority1 word from PLIC
-	or      t4, t4, t5
-	sw      t4, 0(t2)              # store priority1 word to PLIC
-
-	lw      t1, 28(t0)             # enabled offset
-	add     t2, t0, t1             # enabled node_id=0, hart_id=0
-	lw      t4, 0(t2)              # load enabled word from PLIC
-	or      t4, t4, t5
-	sw      t4, 0(t2)              # store enabled word to PLIC
+	# todo
 
 	li      a0, 0                  # success
 	lx      t0, 0*xlenb(sp)        # restore regs to avoid
