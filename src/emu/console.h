@@ -36,6 +36,36 @@ namespace riscv {
 			shutdown();
 		}
 
+		void process_output()
+		{
+			char buf[256];
+			ssize_t ret;
+
+			if (pollfds[0].revents & POLLIN) {
+				if ((ret = read(pipefds[0], buf, (sizeof(buf)))) < 0) {
+					debug("console: socket: read: %s", strerror(errno));
+				} else if (write(STDIN_FILENO, buf, ret) < 0) {
+					debug("console: socket: write: %s", strerror(errno));
+				}
+			}
+		}
+
+		void process_input()
+		{
+			char buf[256];
+			ssize_t ret;
+
+			if (pollfds[1].revents & POLLIN) {
+				if ((ret = read(STDIN_FILENO, buf, (sizeof(buf)))) < 0) {
+					debug("console: stdin: read: %s", strerror(errno));
+				} else {
+					for (ssize_t i = 0; i < ret; i++) {
+						queue.push_back(buf[i]);
+					}
+				}
+			}
+		}
+
 		void mainloop()
 		{
 			block_signals();
@@ -51,24 +81,10 @@ namespace riscv {
 				if (poll(pollfds, 2, -1) < 0 && errno != EINTR) {
 					panic("console poll failed: %s", strerror(errno));
 				}
+				process_output();
 				if (!running) break;
-				if (pollfds[0].revents & POLLIN) {
-					unsigned char c;
-					if (read(pipefds[0], &c, 1) < 0) {
-						debug("console: socket: read: %s", strerror(errno));
-					} else if (write(STDIN_FILENO, &c, 1) < 0) {
-						debug("console: socket: write: %s", strerror(errno));
-					}
-				}
 				if (suspended) continue;
-				if (pollfds[1].revents & POLLIN) {
-					unsigned char c;
-					if (read(STDIN_FILENO, &c, 1) < 0) {
-						debug("console: stdin: read: %s", strerror(errno));
-					} else {
-						queue.push_back(c);
-					}
-				}
+				process_input();
 			}
 			restore_console();
 			close_pipe();
