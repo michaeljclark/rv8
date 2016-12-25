@@ -24,11 +24,13 @@ soft-mmu :0000000040000000-0000000040000010 (0x0000-0x0010) TIME +IO+R+W
 soft-mmu :0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W
 soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
 soft-mmu :0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
+soft-mmu :0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
 ```
 
 _Note: the addresses here are just examples and it is expected that
 the configuration string will contain the base addresses for each
 device MMIO aperture._
+
 
 ## TIME MMIO Layout
 
@@ -44,6 +46,7 @@ Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
 0                | u64  | mtime            | Machine Timer Register
 8                | u64  | mtimecmp         | Machine Timer Compare Register
+
 
 ## MIPI MMIO Layout
 
@@ -67,7 +70,8 @@ hart_words       | num_harts / bits_per_word
 _Note: The MIPI device needs support for multliple nodes, or
 potentially there may be one MIPI device per node._
 
-## PLIC MMIO Layout
+
+## PLIC MMIO
 
 Example PLIC device aperture at offset `0x40002000`
 
@@ -77,7 +81,8 @@ There is a single 64-bit register which when read returns an IRQ number
 for which an interrupted has beed triggered on, and when written to with
 an IRQ number, claims or acknowledges that interrupt.
 
-## UART MMIO Layout
+
+## UART MMIO
 
 The UART MMIO layout is based on the 16550. See
 [Serial UART information](https://www.lammertbies.nl/comm/info/serial-uart.html)
@@ -101,3 +106,46 @@ Offset           | Type | Name             | Description
 7                | u8   | scr              | (RW) Scratch Register
 0                | u8   | dll              | (RW) Divisor Latch LSB (LCR.DLAB=1)
 1                | u8   | dlm              | (RW) Divisor Latch MSB (LCR.DLAB=1)
+
+
+## HTIF MMIO
+
+The HTIF MMIO device is a MMIO version of the RISC-V host
+target interface altered to use a predefined memory location.
+
+Example UART device at offset `0x40008000`.
+
+```
+soft-mmu :0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
+```
+
+Offset           | Type | Name             | Description
+:--------------- | :--- | :--------------  | :--------------
+0                | u64  | tohost           | To Host Register
+8                | u64  | fromhost         | From Host Register
+
+The only interface that is implemented is the shutdown and console IO.
+
+- Bits 63:56 bits of `tohost` and `fromhost` host is the device
+- Bits 55:48 bits of `tohost` and `fromhost` host is the command
+
+To post a single character to the console, write to `tohost` with the
+cdevice 1 and the command 1 and the character in the low order bits:
+
+```
+tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch
+```
+
+To poll for keyboard read `fromhost`. If there is keyboard input, where c
+is the character, the device is 1, and the command is 0. If there is no
+data available the result will be zero.
+
+```
+fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch
+```
+
+To send the shutdown command:
+
+```
+tohost <- 1
+```
