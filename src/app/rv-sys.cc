@@ -301,9 +301,6 @@ struct rv_emulator
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
 
-		/* Add 1GB RAM to the mmu */
-		proc.mmu.mem->add_ram(default_ram_base, default_ram_size);
-
 		/* ROM/FLASH exposed in the Config MMIO region */
 		typename P::ux rom_base = 0, rom_size = 0, rom_entry = 0;
 
@@ -311,6 +308,9 @@ struct rv_emulator
 			struct stat statbuf;
 			FILE *file = nullptr;
 			memory_segment<typename P::ux> *segment = nullptr;
+
+			/* Add 1GB RAM to the mmu */
+			proc.mmu.mem->add_ram(default_ram_base, default_ram_size);
 
 			addr_t ram_base = proc.mmu.mem->mpa_to_uva(segment, default_ram_base);
 			if (segment == nullptr) {
@@ -350,6 +350,9 @@ struct rv_emulator
 			}
 			rom_base = rom_base - map_offset;
 			rom_entry = elf.ehdr.e_entry - map_offset;
+
+			/* Add 1GB RAM to the mmu */
+			proc.mmu.mem->add_ram(default_ram_base, default_ram_size);
 		}
 
 		/* Initialize interpreter */
