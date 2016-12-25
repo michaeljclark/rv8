@@ -3,11 +3,11 @@
 The following document outlines (unofficial) layout for the riscv-meta
 emulator devices:
 
-- TIME
-- MIPI
-- PLIC
-- UART
-- HTIF
+- RTC (Real Time Clock)
+- MIPI (Machine Interprocessor Interrupt)
+- PLIC (Platform Level Interrupt Controller)
+- UART (Universal Asychronous Receiver / Transmitter)
+- HTIF (Host Target Interface)
 
 The UART MMIO layout is based on a 16550, the TIME device is based on
 version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
@@ -16,7 +16,7 @@ RISC-V Privileged Specification. The MIPI device is a simple bitfield
 with one bit per hart, which when set will raise a software interrupt
 on the destiniation hart.
 
-## Example memory layout for `rv-sys`
+## Memory layout
 
 ```
 soft-mmu :0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
@@ -33,13 +33,13 @@ the configuration string will contain the base addresses for each
 device MMIO aperture._
 
 
-## TIME MMIO Layout
+## RTC (Real Time Clock)
 
-The TIME device is based on the priv-1.9.1 specification and has
+The RTC device is based on the priv-1.9.1 specification and has
 an `mtime` register which contains a clock and an `mtimecmp` register
 which when timer interrupts are enabled, will raise a timer interrupt.
 
-Example TIME device at offset `0x40000000`.
+Example RTC MMIO device at offset `0x40000000`.
 
 `0000000040000000-0000000040000010 TIME (0x0000-0x0010) +IO+R+W`
 
@@ -49,7 +49,7 @@ Offset           | Type | Name             | Description
 8                | u64  | mtimecmp         | Machine Timer Compare Register
 
 
-## MIPI MMIO Layout
+## MIPI (Machine Interprocessor Interrupt)
 
 The MIPI device is simply a bitfield with one bit per hart, which
 when set will raise a software interrupt on the destiniation hart.
@@ -63,9 +63,9 @@ Offset           | Type | Name             | Description
 0                | ux   | hart             | Per hard bitfield
 
 
-## PLIC MMIO
+## PLIC (Platform Level Interrupt Controller)
 
-Example PLIC device aperture at offset `0x40002000`
+Example PLIC MMIO device aperture at offset `0x40002000`
 
 `soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W`
 
@@ -76,7 +76,7 @@ There is a single 64-bit read/write register:
 - zero is returned if there are no active interrupts
 
 
-## UART MMIO
+## UART (Universal Asychronous Receiver / Transmitter)
 
 The UART MMIO layout is based on the 16550. See
 [Serial UART information](https://www.lammertbies.nl/comm/info/serial-uart.html)
@@ -102,7 +102,7 @@ Offset           | Type | Name             | Description
 1                | u8   | dlm              | (RW) Divisor Latch MSB (LCR.DLAB=1)
 
 
-## HTIF MMIO
+## HTIF (Host Target Interface)
 
 The HTIF MMIO device is a MMIO version of the RISC-V host
 target interface altered to use a predefined memory location.
