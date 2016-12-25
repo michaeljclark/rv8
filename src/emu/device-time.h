@@ -29,7 +29,7 @@ namespace riscv {
 		/* Timer constructor */
 
 		time_mmio_device(P &proc, UX mpa) :
-			memory_segment<UX>("TIME", mpa, /*uva*/0, /*size*/total_size,
+			memory_segment<UX>("RTC", mpa, /*uva*/0, /*size*/total_size,
 				pma_type_io | pma_prot_read | pma_prot_write),
 			proc(proc),
 			mtime(0),
