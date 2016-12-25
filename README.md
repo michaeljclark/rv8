@@ -93,13 +93,6 @@ The following table shows the RISC-V Meta libraries:
 | `libriscv_model.a`  | Instruction set metamodel               | macro
 | `libriscv_util.a`   | Utility functions for tools             | mini
 
-> The project code idiom is a subset of C++14 with STL, C struct with member
-functions, single inheritance, operator overloading, variadiac templates and
-template based static polymorphism. RTTI and exceptions are *disallowed*.
-C++ virtual functions are *discouraged* in nano, micro and mini.
-The use of stringstream is temporarily permitted in `src/gen` until it has
-been replaced with with variadic template based string formatter in `src/fmt`.
-
 Tools
 -----------------
 
