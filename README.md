@@ -59,6 +59,33 @@ Screenshots
 
 *Example Disassembly output from `rv-bin dump`*
 
+Tools
+-----------------
+
+The following table shows the RISC-V Meta tools:
+
+|Name    | Description
+|:------ | :-----------------
+|rv-meta | Code and documentation generator
+|rv-bin  | ELF dump, disassmble, compress and histogram
+|rv-sim  | ABI Proxy Simulator
+|rv-sys  | Privileged System Emulator
+
+Libraries
+-----------------
+
+The following table shows the RISC-V Meta libraries:
+
+| Name                | Description                             | Scale
+| :------------------ | :-------------------------------------- | :----
+| `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
+| `libriscv_crypto.a` | Cryptographic functions                 | micro
+| `libriscv_elf.a`    | ELF parser                              | micro
+| `libriscv_fmt.a`    | String formatting                       | micro
+| `libriscv_gen.a`    | Source and documentation generators     | macro
+| `libriscv_model.a`  | Instruction set metamodel               | macro
+| `libriscv_util.a`   | Utility functions for tools             | mini
+
 Project Structure
 -----------------------
 
@@ -78,33 +105,6 @@ Project Structure
 | `src/test`   | ISA simulator and emulator tests
 | `src/util`   | Miscellaneous utilities library
 | `doc/pdf`    | Generated documentation
-
-Libraries
------------------
-
-The following table shows the RISC-V Meta libraries:
-
-| Name                | Description                             | Scale
-| :------------------ | :-------------------------------------- | :----
-| `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
-| `libriscv_crypto.a` | Cryptographic functions                 | micro
-| `libriscv_elf.a`    | ELF parser                              | micro
-| `libriscv_fmt.a`    | String formatting                       | micro
-| `libriscv_gen.a`    | Source and documentation generators     | macro
-| `libriscv_model.a`  | Instruction set metamodel               | macro
-| `libriscv_util.a`   | Utility functions for tools             | mini
-
-Tools
------------------
-
-The following table shows the RISC-V Meta tools:
-
-|Name    | Description
-|:------ | :-----------------
-|rv-meta | Code and documentation generator
-|rv-bin  | ELF dump, disassmble, compress and histogram
-|rv-sim  | ABI Proxy Simulator
-|rv-sys  | Privileged System Emulator
 
 Dependencies
 -----------------
