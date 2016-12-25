@@ -54,10 +54,18 @@ namespace riscv {
 			}
 			u8 device = htif_tohost >> 56;
 			u8 cmd = (htif_tohost >> 48) & 0xff;
-			if (device == 1 && cmd == 1) {
-				u8 c = htif_tohost & 0xff;
-				console->write_char(c);
-				htif_tohost = 0;
+			if (device == 1) {
+				switch (cmd) {
+					case 0:
+						htif_tohost = 0;
+						break;
+					case 1:
+						u8 c = htif_tohost & 0xff;
+						console->write_char(c);
+						htif_tohost = 0;
+						htif_fromhost = ((uint64_t)device << 56) | ((uint64_t)cmd << 48);
+						break;
+				}
 			}
 		}
 
