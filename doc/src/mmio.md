@@ -9,7 +9,7 @@ emulator devices:
 - UART (Universal Asychronous Receiver / Transmitter)
 - HTIF (Host Target Interface)
 
-The UART MMIO layout is based on a 16550, the TIME device is based on
+The UART MMIO layout is based on a 8250, the RTC device is based on
 version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
 has a custom scalable layout based on principles outlined in the
 RISC-V Privileged Specification. The MIPI device is a simple bitfield
@@ -85,7 +85,7 @@ There is a single 64-bit read/write register:
 
 ## UART (Universal Asychronous Receiver / Transmitter)
 
-The UART MMIO layout is based on the 16550. See
+The UART MMIO layout is based on the 8250 (16550 with no FIFO). See
 [Serial UART information](https://www.lammertbies.nl/comm/info/serial-uart.html)
 for more information.
 
