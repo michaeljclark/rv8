@@ -106,6 +106,7 @@ namespace riscv {
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 			memory_segment<UX> *segment = nullptr;
+			inst_t inst = 0;
 
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<u16>(pc))) {
@@ -124,7 +125,6 @@ namespace riscv {
 				proc.raise(rv_cause_fault_fetch, pc);
 			} else {
 				/* fetch instruction using memory segment interface */
-				inst_t inst;
 				u32 inst_32;
 				segment->load(uva, inst_32);
 				inst = htole32(inst_32);
@@ -143,11 +143,10 @@ namespace riscv {
 					inst |= inst_t(htole32(inst_32)) << 32;
 					pc_offset = 8;
 				} else {
-					pc_offset = inst = 0; /* illegal instruction */
+					proc.raise(rv_cause_fault_fetch, pc);
 				}
-				return inst;
 			}
-			return 0;
+			return inst;
 		}
 
 		/* amo */
