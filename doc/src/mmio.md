@@ -7,6 +7,7 @@ emulator devices:
 - MIPI
 - PLIC
 - UART
+- HTIF
 
 The UART MMIO layout is based on a 16550, the TIME device is based on
 version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
@@ -77,9 +78,11 @@ Example PLIC device aperture at offset `0x40002000`
 
 `soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W`
 
-There is a single 64-bit register which when read returns an IRQ number
-for which an interrupted has beed triggered on, and when written to with
-an IRQ number, claims or acknowledges that interrupt.
+There is a single 64-bit read/write register:
+
+- when read, returns an IRQ number for the highest priority interrupt
+- when IRW number is written, claims/acknowledges end of interrupt
+- zero is returned if there are no active interrupts
 
 
 ## UART MMIO
@@ -133,7 +136,7 @@ To post a single character to the console, write to `tohost` with the
 cdevice 1 and the command 1 and the character in the low order bits:
 
 ```
-tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch
+tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* putchar */
 ```
 
 To poll for keyboard read `fromhost`. If there is keyboard input, where c
@@ -141,11 +144,11 @@ is the character, the device is 1, and the command is 0. If there is no
 data available the result will be zero.
 
 ```
-fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch
+fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* getchar */
 ```
 
 To send the shutdown command:
 
 ```
-tohost <- 1
+tohost <- 1 /* shutdown */
 ```
