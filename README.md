@@ -10,14 +10,15 @@ Version : (under version control)
 About
 -------------
 
-RISC-V Meta is a suite of tools that operate on RISC-V ISA Metadata.
+RISC-V Meta is a suite of tools that operate on RISC-V ISA.
 
 The suite contains simple decoupled libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
-instruction set metadata, instruction decoders, JIT encoders, LaTeX
-documentation, a functional metadata based RISC-V disassembler, a
-histogram tool for generating statistics on RISC-V ELF executables
-and a RISC-V simulator with proxy syscall and privileged modes.
+instruction set metadata, instruction decoders, a JIT assembler, LaTeX
+documentation, a metadata based RISC-V disassembler, a histogram tool
+for generating statistics on RISC-V ELF executables, a RISC-V proxy
+syscall simulator and a RISC-V full system emulator that implements
+the RISC-V 1.9.1 privileged specification.
 
 RISC-V Meta is the starting point for a RISC-V binary translation and
 security sandboxing investigation.
