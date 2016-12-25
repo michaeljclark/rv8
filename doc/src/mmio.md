@@ -65,7 +65,7 @@ Offset           | Type | Name             | Description
 ## PLIC (Platform Level Interrupt Controller)
 
 The PLIC is the Platform Level Interrupt Controller which provides
-an interface to receive and claim external interrupts.
+an interface to receive and acknowledge external interrupts.
 
 Example PLIC MMIO device aperture at offset `0x40002000`
 
