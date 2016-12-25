@@ -64,6 +64,9 @@ Offset           | Type | Name             | Description
 
 ## PLIC (Platform Level Interrupt Controller)
 
+The PLIC is the Platform Level Interrupt Controller which provides
+an interface to receive and claim external interrupts.
+
 Example PLIC MMIO device aperture at offset `0x40002000`
 
 `soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W`
@@ -75,7 +78,7 @@ Offset           | Type | Name             | Description
 There is a single 64-bit read/write register:
 
 - when read, returns an IRQ number for the highest priority interrupt
-- when IRW number is written, claim or EOI (End Of Interrupt)
+- when written, claims an IRQ number and signals EOI (End Of Interrupt)
 - interrupt service can read multiple times until zero is returned
 - zero is returned if there are no active interrupts
 
