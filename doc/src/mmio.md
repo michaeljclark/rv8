@@ -131,7 +131,7 @@ The only interface that is implemented is the shutdown and console IO.
 - Bits 55:48 bits of `tohost` and `fromhost` host is the command
 
 To post a single character to the console, write to `tohost` with the
-cdevice 1 and the command 1 and the character in the low order bits:
+device 1 and the command 1 and the character in the low order bits:
 
 ```
 tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* putchar */
