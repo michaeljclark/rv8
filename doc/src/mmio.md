@@ -4,7 +4,7 @@ The following document outlines (unofficial) layout for the riscv-meta
 emulator devices:
 
 - RTC (Real Time Clock)
-- MIPI (Machine Interprocessor Interrupt)
+- IPI (Inter-processor Interrupt)
 - PLIC (Platform Level Interrupt Controller)
 - UART (Universal Asychronous Receiver / Transmitter)
 - HTIF (Host Target Interface)
@@ -20,8 +20,8 @@ on the destiniation hart.
 
 ```
 soft-mmu :0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
-soft-mmu :0000000040000000-0000000040000010 (0x0000-0x0010) TIME +IO+R+W
-soft-mmu :0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W
+soft-mmu :0000000040000000-0000000040000010 (0x0000-0x0010) RTC +IO+R+W
+soft-mmu :0000000040001000-0000000040001008 (0x0000-0x0008) IPI +IO+R+W
 soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
 soft-mmu :0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
 soft-mmu :0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
@@ -48,12 +48,12 @@ Offset           | Type | Name             | Description
 8                | u64  | mtimecmp         | Machine Timer Compare Register
 
 
-## MIPI (Machine Interprocessor Interrupt)
+## IPI (Inter-Processor Interrupt)
 
-The MIPI device is simply a bitfield with one bit per hart, which
+The IPI device is simply a bitfield with one bit per hart, which
 when set will raise a software interrupt on the destiniation hart.
 
-Example MIPI device at offset `0x40001000`.
+Example IPI device at offset `0x40001000`.
 
 `0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W`
 
