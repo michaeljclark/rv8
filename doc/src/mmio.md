@@ -127,22 +127,32 @@ Offset           | Type | Name             | Description
 
 The only interface that is implemented is the shutdown and console IO.
 
-- Bits 63:56 bits of `tohost` and `fromhost` host is the device
-- Bits 55:48 bits of `tohost` and `fromhost` host is the command
+- Bits 63:56 bits of `tohost` and `fromhost` host encodes the device
+- Bits 55:48 bits of `tohost` and `fromhost` host encodes the command
+- Console device is 1
+- Console input request command is 0
+- Console output request command is 1
 
-To post a single character to the console, write to `tohost` with the
-device 1 and the command 1 and the character in the low order bits:
-
-```
-tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* putchar */
-```
-
-To poll for keyboard read `fromhost`. If there is keyboard input, where c
-is the character, the device is 1, and the command is 0. If there is no
-data available the result will be zero.
+To write a character to the console, first clear `fromhost`, then write to
+`tohost` with device 1 command 1 and the output character in the
+low order bits, followed by reading back the same device and command in
+`fromhost` for acknowledgement.
 
 ```
-fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* getchar */
+fromhost <- 0
+tohost <- ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | ch /* putchar request */
+fromhost -> ((uint64_t)1 << 56) | ((uint64_t)1 << 48)    /* putchar acknowledge */
+```
+
+To poll for keyboard input, first clear `fromhost`, then write to
+`tohost` with device 1 command 0 followed by reading `fromhost`. If there
+is data available it will be encoded in the low 8 bits. If there is no data
+available the result will be zero.
+
+```
+fromhost <- 0
+tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48)        /* getchar request */
+fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* getchar acknowledge */
 ```
 
 To send the shutdown command:
