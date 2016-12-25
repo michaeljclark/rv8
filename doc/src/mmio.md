@@ -12,9 +12,10 @@ emulator devices:
 The UART MMIO layout is based on a 8250, the RTC device is based on
 version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
 has a custom scalable layout based on principles outlined in the
-RISC-V Privileged Specification. The MIPI device is a simple bitfield
+RISC-V Privileged Specification. The IPI device is a simple bitfield
 with one bit per hart, which when set will raise a software interrupt
-on the destiniation hart.
+on each destiniation hart. The HTIF device emulates the console input
+output protocol used by BBL.
 
 ## Memory layout
 
