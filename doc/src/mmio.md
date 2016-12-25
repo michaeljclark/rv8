@@ -59,7 +59,7 @@ Example MIPI device at offset `0x40001000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | ux   | hart             | Per hard bitfield
+0                | u64  | hart             | Per hart bitfield
 
 
 ## PLIC (Platform Level Interrupt Controller)
