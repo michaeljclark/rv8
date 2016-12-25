@@ -147,6 +147,7 @@ namespace riscv {
 				}
 				return inst;
 			}
+			return 0;
 		}
 
 		/* amo */

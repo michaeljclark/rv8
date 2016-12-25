@@ -129,14 +129,35 @@ namespace riscv {
 			addr_t pc_offset, new_offset;
 			inst_t inst = 0;
 
-			/* interrupt service routine */
+service_interrupt:
 			P::time = cpu_cycle_clock();
 			P::isr();
 
-			/* trap return path */
-			int cause;
-			if (unlikely((cause = setjmp(P::env)) > 0)) {
-				cause -= P::internal_cause_offset;
+			try {
+				/* step the processor */
+				while (P::instret < inststop) {
+					inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
+					inst_t inst_cache_key = inst % inst_cache_size;
+					if (inst_cache[inst_cache_key].inst == inst) {
+						dec = inst_cache[inst_cache_key].dec;
+					} else {
+						P::inst_decode(dec, inst);
+						inst_cache[inst_cache_key].inst = inst;
+						inst_cache[inst_cache_key].dec = dec;
+					}
+					if ((new_offset = P::inst_exec(dec, pc_offset)) ||
+						(new_offset = P::inst_priv(dec, pc_offset)))
+					{
+						if (P::log) P::print_log(dec, inst);
+						P::pc += new_offset;
+						P::cycle++;
+						P::instret++;
+					} else {
+						P::raise(rv_cause_illegal_instruction, P::pc);
+					}
+				}
+				return exit_cause_continue;
+			} catch (int cause) {
 				switch(cause) {
 					case P::internal_cause_cli:
 						return exit_cause_cli;
@@ -149,31 +170,8 @@ namespace riscv {
 				}
 				P::trap(dec, cause);
 				if (!P::running) return exit_cause_poweroff;
+				else goto service_interrupt;
 			}
-
-			/* step the processor */
-			while (P::instret < inststop) {
-				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
-				inst_t inst_cache_key = inst % inst_cache_size;
-				if (inst_cache[inst_cache_key].inst == inst) {
-					dec = inst_cache[inst_cache_key].dec;
-				} else {
-					P::inst_decode(dec, inst);
-					inst_cache[inst_cache_key].inst = inst;
-					inst_cache[inst_cache_key].dec = dec;
-				}
-				if ((new_offset = P::inst_exec(dec, pc_offset)) ||
-					(new_offset = P::inst_priv(dec, pc_offset)))
-				{
-					if (P::log) P::print_log(dec, inst);
-					P::pc += new_offset;
-					P::cycle++;
-					P::instret++;
-				} else {
-					P::raise(rv_cause_illegal_instruction, P::pc);
-				}
-			}
-			return exit_cause_continue;
 		}
 	};
 
