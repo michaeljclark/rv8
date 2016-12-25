@@ -60,16 +60,7 @@ Example MIPI device at offset `0x40001000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | ux   | hart             | hart_words * sizeof(ux)
-
-The following constants describe the length of the MMIO apeture:
-
-Constant         | Expression
-:--------------- | :----------------
-hart_words       | num_harts / bits_per_word
-
-_Note: The MIPI device needs support for multliple nodes, or
-potentially there may be one MIPI device per node._
+0                | ux   | hart             | Per hard bitfield
 
 
 ## PLIC MMIO
