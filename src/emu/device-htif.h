@@ -47,33 +47,46 @@ namespace riscv {
 			debug("htif_mmio:htif_fromhost    %llu", htif_fromhost);
 		}
 
+		inline u64 htif_device_command(u8 device, u8 command) {
+			return ((u64)device << 56) | ((u64)command << 48);
+		}
+
+		inline u8 htif_device(u64 var) { return (var >> 56); }
+		inline u8 htif_command(u64 var) { return (var >> 48) & 0xff; }
+
 		void handle_output()
 		{
 			if (htif_tohost == 1) {
 				proc.raise(P::internal_cause_poweroff, proc.pc);
 			}
-			u8 device = htif_tohost >> 56;
-			u8 cmd = (htif_tohost >> 48) & 0xff;
+			u8 device = htif_device(htif_tohost);
+			u8 command = htif_command(htif_tohost);
 			if (device == 1) {
-				switch (cmd) {
+				switch (command) {
 					case 0:
 						htif_tohost = 0;
+						htif_fromhost = htif_device_command(device, command);
 						break;
-					case 1:
-						u8 c = htif_tohost & 0xff;
-						console->write_char(c);
+					case 1: 
+						console->write_char(htif_tohost & 0xff);
 						htif_tohost = 0;
-						htif_fromhost = ((uint64_t)device << 56) | ((uint64_t)cmd << 48);
+						htif_fromhost = htif_device_command(device, command);
+						break;
+					default:
+						debug("unknown htif command: %d", device);
 						break;
 				}
+			} else {
+				debug("unknown htif device: %d", command);
 			}
 		}
 
 		void handle_input()
 		{
-			htif_fromhost = 0;
-			if (console->has_char()) {
-				htif_fromhost = ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | console->read_char();
+			if (htif_fromhost == 0) {
+				if (console->has_char()) {
+					htif_fromhost = htif_device_command(1, 0) | console->read_char();
+				}
 			}
 		}
 
@@ -105,6 +118,7 @@ namespace riscv {
 				val = htif_tohost;
 			}
 			else if (va == 8) {
+				/* here */
 				handle_input();
 				val = htif_fromhost;
 			}
