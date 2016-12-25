@@ -95,9 +95,9 @@ test-sim: all
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-no 11
 
 test-sys: all
-	$(EMULATOR) -S -m -o $(BIN_DIR)/test-m-ecall-trap
-	$(EMULATOR) -S -m -o $(BIN_DIR)/test-m-mret-user
-	$(EMULATOR) -S -m -O $(BIN_DIR)/test-m-mmio-timer
+	$(EMULATOR) -S $(BIN_DIR)/test-m-ecall-trap
+	$(EMULATOR) -S $(BIN_DIR)/test-m-mret-user
+	$(EMULATOR) -S $(BIN_DIR)/test-m-mmio-timer
 	$(EMULATOR) -S -m -v $(BIN_DIR)/test-m-sv39
 
 $(ASM_DIR)/hello-world-libc.s: $(SRC_DIR)/hello-world-libc.c ; $(CC) $(CFLAGS) -S -nostartfiles $^ -o $@

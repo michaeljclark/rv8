@@ -2,16 +2,10 @@
 .globl _start
 _start:
 
-# RAM is at 0x8000_0000 - 0xc000_0000
+.equ HTIF_TOHOST, 0x40008000
+
 # mtime is at 0x4000_0000
 # mtimecmp is at 0x4000_0008
-
-# setup trap stack at top of memory
-	li      sp, 0xbffffff8
-	csrrw   zero, mscratch, sp
-
-# setup stack 1MB below top of memory
-	li      sp, 0xbfeffff8
 
 # setup mtvec
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
@@ -40,8 +34,53 @@ loop:
 	wfi
 	j loop
 
-
 # break on interrupt
 mtvec:
-	li      a0, 0xdabadabad00
-	ebreak
+	csrrc  t0, mcause, zero
+	bgez t0, fail       # interrupt causes are less than zero
+	slli t0, t0, 1      # shift off high bit
+	srli t0, t0, 1
+	li t1, 7            # check this is an m_timer interrupt
+	bne t0, t1, fail
+	j pass
+
+pass:
+	la a0, pass_msg
+	jal puts
+	j shutdown
+
+fail:
+	la a0, fail_msg
+	jal puts
+	j shutdown
+
+puts:
+	li a2, HTIF_TOHOST
+	li a3, 0x01010000
+1:	lbu a1, (a0)
+	beqz a1, 2f
+	sw a1, 0(a2)
+	sw a3, 4(a2)
+3:	lw a1, 0(a2)
+	lw a4, 4(a2)
+	or a1, a1, a4
+	bnez a1, 3b
+	addi a0, a0, 1
+	j 1b
+2:	ret
+
+shutdown:
+	li a2, HTIF_TOHOST
+	li a1, 1
+	sw a1, 0(a2)
+	sw zero, 4(a2)
+1: 	wfi
+	j 1b
+
+.section .data
+
+pass_msg:
+	.string "PASS\n"
+
+fail_msg:
+	.string "FAIL\n"

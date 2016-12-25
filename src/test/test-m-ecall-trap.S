@@ -2,14 +2,7 @@
 .globl _start
 _start:
 
-# RAM is at 0x8000_0000 - 0xc000_0000
-
-# setup trap stack at top of memory
-	li      sp, 0xbffffff8
-	csrrw   zero, mscratch, sp
-
-# setup stack 1MB below top of memory
-	li      sp, 0xbfeffff8
+.equ HTIF_TOHOST, 0x40008000
 
 # setup mtvec
 1:	auipc   a0, %pcrel_hi(mtvec)       # load mtvec(hi)
@@ -18,64 +11,59 @@ _start:
 
 # trap test
 	ecall
-	li      a0, 0
-
-# exit
-	ebreak
+	j pass
 
 # simple trap vector example
 mtvec:
-	csrrw   sp, mscratch, sp
-
-#ifdef __riscv32
-	# save several registers
-	sw      a0, 0(sp)
-	sw      a1, -4(sp)
-	sw      a2, -8(sp)
-	sw      a3, -12(sp)
-	sw      a4, -16(sp)
-	sw      a5, -20(sp)
-#endif
-
-#ifdef __riscv64
-	sd      a0, 0(sp)
-	sd      a1, -8(sp)
-	sd      a2, -16(sp)
-	sd      a3, -24(sp)
-	sd      a4, -32(sp)
-	sd      a5, -40(sp)
-#endif
+	csrrc  t0, mcause, zero
+	li     t1, 11
+	bne    t0, t1, fail
 
 	# increment past the trapping instruction
 	csrrsi  a2, mepc, 0
 	addi    a2, a2, 4
 	csrrw   zero, mepc, a2
 
-	# restore several registers
-#ifdef __riscv32
-	lw      a0, 0(sp)
-	lw      a1, -4(sp)
-	lw      a2, -8(sp)
-	lw      a3, -12(sp)
-	lw      a4, -16(sp)
-	lw      a5, -20(sp)
-#endif
-
-#ifdef __riscv64
-	ld      a0, 0(sp)
-	ld      a1, -8(sp)
-	ld      a2, -16(sp)
-	ld      a3, -24(sp)
-	ld      a4, -32(sp)
-	ld      a5, -40(sp)
-#endif
-
 	# return
-	csrrw   sp, mscratch, sp
 	mret
 
-.section .rodata
-.p2align 12
-sv39_pte_0:
-	# riscv-pte-util sv39 0x80000000 URWV
-	.dword 0x20000017   # 0x0000 -> 0x8000_0000 - 0xC000_0000
+pass:
+	la a0, pass_msg
+	jal puts
+	j shutdown
+
+fail:
+	la a0, fail_msg
+	jal puts
+	j shutdown
+
+puts:
+	li a2, HTIF_TOHOST
+	li a3, 0x01010000
+1:	lbu a1, (a0)
+	beqz a1, 2f
+	sw a1, 0(a2)
+	sw a3, 4(a2)
+3:	lw a1, 0(a2)
+	lw a4, 4(a2)
+	or a1, a1, a4
+	bnez a1, 3b
+	addi a0, a0, 1
+	j 1b
+2:	ret
+
+shutdown:
+	li a2, HTIF_TOHOST
+	li a1, 1
+	sw a1, 0(a2)
+	sw zero, 4(a2)
+1: 	wfi
+	j 1b
+
+.section .data
+
+pass_msg:
+	.string "PASS\n"
+
+fail_msg:
+	.string "FAIL\n"
