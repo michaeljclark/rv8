@@ -79,9 +79,9 @@ Offset           | Type | Name             | Description
 There is a single 64-bit read/write register:
 
 - Read returns an IRQ number for the highest priority interrupt
-- Write claims an IRQ number and signals EOI (End Of Interrupt)
-- Interrupt service can read multiple times until zero is returned
 - Zero is returned if there are no active interrupts
+- Interrupt service can read multiple times until zero is returned
+- Write claims an IRQ number and signals EOI (End Of Interrupt)
 
 
 ## UART (Universal Asychronous Receiver / Transmitter)
