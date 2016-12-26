@@ -1,6 +1,6 @@
 # MMIO
 
-The following document outlines (unofficial) layout for the riscv-meta
+The following document outlines the MMIO layout for the riscv-meta
 emulator devices:
 
 - RTC (Real Time Clock)
@@ -9,13 +9,12 @@ emulator devices:
 - UART (Universal Asychronous Receiver / Transmitter)
 - HTIF (Host Target Interface)
 
-The UART MMIO layout is based on a 8250, the RTC device is based on
-version 1.9.1 of the RISC-V Privileged Specification. The PLIC device
-has a custom scalable layout based on principles outlined in the
-RISC-V Privileged Specification. The IPI device is a simple bitfield
-with one bit per hart, which when set will raise a software interrupt
-on each destiniation hart. The HTIF device emulates the console input
-output protocol used by BBL.
+The UART MMIO layout is based on a 8250. The RTC device is based on
+version 1.9.1 of the RISC-V Privileged Specification. The PLIC  has
+a layout based on [RISCVEMU](http://bellard.org/riscvemu/). The IPI
+device is a bitfield with one bit per hart, which when set will raise
+a software interrupt on each destiniation hart. The HTIF device
+emulates the console protocol used by BBL.
 
 ## Memory layout
 
@@ -27,10 +26,6 @@ output protocol used by BBL.
 0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
 0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
 ```
-
-_Note: the addresses here are just examples and it is expected that
-the configuration string will contain the base addresses for each
-device MMIO aperture._
 
 
 ## RTC (Real Time Clock)
@@ -141,7 +136,7 @@ The only interface that is implemented is the shutdown and console IO.
 - Console input request command is 0
 - Console output request command is 1
 
-To write a character to the console, first clear `fromhost`, then write to
+To write a character to the console, clear `fromhost`, then write to
 `tohost` with device 1 command 1 and the output character in the
 low order bits, followed by reading back the same device and command in
 `fromhost` for acknowledgement.
@@ -152,10 +147,9 @@ tohost <- ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | ch /* putchar request */
 fromhost -> ((uint64_t)1 << 56) | ((uint64_t)1 << 48)    /* putchar acknowledge */
 ```
 
-To poll for keyboard input, first clear `fromhost`, then write to
-`tohost` with device 1 command 0 followed by reading `fromhost`. If there
-is data available it will be encoded in the low 8 bits. If there is no data
-available the result will be zero.
+To poll for console input, clear `fromhost`, then write to `tohost` with
+device 1 command 0 followed by reading `fromhost`. If there is console input
+availablem, a non zero value will be encoded in the lowest 8 bits.
 
 ```
 fromhost <- 0
