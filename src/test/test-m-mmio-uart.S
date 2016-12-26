@@ -1,3 +1,10 @@
+#
+# test-m-mmio-uart
+#
+
+.equ PLIC_BASE,     0x40002000
+.equ UART_BASE,     0x40003000
+
 .section .text
 .globl _start
 _start:
@@ -18,7 +25,7 @@ _start:
 	csrrs   zero, mie, t0
 
 # program uart to raise interrupts on recieved data
-	li      a0, 0x40003000
+	li      a0, UART_BASE
 	li      a1, 1           # Load IER_ERBDA bit
 	sb      a1, 1(a0)       # Set IER_ERBDA bit in IER register
 
@@ -41,12 +48,12 @@ loop:
 # break on interrupt
 mtvec:
 # echo character from uart
-	li      a0, 0x40003000
+	li      a0, UART_BASE
 	lb      a1, 0(a0)
 	sb      a1, 0(a0)
 
 # claim interrupt in the PLIC
-	li      a0, 0x40002000
+	li      a0, PLIC_BASE
 	ld      a1, 0(a0)       # read interrupt
 	sd      a1, 0(a0)       # acknowledge
 	mret                    # return to faulting instruction

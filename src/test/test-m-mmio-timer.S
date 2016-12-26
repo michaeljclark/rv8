@@ -1,11 +1,13 @@
+#
+# test-m-mmio-timer
+#
+
+.equ RTC_BASE,      0x40000000
+.equ HTIF_TOHOST,   0x40008000
+
 .section .text
 .globl _start
 _start:
-
-.equ HTIF_TOHOST, 0x40008000
-
-# mtime is at 0x4000_0000
-# mtimecmp is at 0x4000_0008
 
 # setup mtvec
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
@@ -21,7 +23,7 @@ _start:
 	csrrs   zero, mie, t0
 
 # read from mtime
-	li      a0, 0x40000000
+	li      a0, RTC_BASE
 	ld      a1, 0(a0)
 
 # write to mtimecmp

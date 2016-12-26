@@ -1,10 +1,14 @@
-.section .text
-.globl _start
+#
+# test-m-mmio-htif
+#
 
-.equ HTIF_TOHOST, 0x40008000
+.equ HTIF_TOHOST,   0x40008000
 .equ HTIF_FROMHOST, 0x40008008
 
+.section .text
+.globl _start
 _start:
+
 1:	auipc a0, %pcrel_hi(msg)    # load msg(hi)
 	addi a0, a0, %pcrel_lo(1b)  # load msg(lo)
 2:	jal ra, puts
