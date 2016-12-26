@@ -145,8 +145,8 @@ service_interrupt:
 						inst_cache[inst_cache_key].inst = inst;
 						inst_cache[inst_cache_key].dec = dec;
 					}
-					if ((new_offset = P::inst_exec(dec, pc_offset)) ||
-						(new_offset = P::inst_priv(dec, pc_offset)))
+					if ((new_offset = P::inst_exec(dec, pc_offset)) != -1 ||
+						(new_offset = P::inst_priv(dec, pc_offset)) != -1)
 					{
 						if (P::log) P::print_log(dec, inst);
 						P::pc += new_offset;

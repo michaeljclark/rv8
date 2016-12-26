@@ -153,7 +153,7 @@ static void print_interp_h(rv_gen *gen)
 			printf("\t\t\t};\n");
 			printf("\t\t\tbreak;\n");
 		}
-		printf("\t\tdefault: return 0; /* illegal instruction */\n");
+		printf("\t\tdefault: return -1; /* illegal instruction */\n");
 		printf("\t}\n");
 		printf("\treturn pc_offset;\n");
 		printf("}\n\n");

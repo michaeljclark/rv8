@@ -532,7 +532,7 @@ namespace riscv {
 				                      fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
 				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::cycle, value);    break;
 				case rv_csr_time:     P::time = cpu_cycle_clock();
-				                      P::get_csr(dec, rv_mode_U, op, csr, P::time, value);  break;
+				                      P::get_csr(dec, rv_mode_U, op, csr, P::time, value);     break;
 				case rv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
 				case rv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
 				case rv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
@@ -611,7 +611,7 @@ namespace riscv {
 				case rv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
 				case rv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
 				case rv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
-				default: return 0; /* illegal instruction */
+				default: return -1; /* illegal instruction */
 			}
 			return pc_offset;
 		}
@@ -653,7 +653,7 @@ namespace riscv {
 					return pc_offset;
 				default: break;
 			}
-			return 0;
+			return -1; /* illegal instruction */
 		}
 
 		void utrap(typename P::ux cause, bool interrupt)

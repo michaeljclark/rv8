@@ -558,7 +558,7 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : f64_classify(proc.freg[dec.rs1].r.d.val);
 			};
 			break;
-		default: return 0; /* illegal instruction */
+		default: return -1; /* illegal instruction */
 	}
 	return pc_offset;
 }
@@ -1304,7 +1304,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 				proc.freg[dec.rd].r.lu.val = proc.ireg[dec.rs1].r.lu.val;
 			};
 			break;
-		default: return 0; /* illegal instruction */
+		default: return -1; /* illegal instruction */
 	}
 	return pc_offset;
 }
