@@ -217,7 +217,7 @@
 # Debug Mode Registers
 0x7B0  mrw  dcsr            "Debug control and status register"             1.9.1-
 0x7B1  mrw  dpc             "Debug program counter"                         1.9.1-
-0x7B2  mrw  dscratc         "Debug scratch register"                        1.9.1-
+0x7B2  mrw  dscratch        "Debug scratch register"                        1.9.1-
 
 # Nonstandard
 0x780  mrw  mtohost         "IO to Host"                                    -
