@@ -21,6 +21,7 @@ Directive    | Arguments                    | Description
 .rodata      |                              | emit .rodata section (if not present) and make current
 .bss         |                              | emit .bss section (if not present) and make current
 .string      | "string"                     | emit string
+.asciz       | "string"                     | emit string (alias for .string)
 .equ         | name, value                  | constant definition
 .macro       | name arg1 [, argn]           | begin macro definition \argname to substitute
 .endm        |                              | end macro definition
