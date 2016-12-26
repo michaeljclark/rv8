@@ -20,12 +20,12 @@ output protocol used by BBL.
 ## Memory layout
 
 ```
-soft-mmu :0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
-soft-mmu :0000000040000000-0000000040000010 (0x0000-0x0010) RTC +IO+R+W
-soft-mmu :0000000040001000-0000000040001008 (0x0000-0x0008) IPI +IO+R+W
-soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
-soft-mmu :0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
-soft-mmu :0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
+0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
+0000000040000000-0000000040000010 (0x0000-0x0010) RTC +IO+R+W
+0000000040001000-0000000040001008 (0x0000-0x0008) IPI +IO+R+W
+0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
+0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
+0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
 ```
 
 _Note: the addresses here are just examples and it is expected that
@@ -41,7 +41,7 @@ which when timer interrupts are enabled, will raise a timer interrupt.
 
 Example RTC MMIO device at offset `0x40000000`.
 
-`0000000040000000-0000000040000010 TIME (0x0000-0x0010) +IO+R+W`
+`0000000040000000-0000000040000010 (0x0000-0x0010) RTC +IO+R+W`
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
@@ -56,7 +56,9 @@ when set will raise a software interrupt on the destiniation hart.
 
 Example IPI device at offset `0x40001000`.
 
-`0000000040001000-0000000040001008 (0x0000-0x0008) MIPI +IO+R+W`
+```
+0000000040001000-0000000040001008 (0x0000-0x0008) IPI +IO+R+W
+```
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
@@ -68,9 +70,11 @@ Offset           | Type | Name             | Description
 The PLIC is the Platform Level Interrupt Controller which provides
 an interface to receive and acknowledge external interrupts.
 
-Example PLIC MMIO device aperture at offset `0x40002000`
+Example PLIC MMIO device aperture at offset `0x40002000`.
 
-`soft-mmu :0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W`
+```
+0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
+```
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
@@ -92,7 +96,9 @@ for more information.
 
 Example UART device at offset `0x40003000`.
 
-`0000000040003000-0000000040003008 UART (0x0000-0x0008) +IO+R+W`
+```
+0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
+```
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
@@ -118,7 +124,7 @@ target interface altered to use a predefined memory location.
 Example UART device at offset `0x40008000`.
 
 ```
-soft-mmu :0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
+0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
 ```
 
 Offset           | Type | Name             | Description
@@ -128,8 +134,8 @@ Offset           | Type | Name             | Description
 
 The only interface that is implemented is the shutdown and console IO.
 
-- Bits 63:56 bits of `tohost` and `fromhost` host encodes the device
-- Bits 55:48 bits of `tohost` and `fromhost` host encodes the command
+- Bits 63:56 bits of `tohost` and `fromhost` encodes the device
+- Bits 55:48 bits of `tohost` and `fromhost` encodes the command
 - Console device is 1
 - Console input request command is 0
 - Console output request command is 1
