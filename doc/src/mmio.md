@@ -1,7 +1,7 @@
 # MMIO
 
-The following document outlines the MMIO layout for the riscv-meta
-emulator devices:
+This document outlines the memory map for the `rv-sys` emulator
+devices:
 
 - RTC (Real Time Clock)
 - IPI (Inter-processor Interrupt)
@@ -18,14 +18,16 @@ emulates the console protocol used by BBL.
 
 ## Memory layout
 
-```
-0000000080000000-00000000c0000000 (0x4e697000-0x8e697000) RAM +MAIN+R+W+X
-0000000040000000-0000000040000010 (0x0000-0x0010) RTC +IO+R+W
-0000000040001000-0000000040001008 (0x0000-0x0008) IPI +IO+R+W
-0000000040002000-0000000040002008 (0x0000-0x0008) PLIC +IO+R+W
-0000000040003000-0000000040003008 (0x0000-0x0008) UART +IO+R+W
-0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
-```
+This tables shows an overview of the `rv-sys` emulator memory map:
+
+Memory Range                      | Device | Attributes
+:------------------               | :----- | :---------
+0000000080000000-00000000c0000000 | RAM    | +MAIN+R+W+X
+0000000040000000-0000000040000010 | RTC    | +IO+R+W
+0000000040001000-0000000040001008 | IPI    | +IO+R+W
+0000000040002000-0000000040002008 | LIC    | +IO+R+W
+0000000040003000-0000000040003008 | UART   | +IO+R+W
+0000000040008000-0000000040008010 | HTIF   | +IO+R+W
 
 
 ## RTC (Real Time Clock)
@@ -49,6 +51,8 @@ Offset           | Type | Name             | Description
 
 The IPI device is simply a bitfield with one bit per hart, which
 when set will raise a software interrupt on the destiniation hart.
+The least signigicant bit corresponds to hart_id 0 and the most
+significant bit corresponds to hart_id 63.
 
 Example IPI device at offset `0x40001000`.
 
@@ -136,10 +140,10 @@ The only interface that is implemented is the shutdown and console IO.
 - Console input request command is 0
 - Console output request command is 1
 
-To write a character to the console, clear `fromhost`, then write to
-`tohost` with device 1 command 1 and the output character in the
-low order bits, followed by reading back the same device and command in
-`fromhost` for acknowledgement.
+To write an output character to the console, clear `fromhost`, then
+write to `tohost` with device 1 command 1 with the output character
+in the low 8 bits. Finally, read `fromhost` and check for the device
+and command for acknowledgement.
 
 ```
 fromhost <- 0
@@ -147,9 +151,10 @@ tohost <- ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | ch /* putchar request */
 fromhost -> ((uint64_t)1 << 56) | ((uint64_t)1 << 48)    /* putchar acknowledge */
 ```
 
-To poll for console input, clear `fromhost`, then write to `tohost` with
-device 1 command 0 followed by reading `fromhost`. If there is console input
-availablem, a non zero value will be encoded in the lowest 8 bits.
+To poll the console for an input character, clear `fromhost`, then
+write to `tohost` with device 1 command 0. Read `fromhost` and check
+for the device, command and console input character. If there is console
+input available, a non zero value will be encoded in the low 8 bits.
 
 ```
 fromhost <- 0
@@ -157,7 +162,7 @@ tohost <- ((uint64_t)1 << 56) | ((uint64_t)0 << 48)        /* getchar request */
 fromhost -> ((uint64_t)1 << 56) | ((uint64_t)0 << 48) | ch /* getchar acknowledge */
 ```
 
-To send the shutdown command:
+To send the shutdown command, write 1 to `tohost`:
 
 ```
 tohost <- 1 /* shutdown */
