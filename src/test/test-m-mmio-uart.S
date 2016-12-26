@@ -2,17 +2,6 @@
 .globl _start
 _start:
 
-# RAM is at 0x8000_0000 - 0xc000_0000
-# mtime is at 0x4000_0000
-# mtimecmp is at 0x4000_0008
-
-# setup trap stack at top of memory
-	li      sp, 0xbffffff8
-	csrrw   zero, mscratch, sp
-
-# setup stack 1MB below top of memory
-	li      sp, 0xbfeffff8
-
 # setup mtvec
 1:	auipc   t0, %pcrel_hi(mtvec)        # load mtvec(hi)
 	addi    t0, t0, %pcrel_lo(1b)       # load mtvec(lo)
@@ -56,7 +45,7 @@ mtvec:
 	lb      a1, 0(a0)
 	sb      a1, 0(a0)
 
-# clear pending interrupt in the PLIC
+# claim interrupt in the PLIC
 	li      a0, 0x40002000
 	ld      a1, 0(a0)       # read interrupt
 	sd      a1, 0(a0)       # acknowledge
