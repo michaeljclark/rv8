@@ -16,7 +16,11 @@ _start:
 
 getc:
 	li a2, HTIF_FROMHOST
+	sw zero, 0(a2)
+	sw zero, 4(a2)
 	lw a0, 0(a2)
+	lw a3, 4(a2)
+    andi a0, a0, 0xff
 	ret
 
 putc:
