@@ -36,8 +36,9 @@ device MMIO aperture._
 ## RTC (Real Time Clock)
 
 The RTC device is based on the priv-1.9.1 specification and has
-an `mtime` register which contains a clock and an `mtimecmp` register
-which when timer interrupts are enabled, will raise a timer interrupt.
+an `mtime` register which contains a clock and a one-shot timer
+programmed via the `mtimecmp` register. When timer interrupts are
+enabled, a timer interrupt will be raised when `mtimecmp == mtime`.
 
 Example RTC MMIO device at offset `0x40000000`.
 
