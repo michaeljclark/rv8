@@ -553,6 +553,9 @@ namespace riscv {
 				                             mi_mask, mi_mask);                                break;
 				case rv_csr_mie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value,
 				                             mi_mask, mi_mask);                                break;
+				case rv_csr_mhcounteren: P::set_csr(dec, P::mode, op, csr, P::mhcounteren.xu.val, value); break;
+				case rv_csr_mscounteren: P::set_csr(dec, P::mode, op, csr, P::mscounteren.xu.val, value); break;
+				case rv_csr_mucounteren: P::set_csr(dec, P::mode, op, csr, P::mucounteren.xu.val, value); break;
 				case rv_csr_mscratch: P::set_csr(dec, P::mode, op, csr, P::mscratch, value);   break;
 				case rv_csr_mepc:     P::set_csr(dec, P::mode, op, csr, P::mepc, value);       break;
 				case rv_csr_mcause:   P::set_csr(dec, P::mode, op, csr, P::mcause, value);     break;
