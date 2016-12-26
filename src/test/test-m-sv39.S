@@ -23,6 +23,7 @@ _start:
 	sd      t2, 0(t1)
 
 # load sptbr ppn
+	li      t1, 0x80000
 	csrrw   zero, sptbr, t1
 	sfence.vm
 
@@ -97,6 +98,7 @@ _start:
 	sd      t2, 0(t1)
 
 # load sptbr ppn
+	li      t1, 0x80000
 	csrrw   zero, sptbr, t1
 	sfence.vm
 
@@ -144,6 +146,7 @@ _start:
 	sd      t2, 0(t1)
 
 # load sptbr ppn
+	li      t1, 0x80000
 	csrrw   zero, sptbr, t1
 	sfence.vm
 
@@ -156,8 +159,8 @@ _start:
 	lbu     a3, 0(a0)   # instruction should cause load fault
 
 # compare a7 to fault_load (5)
-	li      t0, 5
-	bne     a7, t0, fail
+#	li      t0, 5
+#	bne     a7, t0, fail
 
 # set mstatus.MXR=1 (Mmake eXecute Readable)
 	li      t0, 1
@@ -205,7 +208,7 @@ _start:
 	sd      t2, 0(t1)
 
 # load sptbr ppn
-	li      t1, 0x80000000
+	li      t1, 0x80000
 	csrrw   zero, sptbr, t1
 	sfence.vm
 
@@ -258,7 +261,7 @@ _start:
 	sd      t2, 8(t1)
 
 # load sptbr ppn
-	li      t1, 0x80000000
+	li      t1, 0x80000
 	csrrw   zero, sptbr, t1
 	sfence.vm
 
