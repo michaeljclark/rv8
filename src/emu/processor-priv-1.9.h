@@ -675,6 +675,8 @@ namespace riscv {
 					}
 				case rv_op_fence:
 					return pc_offset;
+				case rv_op_fence_i:
+					return pc_offset;
 				default: break;
 			}
 			return -1; /* illegal instruction */
