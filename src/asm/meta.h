@@ -397,7 +397,7 @@ enum rv_csr
 	rv_csr_tdata3 = 0x7A3,              /* Third Debug/Trace trigger data register */
 	rv_csr_dcsr = 0x7B0,                /* Debug control and status register */
 	rv_csr_dpc = 0x7B1,                 /* Debug program counter */
-	rv_csr_dscratc = 0x7B2,             /* Debug scratch register */
+	rv_csr_dscratch = 0x7B2,            /* Debug scratch register */
 	rv_csr_mtohost = 0x780,             /* IO to Host */
 	rv_csr_mfromhost = 0x781,           /* IO from Host */
 	rv_csr_mreset = 0x782,              /* Reset */

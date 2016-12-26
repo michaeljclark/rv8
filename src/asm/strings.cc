@@ -2390,7 +2390,7 @@ const char* rv_csr_name_sym[] = {
 	nullptr,
 	"dcsr",
 	"dpc",
-	"dscratc",
+	"dscratch",
 	nullptr,
 	nullptr,
 	nullptr,
