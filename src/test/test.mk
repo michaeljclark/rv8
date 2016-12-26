@@ -72,7 +72,6 @@ PROGRAMS = \
 	$(BIN_DIR)/test-m-mmio-timer \
 	$(BIN_DIR)/test-m-mmio-uart \
 	$(BIN_DIR)/test-m-sv39 \
-	$(BIN_DIR)/test-sbi-console \
 	$(BIN_DIR)/test-sbi-info \
 	$(BIN_DIR)/test-sbi-timer
 
