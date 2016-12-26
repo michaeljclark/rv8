@@ -625,30 +625,54 @@ namespace riscv {
 				case rv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
 				case rv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 				case rv_op_uret:
-					P::mstatus.r.uie = P::mstatus.r.upie;
-					return P::uepc - P::pc;
+					if (P::mode == rv_mode_U) {
+						P::mstatus.r.uie = P::mstatus.r.upie;
+						return P::uepc - P::pc;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_sret:
-					P::mode = P::mstatus.r.spp;
-					P::mstatus.r.spp = rv_mode_U;
-					P::mstatus.r.sie = P::mstatus.r.spie;
-					return P::sepc - P::pc;
+					if (P::mode == rv_mode_S) {
+						P::mode = P::mstatus.r.spp;
+						P::mstatus.r.spp = rv_mode_U;
+						P::mstatus.r.sie = P::mstatus.r.spie;
+						return P::sepc - P::pc;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_hret:
-					P::mode = P::mstatus.r.hpp;
-					P::mstatus.r.hpp = rv_mode_U;
-					P::mstatus.r.hie = P::mstatus.r.hpie;
-					return P::hepc - P::pc;
+					if (P::mode == rv_mode_H) {
+						P::mode = P::mstatus.r.hpp;
+						P::mstatus.r.hpp = rv_mode_U;
+						P::mstatus.r.hie = P::mstatus.r.hpie;
+						return P::hepc - P::pc;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_mret:
-					P::mode = P::mstatus.r.mpp;
-					P::mstatus.r.mpp = rv_mode_U;
-					P::mstatus.r.mie = P::mstatus.r.mpie;
-					return P::mepc - P::pc;
+					if (P::mode == rv_mode_M) {
+						P::mode = P::mstatus.r.mpp;
+						P::mstatus.r.mpp = rv_mode_U;
+						P::mstatus.r.mie = P::mstatus.r.mpie;
+						return P::mepc - P::pc;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_sfence_vm:
-					P::mmu.l1_itlb.flush(P::pdid);
-					P::mmu.l1_dtlb.flush(P::pdid);
-					return pc_offset;
+					if (P::mode >= rv_mode_S) {
+						P::mmu.l1_itlb.flush(P::pdid);
+						P::mmu.l1_dtlb.flush(P::pdid);
+						return pc_offset;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_wfi:
-					std::this_thread::yield();
-					return pc_offset;
+					if (P::mode >= rv_mode_S) {
+						std::this_thread::yield();
+						return pc_offset;
+					} else {
+						return -1; /* illegal instruction */
+					}
 				case rv_op_fence:
 					return pc_offset;
 				default: break;
