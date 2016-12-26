@@ -349,7 +349,7 @@ namespace riscv {
 		{
 			typedef typename PTM::pte_type pte_type;
 
-			UX ppn = proc.sptbr & ((1ULL << tlb_type::ppn_bits) - 1);
+			UX ppn = (proc.sptbr & ((1ULL << tlb_type::ppn_bits) - 1)) << page_shift;
 			UX vpn, pte_mpa, shift;
 
 			/* TODO: canonical address check */
