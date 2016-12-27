@@ -119,8 +119,9 @@ namespace riscv {
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
-			/* Check PTE flags and effective mode */
-			if (unlikely(!segment || fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
+			/* Check PTE flags */
+			if (unlikely(!segment ||
+				fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
 				proc.raise(rv_cause_fault_fetch, pc);
 			} else {
@@ -167,8 +168,10 @@ namespace riscv {
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
-			/* Check PTE flags and effective mode */
-			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
+			/* Check PTE flags */
+			if (unlikely(!segment ||
+				load_access_fault(proc, proc.mode, uva, tlb_ent)) ||
+				store_access_fault(proc, proc.mode, uva, tlb_ent))
 			{
 				proc.raise(rv_cause_fault_load, va);
 			} else {
@@ -197,8 +200,9 @@ namespace riscv {
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
-			/* Check PTE flags and effective mode */
-			if (unlikely(!segment || load_access_fault(proc, proc.mode, uva, tlb_ent)))
+			/* Check PTE flags */
+			if (unlikely(!segment ||
+				load_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
 				proc.raise(rv_cause_fault_load, va);
 			} else {
@@ -224,8 +228,9 @@ namespace riscv {
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
 
-			/* Check PTE flags and effective mode */
-			if (unlikely(!segment || store_access_fault(proc, proc.mode, uva, tlb_ent)))
+			/* Check PTE flags */
+			if (unlikely(!segment ||
+				store_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
 				proc.raise(rv_cause_fault_store, va);
 			} else {
