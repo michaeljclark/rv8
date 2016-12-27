@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cinttypes>
 #include <csignal>
+#include <csetjmp>
 #include <cerrno>
 #include <cmath>
 #include <cctype>
