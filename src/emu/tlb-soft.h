@@ -109,7 +109,7 @@ namespace riscv {
 		void flush(UX pdid, UX asid)
 		{
 			for (size_t i = 0; i < size; i++) {
-				if (tlb[i].pdid != pdid && tlb[i].asid != asid) continue;
+				if (asid != 0 && tlb[i].pdid != pdid && tlb[i].asid != asid) continue;
 				tlb[i] = tlb_entry_t();
 			}
 		}

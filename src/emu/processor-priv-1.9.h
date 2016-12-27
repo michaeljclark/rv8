@@ -660,8 +660,8 @@ namespace riscv {
 					}
 				case rv_op_sfence_vm:
 					if (P::mode >= rv_mode_S) {
-						P::mmu.l1_itlb.flush(P::pdid);
-						P::mmu.l1_dtlb.flush(P::pdid);
+						P::mmu.l1_itlb.flush(P::pdid, P::sptbr >> P::mmu_type::tlb_type::ppn_bits);
+						P::mmu.l1_dtlb.flush(P::pdid, P::sptbr >> P::mmu_type::tlb_type::ppn_bits);
 						return pc_offset;
 					} else {
 						return -1; /* illegal instruction */
