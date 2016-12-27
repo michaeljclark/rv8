@@ -155,12 +155,17 @@ _start:
 	slli    t0, t0, 17
 	csrrs   zero, mstatus, t0
 
+# set mstatus.MXR=0 (Mmake eXecute Readable)
+	li      t0, 1
+	slli    t0, t0, 19
+	csrrc   zero, mstatus, t0
+
 # read from 0x1000
 	lbu     a3, 0(a0)   # instruction should cause load fault
 
 # compare a7 to fault_load (5)
-#	li      t0, 5
-#	bne     a7, t0, fail
+	li      t0, 5
+	bne     a7, t0, fail
 
 # set mstatus.MXR=1 (Mmake eXecute Readable)
 	li      t0, 1
