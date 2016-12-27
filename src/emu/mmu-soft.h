@@ -406,10 +406,12 @@ namespace riscv {
 			}
 
 		fault:
-			debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
-				"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
-				(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
-				(addr_t)vpn, (addr_t)pte.xu.val);
+			if (proc.log & proc_log_pagewalk) {
+				debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
+					"ppn=0x%llx vpn=0x%llx pte=0x%llx -> translation fault",
+					(addr_t)va, (addr_t)proc.sptbr, level, (addr_t)ppn,
+					(addr_t)vpn, (addr_t)pte.xu.val);
+			}
 
 			switch (op) {
 				case op_fetch: proc.raise(rv_cause_fault_fetch, va);
