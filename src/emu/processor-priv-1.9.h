@@ -607,10 +607,10 @@ namespace riscv {
 				                             ui_mask, ui_mask);                                break;
 				case rv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value,
 				                             ui_mask, ui_mask);                                break;
-				case rv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::sscratch, value);   break;
-				case rv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::sepc, value);       break;
-				case rv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
-				case rv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
+				case rv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::uscratch, value);   break;
+				case rv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::uepc, value);       break;
+				case rv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::ucause, value);     break;
+				case rv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::ubadaddr, value);   break;
 				default: return -1; /* illegal instruction */
 			}
 			return pc_offset;
