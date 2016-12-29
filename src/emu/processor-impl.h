@@ -222,7 +222,7 @@ namespace riscv {
 			}
 			if (readonly) return;
 			switch (op) {
-				case csr_rw: reg = value; break;
+				case csr_rw: reg = (reg & ~(write_mask << shift)) | ((value & write_mask) << shift); break;
 				case csr_rs: if (value) reg |= ((value & write_mask) << shift); break;
 				case csr_rc: if (value) reg &= ~((value & write_mask) << shift); break;
 			}
