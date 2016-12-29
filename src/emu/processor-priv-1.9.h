@@ -887,30 +887,14 @@ namespace riscv {
 				(cause == rv_cause_fault_load) ||
 				(cause == rv_cause_fault_store);
 
-			/* check {m,h,s}edeleg for cause and dispatch to {m,h,s,u}tvec */
+			/* check medeleg for cause and dispatch to {m,h,s,u}tvec */
 			typename P::ux deleg = 1 << cause;
 			if (P::medeleg & deleg) {
-				if (P::hedeleg & deleg) {
-					if (P::sedeleg & deleg) {
-						if (set_badaddr) P::ubadaddr = P::badaddr;
-						P::mip.r.utip = 0;
-						P::mip.r.ueip = 0;
-						P::mip.r.utip = 0;
-						utrap(cause, false);
-					} else {
-						if (set_badaddr) P::sbadaddr = P::badaddr;
-						P::mip.r.stip = 0;
-						P::mip.r.seip = 0;
-						P::mip.r.usip = 0;
-						strap(cause, false);
-					}
-				} else {
-					if (set_badaddr) P::hbadaddr = P::badaddr;
-					P::mip.r.htip = 0;
-					P::mip.r.heip = 0;
-					P::mip.r.hsip = 0;
-					htrap(cause, false);
-				}
+				if (set_badaddr) P::sbadaddr = P::badaddr;
+				P::mip.r.stip = 0;
+				P::mip.r.seip = 0;
+				P::mip.r.ssip = 0;
+				strap(cause, false);
 			} else {
 				if (set_badaddr) P::mbadaddr = P::badaddr;
 				P::mip.r.mtip = 0;
