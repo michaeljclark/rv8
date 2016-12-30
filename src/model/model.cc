@@ -42,21 +42,21 @@ static const char* OPCODE_PSEUDOCODE_C_FILE   = "opcode-pseudocode-c";
 static const char* OPCODE_PSEUDOCODE_ALT_FILE = "opcode-pseudocode-alt";
 
 const rv_primitive_type rv_primitive_type_table[] = {
-	{ rvs_ext, rvt_sx,   "x",      "sx",   "r", "%ld",   "l",     "signed long" },       /* LP64 and ILP32, not LLP64 */
-	{ rvs_ext, rvt_ux,   "xu",     "ux",   "r", "%lu",   "ul",    "unsigned long" },     /* LP64 and ILP32, not LLP64 */
-	{ rvs_std, rvt_s8,   "b",      "s8",   "r", "%hhd",  "",      "signed char" },
-	{ rvs_std, rvt_u8,   "bu",     "u8",   "r", "%hhu",  "",      "unsigned char" },
-	{ rvs_std, rvt_s16,  "h",      "s16",  "r", "%hd",   "",      "signed short" },
-	{ rvs_std, rvt_u16,  "hu",     "u16",  "r", "%hu",   "",      "unsigned short" },
-	{ rvs_std, rvt_s32,  "w",      "s32",  "r", "%d",    "",      "signed int" },
-	{ rvs_std, rvt_u32,  "wu",     "u32",  "r", "%u",    "u",     "unsigned int" },
-	{ rvs_std, rvt_s64,  "l",      "s64",  "r", "%lld",  "ll",    "signed long long" },
-	{ rvs_std, rvt_u64,  "lu",     "u64",  "r", "%llu",  "ull",   "unsigned long long" },
-	{ rvs_ext, rvt_s128, "c", /*?*/"s128", "r", nullptr, nullptr, "signed __int128" },   /* Clang/GCC type */
-	{ rvs_ext, rvt_u128, "cu",/*?*/"u128", "r", nullptr, nullptr, "unsigned __int128" }, /* Clang/GCC type */
-	{ rvs_std, rvt_f32,  "s",      "f32",  "f", "%.9e",  "f",     "float" },
-	{ rvs_std, rvt_f64,  "d",      "f64",  "f", "%.17e", "",      "double" },
-	{ rvs_ext, rvt_f128, "q",      "f128", "f", nullptr, nullptr, "__float128" },        /* Clang/GCC type */
+	{ rvs_ext, rvt_sx,   "x",      "sx",   "r", "%ld",   "%lx",   "l",     "signed long" },       /* LP64 and ILP32, not LLP64 */
+	{ rvs_ext, rvt_ux,   "xu",     "ux",   "r", "%lu",   "%lx",   "ul",    "unsigned long" },     /* LP64 and ILP32, not LLP64 */
+	{ rvs_std, rvt_s8,   "b",      "s8",   "r", "%hhd",  "%hhx",  "",      "signed char" },
+	{ rvs_std, rvt_u8,   "bu",     "u8",   "r", "%hhu",  "%hhx",  "",      "unsigned char" },
+	{ rvs_std, rvt_s16,  "h",      "s16",  "r", "%hd",   "%hx",   "",      "signed short" },
+	{ rvs_std, rvt_u16,  "hu",     "u16",  "r", "%hu",   "%hx",   "",      "unsigned short" },
+	{ rvs_std, rvt_s32,  "w",      "s32",  "r", "%d",    "%x",    "",      "signed int" },
+	{ rvs_std, rvt_u32,  "wu",     "u32",  "r", "%u",    "%x",    "u",     "unsigned int" },
+	{ rvs_std, rvt_s64,  "l",      "s64",  "r", "%lld",  "%llx",  "ll",    "signed long long" },
+	{ rvs_std, rvt_u64,  "lu",     "u64",  "r", "%llu",  "%llx",  "ull",   "unsigned long long" },
+	{ rvs_ext, rvt_s128, "c", /*?*/"s128", "r", nullptr, nullptr, nullptr, "signed __int128" },   /* Clang/GCC type */
+	{ rvs_ext, rvt_u128, "cu",/*?*/"u128", "r", nullptr, nullptr, nullptr, "unsigned __int128" }, /* Clang/GCC type */
+	{ rvs_std, rvt_f32,  "s",      "f32",  "f", "%.9e",  "%.9e",  "f",     "float" },
+	{ rvs_std, rvt_f64,  "d",      "f64",  "f", "%.17e", "%.17e", "",      "double" },
+	{ rvs_ext, rvt_f128, "q",      "f128", "f", nullptr, nullptr, nullptr, "__float128" },        /* Clang/GCC type */
 	{ rvs_ext, rvt_none, nullptr,  nullptr, nullptr, nullptr, nullptr }
 };
 

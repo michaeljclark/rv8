@@ -64,6 +64,7 @@ struct rv_primitive_data
 {
 	const char* name;
 	const char* format;
+	const char* hex_format;
 };
 
 /* Instruction compression data structure */
@@ -280,7 +281,9 @@ R"C(#include "types.h"
 	printf("const rv_primitive_data rv_type_primitives[] = {\n");
 	printf("\t{ \"none\", \"none\" },\n");
 	for (const auto *ent = rv_primitive_type_table; ent->enum_type != rvt_none; ent++) {
-		printf("\t{ \"%s\", \"%s\" },\n", ent->meta_type, ent->c_fmt ? ent->c_fmt : "none");
+		printf("\t{ \"%s\", \"%s\" , \"%s\" },\n", ent->meta_type,
+			ent->c_fmt ? ent->c_fmt : "none",
+			ent->c_hex_fmt ? ent->c_hex_fmt : "none");
 	}
 	printf("};\n\n");
 

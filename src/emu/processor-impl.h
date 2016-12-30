@@ -117,9 +117,9 @@ namespace riscv {
 				switch (operand_data->type) {
 					case rv_type_ireg:
 						reg = regnum(dec, operand_data->operand_name);
-						sprintf(op, "%s=", rv_ireg_name_sym[reg]);
+						sprintf(op, "%s=0x", rv_ireg_name_sym[reg]);
 						sprintf(op,
-							rv_type_primitives[operand_data->primitive].format,
+							rv_type_primitives[operand_data->primitive].hex_format,
 							P::ireg[reg].r.xu.val);
 						ops.push_back(op);
 						break;

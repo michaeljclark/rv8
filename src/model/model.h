@@ -101,6 +101,7 @@ struct rv_primitive_type
 	const char* meta_type;
 	const char* asm_type;
 	const char* c_fmt;
+	const char* c_hex_fmt;
 	const char* c_suffix;
 	const char* c_type;
 };

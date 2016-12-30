@@ -943,6 +943,7 @@ struct rv_primitive_data
 {
 	const char* name;
 	const char* format;
+	const char* hex_format;
 };
 
 /* Instruction compression data structure */
