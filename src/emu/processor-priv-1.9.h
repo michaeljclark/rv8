@@ -625,14 +625,14 @@ namespace riscv {
 				case rv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
 				case rv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
 				case rv_op_uret:
-					if (P::mode == rv_mode_U) {
+					if (P::mode >= rv_mode_U) {
 						P::mstatus.r.uie = P::mstatus.r.upie;
 						return P::uepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
 					}
 				case rv_op_sret:
-					if (P::mode == rv_mode_S) {
+					if (P::mode >= rv_mode_S) {
 						P::mode = P::mstatus.r.spp;
 						P::mstatus.r.spp = rv_mode_U;
 						P::mstatus.r.sie = P::mstatus.r.spie;
@@ -641,7 +641,7 @@ namespace riscv {
 						return -1; /* illegal instruction */
 					}
 				case rv_op_hret:
-					if (P::mode == rv_mode_H) {
+					if (P::mode >= rv_mode_H) {
 						P::mode = P::mstatus.r.hpp;
 						P::mstatus.r.hpp = rv_mode_U;
 						P::mstatus.r.hie = P::mstatus.r.hpie;
@@ -650,7 +650,7 @@ namespace riscv {
 						return -1; /* illegal instruction */
 					}
 				case rv_op_mret:
-					if (P::mode == rv_mode_M) {
+					if (P::mode >= rv_mode_M) {
 						P::mode = P::mstatus.r.mpp;
 						P::mstatus.r.mpp = rv_mode_U;
 						P::mstatus.r.mie = P::mstatus.r.mpie;
