@@ -3,10 +3,10 @@ Linux
 
 ## Dependencies
 
-[riscv-tools](https://github.com/riscv/riscv-tools/)
-[riscv-linux](https://github.com/riscv/riscv-linux/)
-[riscv-pk](https://github.com/riscv/riscv-pk/)
-[riscv-meta](https://github.com/michaeljclark/riscv-meta/)
+- [riscv-tools](https://github.com/riscv/riscv-tools/)
+- [riscv-linux](https://github.com/riscv/riscv-linux/)
+- [riscv-pk](https://github.com/riscv/riscv-pk/)
+- [riscv-meta](https://github.com/michaeljclark/riscv-meta/)
 
 
 ## Build riscv-meta
@@ -76,7 +76,6 @@ mkdir riscv-pk/build
 ( cd riscv-pk/build && make )
 ```
 
-_Note: alter directories to suit._
 
 ## Start rv-sys
 ```
