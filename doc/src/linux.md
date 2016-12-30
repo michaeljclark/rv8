@@ -58,9 +58,9 @@ Create a directory named `initramfs` in the kernel directory and copy in the com
 This script can be used to create an initramfs specification file and directory structure:
 
 ```
+cd linux-4.6.2
 mkdir initramfs
 cp ../busybox-1.24.1/busybox initramfs/
-cd linux-4.6.2
 cat >initramfs.txt <<EOF
 dir /dev 755 0 0
 nod /dev/console 644 0 0 c 5 1
