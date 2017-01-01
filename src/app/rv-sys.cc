@@ -93,13 +93,7 @@ using namespace riscv;
 
 /* Parameterized privileged soft-mmu processor models */
 
-using priv_emulator_rv32ima = processor_runloop<processor_privileged<processor_rv32ima_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
-using priv_emulator_rv32imac = processor_runloop<processor_privileged<processor_rv32imac_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
-using priv_emulator_rv32imafd = processor_runloop<processor_privileged<processor_rv32imafd_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
 using priv_emulator_rv32imafdc = processor_runloop<processor_privileged<processor_rv32imafdc_model<decode,processor_priv_rv32imafd,mmu_soft_rv32>>>;
-using priv_emulator_rv64ima = processor_runloop<processor_privileged<processor_rv64ima_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
-using priv_emulator_rv64imac = processor_runloop<processor_privileged<processor_rv64imac_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
-using priv_emulator_rv64imafd = processor_runloop<processor_privileged<processor_rv64imafd_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
 using priv_emulator_rv64imafdc = processor_runloop<processor_privileged<processor_rv64imafdc_model<decode,processor_priv_rv64imafd,mmu_soft_rv64>>>;
 
 
