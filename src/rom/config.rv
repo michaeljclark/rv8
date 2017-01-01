@@ -5,6 +5,10 @@ platform {
 rtc {
   addr 0x40000000;
 };
+htif {
+  tohost 0x40008000;
+  fromhost 0x40008008;
+};
 ram {
   0 {
     addr 0x80000000;
