@@ -15,19 +15,16 @@ namespace riscv {
 		typedef typename P::ux UX;
 
 		enum {
+			bits_per_word = sizeof(u32) << 3,
 			num_harts = NUM_HARTS,
-			bits_per_word = sizeof(UX) << 3,
-			word_shift = ctz_pow2(bits_per_word),
-			hart_words = num_harts / bits_per_word,
-			hart_size = sizeof(UX) * hart_words,
-			total_size = hart_size
+			total_size = bits_per_word * num_harts
 		};
 
 		P &proc;
 
 		/* MIPI registers */
 
-		UX hart[hart_words];
+		u32 hart[NUM_HARTS];
 
 		constexpr u8* as_u8() { return (u8*)&hart[0]; }
 		constexpr u16* as_u16() { return (u16*)&hart[0]; }
@@ -45,23 +42,21 @@ namespace riscv {
 
 		void print_registers()
 		{
-			std::string hart_bstr;
-			for (ssize_t i = hart_words - 1; i >= 0; --i) {
-				hart_bstr += to_binary(hart[i]);
+			for (size_t i = 0; i < num_harts; i++) {
+				debug("mipi_mmio:hart[%04d]       0x%x", i, hart[i]);
 			}
-			debug("mipi_mmio:hart             0b%s", hart_bstr.c_str());
 		}
 
-		void signal_ipi(UX hart_id)
+		void signal_ipi(UX hart_id, u32 value)
 		{
-			hart_id &= (num_harts-1);
-			hart[hart_id >> word_shift] |= (1ULL << (hart_id & (bits_per_word-1)));
+			if (hart_id >= num_harts) return;
+			hart[num_harts] |= (1ULL << (hart_id & (bits_per_word-1)));
 		}
 
 		bool ipi_pending(UX hart_id)
 		{
-			hart_id &= (num_harts-1);
-			return (hart[hart_id >> word_shift] & (1ULL << (hart_id & (bits_per_word-1)))) > 0;
+			if (hart_id >= num_harts) return false;
+			return hart[hart_id] > 0;
 		}
 
 		/* MIPI MMIO */
