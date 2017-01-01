@@ -15,7 +15,7 @@ namespace riscv {
 		typedef typename P::ux UX;
 
 		enum {
-			total_size = sizeof(u64)
+			total_size = page_size
 		};
 
 		P &proc;
