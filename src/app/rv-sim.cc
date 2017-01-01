@@ -78,10 +78,12 @@ using namespace riscv;
 
 /* Parameterized ABI proxy processor models */
 
+using proxy_emulator_rv32i = processor_runloop<processor_proxy<processor_rv32i_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
 using proxy_emulator_rv32ima = processor_runloop<processor_proxy<processor_rv32ima_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
 using proxy_emulator_rv32imac = processor_runloop<processor_proxy<processor_rv32imac_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
 using proxy_emulator_rv32imafd = processor_runloop<processor_proxy<processor_rv32imafd_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
 using proxy_emulator_rv32imafdc = processor_runloop<processor_proxy<processor_rv32imafdc_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
+using proxy_emulator_rv64i = processor_runloop<processor_proxy<processor_rv64i_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 using proxy_emulator_rv64ima = processor_runloop<processor_proxy<processor_rv64ima_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 using proxy_emulator_rv64imac = processor_runloop<processor_proxy<processor_rv64imac_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 using proxy_emulator_rv64imafd = processor_runloop<processor_proxy<processor_rv64imafd_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
@@ -137,7 +139,8 @@ struct rv_emulator
 
 	static rv_set decode_isa_ext(std::string ext)
 	{
-		if (ext == "IMA" || ext == "ima") return rv_set_ima;
+		if (ext == "I" || ext == "i") return rv_set_i;
+		else if (ext == "IMA" || ext == "ima") return rv_set_ima;
 		else if (ext == "IMAC" || ext == "imac") return rv_set_imac;
 		else if (ext == "IMAFD" || ext == "imafd") return rv_set_imafd;
 		else if (ext == "IMAFDC" || ext == "imafdc") return rv_set_imafdc;
@@ -415,7 +418,8 @@ struct rv_emulator
 		switch (elf.ei_class) {
 			case ELFCLASS32:
 				switch (ext) {
-			#if ENABLE_RVIMA
+			#if ENABLE_RVI
+					case rv_set_i: start_proxy<proxy_emulator_rv32i>(); break;
 					case rv_set_ima: start_proxy<proxy_emulator_rv32ima>(); break;
 					case rv_set_imac: start_proxy<proxy_emulator_rv32imac>(); break;
 					case rv_set_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
@@ -426,7 +430,8 @@ struct rv_emulator
 				break;
 			case ELFCLASS64:
 				switch (ext) {
-			#if ENABLE_RVIMA
+			#if ENABLE_RVI
+					case rv_set_i: start_proxy<proxy_emulator_rv64i>(); break;
 					case rv_set_ima: start_proxy<proxy_emulator_rv64ima>(); break;
 					case rv_set_imac: start_proxy<proxy_emulator_rv64imac>(); break;
 					case rv_set_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
