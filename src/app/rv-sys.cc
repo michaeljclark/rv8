@@ -73,6 +73,7 @@
 #include "console.h"
 #include "device-rom-boot.h"
 #include "device-rom-sbi.h"
+#include "device-rom-string.h"
 #include "device-config.h"
 #include "device-rtc.h"
 #include "device-timer.h"

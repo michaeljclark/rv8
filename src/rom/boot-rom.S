@@ -29,7 +29,7 @@ reset:
 	j boot;
 	nop
 	nop
-	.word config
+	.word STRING_MMIO_BASE
 
 boot:
 	# setup mcall trap address
@@ -354,8 +354,5 @@ sbi_table:
 	.word mcall_mask_interrupt         # 13 <- SBI 11 (-1872)
 	.word mcall_unmask_interrupt       # 14 <- SBI 12 (-1856)
 	.word mcall_remote_sfence_vm_range # 15 <- SBI 14 (-1824)
-
-config:
-	.incbin "src/rom/config.rv"
 
 .p2align 12
