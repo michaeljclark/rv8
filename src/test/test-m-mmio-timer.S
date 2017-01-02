@@ -3,6 +3,7 @@
 #
 
 .equ RTC_BASE,      0x40000000
+.equ TIMER_BASE,    0x40007000
 .equ HTIF_TOHOST,   0x40008000
 
 .section .text
@@ -27,9 +28,10 @@ _start:
 	ld      a1, 0(a0)
 
 # write to mtimecmp
+	li      a0, TIMER_BASE
 	li      t0, 1000000000
 	add     a1, a1, t0
-	sd      a1, 8(a0)
+	sd      a1, 0(a0)
 
 # loop
 loop:

@@ -19,8 +19,8 @@ core {
   0 {
     0 {
       isa rv64imafd;
-      timecmp 0x40000008;
       ipi 0x40001000;
+      timecmp 0x40007000;
     };
   };
 };

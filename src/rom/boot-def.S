@@ -41,17 +41,13 @@
 
 # MMIO Base registers
 
-.equ TIMER_MMIO_BASE,  0x40000000
+.equ RTC_MMIO_BASE,    0x40000000
 .equ MIPI_MMIO_BASE,   0x40001000
 .equ PLIC_MMIO_BASE,   0x40002000
 .equ UART_MMIO_BASE,   0x40003000
 .equ CONFIG_MMIO_BASE, 0x40004000
 .equ GPIO_MMIO_BASE,   0x40005000
-
-# Timer MMIO register offets
-
-.equ TIMER_MTIME,      xlenb * 0
-.equ TIMER_MTIMECMP,   xlenb * 1
+.equ TIMER_MMIO_BASE,  0x40007000
 
 # Config MMIO register offsets
 
