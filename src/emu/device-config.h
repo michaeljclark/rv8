@@ -9,7 +9,7 @@ namespace riscv {
 
 	/* Config MMIO device */
 
-	template <typename P, const int NUM_IRQS = 64, const int NUM_NODES = 1, const int NUM_HARTS = 8>
+	template <typename P>
 	struct config_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;

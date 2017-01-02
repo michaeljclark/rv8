@@ -9,7 +9,7 @@ namespace riscv {
 
 	/* GPIO MMIO device */
 
-	template <typename P, const int NUM_HARTS = 64>
+	template <typename P>
 	struct gpio_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;

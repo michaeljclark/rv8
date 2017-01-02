@@ -9,7 +9,7 @@ namespace riscv {
 
 	/* Timer MMIO device */
 
-	template <typename P, const int NUM_HARTS = 8>
+	template <typename P, const int NUM_HARTS = 4>
 	struct timer_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;

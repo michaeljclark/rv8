@@ -11,7 +11,7 @@ namespace riscv {
 
 	/* SBI MMIO device */
 
-	template <typename P, const int NUM_IRQS = 64>
+	template <typename P>
 	struct sbi_mmio_device : memory_segment<typename P::ux>
 	{
 		typedef typename P::ux UX;
