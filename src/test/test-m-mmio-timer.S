@@ -3,7 +3,7 @@
 #
 
 .equ RTC_BASE,      0x40000000
-.equ TIMER_BASE,    0x40007000
+.equ TIMER_BASE,    0x40004000
 .equ HTIF_TOHOST,   0x40008000
 
 .section .text
