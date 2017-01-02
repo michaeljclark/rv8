@@ -270,6 +270,55 @@ namespace riscv {
 
 		const char* name() { return "rv-sys"; }
 
+		std::string create_config_string()
+		{
+			typename P::ux ram_base = 0;
+			typename P::ux ram_size = 0;
+			for (auto &seg : P::mmu.mem->segments) {
+				if (strcmp(seg->name, "RAM") == 0) {
+					ram_base = seg->mpa;
+					ram_size = seg->size;
+				}
+			}
+			static const char* kConfigFormat =
+R"CONFIG(
+platform {
+  vendor meta;
+  arch anarch;
+};
+rtc {
+  addr 0x%x;
+};
+htif {
+  tohost 0x%x;
+  fromhost 0x%x;
+};
+ram {
+  0 {
+    addr 0x%x;
+    size 0x%x;
+  };
+};
+core {
+  0 {
+    0 {
+      isa rv64imafd;
+      ipi 0x%x;
+      timecmp 0x%x;
+    };
+  };
+};)CONFIG";
+			std::string cfg_str;
+			sprintf(cfg_str, kConfigFormat,
+				device_rtc->mpa,
+				device_htif->mpa,
+				device_htif->mpa + 8,
+				ram_base, ram_size,
+				device_mipi->mpa,
+				device_timer->mpa);
+			return cfg_str;
+		}
+
 		void init()
 		{
 			/* set initial value for misa register */
@@ -287,7 +336,7 @@ namespace riscv {
 			device_gpio = std::make_shared<gpio_mmio_device<processor_privileged>>(*this, 0x40005000, device_plic, 4);
 			device_rand = std::make_shared<rand_mmio_device<processor_privileged>>(*this, 0x40006000);
 			device_htif = std::make_shared<htif_mmio_device<processor_privileged>>(*this, 0x40008000, console);
-			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x40010000);
+			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x4000f000);
 
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem->add_segment(device_sbi);
@@ -306,13 +355,13 @@ namespace riscv {
 		void print_device_registers()
 		{
 			device_rtc->print_registers();
-			device_config->print_registers();
 			device_mipi->print_registers();
 			device_plic->print_registers();
 			device_uart->print_registers();
-			device_gpio->print_registers();
 			device_timer->print_registers();
+			device_gpio->print_registers();
 			device_htif->print_registers();
+			device_config->print_registers();
 		}
 
 		const char* colorize(int val)
