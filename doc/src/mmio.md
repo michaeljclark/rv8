@@ -27,15 +27,14 @@ Memory Range                      | Device | Attributes
 0000000040001000-0000000040001008 | IPI    | +IO+R+W
 0000000040002000-0000000040002008 | LIC    | +IO+R+W
 0000000040003000-0000000040003008 | UART   | +IO+R+W
+0000000040004000-0000000040004100 | TIMER  | +IO+R+W
 0000000040008000-0000000040008010 | HTIF   | +IO+R+W
 
 
 ## RTC (Real Time Clock)
 
 The RTC device is based on the priv-1.9.1 specification and has
-an `mtime` register which contains a clock and a one-shot timer
-programmed via the `mtimecmp` register. When timer interrupts are
-enabled, a timer interrupt will be raised when `mtimecmp == mtime`.
+an `mtime` register which contains a clock.
 
 Example RTC MMIO device at offset `0x40000000`.
 
@@ -43,8 +42,7 @@ Example RTC MMIO device at offset `0x40000000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | u64  | mtime            | Machine Timer Register
-8                | u64  | mtimecmp         | Machine Timer Compare Register
+0                | u64  | mtime            | Time Register
 
 
 ## IPI (Inter-Processor Interrupt)
@@ -114,6 +112,24 @@ Offset           | Type | Name             | Description
 7                | u8   | scr              | (RW) Scratch Register
 0                | u8   | dll              | (RW) Divisor Latch LSB (LCR.DLAB=1)
 1                | u8   | dlm              | (RW) Divisor Latch MSB (LCR.DLAB=1)
+
+
+## Timer
+
+The Timer device is based on the priv-1.9.1 specification and has
+an a one-shot timer programmed via the `mtimecmp` register which
+compares against the time register in the Cloud device. When timer
+interrupts are enabled, a timer interrupt will be raised when
+`mtimecmp == mtime`. There is one timer compare register per
+hardware thread.
+
+Example RTC MMIO device at offset `0x40004000`.
+
+`0000000040004000-0000000040004100 (0x0000-0x0100) TIMER +IO+R+W`
+
+Offset           | Type | Name             | Description
+:--------------- | :--- | :--------------  | :--------------
+0                | u64  | mtimecmp         | Timer Compare Register
 
 
 ## HTIF (Host Target Interface)
