@@ -59,7 +59,7 @@ Example IPI device at offset `0x40001000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | u32  | signal           | Signal Register
+0                | u32  | signal[hart]     | Signal Register
 
 
 ## PLIC (Platform Level Interrupt Controller)
@@ -128,7 +128,7 @@ Example RTC MMIO device at offset `0x40004000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | u64  | mtimecmp         | Timer Compare Register
+0                | u64  | mtimecmp[hart]   | Timer Compare Register
 
 
 ## HTIF (Host Target Interface)
