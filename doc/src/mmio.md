@@ -136,7 +136,7 @@ Offset           | Type | Name             | Description
 The HTIF MMIO device is a MMIO version of the RISC-V host
 target interface altered to use a predefined memory location.
 
-Example UART device at offset `0x40008000`.
+Example HTIF device at offset `0x40008000`.
 
 ```
 0000000040008000-0000000040008010 (0x0000-0x0010) HTIF +IO+R+W
