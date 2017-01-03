@@ -47,10 +47,9 @@ Offset           | Type | Name             | Description
 
 ## IPI (Inter-Processor Interrupt)
 
-The IPI device is simply a bitfield with one bit per hart, which
-when set will raise a software interrupt on the destiniation hart.
-The least signigicant bit corresponds to hart_id 0 and the most
-significant bit corresponds to hart_id 63.
+The IPI device contains one 32-bit register per hart, which when
+set to a non-zero value will raise a software interrupt on the
+destiniation hart. There is one signal register per hardware thread.
 
 Example IPI device at offset `0x40001000`.
 
@@ -60,7 +59,7 @@ Example IPI device at offset `0x40001000`.
 
 Offset           | Type | Name             | Description
 :--------------- | :--- | :--------------  | :--------------
-0                | u64  | hart             | Per hart bitfield
+0                | u32  | signal           | Signal Register
 
 
 ## PLIC (Platform Level Interrupt Controller)
