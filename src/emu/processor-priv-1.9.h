@@ -290,6 +290,9 @@ platform {
 rtc {
   addr 0x%x;
 };
+uart {
+  addr 0x%x;
+};
 htif {
   tohost 0x%x;
   fromhost 0x%x;
@@ -312,6 +315,7 @@ core {
 			std::string cfg_str;
 			sprintf(cfg_str, kConfigFormat,
 				device_rtc->mpa,
+				device_uart->mpa,
 				device_htif->mpa,
 				device_htif->mpa + 8,
 				ram_base, ram_size,
