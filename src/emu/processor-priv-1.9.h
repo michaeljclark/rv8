@@ -809,6 +809,7 @@ core {
 			 * service external interrupts from the PLIC if enabled
 			 */
 
+			/* NOTE: delegation is implicit based on enable bits in this model */
 			bool eip = device_plic->irq_pending();
 			if (eip) {
 				P::mip.r.meip = 1;
@@ -829,6 +830,7 @@ core {
 			 * service timer interrupts if enabled
 			 */
 
+			/* NOTE: delegation is implicit based on enable bits in this model */
 			device_rtc->update_time(P::time);
 			bool tip = device_timer->timer_pending(P::hart_id, P::time);
 			if (tip) {
@@ -850,6 +852,7 @@ core {
 			 * service interprocessor interrupts
 			 */
 
+			/* NOTE: delegation is implicit based on enable bits in this model */
 			bool sip = device_mipi->ipi_pending(P::hart_id);
 			if (sip) {
 				P::mip.r.msip = 1;
