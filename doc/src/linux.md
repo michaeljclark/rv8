@@ -75,17 +75,17 @@ EOF
 ```
 
 
-## Build BBL with Linux Busybox Payload
+## Build BBL-lite with Linux Busybox Payload
 
 The following command will build BBL (Berkeley Boot Loader) with a Linux payload:
 
 ```
 cd $HOME/src/riscv-meta/
 make -j4 && sudo make install
-git clone https://github.com/riscv/riscv-pk.git
-mkdir riscv-pk/build
-( cd riscv-pk/build && ../configure --host=riscv64-unknown-elf --with-payload=$HOME/src/riscv-meta/linux-4.6.2/vmlinux )
-( cd riscv-pk/build && make )
+git https://github.com/michaeljclark/bbl-lite.git
+mkdir bbl-lite/build
+( cd bbl-lite/build && ../configure --host=riscv64-unknown-elf --with-payload=$HOME/src/riscv-meta/linux-4.6.2/vmlinux )
+( cd bbl-lite/build && make )
 ```
 
 
@@ -94,35 +94,13 @@ mkdir riscv-pk/build
 The following command starts the simulation:
 
 ```
-rv-sys riscv-pk/build/bbl
+rv-sys bbl-lite/build/bbl
 ```
 
 Example output:
 
 ```
-              vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                  vvvvvvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrr       vvvvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrrrrr      vvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrrrrrrr    vvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrrrrrrr    vvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrrrrrrr    vvvvvvvvvvvvvvvvvvvvvvvv
-rrrrrrrrrrrrrrrr      vvvvvvvvvvvvvvvvvvvvvv  
-rrrrrrrrrrrrr       vvvvvvvvvvvvvvvvvvvvvv    
-rr                vvvvvvvvvvvvvvvvvvvvvv      
-rr            vvvvvvvvvvvvvvvvvvvvvvvv      rr
-rrrr      vvvvvvvvvvvvvvvvvvvvvvvvvv      rrrr
-rrrrrr      vvvvvvvvvvvvvvvvvvvvvv      rrrrrr
-rrrrrrrr      vvvvvvvvvvvvvvvvvv      rrrrrrrr
-rrrrrrrrrr      vvvvvvvvvvvvvv      rrrrrrrrrr
-rrrrrrrrrrrr      vvvvvvvvvv      rrrrrrrrrrrr
-rrrrrrrrrrrrrr      vvvvvv      rrrrrrrrrrrrrr
-rrrrrrrrrrrrrrrr      vv      rrrrrrrrrrrrrrrr
-rrrrrrrrrrrrrrrrrr          rrrrrrrrrrrrrrrrrr
-rrrrrrrrrrrrrrrrrrrr      rrrrrrrrrrrrrrrrrrrr
-rrrrrrrrrrrrrrrrrrrrrr  rrrrrrrrrrrrrrrrrrrrrr
-
-       INSTRUCTION SETS WANT TO BE FREE
+BBL-lite
 [    0.000000] Linux version 4.6.2-00033-gb596193-dirty (mclark@monty.local) (gcc version 6.1.0 (GCC) ) #50 Fri Dec 30 20:34:59 NZDT 2016
 [    0.000000] bootconsole [early0] enabled
 [    0.000000] Available physical memory: 1020MB
