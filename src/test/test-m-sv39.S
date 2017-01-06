@@ -2,6 +2,13 @@
 .globl _start
 _start:
 
+.equ UART_BASE,     0x40003000
+.equ REG_RBR, 0
+.equ REG_TBR, 0
+.equ REG_IIR, 2
+.equ IIR_TX_RDY, 2
+.equ IIR_RX_RDY, 4
+
 .equ HTIF_TOHOST, 0x40008000
 
 # RAM is at 0x8000_0000 - 0xc000_0000
@@ -336,19 +343,16 @@ fail:
 	j shutdown
 
 puts:
-	li a2, HTIF_TOHOST
-	li a3, 0x01010000
+	li a2, UART_BASE
 1:	lbu a1, (a0)
-	beqz a1, 2f
-	sw a1, 0(a2)
-	sw a3, 4(a2)
-3:	lw a1, 0(a2)
-	lw a4, 4(a2)
-	or a1, a1, a4
-	bnez a1, 3b
+	beqz a1, 3f
+2:	lbu a3, REG_IIR(a2)
+	andi a3, a3, IIR_TX_RDY
+	beqz a3, 2b
+	sb a1, REG_TBR(a2)
 	addi a0, a0, 1
 	j 1b
-2:	ret
+3:	ret
 
 shutdown:
 	li a2, HTIF_TOHOST
