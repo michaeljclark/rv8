@@ -71,6 +71,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-m-mmio-htif \
 	$(BIN_DIR)/test-m-mmio-timer \
 	$(BIN_DIR)/test-m-mmio-uart \
+	$(BIN_DIR)/test-m-poll-uart \
 	$(BIN_DIR)/test-m-sv39 \
 	$(BIN_DIR)/test-sbi-info \
 	$(BIN_DIR)/test-sbi-timer
@@ -163,6 +164,9 @@ $(BIN_DIR)/test-m-mmio-timer: $(OBJ_DIR)/test-m-mmio-timer.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-mmio-uart.o: $(SRC_DIR)/test-m-mmio-uart.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-mmio-uart: $(OBJ_DIR)/test-m-mmio-uart.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/test-m-poll-uart.o: $(SRC_DIR)/test-m-poll-uart.S ; $(CC) -c $^ -o $@
+$(BIN_DIR)/test-m-poll-uart: $(OBJ_DIR)/test-m-poll-uart.o ; $(LD) $^ -o $@
 
 $(OBJ_DIR)/test-m-mret-user.o: $(SRC_DIR)/test-m-mret-user.S ; $(CC) -c $^ -o $@
 $(BIN_DIR)/test-m-mret-user: $(OBJ_DIR)/test-m-mret-user.o ; $(LD) $^ -o $@
