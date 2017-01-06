@@ -166,6 +166,12 @@ namespace riscv {
 				case REG_DLM: /* Divisor Latch MSB */
 					val = com.dlm;
 					break;
+				case REG_LCR: /* Line Control Register */
+					val = com.lcr;
+					break;
+				case REG_MCR: /* MODEM Control Register */
+					val = com.mcr;
+					break;
 				default:
 					break;
 				}
@@ -217,6 +223,12 @@ namespace riscv {
 					break;
 				case REG_DLM: /* Divisor Latch MSB */
 					com.dlm = val;
+					break;
+				case REG_LCR: /* Line Control Register */
+					com.lcr = val;
+					break;
+				case REG_MCR: /* MODEM Control Register */
+					com.mcr = val;
 					break;
 				default:
 					break;
