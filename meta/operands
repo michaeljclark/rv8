@@ -40,6 +40,7 @@ sbimm12    31:25[12|10:5],11:7[4:1|11]  offset  imm       green   none     # PC 
 zimm       19:15[4:0]                   uimm    zimm      green   none
 shamt5     24:20[4:0]                   uimm    shamt     green   none     # 32-bit shift amount
 shamt6     25:20[5:0]                   uimm    shamt     green   none     # 64-bit shift amount
+shamt7     26:20[6:0]                   uimm    shamt     green   none     # 128-bit shift amount
 crd0       12                           creg    rd''      white   magenta
 crdq       4:2                          creg    rd'       white   magenta
 crs1q      9:7                          creg    rs1'      white   cyan

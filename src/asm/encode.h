@@ -256,6 +256,12 @@ template <typename T> inline inst_t encode_i_sh6(T &dec)
 	return operand_rd::encode(dec.rd) | operand_rs1::encode(dec.rs1) | operand_shamt6::encode(dec.imm);
 }
 
+/* Encode I sh7 */
+template <typename T> inline inst_t encode_i_sh7(T &dec)
+{
+	return operand_rd::encode(dec.rd) | operand_rs1::encode(dec.rs1) | operand_shamt7::encode(dec.imm);
+}
+
 /* Encode S Store */
 template <typename T> inline inst_t encode_s(T &dec)
 {

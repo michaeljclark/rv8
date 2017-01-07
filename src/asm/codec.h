@@ -51,6 +51,7 @@
  *
  *   template <typename T> inline void riscv::decompress_inst_rv32(T &dec)
  *   template <typename T> inline void riscv::decompress_inst_rv64(T &dec)
+ *   template <typename T> inline void riscv::decompress_inst_rv128(T &dec)
  *
  * Compressing instructions
  * ========================
@@ -60,6 +61,7 @@
  *
  *   template <typename T> inline bool riscv::compress_inst_rv32(T &dec)
  *   template <typename T> inline bool riscv::compress_inst_rv64(T &dec)
+ *   template <typename T> inline bool riscv::compress_inst_rv128(T &dec)
  *
  */
 
@@ -107,8 +109,8 @@ namespace riscv
 		uint8_t  rs1;        /* (5 bits) byte aligned for performance */
 		uint8_t  rs2;        /* (5 bits) byte aligned for performance */
 		uint8_t  rs3;        /* (5 bits) byte aligned for performance */
-		uint8_t  op;         /* (~251 entries) nearly full */
-		uint8_t  codec;      /* (~42 entries) can grow */
+		uint16_t op    : 10; /* (>256 entries) nearly full */
+		uint16_t codec : 6;  /* (>32 entries) can grow */
 		uint8_t  rm    : 3;  /* round mode for some FPU ops */
 		uint8_t  aq    : 1;  /* acquire for atomic ops */
 		uint8_t  rl    : 1;  /* release for atomic ops */
@@ -188,27 +190,44 @@ namespace riscv
 	    }
 	}
 
+	template <typename T>
+	inline void decompress_inst_rv128(T &dec)
+	{
+	    int decomp_op = rv_inst_decomp_rv128[dec.op];
+	    if (decomp_op != rv_op_illegal) {
+	        dec.op = decomp_op;
+	        dec.codec = rv_inst_codec[decomp_op];
+	    }
+	}
+
 	/* Decode Instruction */
 
-	template <typename T, bool rv32, bool rv64, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvc = true>
+	template <typename T, bool rv32, bool rv64, bool rv128, bool rvi = true, bool rvm = true, bool rva = true, bool rvs = true, bool rvf = true, bool rvd = true, bool rvq = true, bool rvc = true>
 	inline void decode_inst(T &dec, inst_t inst)
 	{
-		dec.op = decode_inst_op<rv32,rv64,rvi,rvm,rva,rvs,rvf,rvd,rvc>(inst);
+		dec.op = decode_inst_op<rv32,rv64,rv128,rvi,rvm,rva,rvs,rvf,rvd,rvq,rvc>(inst);
 		decode_inst_type<T>(dec, inst);
 	}
 
 	template <typename T>
 	inline void decode_inst_rv32(T &dec, inst_t inst)
 	{
-		decode_inst<T,true,false>(dec, inst);
+		decode_inst<T,true,false,false>(dec, inst);
 		decompress_inst_rv32<T>(dec);
 	}
 
 	template <typename T>
 	inline void decode_inst_rv64(T &dec, inst_t inst)
 	{
-		decode_inst<T,false,true>(dec, inst);
+		decode_inst<T,false,true,false>(dec, inst);
 		decompress_inst_rv64<T>(dec);
+	}
+
+	template <typename T>
+	inline void decode_inst_rv128(T &dec, inst_t inst)
+	{
+		decode_inst<T,false,false,true>(dec, inst);
+		decompress_inst_rv128<T>(dec);
 	}
 
 
@@ -253,6 +272,22 @@ namespace riscv
 	inline bool compress_inst_rv64(T &dec)
 	{
 		const rv_comp_data *comp_data = rv_inst_comp_rv64[dec.op];
+		if (!comp_data) return false;
+		while (comp_data->constraints) {
+			if (constraint_check(dec, comp_data->constraints)) {
+				dec.op = comp_data->op;
+				dec.codec = rv_inst_codec[dec.op];
+				return true;
+			}
+			comp_data++;
+		}
+		return false;
+	}
+
+	template <typename T>
+	inline bool compress_inst_rv128(T &dec)
+	{
+		const rv_comp_data *comp_data = rv_inst_comp_rv128[dec.op];
 		if (!comp_data) return false;
 		while (comp_data->constraints) {
 			if (constraint_check(dec, comp_data->constraints)) {

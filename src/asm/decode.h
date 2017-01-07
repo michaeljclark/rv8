@@ -341,6 +341,15 @@ template <typename T> inline void decode_i_sh6(T &dec, inst_t inst)
 	dec.imm = operand_shamt6::decode(inst);
 }
 
+/* Decode I sh7 */
+template <typename T> inline void decode_i_sh7(T &dec, inst_t inst)
+{
+	dec.rd = operand_rd::decode(inst);
+	dec.rs1 = operand_rs1::decode(inst);
+	dec.rs2 = rv_ireg_zero;
+	dec.imm = operand_shamt7::decode(inst);
+}
+
 /* Decode S Store */
 template <typename T> inline void decode_s(T &dec, inst_t inst)
 {

@@ -31,6 +31,7 @@ typedef simm_operand_t<13, S<31,25, B<12>,B<10,5>>, S<11,7, B<4,1>,B<11>>>      
 typedef uimm_operand_t<5, S<19,15, B<4,0>>>                                        operand_zimm;
 typedef uimm_operand_t<5, S<24,20, B<4,0>>>                                        operand_shamt5;
 typedef uimm_operand_t<6, S<25,20, B<5,0>>>                                        operand_shamt6;
+typedef uimm_operand_t<7, S<26,20, B<6,0>>>                                        operand_shamt7;
 typedef uimm_operand_t<1, S<12,12, B<0,0>>>                                        operand_crd0;
 typedef uimm_operand_t<3, S<4,2, B<2,0>>>                                          operand_crdq;
 typedef uimm_operand_t<3, S<9,7, B<2,0>>>                                          operand_crs1q;

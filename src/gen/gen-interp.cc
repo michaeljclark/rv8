@@ -45,8 +45,13 @@ static void print_interp_h(rv_gen *gen)
 			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tenum { xlen = %zu };\n", isa_width.first);
-		printf("\ttypedef int%zu_t sx;\n", isa_width.first);
-		printf("\ttypedef uint%zu_t ux;\n", isa_width.first);
+		if (isa_width.first == 128) {
+			printf("\ttypedef __int%zu_t sx;\n", isa_width.first);
+			printf("\ttypedef __uint%zu_t ux;\n", isa_width.first);
+		} else {
+			printf("\ttypedef int%zu_t sx;\n", isa_width.first);
+			printf("\ttypedef uint%zu_t ux;\n", isa_width.first);
+		}
 		printf("\tusing namespace riscv;\n");
 		printf("\n");
 		printf("\tswitch (dec.op) {\n");

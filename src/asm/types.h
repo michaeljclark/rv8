@@ -125,6 +125,7 @@ namespace riscv {
 	using uimm20 = uimm_t<20>;
 	using simm12 = simm_t<12>;
 	using uimm12 = uimm_t<12>;
+	using uimm7 = uimm_t<7>;
 	using uimm6 = uimm_t<6>;
 	using uimm5 = uimm_t<5>;
 	using ireg5 = uimm_t<5>;

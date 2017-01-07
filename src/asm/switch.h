@@ -9,7 +9,7 @@
 
 /* Decode Instruction Opcode */
 
-template <bool rv32, bool rv64, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvc>
+template <bool rv32, bool rv64, bool rv128, bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc>
 inline opcode_t decode_inst_op(riscv::inst_t inst)
 {
 	opcode_t op = rv_op_illegal;
@@ -134,15 +134,16 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 			// lui auipc jal jalr beq bne blt bge bltu bgeu lb lh ...
 			switch (((inst >> 2) & 0b11111) /* inst[6:2] */) {
 				case 0:
-					// lb lh lw lbu lhu lwu ld
+					// lb lh lw lbu lhu lwu ld ldu
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 0: if (rvi) op = rv_op_lb; break;
 						case 1: if (rvi) op = rv_op_lh; break;
 						case 2: if (rvi) op = rv_op_lw; break;
-						case 3: if (rvi && rv64) op = rv_op_ld; break;
+						case 3: if (rvi) op = rv_op_ld; break;
 						case 4: if (rvi) op = rv_op_lbu; break;
 						case 5: if (rvi) op = rv_op_lhu; break;
-						case 6: if (rvi && rv64) op = rv_op_lwu; break;
+						case 6: if (rvi) op = rv_op_lwu; break;
+						case 7: if (rvi && rv128) op = rv_op_ldu; break;
 					}
 					break;
 				case 1:
@@ -153,22 +154,24 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					}
 					break;
 				case 3:
-					// fence fence.i
+					// fence fence.i lq
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 0: if (rvi) op = rv_op_fence; break;
 						case 1: if (rvi) op = rv_op_fence_i; break;
+						case 2: if (rvi && rv128) op = rv_op_lq; break;
 					}
 					break;
 				case 4:
-					// addi slti sltiu xori ori andi slli srli srai slli srli srai
+					// addi slti sltiu xori ori andi slli srli srai slli srli srai ...
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 0: if (rvi) op = rv_op_addi; break;
 						case 1:
-							// slli slli
-							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+							// slli slli slli
+							switch (((inst >> 27) & 0b11111) /* inst[31:27] */) {
 								case 0: 
 									if (rvi && rv32) op = rv_op_slli_rv32i;
 									else if (rvi && rv64) op = rv_op_slli_rv64i;
+									else if (rvi && rv128) op = rv_op_slli;
 									break;
 							}
 							break;
@@ -176,15 +179,17 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 						case 3: if (rvi) op = rv_op_sltiu; break;
 						case 4: if (rvi) op = rv_op_xori; break;
 						case 5:
-							// srli srai srli srai
-							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+							// srli srai srli srai srli srai
+							switch (((inst >> 27) & 0b11111) /* inst[31:27] */) {
 								case 0: 
 									if (rvi && rv32) op = rv_op_srli_rv32i;
 									else if (rvi && rv64) op = rv_op_srli_rv64i;
+									else if (rvi && rv128) op = rv_op_srli;
 									break;
-								case 16: 
+								case 8: 
 									if (rvi && rv32) op = rv_op_srai_rv32i;
 									else if (rvi && rv64) op = rv_op_srai_rv64i;
+									else if (rvi && rv128) op = rv_op_srai;
 									break;
 							}
 							break;
@@ -196,29 +201,30 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 				case 6:
 					// addiw slliw srliw sraiw
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
-						case 0: if (rvi && rv64) op = rv_op_addiw; break;
+						case 0: if (rvi) op = rv_op_addiw; break;
 						case 1:
 							// slliw
 							switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
-								case 0: if (rvi && rv64) op = rv_op_slliw; break;
+								case 0: if (rvi) op = rv_op_slliw; break;
 							}
 							break;
 						case 5:
 							// srliw sraiw
 							switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
-								case 0: if (rvi && rv64) op = rv_op_srliw; break;
-								case 32: if (rvi && rv64) op = rv_op_sraiw; break;
+								case 0: if (rvi) op = rv_op_srliw; break;
+								case 32: if (rvi) op = rv_op_sraiw; break;
 							}
 							break;
 					}
 					break;
 				case 8:
-					// sb sh sw sd
+					// sb sh sw sd sq
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 0: if (rvi) op = rv_op_sb; break;
 						case 1: if (rvi) op = rv_op_sh; break;
 						case 2: if (rvi) op = rv_op_sw; break;
-						case 3: if (rvi && rv64) op = rv_op_sd; break;
+						case 3: if (rvi) op = rv_op_sd; break;
+						case 4: if (rvi && rv128) op = rv_op_sq; break;
 					}
 					break;
 				case 9:
@@ -232,9 +238,11 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					// lr.w sc.w amoswap.w amoadd.w amoxor.w amoor.w amoand.w amomin.w amomax.w amominu.w amomaxu.w lr.d ...
 					switch (((inst >> 24) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[31:27|14:12] */) {
 						case 2: if (rva) op = rv_op_amoadd_w; break;
-						case 3: if (rva && rv64) op = rv_op_amoadd_d; break;
+						case 3: if (rva) op = rv_op_amoadd_d; break;
+						case 4: if (rva && rv128) op = rv_op_amoadd_q; break;
 						case 10: if (rva) op = rv_op_amoswap_w; break;
-						case 11: if (rva && rv64) op = rv_op_amoswap_d; break;
+						case 11: if (rva) op = rv_op_amoswap_d; break;
+						case 12: if (rva && rv128) op = rv_op_amoswap_q; break;
 						case 18:
 							// lr.w
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
@@ -244,25 +252,39 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 						case 19:
 							// lr.d
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
-								case 0: if (rva && rv64) op = rv_op_lr_d; break;
+								case 0: if (rva) op = rv_op_lr_d; break;
+							}
+							break;
+						case 20:
+							// lr.q
+							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+								case 0: if (rva && rv128) op = rv_op_lr_q; break;
 							}
 							break;
 						case 26: if (rva) op = rv_op_sc_w; break;
-						case 27: if (rva && rv64) op = rv_op_sc_d; break;
+						case 27: if (rva) op = rv_op_sc_d; break;
+						case 28: if (rva && rv128) op = rv_op_sc_q; break;
 						case 34: if (rva) op = rv_op_amoxor_w; break;
-						case 35: if (rva && rv64) op = rv_op_amoxor_d; break;
+						case 35: if (rva) op = rv_op_amoxor_d; break;
+						case 36: if (rva && rv128) op = rv_op_amoxor_q; break;
 						case 66: if (rva) op = rv_op_amoor_w; break;
-						case 67: if (rva && rv64) op = rv_op_amoor_d; break;
+						case 67: if (rva) op = rv_op_amoor_d; break;
+						case 68: if (rva && rv128) op = rv_op_amoor_q; break;
 						case 98: if (rva) op = rv_op_amoand_w; break;
-						case 99: if (rva && rv64) op = rv_op_amoand_d; break;
+						case 99: if (rva) op = rv_op_amoand_d; break;
+						case 100: if (rva && rv128) op = rv_op_amoand_q; break;
 						case 130: if (rva) op = rv_op_amomin_w; break;
-						case 131: if (rva && rv64) op = rv_op_amomin_d; break;
+						case 131: if (rva) op = rv_op_amomin_d; break;
+						case 132: if (rva && rv128) op = rv_op_amomin_q; break;
 						case 162: if (rva) op = rv_op_amomax_w; break;
-						case 163: if (rva && rv64) op = rv_op_amomax_d; break;
+						case 163: if (rva) op = rv_op_amomax_d; break;
+						case 164: if (rva && rv128) op = rv_op_amomax_q; break;
 						case 194: if (rva) op = rv_op_amominu_w; break;
-						case 195: if (rva && rv64) op = rv_op_amominu_d; break;
+						case 195: if (rva) op = rv_op_amominu_d; break;
+						case 196: if (rva && rv128) op = rv_op_amominu_q; break;
 						case 226: if (rva) op = rv_op_amomaxu_w; break;
-						case 227: if (rva && rv64) op = rv_op_amomaxu_d; break;
+						case 227: if (rva) op = rv_op_amomaxu_d; break;
+						case 228: if (rva && rv128) op = rv_op_amomaxu_q; break;
 					}
 					break;
 				case 12:
@@ -292,16 +314,16 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 				case 14:
 					// addw subw sllw srlw sraw mulw divw divuw remw remuw
 					switch (((inst >> 22) & 0b1111111000) | ((inst >> 12) & 0b0000000111) /* inst[31:25|14:12] */) {
-						case 0: if (rvi && rv64) op = rv_op_addw; break;
-						case 1: if (rvi && rv64) op = rv_op_sllw; break;
-						case 5: if (rvi && rv64) op = rv_op_srlw; break;
-						case 8: if (rvm && rv64) op = rv_op_mulw; break;
-						case 12: if (rvm && rv64) op = rv_op_divw; break;
-						case 13: if (rvm && rv64) op = rv_op_divuw; break;
-						case 14: if (rvm && rv64) op = rv_op_remw; break;
-						case 15: if (rvm && rv64) op = rv_op_remuw; break;
-						case 256: if (rvi && rv64) op = rv_op_subw; break;
-						case 261: if (rvi && rv64) op = rv_op_sraw; break;
+						case 0: if (rvi) op = rv_op_addw; break;
+						case 1: if (rvi) op = rv_op_sllw; break;
+						case 5: if (rvi) op = rv_op_srlw; break;
+						case 8: if (rvm) op = rv_op_mulw; break;
+						case 12: if (rvm) op = rv_op_divw; break;
+						case 13: if (rvm) op = rv_op_divuw; break;
+						case 14: if (rvm) op = rv_op_remw; break;
+						case 15: if (rvm) op = rv_op_remuw; break;
+						case 256: if (rvi) op = rv_op_subw; break;
+						case 261: if (rvi) op = rv_op_sraw; break;
 					}
 					break;
 				case 16:
@@ -418,8 +440,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvf) op = rv_op_fcvt_w_s; break;
 								case 1: if (rvf) op = rv_op_fcvt_wu_s; break;
-								case 2: if (rvf && rv64) op = rv_op_fcvt_l_s; break;
-								case 3: if (rvf && rv64) op = rv_op_fcvt_lu_s; break;
+								case 2: if (rvf) op = rv_op_fcvt_l_s; break;
+								case 3: if (rvf) op = rv_op_fcvt_lu_s; break;
 							}
 							break;
 						case 97:
@@ -427,8 +449,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvd) op = rv_op_fcvt_w_d; break;
 								case 1: if (rvd) op = rv_op_fcvt_wu_d; break;
-								case 2: if (rvd && rv64) op = rv_op_fcvt_l_d; break;
-								case 3: if (rvd && rv64) op = rv_op_fcvt_lu_d; break;
+								case 2: if (rvd) op = rv_op_fcvt_l_d; break;
+								case 3: if (rvd) op = rv_op_fcvt_lu_d; break;
 							}
 							break;
 						case 104:
@@ -436,8 +458,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvf) op = rv_op_fcvt_s_w; break;
 								case 1: if (rvf) op = rv_op_fcvt_s_wu; break;
-								case 2: if (rvf && rv64) op = rv_op_fcvt_s_l; break;
-								case 3: if (rvf && rv64) op = rv_op_fcvt_s_lu; break;
+								case 2: if (rvf) op = rv_op_fcvt_s_l; break;
+								case 3: if (rvf) op = rv_op_fcvt_s_lu; break;
 							}
 							break;
 						case 105:
@@ -445,8 +467,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvd) op = rv_op_fcvt_d_w; break;
 								case 1: if (rvd) op = rv_op_fcvt_d_wu; break;
-								case 2: if (rvd && rv64) op = rv_op_fcvt_d_l; break;
-								case 3: if (rvd && rv64) op = rv_op_fcvt_d_lu; break;
+								case 2: if (rvd) op = rv_op_fcvt_d_l; break;
+								case 3: if (rvd) op = rv_op_fcvt_d_lu; break;
 							}
 							break;
 						case 112:
@@ -459,7 +481,7 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 						case 113:
 							// fclass.d fmv.x.d
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-								case 0: if (rvd && rv64) op = rv_op_fmv_x_d; break;
+								case 0: if (rvd) op = rv_op_fmv_x_d; break;
 								case 1: if (rvd) op = rv_op_fclass_d; break;
 							}
 							break;
@@ -472,7 +494,26 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 						case 121:
 							// fmv.d.x
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
-								case 0: if (rvd && rv64) op = rv_op_fmv_d_x; break;
+								case 0: if (rvd) op = rv_op_fmv_d_x; break;
+							}
+							break;
+					}
+					break;
+				case 22:
+					// addid sllid srlid sraid
+					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+						case 0: if (rvi && rv128) op = rv_op_addid; break;
+						case 1:
+							// sllid
+							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+								case 0: if (rvi && rv128) op = rv_op_sllid; break;
+							}
+							break;
+						case 5:
+							// srlid sraid
+							switch (((inst >> 26) & 0b111111) /* inst[31:26] */) {
+								case 0: if (rvi && rv128) op = rv_op_srlid; break;
+								case 16: if (rvi && rv128) op = rv_op_sraid; break;
 							}
 							break;
 					}
@@ -560,6 +601,21 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 						case 7: if (rvs) op = rv_op_csrrci; break;
 					}
 					break;
+				case 30:
+					// addd subd slld srld srad muld divd divud remd remud
+					switch (((inst >> 22) & 0b1111111000) | ((inst >> 12) & 0b0000000111) /* inst[31:25|14:12] */) {
+						case 0: if (rvi && rv128) op = rv_op_addd; break;
+						case 1: if (rvi && rv128) op = rv_op_slld; break;
+						case 5: if (rvi && rv128) op = rv_op_srld; break;
+						case 8: if (rvm && rv128) op = rv_op_muld; break;
+						case 12: if (rvm && rv128) op = rv_op_divd; break;
+						case 13: if (rvm && rv128) op = rv_op_divud; break;
+						case 14: if (rvm && rv128) op = rv_op_remd; break;
+						case 15: if (rvm && rv128) op = rv_op_remud; break;
+						case 256: if (rvi && rv128) op = rv_op_subd; break;
+						case 261: if (rvi && rv128) op = rv_op_srad; break;
+					}
+					break;
 			}
 			break;
 	}
@@ -579,6 +635,7 @@ inline void decode_inst_type(T &dec, riscv::inst_t inst)
 		case rv_codec_i:                riscv::decode_i(dec, inst);                        break;
 		case rv_codec_i_sh5:            riscv::decode_i_sh5(dec, inst);                    break;
 		case rv_codec_i_sh6:            riscv::decode_i_sh6(dec, inst);                    break;
+		case rv_codec_i_sh7:            riscv::decode_i_sh7(dec, inst);                    break;
 		case rv_codec_i_csr:            riscv::decode_i_csr(dec, inst);                    break;
 		case rv_codec_s:                riscv::decode_s(dec, inst);                        break;
 		case rv_codec_sb:               riscv::decode_sb(dec, inst);                       break;
@@ -632,6 +689,7 @@ inline riscv::inst_t encode_inst(T &dec)
 		case rv_codec_i:                return inst |= riscv::encode_i(dec);               break;
 		case rv_codec_i_sh5:            return inst |= riscv::encode_i_sh5(dec);           break;
 		case rv_codec_i_sh6:            return inst |= riscv::encode_i_sh6(dec);           break;
+		case rv_codec_i_sh7:            return inst |= riscv::encode_i_sh7(dec);           break;
 		case rv_codec_i_csr:            return inst |= riscv::encode_i_csr(dec);           break;
 		case rv_codec_s:                return inst |= riscv::encode_s(dec);               break;
 		case rv_codec_sb:               return inst |= riscv::encode_sb(dec);              break;
