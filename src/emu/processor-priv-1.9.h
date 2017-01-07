@@ -344,6 +344,10 @@ core {
 			device_config = std::make_shared<config_mmio_device<processor_privileged>>(*this, 0x4000f000);
 			device_string  = std::make_shared<string_mmio_device<processor_privileged>>(*this, 0x40010000, create_config_string());
 
+			if (P::log & proc_log_config) {
+				printf("%s\n", device_string->str.c_str());
+			}
+
 			/* Add TIME, MIPI, PLIC and UART devices to the mmu */
 			P::mmu.mem->add_segment(device_sbi);
 			P::mmu.mem->add_segment(device_boot);
