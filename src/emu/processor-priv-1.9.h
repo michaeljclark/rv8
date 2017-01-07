@@ -692,6 +692,7 @@ core {
 				case rv_op_uret:
 					if (P::mode >= rv_mode_U) {
 						P::mstatus.r.uie = P::mstatus.r.upie;
+						P::mstatus.r.upie = 0;
 						return P::uepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
@@ -701,6 +702,7 @@ core {
 						P::mode = P::mstatus.r.spp;
 						P::mstatus.r.spp = rv_mode_U;
 						P::mstatus.r.sie = P::mstatus.r.spie;
+						P::mstatus.r.spie = 0;
 						return P::sepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
@@ -710,6 +712,7 @@ core {
 						P::mode = P::mstatus.r.hpp;
 						P::mstatus.r.hpp = rv_mode_U;
 						P::mstatus.r.hie = P::mstatus.r.hpie;
+						P::mstatus.r.hpie = 0;
 						return P::hepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
@@ -719,6 +722,7 @@ core {
 						P::mode = P::mstatus.r.mpp;
 						P::mstatus.r.mpp = rv_mode_U;
 						P::mstatus.r.mie = P::mstatus.r.mpie;
+						P::mstatus.r.mpie = 0;
 						return P::mepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
