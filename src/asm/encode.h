@@ -96,6 +96,13 @@ template <typename T> inline inst_t encode_ci_ldsp(T &dec)
 	return operand_crd::encode(dec.rd) | operand_cimmldsp::encode(dec.imm);
 }
 
+/* Encode CI lqsp */
+template <typename T> inline inst_t encode_ci_lqsp(T &dec)
+{
+	assert(dec.rs1 == rv_ireg_sp);
+	return operand_crd::encode(dec.rd) | operand_cimmlqsp::encode(dec.imm);
+}
+
 /* Encode CI 16sp */
 template <typename T> inline inst_t encode_ci_16sp(T &dec)
 {
@@ -118,6 +125,13 @@ template <typename T> inline inst_t encode_css_sdsp(T &dec)
 	return operand_crs2::encode(dec.rs2) | operand_cimmsdsp::encode(dec.imm);
 }
 
+/* Encode CSS sqsp */
+template <typename T> inline inst_t encode_css_sqsp(T &dec)
+{
+	assert(dec.rs1 == rv_ireg_sp);
+	return operand_crs2::encode(dec.rs2) | operand_cimmsqsp::encode(dec.imm);
+}
+
 /* Encode CIW 4spn */
 template <typename T> inline inst_t encode_ciw_4spn(T &dec)
 {
@@ -137,11 +151,23 @@ template <typename T> inline inst_t encode_cl_ld(T &dec)
 	return operand_crdq::encode(dec.rd + 8) | operand_crs1q::encode(dec.rs1 + 8)  | operand_cimmd::encode(dec.imm);
 }
 
+/* Encode CL lq */
+template <typename T> inline inst_t encode_cl_lq(T &dec)
+{
+	return operand_crdq::encode(dec.rd + 8) | operand_crs1q::encode(dec.rs1 + 8)  | operand_cimmq::encode(dec.imm);
+}
+
 /* Encode CS f */
 template <typename T> inline inst_t encode_cs(T &dec)
 {
 	assert(dec.rd == dec.rs1);
 	return operand_crdq::encode(dec.rd + 8) | operand_crs1q::encode(dec.rs1 + 8);
+}
+
+/* Encode CS sw */
+template <typename T> inline inst_t encode_cs_sw(T &dec)
+{
+	return operand_crs1q::encode(dec.rs1 + 8) | operand_crs2q::encode(dec.rs2 + 8) | operand_cimmw::encode(dec.imm);
 }
 
 /* Encode CS sd */
@@ -150,10 +176,10 @@ template <typename T> inline inst_t encode_cs_sd(T &dec)
 	return operand_crs1q::encode(dec.rs1 + 8) | operand_crs2q::encode(dec.rs2 + 8) | operand_cimmd::encode(dec.imm);
 }
 
-/* Encode CS sw */
-template <typename T> inline inst_t encode_cs_sw(T &dec)
+/* Encode CS sq */
+template <typename T> inline inst_t encode_cs_sq(T &dec)
 {
-	return operand_crs1q::encode(dec.rs1 + 8) | operand_crs2q::encode(dec.rs2 + 8) | operand_cimmw::encode(dec.imm);
+	return operand_crs1q::encode(dec.rs1 + 8) | operand_crs2q::encode(dec.rs2 + 8) | operand_cimmq::encode(dec.imm);
 }
 
 /* Encode CB */

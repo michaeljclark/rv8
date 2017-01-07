@@ -15,16 +15,16 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 	opcode_t op = rv_op_illegal;
 	switch (((inst >> 0) & 0b11) /* inst[1:0] */) {
 		case 0:
-			// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd
+			// c.addi4spn c.fld c.lw c.flw c.fsd c.sw c.fsw c.ld c.sd c.lq c.sq
 			switch (((inst >> 13) & 0b111) /* inst[15:13] */) {
 				case 0: if (rvc) op = rv_op_c_addi4spn; break;
-				case 1: if (rvc) op = rv_op_c_fld; break;
+				case 1: if (rvc) op = rv_op_c_fld; break; // c.fld c.lq
 				case 2: if (rvc) op = rv_op_c_lw; break;
 				case 3: 
 					if (rvc && rv32) op = rv_op_c_flw;
 					else if (rvc && rv64) op = rv_op_c_ld;
 					break;
-				case 5: if (rvc) op = rv_op_c_fsd; break;
+				case 5: if (rvc) op = rv_op_c_fsd; break; // c.fsd c.sq
 				case 6: if (rvc) op = rv_op_c_sw; break;
 				case 7: 
 					if (rvc && rv32) op = rv_op_c_fsw;
@@ -91,7 +91,7 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					if (rvc && rv32) op = rv_op_c_slli_rv32c;
 					else if (rvc && rv64) op = rv_op_c_slli_rv64c;
 					break;
-				case 1: if (rvc) op = rv_op_c_fldsp; break;
+				case 1: if (rvc) op = rv_op_c_fldsp; break; // c.fldsp c.lqsp
 				case 2: if (rvc) op = rv_op_c_lwsp; break;
 				case 3: 
 					if (rvc && rv32) op = rv_op_c_flwsp;
@@ -122,7 +122,7 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							break;
 					}
 					break;
-				case 5: if (rvc) op = rv_op_c_fsdsp; break;
+				case 5: if (rvc) op = rv_op_c_fsdsp; break; // c.fsdsp c.sqsp
 				case 6: if (rvc) op = rv_op_c_swsp; break;
 				case 7: 
 					if (rvc && rv32) op = rv_op_c_fswsp;
@@ -655,6 +655,7 @@ inline void decode_inst_type(T &dec, riscv::inst_t inst)
 		case rv_codec_ci_16sp:          riscv::decode_ci_16sp(dec, inst);                  break;
 		case rv_codec_ci_lwsp:          riscv::decode_ci_lwsp(dec, inst);                  break;
 		case rv_codec_ci_ldsp:          riscv::decode_ci_ldsp(dec, inst);                  break;
+		case rv_codec_ci_lqsp:          riscv::decode_ci_lqsp(dec, inst);                  break;
 		case rv_codec_ci_li:            riscv::decode_ci_li(dec, inst);                    break;
 		case rv_codec_ci_lui:           riscv::decode_ci_lui(dec, inst);                   break;
 		case rv_codec_ci_none:          riscv::decode_ci_none(dec, inst);                  break;
@@ -663,6 +664,7 @@ inline void decode_inst_type(T &dec, riscv::inst_t inst)
 		case rv_codec_cj_jal:           riscv::decode_cj_jal(dec, inst);                   break;
 		case rv_codec_cl_lw:            riscv::decode_cl_lw(dec, inst);                    break;
 		case rv_codec_cl_ld:            riscv::decode_cl_ld(dec, inst);                    break;
+		case rv_codec_cl_lq:            riscv::decode_cl_lq(dec, inst);                    break;
 		case rv_codec_cr:               riscv::decode_cr(dec, inst);                       break;
 		case rv_codec_cr_mv:            riscv::decode_cr_mv(dec, inst);                    break;
 		case rv_codec_cr_jalr:          riscv::decode_cr_jalr(dec, inst);                  break;
@@ -670,8 +672,10 @@ inline void decode_inst_type(T &dec, riscv::inst_t inst)
 		case rv_codec_cs:               riscv::decode_cs(dec, inst);                       break;
 		case rv_codec_cs_sw:            riscv::decode_cs_sw(dec, inst);                    break;
 		case rv_codec_cs_sd:            riscv::decode_cs_sd(dec, inst);                    break;
+		case rv_codec_cs_sq:            riscv::decode_cs_sq(dec, inst);                    break;
 		case rv_codec_css_swsp:         riscv::decode_css_swsp(dec, inst);                 break;
 		case rv_codec_css_sdsp:         riscv::decode_css_sdsp(dec, inst);                 break;
+		case rv_codec_css_sqsp:         riscv::decode_css_sqsp(dec, inst);                 break;
 	};
 }
 
@@ -709,6 +713,7 @@ inline riscv::inst_t encode_inst(T &dec)
 		case rv_codec_ci_16sp:          return inst |= riscv::encode_ci_16sp(dec);         break;
 		case rv_codec_ci_lwsp:          return inst |= riscv::encode_ci_lwsp(dec);         break;
 		case rv_codec_ci_ldsp:          return inst |= riscv::encode_ci_ldsp(dec);         break;
+		case rv_codec_ci_lqsp:          return inst |= riscv::encode_ci_lqsp(dec);         break;
 		case rv_codec_ci_li:            return inst |= riscv::encode_ci_li(dec);           break;
 		case rv_codec_ci_lui:           return inst |= riscv::encode_ci_lui(dec);          break;
 		case rv_codec_ci_none:          return inst |= riscv::encode_ci_none(dec);         break;
@@ -717,6 +722,7 @@ inline riscv::inst_t encode_inst(T &dec)
 		case rv_codec_cj_jal:           return inst |= riscv::encode_cj_jal(dec);          break;
 		case rv_codec_cl_lw:            return inst |= riscv::encode_cl_lw(dec);           break;
 		case rv_codec_cl_ld:            return inst |= riscv::encode_cl_ld(dec);           break;
+		case rv_codec_cl_lq:            return inst |= riscv::encode_cl_lq(dec);           break;
 		case rv_codec_cr:               return inst |= riscv::encode_cr(dec);              break;
 		case rv_codec_cr_mv:            return inst |= riscv::encode_cr_mv(dec);           break;
 		case rv_codec_cr_jalr:          return inst |= riscv::encode_cr_jalr(dec);         break;
@@ -724,8 +730,10 @@ inline riscv::inst_t encode_inst(T &dec)
 		case rv_codec_cs:               return inst |= riscv::encode_cs(dec);              break;
 		case rv_codec_cs_sw:            return inst |= riscv::encode_cs_sw(dec);           break;
 		case rv_codec_cs_sd:            return inst |= riscv::encode_cs_sd(dec);           break;
+		case rv_codec_cs_sq:            return inst |= riscv::encode_cs_sq(dec);           break;
 		case rv_codec_css_swsp:         return inst |= riscv::encode_css_swsp(dec);        break;
 		case rv_codec_css_sdsp:         return inst |= riscv::encode_css_sdsp(dec);        break;
+		case rv_codec_css_sqsp:         return inst |= riscv::encode_css_sqsp(dec);        break;
 	};
 	return inst;
 }

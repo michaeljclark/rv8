@@ -116,6 +116,15 @@ template <typename T> inline void decode_ci_ldsp(T &dec, inst_t inst)
 	dec.imm = operand_cimmldsp::decode(inst);
 }
 
+/* Decode CI lqsp */
+template <typename T> inline void decode_ci_lqsp(T &dec, inst_t inst)
+{
+	dec.rd = operand_crd::decode(inst);
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = rv_ireg_zero;
+	dec.imm = operand_cimmlqsp::decode(inst);
+}
+
 /* Decode CI 16sp */
 template <typename T> inline void decode_ci_16sp(T &dec, inst_t inst)
 {
@@ -141,6 +150,15 @@ template <typename T> inline void decode_css_sdsp(T &dec, inst_t inst)
 	dec.rs1 = rv_ireg_sp;
 	dec.rs2 = operand_crs2::decode(inst);
 	dec.imm = operand_cimmsdsp::decode(inst);
+}
+
+/* Decode CSS sqsp */
+template <typename T> inline void decode_css_sqsp(T &dec, inst_t inst)
+{
+	dec.rd = rv_ireg_zero;
+	dec.rs1 = rv_ireg_sp;
+	dec.rs2 = operand_crs2::decode(inst);
+	dec.imm = operand_cimmsqsp::decode(inst);
 }
 
 /* Decode CIW 4spn */
@@ -170,21 +188,21 @@ template <typename T> inline void decode_cl_ld(T &dec, inst_t inst)
 	dec.imm = operand_cimmd::decode(inst);
 }
 
+/* Decode CL lq */
+template <typename T> inline void decode_cl_lq(T &dec, inst_t inst)
+{
+	dec.rd = operand_crdq::decode(inst) + 8;
+	dec.rs1 = operand_crs1q::decode(inst) + 8;
+	dec.rs2 = rv_ireg_zero;
+	dec.imm = operand_cimmq::decode(inst);
+}
+
 /* Decode CS f */
 template <typename T> inline void decode_cs(T &dec, inst_t inst)
 {
 	dec.rd = dec.rs1 = operand_crs1rdq::decode(inst) + 8;
 	dec.rs2 = operand_crs2q::decode(inst) + 8;
 	dec.imm = 0;
-}
-
-/* Decode CS sd */
-template <typename T> inline void decode_cs_sd(T &dec, inst_t inst)
-{
-	dec.rd = rv_ireg_zero;
-	dec.rs1 = operand_crs1q::decode(inst) + 8;
-	dec.rs2 = operand_crs2q::decode(inst) + 8;
-	dec.imm = operand_cimmd::decode(inst);
 }
 
 /* Decode CS sw */
@@ -194,6 +212,23 @@ template <typename T> inline void decode_cs_sw(T &dec, inst_t inst)
 	dec.rs1 = operand_crs1q::decode(inst) + 8;
 	dec.rs2 = operand_crs2q::decode(inst) + 8;
 	dec.imm = operand_cimmw::decode(inst);
+}
+/* Decode CS sd */
+template <typename T> inline void decode_cs_sd(T &dec, inst_t inst)
+{
+	dec.rd = rv_ireg_zero;
+	dec.rs1 = operand_crs1q::decode(inst) + 8;
+	dec.rs2 = operand_crs2q::decode(inst) + 8;
+	dec.imm = operand_cimmd::decode(inst);
+}
+
+/* Decode CS sq */
+template <typename T> inline void decode_cs_sq(T &dec, inst_t inst)
+{
+	dec.rd = rv_ireg_zero;
+	dec.rs1 = operand_crs1q::decode(inst) + 8;
+	dec.rs2 = operand_crs2q::decode(inst) + 8;
+	dec.imm = operand_cimmq::decode(inst);
 }
 
 /* Decode CB */

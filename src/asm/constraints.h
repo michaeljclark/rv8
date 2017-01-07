@@ -26,6 +26,7 @@ inline bool constraint_check(T &dec, const rvc_constraint *c)
 			case rvc_imm_x2:         if (!((imm & 0b1) == 0)) return false; break;
 			case rvc_imm_x4:         if (!((imm & 0b11) == 0)) return false; break;
 			case rvc_imm_x8:         if (!((imm & 0b111) == 0)) return false; break;
+			case rvc_imm_x16:        if (!((imm & 0b1111) == 0)) return false; break;
 			case rvc_rd_b3:          if (!(rd  >= 8 && rd  <= 15)) return false; break;
 			case rvc_rs1_b3:         if (!(rs1 >= 8 && rs1 <= 15)) return false; break;
 			case rvc_rs2_b3:         if (!(rs2 >= 8 && rs2 <= 15)) return false; break;

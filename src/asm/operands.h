@@ -52,6 +52,7 @@ typedef simm_operand_t<6, S<12,12, B<5>>, S<6,2, B<4,0>>>                       
 typedef simm_operand_t<18, S<12,12, B<17>>, S<6,2, B<16,12>>>                      operand_cimmui;
 typedef simm_operand_t<8, S<12,12, B<5>>, S<6,2, B<4,2>,B<7,6>>>                   operand_cimmlwsp;
 typedef simm_operand_t<9, S<12,12, B<5>>, S<6,2, B<4,3>,B<8,6>>>                   operand_cimmldsp;
+typedef simm_operand_t<10, S<12,12, B<5>>, S<6,2, B<4>,B<9,6>>>                    operand_cimmlqsp;
 typedef simm_operand_t<10, S<12,12, B<9>>, S<6,2, B<4>,B<6>,B<8,7>,B<5>>>          operand_cimm16sp;
 typedef simm_operand_t<12, S<12,2, B<11>,B<4>,B<9,8>,B<10>,B<6>,B<7>,B<3,1>,B<5>>> operand_cimmj;
 typedef simm_operand_t<9, S<12,10, B<8>,B<4,3>>, S<6,2, B<7,6>,B<2,1>,B<5>>>       operand_cimmb;
