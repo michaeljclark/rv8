@@ -283,36 +283,36 @@ inst_t riscv::emit_andi(ireg5 rd, ireg5 rs1, simm12 imm12)
 	return encode_inst(dec);
 }
 
-inst_t riscv::emit_slli_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5)
+inst_t riscv::emit_slli(ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_slli_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
+	dec.op = rv_op_slli;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	return encode_inst(dec);
 }
 
-inst_t riscv::emit_srli_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5)
+inst_t riscv::emit_srli(ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srli_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
+	dec.op = rv_op_srli;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	return encode_inst(dec);
 }
 
-inst_t riscv::emit_srai_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5)
+inst_t riscv::emit_srai(ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srai_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
+	dec.op = rv_op_srai;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	return encode_inst(dec);
 }
 
@@ -476,39 +476,6 @@ inst_t riscv::emit_sd(ireg5 rs1, ireg5 rs2, offset12 simm12)
 	return encode_inst(dec);
 }
 
-inst_t riscv::emit_slli_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_slli_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	return encode_inst(dec);
-}
-
-inst_t riscv::emit_srli_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srli_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	return encode_inst(dec);
-}
-
-inst_t riscv::emit_srai_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srai_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	return encode_inst(dec);
-}
-
 inst_t riscv::emit_addiw(ireg5 rd, ireg5 rs1, simm12 imm12)
 {
 	decode dec;
@@ -638,39 +605,6 @@ inst_t riscv::emit_sq(ireg5 rs1, ireg5 rs2, offset12 simm12)
 	dec.rs1 = rs1;
 	dec.rs2 = rs2;
 	dec.imm = simm12;
-	return encode_inst(dec);
-}
-
-inst_t riscv::emit_slli(ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_slli;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
-	return encode_inst(dec);
-}
-
-inst_t riscv::emit_srli(ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srli;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
-	return encode_inst(dec);
-}
-
-inst_t riscv::emit_srai(ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_srai;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
 	return encode_inst(dec);
 }
 
@@ -2514,38 +2448,38 @@ bool riscv::asm_andi(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12)
 	return true;
 }
 
-bool riscv::asm_slli_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5)
+bool riscv::asm_slli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_slli_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
+	dec.op = rv_op_slli;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	as.add_inst(encode_inst(dec));
 	return true;
 }
 
-bool riscv::asm_srli_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5)
+bool riscv::asm_srli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srli_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
+	dec.op = rv_op_srli;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	as.add_inst(encode_inst(dec));
 	return true;
 }
 
-bool riscv::asm_srai_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5)
+bool riscv::asm_srai(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
 {
 	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt5.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srai_rv32i;
+	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
+	dec.op = rv_op_srai;
 	dec.rd = rd;
 	dec.rs1 = rs1;
-	dec.imm = shamt5;
+	dec.imm = shamt7;
 	as.add_inst(encode_inst(dec));
 	return true;
 }
@@ -2725,42 +2659,6 @@ bool riscv::asm_sd(assembler &as, ireg5 rs1, ireg5 rs2, offset12 simm12)
 	return true;
 }
 
-bool riscv::asm_slli_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_slli_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
-bool riscv::asm_srli_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srli_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
-bool riscv::asm_srai_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt6.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srai_rv64i;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt6;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
 bool riscv::asm_addiw(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12)
 {
 	decode dec;
@@ -2901,42 +2799,6 @@ bool riscv::asm_sq(assembler &as, ireg5 rs1, ireg5 rs2, offset12 simm12)
 	dec.rs1 = rs1;
 	dec.rs2 = rs2;
 	dec.imm = simm12;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
-bool riscv::asm_slli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_slli;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
-bool riscv::asm_srli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srli;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
-bool riscv::asm_srai(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7)
-{
-	decode dec;
-	if (!(rd.valid() && rs1.valid() && shamt7.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_srai;
-	dec.rd = rd;
-	dec.rs1 = rs1;
-	dec.imm = shamt7;
 	as.add_inst(encode_inst(dec));
 	return true;
 }

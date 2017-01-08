@@ -33,9 +33,9 @@ namespace riscv
 	inst_t emit_xori(ireg5 rd, ireg5 rs1, simm12 imm12);
 	inst_t emit_ori(ireg5 rd, ireg5 rs1, simm12 imm12);
 	inst_t emit_andi(ireg5 rd, ireg5 rs1, simm12 imm12);
-	inst_t emit_slli_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5);
-	inst_t emit_srli_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5);
-	inst_t emit_srai_rv32i(ireg5 rd, ireg5 rs1, uimm5 shamt5);
+	inst_t emit_slli(ireg5 rd, ireg5 rs1, uimm7 shamt7);
+	inst_t emit_srli(ireg5 rd, ireg5 rs1, uimm7 shamt7);
+	inst_t emit_srai(ireg5 rd, ireg5 rs1, uimm7 shamt7);
 	inst_t emit_add(ireg5 rd, ireg5 rs1, ireg5 rs2);
 	inst_t emit_sub(ireg5 rd, ireg5 rs1, ireg5 rs2);
 	inst_t emit_sll(ireg5 rd, ireg5 rs1, ireg5 rs2);
@@ -51,9 +51,6 @@ namespace riscv
 	inst_t emit_lwu(ireg5 rd, ireg5 rs1, offset12 oimm12);
 	inst_t emit_ld(ireg5 rd, ireg5 rs1, offset12 oimm12);
 	inst_t emit_sd(ireg5 rs1, ireg5 rs2, offset12 simm12);
-	inst_t emit_slli_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6);
-	inst_t emit_srli_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6);
-	inst_t emit_srai_rv64i(ireg5 rd, ireg5 rs1, uimm6 shamt6);
 	inst_t emit_addiw(ireg5 rd, ireg5 rs1, simm12 imm12);
 	inst_t emit_slliw(ireg5 rd, ireg5 rs1, uimm5 shamt5);
 	inst_t emit_srliw(ireg5 rd, ireg5 rs1, uimm5 shamt5);
@@ -66,9 +63,6 @@ namespace riscv
 	inst_t emit_ldu(ireg5 rd, ireg5 rs1, offset12 oimm12);
 	inst_t emit_lq(ireg5 rd, ireg5 rs1, offset12 oimm12);
 	inst_t emit_sq(ireg5 rs1, ireg5 rs2, offset12 simm12);
-	inst_t emit_slli(ireg5 rd, ireg5 rs1, uimm7 shamt7);
-	inst_t emit_srli(ireg5 rd, ireg5 rs1, uimm7 shamt7);
-	inst_t emit_srai(ireg5 rd, ireg5 rs1, uimm7 shamt7);
 	inst_t emit_addid(ireg5 rd, ireg5 rs1, simm12 imm12);
 	inst_t emit_sllid(ireg5 rd, ireg5 rs1, uimm6 shamt6);
 	inst_t emit_srlid(ireg5 rd, ireg5 rs1, uimm6 shamt6);
@@ -231,9 +225,9 @@ namespace riscv
 	bool asm_xori(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12);
 	bool asm_ori(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12);
 	bool asm_andi(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12);
-	bool asm_slli_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5);
-	bool asm_srli_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5);
-	bool asm_srai_rv32i(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5);
+	bool asm_slli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
+	bool asm_srli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
+	bool asm_srai(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
 	bool asm_add(assembler &as, ireg5 rd, ireg5 rs1, ireg5 rs2);
 	bool asm_sub(assembler &as, ireg5 rd, ireg5 rs1, ireg5 rs2);
 	bool asm_sll(assembler &as, ireg5 rd, ireg5 rs1, ireg5 rs2);
@@ -249,9 +243,6 @@ namespace riscv
 	bool asm_lwu(assembler &as, ireg5 rd, ireg5 rs1, offset12 oimm12);
 	bool asm_ld(assembler &as, ireg5 rd, ireg5 rs1, offset12 oimm12);
 	bool asm_sd(assembler &as, ireg5 rs1, ireg5 rs2, offset12 simm12);
-	bool asm_slli_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6);
-	bool asm_srli_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6);
-	bool asm_srai_rv64i(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6);
 	bool asm_addiw(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12);
 	bool asm_slliw(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5);
 	bool asm_srliw(assembler &as, ireg5 rd, ireg5 rs1, uimm5 shamt5);
@@ -264,9 +255,6 @@ namespace riscv
 	bool asm_ldu(assembler &as, ireg5 rd, ireg5 rs1, offset12 oimm12);
 	bool asm_lq(assembler &as, ireg5 rd, ireg5 rs1, offset12 oimm12);
 	bool asm_sq(assembler &as, ireg5 rs1, ireg5 rs2, offset12 simm12);
-	bool asm_slli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
-	bool asm_srli(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
-	bool asm_srai(assembler &as, ireg5 rd, ireg5 rs1, uimm7 shamt7);
 	bool asm_addid(assembler &as, ireg5 rd, ireg5 rs1, simm12 imm12);
 	bool asm_sllid(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6);
 	bool asm_srlid(assembler &as, ireg5 rd, ireg5 rs1, uimm6 shamt6);

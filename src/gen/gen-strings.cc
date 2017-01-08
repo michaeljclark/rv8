@@ -100,7 +100,7 @@ static void print_strings_cc(rv_gen *gen)
 	printf("const char* rv_inst_name_sym[] = {\n");
 	print_array_illegal_str("illegal", no_comment);
 	for (auto &opcode : gen->opcodes) {
-		std::string opcode_name = rv_meta_model::opcode_format("", opcode, ".", false);
+		std::string opcode_name = rv_meta_model::opcode_format("", opcode, ".");
 		printf("\t%s\"%s\",\n",
 			rv_meta_model::opcode_comment(opcode, no_comment).c_str(),
 			opcode_name.c_str());

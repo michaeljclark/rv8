@@ -168,7 +168,7 @@ void assembler::load_imm_r(ireg5 rd, s64 val)
 		int shift = 12 + ctz(u64(hi) >> 12);
 		hi >>= shift;
 		load_imm_r(rd, hi);
-		add_inst(emit_slli_rv64i(rd, rd, shift));
+		add_inst(emit_slli(rd, rd, shift));
 		if (lo != 0) {
 			add_inst(emit_addi(rd, rd, s32(bitextend(lo, 12))));
 		}
@@ -181,7 +181,7 @@ void assembler::load_imm(ireg5 rd, s64 val)
 		add_inst(emit_addi(rd, rv_ireg_zero, s32(val)));
 	} else if (ispow2(val)) {
 		add_inst(emit_addi(rd, rv_ireg_zero, 1));
-		add_inst(emit_slli_rv64i(rd, rd, ctz(val)));
+		add_inst(emit_slli(rd, rd, ctz(val)));
 	} else {
 		load_imm_r(rd, val);
 	}

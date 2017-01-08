@@ -934,9 +934,9 @@ struct rv_assembler
 					if (ri == ireg_map.end()) {
 						bool has_imm = false;
 						switch (dec.op) {
-							case rv_op_sll: dec.op = rv_op_slli_rv64i; has_imm = true; break;
-							case rv_op_srl: dec.op = rv_op_srli_rv64i; has_imm = true; break;
-							case rv_op_sra: dec.op = rv_op_srai_rv64i; has_imm = true; break;
+							case rv_op_sll: dec.op = rv_op_slli; has_imm = true; break;
+							case rv_op_srl: dec.op = rv_op_srli; has_imm = true; break;
+							case rv_op_sra: dec.op = rv_op_srai; has_imm = true; break;
 							case rv_op_add: dec.op = rv_op_addi; has_imm = true; break;
 							case rv_op_addw: dec.op = rv_op_addiw; has_imm = true; break;
 							case rv_op_and: dec.op = rv_op_andi; has_imm = true; break;

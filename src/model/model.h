@@ -256,7 +256,6 @@ struct rv_csr
 
 struct rv_opcode
 {
-	std::string key;
 	std::string name;
 	std::string fullname;
 	std::string description;
@@ -277,9 +276,10 @@ struct rv_opcode
 	inst_t mask;
 	inst_t match;
 	inst_t done;
+	bool suffix;
 
-	rv_opcode(std::string key, std::string name)
-		: key(key), name(name), num(0), mask(0), match(0), done(0) {}
+	rv_opcode(std::string name)
+		: name(name), num(0), mask(0), match(0), done(0), suffix(false) {}
 
 	bool is_pseudo() { return name.find("@") == 0; }
 
@@ -368,7 +368,7 @@ struct rv_meta_model
 	rv_csr_list           csrs;
 	rv_csr_map            csrs_by_name;
 	rv_opcode_list        opcodes;
-	rv_opcode_map         opcodes_by_key;
+	rv_opcode_list        all_opcodes;
 	rv_opcode_list_map    opcodes_by_name;
 	rv_constraint_list    constraints;
 	rv_constraint_map     constraints_by_name;
@@ -381,9 +381,9 @@ struct rv_meta_model
 	static std::string format_type(rv_operand_ptr operand);
 	static std::string format_codec(std::string prefix, rv_codec_ptr codec, std::string dot, bool strip_suffix = true);
 	static std::string format_format(std::string prefix, rv_format_ptr format, char special);
-	static std::string opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool use_key = true);
+	static std::string opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool suffix = false);
 	static std::string opcode_codec_key(rv_opcode_ptr opcode);
-	static std::string opcode_comment(rv_opcode_ptr opcode, bool no_comment, bool key = true);
+	static std::string opcode_comment(rv_opcode_ptr opcode, bool no_comment);
 	static std::string opcode_isa_shortname(rv_opcode_ptr opcode);
 	static std::string codec_type_name(rv_codec_ptr codec);
 	static std::vector<rv_bitrange> bitmask_to_bitrange(std::vector<ssize_t> &bits);
@@ -397,8 +397,8 @@ struct rv_meta_model
 	std::vector<std::pair<size_t,std::string>> isa_width_prefixes();
 	rv_extension_list decode_isa_extensions(std::string isa_spec);
 	rv_opcode_ptr create_opcode(std::string opcode_name, std::string extension);
-	rv_opcode_ptr lookup_opcode_by_key(std::string opcode_name);
 	rv_opcode_list lookup_opcode_by_name(std::string opcode_name);
+	rv_opcode_list opcode_list_by_width(size_t isa_width);
 
 	bool is_operand(std::string mnem);
 	bool is_ignore(std::string mnem);

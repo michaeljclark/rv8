@@ -138,17 +138,17 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.xu.val & ux(dec.imm);
 			};
 			break;
-		case rv_op_slli_rv32i:
+		case rv_op_slli:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.xu.val << dec.imm;
 			};
 			break;
-		case rv_op_srli_rv32i:
+		case rv_op_srli:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.xu.val >> dec.imm;
 			};
 			break;
-		case rv_op_srai_rv32i:
+		case rv_op_srai:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.x.val >> dec.imm;
 			};
@@ -759,17 +759,17 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 				proc.mmu.template store<P,s64>(proc, proc.ireg[dec.rs1] + dec.imm, proc.ireg[dec.rs2].r.l.val);
 			};
 			break;
-		case rv_op_slli_rv64i:
+		case rv_op_slli:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.xu.val << dec.imm;
 			};
 			break;
-		case rv_op_srli_rv64i:
+		case rv_op_srli:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.xu.val >> dec.imm;
 			};
 			break;
-		case rv_op_srai_rv64i:
+		case rv_op_srai:
 			if (rvi) {
 				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.ireg[dec.rs1].r.x.val >> dec.imm;
 			};

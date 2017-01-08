@@ -107,7 +107,7 @@ void rv_gen::generate(int argc, const char *argv[])
 
 void rv_gen::generate_map()
 {
-	for (auto &opcode : opcodes) {
+	for (auto &opcode : all_opcodes) {
 		for (auto &mask : opcode->masks) {
 			ssize_t msb = mask.first.msb;
 			ssize_t lsb = mask.first.lsb;
@@ -124,7 +124,7 @@ void rv_gen::generate_codec()
 {
 	// make list of opcodes to include
 	rv_opcode_list opcodes_copy;
-	for (auto &opcode : opcodes) {
+	for (auto &opcode : all_opcodes) {
 		if (opcode->is_pseudo()) continue;
 		opcodes_copy.push_back(opcode);
 	}

@@ -58,12 +58,12 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					// c.srli c.srai c.andi c.sub c.xor c.or c.and c.subw c.addw c.srli c.srai
 					switch (((inst >> 10) & 0b11) /* inst[11:10] */) {
 						case 0: 
-							if (rvc && rv32) op = rv_op_c_srli_rv32c;
-							else if (rvc && rv64) op = rv_op_c_srli_rv64c;
+							if (rvc && rv32) op = rv_op_c_srli;
+							else if (rvc && rv64) op = rv_op_c_srli;
 							break;
 						case 1: 
-							if (rvc && rv32) op = rv_op_c_srai_rv32c;
-							else if (rvc && rv64) op = rv_op_c_srai_rv64c;
+							if (rvc && rv32) op = rv_op_c_srai;
+							else if (rvc && rv64) op = rv_op_c_srai;
 							break;
 						case 2: if (rvc) op = rv_op_c_andi; break;
 						case 3:
@@ -88,8 +88,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 			// c.slli c.fldsp c.lwsp c.flwsp c.jr c.mv c.ebreak c.jalr c.add c.fsdsp c.swsp c.fswsp ...
 			switch (((inst >> 13) & 0b111) /* inst[15:13] */) {
 				case 0: 
-					if (rvc && rv32) op = rv_op_c_slli_rv32c;
-					else if (rvc && rv64) op = rv_op_c_slli_rv64c;
+					if (rvc && rv32) op = rv_op_c_slli;
+					else if (rvc && rv64) op = rv_op_c_slli;
 					break;
 				case 1: if (rvc) op = rv_op_c_fldsp; break; // c.fldsp c.lqsp
 				case 2: if (rvc) op = rv_op_c_lwsp; break;
@@ -169,8 +169,8 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							// slli slli slli
 							switch (((inst >> 27) & 0b11111) /* inst[31:27] */) {
 								case 0: 
-									if (rvi && rv32) op = rv_op_slli_rv32i;
-									else if (rvi && rv64) op = rv_op_slli_rv64i;
+									if (rvi && rv32) op = rv_op_slli;
+									else if (rvi && rv64) op = rv_op_slli;
 									else if (rvi && rv128) op = rv_op_slli;
 									break;
 							}
@@ -182,13 +182,13 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							// srli srai srli srai srli srai
 							switch (((inst >> 27) & 0b11111) /* inst[31:27] */) {
 								case 0: 
-									if (rvi && rv32) op = rv_op_srli_rv32i;
-									else if (rvi && rv64) op = rv_op_srli_rv64i;
+									if (rvi && rv32) op = rv_op_srli;
+									else if (rvi && rv64) op = rv_op_srli;
 									else if (rvi && rv128) op = rv_op_srli;
 									break;
 								case 8: 
-									if (rvi && rv32) op = rv_op_srai_rv32i;
-									else if (rvi && rv64) op = rv_op_srai_rv64i;
+									if (rvi && rv32) op = rv_op_srai;
+									else if (rvi && rv64) op = rv_op_srai;
 									else if (rvi && rv128) op = rv_op_srai;
 									break;
 							}

@@ -356,11 +356,15 @@ std::string rv_meta_model::format_format(std::string prefix, rv_format_ptr forma
 	return prefix + ltrim(rtrim(operands, std::ispunct), std::ispunct);
 }
 
-std::string rv_meta_model::opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool use_key)
+std::string rv_meta_model::opcode_format(std::string prefix, rv_opcode_ptr opcode, std::string dot, bool suffix)
 {
-	std::string name = use_key ? opcode->key : opcode->name;
+	std::string name = opcode->name;
 	if (name.find("@") == 0) name = name.substr(1);
-	return prefix + replace(name, ".", dot);
+	if (suffix && opcode->suffix) {
+		return prefix + replace(name, ".", dot) + dot + opcode->extensions.front()->name;
+	} else {
+		return prefix + replace(name, ".", dot);
+	}
 }
 
 std::string rv_meta_model::opcode_codec_key(rv_opcode_ptr opcode)
@@ -375,9 +379,9 @@ std::string rv_meta_model::opcode_codec_key(rv_opcode_ptr opcode)
 	return join(codec_operands, "·");
 }
 
-std::string rv_meta_model::opcode_comment(rv_opcode_ptr opcode, bool no_comment, bool key)
+std::string rv_meta_model::opcode_comment(rv_opcode_ptr opcode, bool no_comment)
 {
-	std::string opcode_name = opcode_format("", opcode, ".", key);
+	std::string opcode_name = opcode_format("", opcode, ".");
 	return no_comment ? "" : format_string("/* %20s */ ", opcode_name.c_str());
 }
 
@@ -622,49 +626,29 @@ rv_extension_list rv_meta_model::decode_isa_extensions(std::string isa_spec)
 
 rv_opcode_ptr rv_meta_model::create_opcode(std::string opcode_name, std::string extension)
 {
-	// create key for the opcode
-	rv_opcode_ptr opcode = lookup_opcode_by_key(opcode_name);
-	if (opcode) {
-		// if the opcode exists rename the previous opcode using isa extension
-		opcode->key = opcode_name + "." + opcode->extensions.front()->name;
-		opcodes_by_key.erase(opcode_name);
-		opcodes_by_key[opcode->key] = opcode;
-
-		// and add the new opcode with its isa extension
-		std::string opcode_key = opcode_name + std::string(".") + extension;
-		if (opcodes_by_key.find(opcode_key) != opcodes_by_key.end()) {
-			panic("opcode with same extension already exists: %s",
-				opcode_key.c_str());
-		}
-		opcode = opcodes_by_key[opcode_key] = std::make_shared<rv_opcode>(
-			opcode_key, opcode_name
-		);
-		opcodes.push_back(opcode);
-		opcode->num = opcodes.size();
-	} else {
-		opcode = opcodes_by_key[opcode_name] = std::make_shared<rv_opcode>(
-			opcode_name, opcode_name
-		);
-		opcodes.push_back(opcode);
-		opcode->num = opcodes.size();
-	}
-
 	// add opcode to the opcode by name list, creating a new list if one doesn't exist
+
+	// all_opcodes contains a list of all opcodes including opcodes
+	// with the same name but different bidwidth encodings
+
+	// opcodes contains the last opcode (widest encoding)
+
+	auto opcode = std::make_shared<rv_opcode>(opcode_name);
+	all_opcodes.push_back(opcode);
 	auto opcode_list_i  = opcodes_by_name.find(opcode_name);
 	if (opcode_list_i == opcodes_by_name.end()) {
+		opcodes.push_back(opcode);
 		opcodes_by_name[opcode_name] = { opcode };
+		opcode->num = opcodes.size();
 	} else {
+		auto first = opcode_list_i->second.front();
+		opcodes[first->num - 1] = opcode;
 		opcode_list_i->second.push_back(opcode);
+		opcode->num = first->num;
+		opcode->suffix = first->suffix = true;
 	}
 
 	return opcode;
-}
-
-rv_opcode_ptr rv_meta_model::lookup_opcode_by_key(std::string opcode_key)
-{
-	auto i = opcodes_by_key.find(opcode_key);
-	if (i != opcodes_by_key.end()) return i->second;
-	return rv_opcode_ptr();
 }
 
 rv_opcode_list rv_meta_model::lookup_opcode_by_name(std::string opcode_name)
@@ -672,6 +656,29 @@ rv_opcode_list rv_meta_model::lookup_opcode_by_name(std::string opcode_name)
 	auto i = opcodes_by_name.find(opcode_name);
 	if (i != opcodes_by_name.end()) return i->second;
 	return rv_opcode_list();
+}
+
+rv_opcode_list rv_meta_model::opcode_list_by_width(size_t isa_width)
+{
+	rv_opcode_list list;
+	for (auto opcode : opcodes) {
+		if (opcode->suffix) {
+			bool found = false;
+			for (auto find_opcode : lookup_opcode_by_name(opcode->name)) {
+				if (find_opcode->extensions.front()->isa_width == isa_width) {
+					list.push_back(find_opcode);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				list.push_back(opcode);
+			}
+		} else {
+			list.push_back(opcode);
+		}
+	}
+	return list;
 }
 
 bool rv_meta_model::is_operand(std::string mnem)
@@ -970,18 +977,19 @@ void rv_meta_model::parse_pseudo(std::vector<std::string> &part)
 
 	// create opcode (if needed)
 	std::string pseudo_opcode_name = "@" + pseudo_name;
-	rv_opcode_ptr existing_opcode = lookup_opcode_by_key(pseudo_name);
-	rv_opcode_ptr pseudo_opcode = lookup_opcode_by_key(pseudo_opcode_name);
-	if (existing_opcode) {
-		pseudo_opcode = existing_opcode;
-	} else {
-		// the pseudo opcode could be defined in meta/opcodes
-		if (!pseudo_opcode) {
-			std::string pseudo_opcode_name = "@" + pseudo_name;
-			pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
-		}
+	auto existing_opcode_list = lookup_opcode_by_name(pseudo_name);
+	auto pseudo_opcode_list = lookup_opcode_by_name(pseudo_opcode_name);
+	rv_opcode_ptr pseudo_opcode;
+	if (existing_opcode_list.size() > 0) {
+		pseudo_opcode = existing_opcode_list.front();
+	} else if (pseudo_opcode_list.size() == 0) {
+		// create a opcode for this pseudo opcode
+		std::string pseudo_opcode_name = "@" + pseudo_name;
+		pseudo_opcode = create_opcode(pseudo_opcode_name, "rv32p");
+
 		// use the format from the meta/pseudo definition
 		pseudo_opcode->format = format;
+		
 		// derive operands from the format
 		std::vector<std::string> operand_names = split(format->operands, ",");
 		for (auto operand_name : operand_names) {
@@ -997,6 +1005,8 @@ void rv_meta_model::parse_pseudo(std::vector<std::string> &part)
 		}
 		// use the real opcode extensions
 		pseudo_opcode->extensions = real_opcode->extensions;
+	} else {
+		pseudo_opcode = pseudo_opcode_list.front();
 	}
 
 	// create pseudo

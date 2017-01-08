@@ -288,10 +288,10 @@ R"C(#include "types.h"
 	printf("};\n\n");
 
 	// RVC Compression constraints
-	for (auto &opcode : gen->opcodes) {
+	for (auto &opcode : gen->all_opcodes) {
 		if (!opcode->compressed) continue;
 		printf("const rvc_constraint %s[] = {\n",
-			rv_meta_model::opcode_format("rvcc_", opcode, "_").c_str());
+			rv_meta_model::opcode_format("rvcc_", opcode, "_", true).c_str());
 		for (auto &constraint : opcode->compressed->constraint_list) {
 			printf("\trvc_%s,\n", constraint->name.c_str());
 		}
@@ -303,7 +303,7 @@ R"C(#include "types.h"
 	std::set<std::string> rvcd_set;
 	for (auto isa_width : gen->isa_width_prefixes()) {
 		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
-		for (auto &opcode : gen->opcodes) {
+		for (auto &opcode : gen->all_opcodes) {
 			rv_compressed_list include_compressions;
 			for (auto comp : opcode->compressions) {
 				bool include_isa = opcode->include_isa(isa_width.first) &&
@@ -319,7 +319,7 @@ R"C(#include "types.h"
 					(zero_not_oh ?
 						format_string("%lu", comp->comp_opcode->num).c_str() :
 						rv_meta_model::opcode_format("rv_op_", comp->comp_opcode, "_").c_str()),
-						rv_meta_model::opcode_format("rvcc_", comp->comp_opcode, "_").c_str());
+						rv_meta_model::opcode_format("rvcc_", comp->comp_opcode, "_", true).c_str());
 			}
 			printf("\t{ %s, nullptr }\n};\n\n",
 				(zero_not_oh ?
@@ -468,7 +468,7 @@ R"C(#include "types.h"
 	for (auto &opcode : gen->opcodes) {
 		if (!opcode->pseudo) continue;
 		printf("const rvc_constraint %s[] = {\n",
-			rv_meta_model::opcode_format("rvcc_", opcode, "_").c_str());
+			rv_meta_model::opcode_format("rvcc_", opcode, "_", true).c_str());
 		for (auto &constraint : opcode->pseudo->constraint_list) {
 			printf("\trvc_%s,\n", constraint->name.c_str());
 		}
@@ -488,7 +488,7 @@ R"C(#include "types.h"
 				(zero_not_oh ?
 					format_string("%lu", pseudo->pseudo_opcode->num).c_str() :
 					rv_meta_model::opcode_format("rv_op_", pseudo->pseudo_opcode, "_").c_str()),
-					rv_meta_model::opcode_format("rvcc_", pseudo->pseudo_opcode, "_").c_str());
+					rv_meta_model::opcode_format("rvcc_", pseudo->pseudo_opcode, "_", true).c_str());
 		}
 		printf("\t{ %s, nullptr }\n};\n\n",
 			(zero_not_oh ?
@@ -527,7 +527,7 @@ R"C(#include "types.h"
 					"0" :
 					"rv_op_illegal"),
 			opcode->pseudo ?
-				rv_meta_model::opcode_format("rvcc_", opcode, "_").c_str() :
+				rv_meta_model::opcode_format("rvcc_", opcode, "_", true).c_str() :
 				"nullptr");
 	}
 	printf("};\n\n");
@@ -537,7 +537,7 @@ R"C(#include "types.h"
 		printf("const rv_comp_data* rv_inst_comp_%s[] = {\n", isa_width.second.c_str());
 		print_array_illegal_enum("nullptr", no_comment);
 		std::string isa_prefix = "rvcd_" + isa_width.second + "_";
-		for (auto &opcode : gen->opcodes) {
+		for (auto opcode : gen->opcode_list_by_width(isa_width.first)) {
 			std::string opcode_key = rv_meta_model::opcode_format("", opcode, ".");
 			std::string rvcd_name = rv_meta_model::opcode_format(isa_prefix, opcode, "_");
 			bool include_isa = rvcd_set.find(rvcd_name) != rvcd_set.end();
@@ -553,7 +553,7 @@ R"C(#include "types.h"
 		printf("const int rv_inst_decomp_%s[] = {\n", isa_width.second.c_str());
 		if (zero_not_oh) print_array_illegal_enum("0", no_comment);
 		else print_array_illegal_enum("rv_op_illegal", no_comment);
-		for (auto &opcode : gen->opcodes) {
+		for (auto opcode : gen->opcode_list_by_width(isa_width.first)) {
 			bool include_isa = opcode->include_isa(isa_width.first);
 			std::string opcode_key = rv_meta_model::opcode_format("", opcode, ".");
 			printf("\t%s%s,\n",

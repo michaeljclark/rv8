@@ -88,11 +88,11 @@ struct rv_test_jit
 		proxy_emulator_rv64imafdc emulator;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
-		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xad);
-		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xbe);
-		asm_slli_rv64i(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
 
 		std::vector<u8> &buf = as.get_section(".text")->buf;

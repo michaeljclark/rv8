@@ -55,7 +55,7 @@ static void print_interp_h(rv_gen *gen)
 		printf("\tusing namespace riscv;\n");
 		printf("\n");
 		printf("\tswitch (dec.op) {\n");
-		for (auto &opcode : gen->opcodes) {
+		for (auto &opcode : gen->all_opcodes) {
 			std::string inst = opcode->pseudocode_c;
 			if (inst.size() == 0) continue;
 			if (!opcode->include_isa(isa_width.first)) continue;
