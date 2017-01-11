@@ -153,6 +153,7 @@ namespace riscv {
 
 			/* step the processor */
 			while (P::instret < inststop) {
+				if (P::pc == P::breakpoint) return exit_cause_cli;
 				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				inst_t inst_cache_key = inst % inst_cache_size;
 				if (inst_cache[inst_cache_key].inst == inst) {

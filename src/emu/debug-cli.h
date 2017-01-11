@@ -82,6 +82,7 @@ namespace riscv {
 			add_command(cmd_help,   1, 1, "help",   "",                 "Help");
 			add_command(cmd_hex,    2, 3, "hex",    "<addr> [b|s|w|d]", "Hex Dump Memory");
 			add_command(cmd_ascii,  2, 2, "ascii",  "<addr>",           "ASCII Dump Memory");
+			add_command(cmd_break,  1, 2, "break",  "[<addr>]",         "Set or display breakpoint");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
@@ -251,6 +252,27 @@ namespace riscv {
 					addr++;
 				}
 				printf("\n");
+			}
+			return 0;
+		}
+
+		static size_t cmd_break(cmd_state &st, args_t &args)
+		{
+			addr_t addr;
+			if (args.size() == 2) {
+				if (args[1] == "off") {
+					addr = 0;
+				} else if (!parse_integral(args[1], addr)) {
+					printf("%s: invalid address: %s\n",
+						args[0].c_str(), args[1].c_str());
+					return 0;
+				}
+				st.proc->breakpoint = addr;
+			}
+			if (st.proc->breakpoint) {
+				printf("breakpoint 0x%llx\n", addr_t(st.proc->breakpoint));
+			} else {
+				printf("breakpoint off\n");
 			}
 			return 0;
 		}
