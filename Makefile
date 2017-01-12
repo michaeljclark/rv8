@@ -451,20 +451,20 @@ doc/pdf/riscv-types.pdf: doc/tex/riscv-types.tex ; @mkdir -p doc/pdf
 # rom
 
 ROM_MK =        src/rom/rom.mk
-rom: ; $(MAKE) -f $(ROM_MK) all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
+rom: ; $(MAKE) -f $(ROM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
 
 # sample-asm
 
 ASM_MK =        src/sample/asm.mk
-sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
+sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
 
 # tests
 
 TEST_MK =       src/test/test.mk
-TEST_RV64 =     ARCH=RV64IMAFD TARGET=riscv64-unknown-elf
-TEST_RV64C =    ARCH=RV64IMAFDC RVC=1 TARGET=riscv64-unknown-elf
-TEST_RV32 =     ARCH=RV32IMAFD TARGET=riscv32-unknown-elf
-TEST_RV32C =    ARCH=RV32IMAFDC RVC=1 TARGET=riscv32-unknown-elf
+TEST_RV64 =     ARCH=rv64imafd TARGET=riscv64-unknown-elf
+TEST_RV64C =    ARCH=rv64imafdc RVC=1 TARGET=riscv64-unknown-elf
+TEST_RV32 =     ARCH=rv32imafd TARGET=riscv32-unknown-elf
+TEST_RV32C =    ARCH=rv32imafdc RVC=1 TARGET=riscv32-unknown-elf
 
 qemu-tests:
 	( cd riscv-qemu-tests && make )
