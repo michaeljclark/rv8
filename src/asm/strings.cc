@@ -441,10 +441,11 @@ const char* rv_operand_type_sym[] = {
 	"creg3",
 	"simm6",
 	"simm18",
-	"simm8",
-	"simm9",
+	"uimm8",
+	"uimm9",
+	"uimm10",
 	"simm10",
-	"simm7",
+	"simm9",
 	nullptr
 };
 

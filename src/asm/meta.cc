@@ -669,14 +669,14 @@ const rv_comp_data rvcd_rv128_sq[] = {
 const rv_operand_data rv_operands_T_cfrdq_T_crs1q_T_cimmd[] = {
 	{ rv_operand_name_cfrdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmd, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmd, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_cfrdq_T_crs1q_T_cimmw[] = {
 	{ rv_operand_name_cfrdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmw, rv_operand_type_simm7, rv_primitive_none, rv_type_simm, 7 },
+	{ rv_operand_name_cimmw, rv_operand_type_uimm7, rv_primitive_none, rv_type_uimm, 7 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -693,42 +693,42 @@ const rv_operand_data rv_operands_T_crd0_sx_crs1[] = {
 
 const rv_operand_data rv_operands_T_crdq_T_cimm4spn[] = {
 	{ rv_operand_name_crdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimm4spn, rv_operand_type_simm10, rv_primitive_none, rv_type_simm, 10 },
+	{ rv_operand_name_cimm4spn, rv_operand_type_uimm10, rv_primitive_none, rv_type_uimm, 10 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crdq_T_crs1q_T_cimmd[] = {
 	{ rv_operand_name_crdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmd, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmd, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crdq_T_crs1q_T_cimmq[] = {
 	{ rv_operand_name_crdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmq, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmq, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crdq_T_crs1q_T_cimmw[] = {
 	{ rv_operand_name_crdq, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmw, rv_operand_type_simm7, rv_primitive_none, rv_type_simm, 7 },
+	{ rv_operand_name_cimmw, rv_operand_type_uimm7, rv_primitive_none, rv_type_uimm, 7 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crs1q_T_cfrs2q_T_cimmd[] = {
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_cfrs2q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmd, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmd, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crs1q_T_cfrs2q_T_cimmw[] = {
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_cfrs2q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmw, rv_operand_type_simm7, rv_primitive_none, rv_type_simm, 7 },
+	{ rv_operand_name_cimmw, rv_operand_type_uimm7, rv_primitive_none, rv_type_uimm, 7 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -741,21 +741,21 @@ const rv_operand_data rv_operands_T_crs1q_T_cimmb[] = {
 const rv_operand_data rv_operands_T_crs1q_T_crs2q_T_cimmd[] = {
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs2q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmd, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmd, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crs1q_T_crs2q_T_cimmq[] = {
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs2q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmq, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmq, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_T_crs1q_T_crs2q_T_cimmw[] = {
 	{ rv_operand_name_crs1q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
 	{ rv_operand_name_crs2q, rv_operand_type_creg3, rv_primitive_none, rv_type_creg, 3 },
-	{ rv_operand_name_cimmw, rv_operand_type_simm7, rv_primitive_none, rv_type_simm, 7 },
+	{ rv_operand_name_cimmw, rv_operand_type_uimm7, rv_primitive_none, rv_type_uimm, 7 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -790,25 +790,25 @@ const rv_operand_data rv_operands_T_pred_T_succ[] = {
 
 const rv_operand_data rv_operands_f32_cfrd_T_cimmldsp[] = {
 	{ rv_operand_name_cfrd, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
-	{ rv_operand_name_cimmldsp, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmldsp, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_f32_cfrd_T_cimmlwsp[] = {
 	{ rv_operand_name_cfrd, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
-	{ rv_operand_name_cimmlwsp, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmlwsp, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_f32_cfrs2_T_cimmsdsp[] = {
 	{ rv_operand_name_cfrs2, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
-	{ rv_operand_name_cimmsdsp, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmsdsp, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_f32_cfrs2_T_cimmswsp[] = {
 	{ rv_operand_name_cfrs2, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
-	{ rv_operand_name_cimmswsp, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmswsp, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -1004,19 +1004,19 @@ const rv_operand_data rv_operands_s64_rd_f64_frs1_T_rm[] = {
 
 const rv_operand_data rv_operands_sx_crd_T_cimmldsp[] = {
 	{ rv_operand_name_crd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmldsp, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmldsp, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_sx_crd_T_cimmlqsp[] = {
 	{ rv_operand_name_crd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmlqsp, rv_operand_type_simm10, rv_primitive_none, rv_type_simm, 10 },
+	{ rv_operand_name_cimmlqsp, rv_operand_type_uimm10, rv_primitive_none, rv_type_uimm, 10 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_sx_crd_T_cimmlwsp[] = {
 	{ rv_operand_name_crd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmlwsp, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmlwsp, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -1064,19 +1064,19 @@ const rv_operand_data rv_operands_sx_crs1rd_sx_crs2[] = {
 
 const rv_operand_data rv_operands_sx_crs2_T_cimmsdsp[] = {
 	{ rv_operand_name_crs2, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmsdsp, rv_operand_type_simm9, rv_primitive_none, rv_type_simm, 9 },
+	{ rv_operand_name_cimmsdsp, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_sx_crs2_T_cimmsqsp[] = {
 	{ rv_operand_name_crs2, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmsqsp, rv_operand_type_simm10, rv_primitive_none, rv_type_simm, 10 },
+	{ rv_operand_name_cimmsqsp, rv_operand_type_uimm10, rv_primitive_none, rv_type_uimm, 10 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
 const rv_operand_data rv_operands_sx_crs2_T_cimmswsp[] = {
 	{ rv_operand_name_crs2, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
-	{ rv_operand_name_cimmswsp, rv_operand_type_simm8, rv_primitive_none, rv_type_simm, 8 },
+	{ rv_operand_name_cimmswsp, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 

@@ -59,16 +59,16 @@ cimmsh6    12[5],6:2[4:0]               uimm    nzimm     green   none
 cimmi      12[5],6:2[4:0]               simm    imm       green   none
 cnzimmi    12[5],6:2[4:0]               simm    nzimm     green   none
 cimmui     12[17],6:2[16:12]            simm    nzimm     green   none
-cimmlwsp   12[5],6:2[4:2|7:6]           simm    imm       green   none
-cimmldsp   12[5],6:2[4:3|8:6]           simm    imm       green   none
-cimmlqsp   12[5],6:2[4|9:6]             simm    imm       green   none
+cimmlwsp   12[5],6:2[4:2|7:6]           uimm    imm       green   none
+cimmldsp   12[5],6:2[4:3|8:6]           uimm    imm       green   none
+cimmlqsp   12[5],6:2[4|9:6]             uimm    imm       green   none
 cimm16sp   12[9],6:2[4|6|8:7|5]         simm    nzimm     green   none
 cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  simm    imm       green   none     # PC relative jump
 cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  simm    imm       green   none     # PC relative branch
-cimmswsp   12:7[5:2|7:6]                simm    imm       green   none
-cimmsdsp   12:7[5:3|8:6]                simm    imm       green   none
-cimmsqsp   12:7[5:4|9:6]                simm    imm       green   none
-cimm4spn   12:5[5:4|9:6|2|3]            simm    nzimm     green   none
-cimmw      12:10[5:3],6:5[2|6]          simm    imm       green   none
-cimmd      12:10[5:3],6:5[7:6]          simm    imm       green   none
-cimmq      12:10[5:4|8],6:5[7:6]        simm    imm       green   none
+cimmswsp   12:7[5:2|7:6]                uimm    imm       green   none
+cimmsdsp   12:7[5:3|8:6]                uimm    imm       green   none
+cimmsqsp   12:7[5:4|9:6]                uimm    imm       green   none
+cimm4spn   12:5[5:4|9:6|2|3]            uimm    nzimm     green   none
+cimmw      12:10[5:3],6:5[2|6]          uimm    imm       green   none
+cimmd      12:10[5:3],6:5[7:6]          uimm    imm       green   none
+cimmq      12:10[5:4|8],6:5[7:6]        uimm    imm       green   none

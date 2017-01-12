@@ -685,10 +685,11 @@ enum rv_operand_type
 	rv_operand_type_creg3,
 	rv_operand_type_simm6,
 	rv_operand_type_simm18,
-	rv_operand_type_simm8,
-	rv_operand_type_simm9,
+	rv_operand_type_uimm8,
+	rv_operand_type_uimm9,
+	rv_operand_type_uimm10,
 	rv_operand_type_simm10,
-	rv_operand_type_simm7,
+	rv_operand_type_simm9,
 };
 
 enum rv_op
