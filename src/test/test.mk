@@ -63,7 +63,6 @@ PROGRAMS = \
 	$(BIN_DIR)/test-args \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-printf \
-	$(BIN_DIR)/test-fpu-assert \
 	$(BIN_DIR)/test-infinite-loop \
 	$(BIN_DIR)/test-int-fib \
 	$(BIN_DIR)/test-int-mul \
