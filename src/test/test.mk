@@ -20,17 +20,8 @@ ifeq ($(TARGET),riscv64-unknown-elf)
 SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
 endif
 
-ifeq ($(RVC),1)
-CC += -mrvc
-CXX += -mrvc
-TARGET_DIR = $(TARGET)-rvc
-else
-TARGET_DIR = $(TARGET)
-endif
-
-ifeq ($(EMULATOR),)
-EMULATOR = $(SPIKE)
-endif
+# compiler function tests
+check_opt =     $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
 
 SRC_DIR = src/test
 ASM_DIR = build/$(TARGET_DIR)/asm
@@ -40,6 +31,21 @@ GEN_DIR = build/$(TARGET_DIR)/gen
 
 CFLAGS = -Os -g -Wall -fpie -ffunction-sections -fdata-sections
 CXXFLAGS = -std=c++1y $(CFLAGS)
+
+ifeq ($(EMULATOR),)
+EMULATOR = $(SPIKE)
+endif
+
+ifeq ($(RVC),1)
+LEGACY_RVC_FLAGS = -mrvc
+ifeq ($(call check_opt,$(CC),cc,$(LEGACY_RVC_FLAGS)), 0)
+CFLAGS += $(LEGACY_RVC_FLAGS)
+CXXFLAGS += $(LEGACY_RVC_FLAGS)
+endif
+TARGET_DIR = $(TARGET)-rvc
+else
+TARGET_DIR = $(TARGET)
+endif
 
 ASSEMBLY = \
 	$(ASM_DIR)/hello-world-libc.s \
