@@ -101,7 +101,6 @@ test-sim: all
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-int-mul
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
-	$(EMULATOR) $(BIN_DIR)/test-fpu-assert
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-yes 11
 	$(EMULATOR) $(BIN_DIR)/test-jump-tables-no 11
 
