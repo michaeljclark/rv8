@@ -179,13 +179,6 @@ namespace riscv {
 		UX           mibound;         /* Mbbid: Separate Instruction Bound Register */
 		UX           mdbase;          /* Mbbid: Separate Data Base Register */
 		UX           mdbound;         /* Mbbid: Separate Data Bound Register */
-		UX           htvec;           /* Hypervisor Trap Vector Base-Address Register */
-		UX           hedeleg;         /* Hypervisor Exception Delegation Mask (enum rv_cause) */
-		UX           hideleg;         /* Hypervisor Interrupt Delegation Mask (enum rv_intr) */
-		UX           hscratch;        /* Hypervisor Scratch Register */
-		UX           hepc;            /* Hypervisor Exception Program Counter */
-		UX           hcause;          /* Hypervisor Cause Register */
-		UX           hbadaddr;        /* Hypervisor Bad Address Register */
 		UX           stvec;           /* Supervisor Trap Vector Base-Address Register */
 		UX           sedeleg;         /* Supervisor Exception Delegation Mask (enum rv_cause) */
 		UX           sideleg;         /* Supervisor Interrupt Delegation Mask (enum rv_intr) */
@@ -194,11 +187,6 @@ namespace riscv {
 		UX           scause;          /* Supervisor Cause Register */
 		UX           sbadaddr;        /* Supervisor Bad Address Register */
 		UX           sptbr;           /* Supervisor Page Table Base Register */
-		UX           utvec;           /* User Trap Vector Base-Address Register */
-		UX           uscratch;        /* User Scratch Register */
-		UX           uepc;            /* User Exception Program Counter */
-		UX           ucause;          /* User Cause Register */
-		UX           ubadaddr;        /* User Bad Address Register */
 
 		processor_priv() : processor_type(), pdid(0), mode(rv_mode_M), resetvec(0x1000) {}
 
@@ -482,35 +470,12 @@ core {
 			printf("%s %s %s\n", format_reg("mbound",    P::mbound).c_str(),
 			                     format_reg("mibound",   P::mibound).c_str(),
 			                     format_reg("mdbound",   P::mdbound).c_str());
-
-			if (P::log & proc_log_csr_hmode) {
-				printf("%s %s\n",    format_reg("htvec",     P::htvec).c_str(),
-				                     format_reg("hscratch",  P::hscratch).c_str());
-				printf("%s %s %s\n", format_reg("hepc",      P::hepc).c_str(),
-				                     format_reg("hcause",    P::hcause).c_str(),
-				                     format_reg("hbadaddr",  P::hbadaddr).c_str());
-				printf("%s %s\n",    format_reg("hedeleg",   P::hedeleg).c_str(),
-				                     format_reg("hideleg",   P::hideleg).c_str());
-			}
-
-			if (P::log & proc_log_csr_smode) {
-				printf("%s %s %s\n", format_reg("stvec",     P::stvec).c_str(),
-				                     format_reg("sscratch",  P::sscratch).c_str(),
-				                     format_reg("sptbr",     P::sptbr).c_str());
-				printf("%s %s %s\n", format_reg("sepc",      P::sepc).c_str(),
-				                     format_reg("scause",    P::scause).c_str(),
-				                     format_reg("sbadaddr",  P::sbadaddr).c_str());
-			}
-
-			if (P::log & proc_log_csr_umode) {
-				printf("%s %s\n",    format_reg("sedeleg",   P::sedeleg).c_str(),
-				                     format_reg("sideleg",   P::sideleg).c_str());
-				printf("%s %s\n",    format_reg("utvec",     P::utvec).c_str(),
-				                     format_reg("uscratch",  P::uscratch).c_str());
-				printf("%s %s %s\n", format_reg("uepc",      P::uepc).c_str(),
-				                     format_reg("ucause",    P::ucause).c_str(),
-				                     format_reg("ubadaddr",  P::ubadaddr).c_str());
-			}
+			printf("%s %s %s\n", format_reg("stvec",     P::stvec).c_str(),
+			                     format_reg("sscratch",  P::sscratch).c_str(),
+			                     format_reg("sptbr",     P::sptbr).c_str());
+			printf("%s %s %s\n", format_reg("sepc",      P::sepc).c_str(),
+			                     format_reg("scause",    P::scause).c_str(),
+			                     format_reg("sbadaddr",  P::sbadaddr).c_str());
 
 			P::print_csr_registers();
 		}
@@ -519,8 +484,7 @@ core {
 		{
 			P::print_log(dec, inst);
 			if ((P::log & (proc_log_int_reg)) &&
-			    (P::log & (proc_log_csr_mmode | proc_log_csr_hmode |
-			               proc_log_csr_smode | proc_log_csr_umode))) {
+			    (P::log & (proc_log_csr_mmode | proc_log_csr_smode))) {
 				print_csr_registers();
 			}
 		}
@@ -554,12 +518,8 @@ core {
 			 */
 			const typename P::ux mstatus_rmask = typename P::ux(-1);
 			const typename P::ux mstatus_wmask = (1ULL<<(P::xlen-1))-1;
-			const typename P::ux hstatus_rmask = 0b1011110011101110111 | 1ULL<<(P::xlen-1);
-			const typename P::ux hstatus_wmask = 0b1011110011101110111;
 			const typename P::ux sstatus_rmask = 0b1011110000100110011 | 1ULL<<(P::xlen-1);
 			const typename P::ux sstatus_wmask = 0b1011110000100110011;
-			const typename P::ux ustatus_rmask = 0b0000000000000010001 | 1ULL<<(P::xlen-1);
-			const typename P::ux ustatus_wmask = 0b0000000000000010001;
 
 			/*
 			 * mip/mie                           33222222222211111111110000000000
@@ -572,9 +532,7 @@ core {
 			 * User Read/Write Bits            U 00000000000000000000000100010001
 			 */
 			const typename P::ux mi_mask       = typename P::ux(-1);
-			const typename P::ux hi_mask       = 0b011101110111;
 			const typename P::ux si_mask       = 0b001100110011;
-			const typename P::ux ui_mask       = 0b000100010001;
 
 			/*
 			 * {m,h,s,u}tvec
@@ -635,20 +593,6 @@ core {
 				case rv_csr_minstret: P::set_csr(dec, P::mode, op, csr, P::instret, value);    break;
 				case rv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
 				case rv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
-				case rv_csr_hstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val, value,
-				                             hstatus_wmask, hstatus_rmask);                    break;
-				case rv_csr_htvec:    P::set_csr(dec, P::mode, op, csr, P::htvec, value,
-					                         tvec_rmask, tvec_wmask);                          break;
-				case rv_csr_hedeleg:  P::set_csr(dec, P::mode, op, csr, P::hedeleg, value);    break;
-				case rv_csr_hideleg:  P::set_csr(dec, P::mode, op, csr, P::hideleg, value);    break;
-				case rv_csr_hip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value,
-				                             hi_mask, hi_mask);                                break;
-				case rv_csr_hie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value,
-				                             hi_mask, hi_mask);                                break;
-				case rv_csr_hscratch: P::set_csr(dec, P::mode, op, csr, P::hscratch, value);   break;
-				case rv_csr_hepc:     P::set_csr(dec, P::mode, op, csr, P::hepc, value);       break;
-				case rv_csr_hcause:   P::set_csr(dec, P::mode, op, csr, P::hcause, value);     break;
-				case rv_csr_hbadaddr: P::set_csr(dec, P::mode, op, csr, P::hbadaddr, value);   break;
 				case rv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val, value,
 				                             sstatus_wmask, sstatus_rmask);                    break;
 				case rv_csr_stvec:    P::set_csr(dec, P::mode, op, csr, P::stvec, value,
@@ -664,18 +608,6 @@ core {
 				case rv_csr_scause:   P::set_csr(dec, P::mode, op, csr, P::scause, value);     break;
 				case rv_csr_sbadaddr: P::set_csr(dec, P::mode, op, csr, P::sbadaddr, value);   break;
 				case rv_csr_sptbr:    P::set_csr(dec, P::mode, op, csr, P::sptbr, value);      break;
-				case rv_csr_ustatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val, value,
-				                             ustatus_wmask, ustatus_rmask);                    break;
-				case rv_csr_utvec:    P::set_csr(dec, P::mode, op, csr, P::utvec, value,
-					                         tvec_rmask, tvec_wmask);                          break;
-				case rv_csr_uip:      P::set_csr(dec, P::mode, op, csr, P::mip.xu.val, value,
-				                             ui_mask, ui_mask);                                break;
-				case rv_csr_uie:      P::set_csr(dec, P::mode, op, csr, P::mie.xu.val, value,
-				                             ui_mask, ui_mask);                                break;
-				case rv_csr_uscratch: P::set_csr(dec, P::mode, op, csr, P::uscratch, value);   break;
-				case rv_csr_uepc:     P::set_csr(dec, P::mode, op, csr, P::uepc, value);       break;
-				case rv_csr_ucause:   P::set_csr(dec, P::mode, op, csr, P::ucause, value);     break;
-				case rv_csr_ubadaddr: P::set_csr(dec, P::mode, op, csr, P::ubadaddr, value);   break;
 				default: return -1; /* illegal instruction */
 			}
 			return pc_offset;
@@ -689,14 +621,6 @@ core {
 				case rv_op_csrrwi:    return inst_csr(dec, csr_rw, dec.imm, dec.rs1, pc_offset);
 				case rv_op_csrrsi:    return inst_csr(dec, csr_rs, dec.imm, dec.rs1, pc_offset);
 				case rv_op_csrrci:    return inst_csr(dec, csr_rc, dec.imm, dec.rs1, pc_offset);
-				case rv_op_uret:
-					if (P::mode >= rv_mode_U) {
-						P::mstatus.r.uie = P::mstatus.r.upie;
-						P::mstatus.r.upie = 0;
-						return P::uepc - P::pc;
-					} else {
-						return -1; /* illegal instruction */
-					}
 				case rv_op_sret:
 					if (P::mode >= rv_mode_S) {
 						P::mode = P::mstatus.r.spp;
@@ -704,16 +628,6 @@ core {
 						P::mstatus.r.sie = P::mstatus.r.spie;
 						P::mstatus.r.spie = 0;
 						return P::sepc - P::pc;
-					} else {
-						return -1; /* illegal instruction */
-					}
-				case rv_op_hret:
-					if (P::mode >= rv_mode_H) {
-						P::mode = P::mstatus.r.hpp;
-						P::mstatus.r.hpp = rv_mode_U;
-						P::mstatus.r.hie = P::mstatus.r.hpie;
-						P::mstatus.r.hpie = 0;
-						return P::hepc - P::pc;
 					} else {
 						return -1; /* illegal instruction */
 					}
@@ -751,19 +665,6 @@ core {
 			return -1; /* illegal instruction */
 		}
 
-		void utrap(typename P::ux cause, bool interrupt)
-		{
-			P::uepc = P::pc;
-			P::ucause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
-			P::mstatus.r.upie = P::mstatus.r.uie;
-			P::mstatus.r.uie = 0;
-			P::mode = rv_mode_U;
-			P::pc = P::utvec;
-			if (P::debugging && (P::log & proc_log_trap_cli)) {
-				P::raise(P::internal_cause_cli, P::pc);
-			}
-		}
-
 		void strap(typename P::ux cause, bool interrupt)
 		{
 			P::sepc = P::pc;
@@ -773,20 +674,6 @@ core {
 			P::mstatus.r.sie = 0;
 			P::mode = rv_mode_S;
 			P::pc = P::stvec;
-			if (P::debugging && (P::log & proc_log_trap_cli)) {
-				P::raise(P::internal_cause_cli, P::pc);
-			}
-		}
-
-		void htrap(typename P::ux cause, bool interrupt)
-		{
-			P::hepc = P::pc;
-			P::hcause = cause | (interrupt ? (1ULL << (P::xlen - 1)) : 0ULL);
-			P::mstatus.r.hpp = P::mode;
-			P::mstatus.r.hpie = P::mstatus.r.hie;
-			P::mstatus.r.hie = 0;
-			P::mode = rv_mode_H;
-			P::pc = P::htvec;
 			if (P::debugging && (P::log & proc_log_trap_cli)) {
 				P::raise(P::internal_cause_cli, P::pc);
 			}
