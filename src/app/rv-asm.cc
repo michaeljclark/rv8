@@ -428,10 +428,11 @@ struct rv_assembler
 
 	static rv_set decode_isa_ext(std::string ext)
 	{
-		if (ext == "IMA" || ext == "ima") return rv_set_ima;
-		else if (ext == "IMAC" || ext == "imac") return rv_set_imac;
-		else if (ext == "IMAFD" || ext == "imafd") return rv_set_imafd;
-		else if (ext == "IMAFDC" || ext == "imafdc") return rv_set_imafdc;
+		if (ext == "i") return rv_set_i;
+		else if (ext == "ima") return rv_set_ima;
+		else if (ext == "imac") return rv_set_imac;
+		else if (ext == "imafd") return rv_set_imafd;
+		else if (ext == "imafdc") return rv_set_imafdc;
 		else return rv_set_none;
 	}
 
@@ -446,7 +447,7 @@ struct rv_assembler
 				"Show help",
 				[&](std::string s) { return (debug = true); } },
 			{ "-i", "--isa", cmdline_arg_type_string,
-				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
+				"ISA Extensions (ima, imac, imafd, imafdc)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
 			{ "-m32", "--riscv32", cmdline_arg_type_string,
 				"Assembler for RISC-V 32",

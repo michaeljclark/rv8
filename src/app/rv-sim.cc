@@ -139,11 +139,11 @@ struct rv_emulator
 
 	static rv_set decode_isa_ext(std::string ext)
 	{
-		if (ext == "I" || ext == "i") return rv_set_i;
-		else if (ext == "IMA" || ext == "ima") return rv_set_ima;
-		else if (ext == "IMAC" || ext == "imac") return rv_set_imac;
-		else if (ext == "IMAFD" || ext == "imafd") return rv_set_imafd;
-		else if (ext == "IMAFDC" || ext == "imafdc") return rv_set_imafdc;
+		if (ext == "i") return rv_set_i;
+		else if (ext == "ima") return rv_set_ima;
+		else if (ext == "imac") return rv_set_imac;
+		else if (ext == "imafd") return rv_set_imafd;
+		else if (ext == "imafdc") return rv_set_imafdc;
 		else return rv_set_none;
 	}
 
@@ -289,9 +289,11 @@ struct rv_emulator
 	{
 		cmdline_option options[] =
 		{
+		#if ENABLE_EXTENSION_SWITCH
 			{ "-i", "--isa", cmdline_arg_type_string,
-				"ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)",
+				"ISA Extensions (i, ima, imac, imafd, imafdc)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
+		#endif
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap)); } },
@@ -418,24 +420,24 @@ struct rv_emulator
 		switch (elf.ei_class) {
 			case ELFCLASS32:
 				switch (ext) {
-			#if ENABLE_RVI
+				#if ENABLE_EXTENSION_SWITCH
 					case rv_set_i: start_proxy<proxy_emulator_rv32i>(); break;
 					case rv_set_ima: start_proxy<proxy_emulator_rv32ima>(); break;
 					case rv_set_imac: start_proxy<proxy_emulator_rv32imac>(); break;
 					case rv_set_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
-			#endif
+				#endif
 					case rv_set_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
 					case rv_set_none: panic("illegal isa extension"); break;
 				}
 				break;
 			case ELFCLASS64:
 				switch (ext) {
-			#if ENABLE_RVI
+				#if ENABLE_EXTENSION_SWITCH
 					case rv_set_i: start_proxy<proxy_emulator_rv64i>(); break;
 					case rv_set_ima: start_proxy<proxy_emulator_rv64ima>(); break;
 					case rv_set_imac: start_proxy<proxy_emulator_rv64imac>(); break;
 					case rv_set_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
-			#endif
+				#endif
 					case rv_set_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
 					case rv_set_none: panic("illegal isa extension"); break;
 				}
