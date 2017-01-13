@@ -1,9 +1,5 @@
 //
-//  rv-dump.cc
-//
-
-//
-//  rv-sim.cc
+//  test-jit.cc
 //
 
 #include <cstdio>
@@ -95,7 +91,9 @@ struct rv_test_jit
 		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
 
+		as.link(); /* required for unresolved labels */
 		std::vector<u8> &buf = as.get_section(".text")->buf;
+
 		emulator.pc = (uintptr_t)buf.data();
 		emulator.step(7);
 
