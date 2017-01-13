@@ -263,8 +263,8 @@ struct rv_emulator
 		if (fd < 0) {
 			panic("map_executable: error: open: %s: %s", filename, strerror(errno));
 		}
-		addr_t map_offset = phdr.p_offset & ~(page_size-1);
-		addr_t map_delta = (phdr.p_offset - map_offset);
+		addr_t map_delta = phdr.p_offset & (page_size-1);
+		addr_t map_offset = phdr.p_offset - map_delta;
 		addr_t map_vaddr = phdr.p_vaddr - map_delta;
 		addr_t map_len = phdr.p_memsz + map_delta;
 		void *addr = mmap((void*)map_vaddr, map_len,
