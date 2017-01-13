@@ -5,12 +5,21 @@
 # Requires RISCV environment variable to be set
 # RISCV = /opt/riscv/toolchain
 
-CC = ${RISCV}/bin/${TARGET}-gcc -march=$(ARCH)
-CXX = ${RISCV}/bin/${TARGET}-g++ -march=$(ARCH)
+CC = ${RISCV}/bin/${TARGET}-gcc
+CXX = ${RISCV}/bin/${TARGET}-g++
 AS = ${RISCV}/bin/${TARGET}-as
 LD = ${RISCV}/bin/${TARGET}-ld
 STRIP = ${RISCV}/bin/${TARGET}-strip
 PK = ${RISCV}/${TARGET}/bin/pk
+
+SRC_DIR = src/test
+ASM_DIR = build/$(TARGET_DIR)/asm
+OBJ_DIR = build/$(TARGET_DIR)/obj
+BIN_DIR = build/$(TARGET_DIR)/bin
+GEN_DIR = build/$(TARGET_DIR)/gen
+
+# compiler function tests
+check_opt = $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
 
 ifeq ($(TARGET),riscv32-unknown-elf)
 SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
@@ -19,15 +28,6 @@ endif
 ifeq ($(TARGET),riscv64-unknown-elf)
 SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
 endif
-
-# compiler function tests
-check_opt =     $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
-
-SRC_DIR = src/test
-ASM_DIR = build/$(TARGET_DIR)/asm
-OBJ_DIR = build/$(TARGET_DIR)/obj
-BIN_DIR = build/$(TARGET_DIR)/bin
-GEN_DIR = build/$(TARGET_DIR)/gen
 
 CFLAGS = -Os -g -Wall -fpie -ffunction-sections -fdata-sections
 CXXFLAGS = -std=c++1y $(CFLAGS)
@@ -45,6 +45,12 @@ endif
 TARGET_DIR = $(TARGET)-rvc
 else
 TARGET_DIR = $(TARGET)
+endif
+
+ifeq ($(call check_opt,$(CC),cc,-march=$(ARCH)), 0)
+CFLAGS += -march=$(ARCH)
+else
+CFLAGS += -march=$(shell echo $(ARCH) | tr 'a-z' 'A-Z')
 endif
 
 ASSEMBLY = \
