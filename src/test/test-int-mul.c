@@ -48,7 +48,7 @@ inline ux mulhsu(sx s1, ux s2)
 int main()
 {
 
-#if _RISCV_SZPTR != _RISCV_SZINT
+#if defined (__riscv64) || __riscv_xlen == 64
 	/* RV64 */
 	assert(mulh(-9223372036854775807LL, 9223372036854775807LL) == -4611686018427387904LL);
 	assert(mulh(9223372036854775807LL, 9223372036854775807LL) == 4611686018427387903LL);
