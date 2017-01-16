@@ -246,8 +246,8 @@ struct rv_parse_elf
 
 	void print_heading(std::string heading)
 	{
-		printf("\n%s███ %s ", colorize("header"), heading.c_str());
-		for (size_t i = 0; i < 118 - heading.length(); i++) printf("█");
+		printf("\n%s---[ %s ]", colorize("header"), heading.c_str());
+		for (size_t i = 0; i < 116 - heading.length(); i++) printf("-");
 		printf("%s\n\n", colorize("reset"));
 	}
 
