@@ -182,11 +182,6 @@ namespace riscv {
 		addr_t new_brk = proc.ireg[rv_ireg_a0];
 		addr_t new_heap_end = round_up(new_brk, page_size);
 
-		if (proc.log & proc_log_memory) {
-			debug("sys_brk: brk: %llx begin: %llx end: %llx",
-				new_brk, proc.mmu.mem->heap_begin, proc.mmu.mem->heap_end);
-		}
-
 		/* return current brk */
 		if (new_brk == 0) {
 			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
@@ -213,7 +208,7 @@ namespace riscv {
 			proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)proc.mmu.mem->heap_end,
 				new_heap_end - proc.mmu.mem->heap_end));
 			if (proc.log & proc_log_memory) {
-				debug("sys_brk: mmap :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
+				debug("mmap-brk :%016llx-%016llx +R+W",
 					proc.mmu.mem->heap_end, new_heap_end);
 			}
 			proc.mmu.mem->heap_end = new_heap_end;
