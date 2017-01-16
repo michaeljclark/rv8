@@ -76,8 +76,8 @@ const char* kUnknownCSROperand =           "%s *** unknown csr operand: %s\n";
 const char* kInvalidStatement =            "%s *** invalid statement: %s\n";
 const char* kInvalidMacroOperands =        "%s *** invalid macro operands: %s\n";
 const char* kUnknownRelocation =           "%s *** unknown relocation: %s\n";
-const char* kDuplicateSymbol =             "%s *** duplicate symbol %s";
-const char* kUnimplementedOperation =      "%s *** unimplemented operation %s";
+const char* kDuplicateSymbol =             "%s *** duplicate symbol %s\n";
+const char* kUnimplementedOperation =      "%s *** unimplemented operation %s\n";
 
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
