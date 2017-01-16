@@ -10,7 +10,8 @@ Version : (under version control)
 About
 -------------
 
-RISC-V Meta is a suite of tools that operate on RISC-V ISA.
+RISC-V Meta is a suite of tools that operate on RISC-V Instruction
+Set Architecture.
 
 The suite contains simple decoupled libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
