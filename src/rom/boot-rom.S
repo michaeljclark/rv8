@@ -26,7 +26,7 @@ _start:
 #
 
 reset:
-	j boot;
+	j boot
 	nop
 	nop
 	.word STRING_MMIO_BASE
