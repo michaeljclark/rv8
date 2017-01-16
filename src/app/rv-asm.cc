@@ -831,11 +831,11 @@ struct rv_assembler
 		/* emit auipc with R_RISCV_PCREL_HI20 */
 		as.add_label(1);
 		as.add_reloc(argv[1][0], R_RISCV_PCREL_HI20);
-		as.append(u32(emit_auipc(ri->second, 0)));
+		asm_auipc(as, ri->second, 0);
 
 		/* emit addi with R_RISCV_PCREL_LO12_I */
 		as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
-		as.append(u32(emit_addi(ri->second, ri->second, 0)));
+		asm_addi(as, ri->second, ri->second, 0);
 
 		return true;
 	}
