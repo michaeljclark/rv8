@@ -160,35 +160,46 @@ namespace riscv {
 	template <typename P> void abi_sys_brk(P &proc)
 	{
 		// calculate the new heap address rounded up to the nearest page
-		addr_t curr_heap_end = round_up(proc.mmu.mem->heap_end, page_size);
-		addr_t new_heap_end = round_up(proc.ireg[rv_ireg_a0], page_size);
+		addr_t new_brk = proc.ireg[rv_ireg_a0];
+		addr_t new_heap_end = round_up(new_brk, page_size);
 
 		if (proc.log & proc_log_memory) {
-			debug("sys_brk: curr: %llx new: %llx",
-				curr_heap_end, new_heap_end);
+			debug("sys_brk: brk: %llx begin: %llx end: %llx",
+				new_brk, proc.mmu.mem->heap_begin, proc.mmu.mem->heap_end);
 		}
 
-		/* return current heap end */
-		if (new_heap_end == 0 || new_heap_end <= curr_heap_end) {
-			proc.ireg[rv_ireg_a0] = curr_heap_end;
+		/* return current brk */
+		if (new_brk == 0) {
+			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
 			return;
 		}
 
-		// map a new heap segment
-		void *addr = mmap((void*)curr_heap_end, new_heap_end - curr_heap_end,
+		/* shrink brk */
+		if (new_brk <= proc.mmu.mem->heap_end) {
+			if (new_brk >= proc.mmu.mem->heap_begin && new_brk <= proc.mmu.mem->heap_end) {
+				proc.mmu.mem->brk = new_brk;
+			}
+			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
+			return;
+		}
+
+		/* map a new heap segment */
+		void *addr = mmap((void*)proc.mmu.mem->heap_end, new_heap_end - proc.mmu.mem->heap_end,
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
 			debug("sys_brk: error: mmap: %s", strerror(errno));
 			proc.ireg[rv_ireg_a0] = -ENOMEM;
 		} else {
 			// keep track of the mapped segment and set the new heap_end
-			proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)curr_heap_end, new_heap_end - curr_heap_end));
-			proc.mmu.mem->heap_end = new_heap_end;
+			proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)proc.mmu.mem->heap_end,
+				new_heap_end - proc.mmu.mem->heap_end));
 			if (proc.log & proc_log_memory) {
 				debug("sys_brk: mmap :%016" PRIxPTR "-%016" PRIxPTR " +R+W",
-					curr_heap_end, new_heap_end);
+					proc.mmu.mem->heap_end, new_heap_end);
 			}
-			proc.ireg[rv_ireg_a0] = new_heap_end;
+			proc.mmu.mem->heap_end = new_heap_end;
+			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
+			proc.mmu.mem->brk = new_brk;
 		}
 	}
 

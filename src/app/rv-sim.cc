@@ -285,7 +285,7 @@ struct rv_emulator
 		proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
 		addr_t seg_end = addr_t(map_vaddr + map_len);
 		if (proc.mmu.mem->heap_begin < seg_end) {
-			proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = seg_end;
+			proc.mmu.mem->brk = proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = seg_end;
 		}
 	}
 

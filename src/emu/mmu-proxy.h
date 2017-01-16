@@ -13,6 +13,7 @@ namespace riscv {
 		std::vector<std::pair<void*,size_t>> segments;
 		addr_t heap_begin;
 		addr_t heap_end;
+		addr_t brk;
 		bool log;
 
 		void print_memory_map() {}
