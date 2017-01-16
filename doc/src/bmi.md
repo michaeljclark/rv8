@@ -11,8 +11,6 @@ RLL.{w,d,q} rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 
 RRL.{w,d,q} rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2
 RLLI.{w,d,q} rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate
 RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate
-BX.{w,d,q} rd,rs1,rs2     | Bit Extend                     | Copy the bit in rs1 at the position in rs2 and extend to the MSB
-BXI.{w,d,q} rd,rs1,imm    | Bit Extend Immediate           | Copy the bit in rs1 at the position in imm and extend to the MSB
 BCLZ.{w,d,q} rd,rs1       | Bit Count Leading Zero         | Count leading zero bits in rs1
 BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zero        | Count trailing zero bits in rs1
 BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in rs1
@@ -23,7 +21,6 @@ PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter LSB justifi
 Notes
 ==========
 - RV32B, RV64B and RV128B
-- Bit Extend and Bit Extend Immediate (see below)
 - Parallel Bit Extract could potentially be named Parallel Bit Gather
 - Parallel Bit Deposit could potentially be named Parallel Bit Scatter
 - Investigate static versus dynamic bit extraction (implementation dependent)
@@ -38,7 +35,7 @@ a fast translation model, specific instructions are proposed that will aid in fa
 decoding of RISC-V instructions in software.
 
 - Parallel Bit Extract and Parallel Bit Deposit for accelerated immediate extraction
-- Bit Extend Immediate for arbitrary width sign and zero extension
+- Bit Extend Immediate for sign and zero extension can be accomplished with SLL and SRA
 
 References
 ================
