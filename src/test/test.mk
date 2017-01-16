@@ -67,6 +67,7 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-args \
+	$(BIN_DIR)/test-open \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-printf \
 	$(BIN_DIR)/test-infinite-loop \
@@ -98,6 +99,7 @@ test-sim: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-pcrel
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-args Hello World
+	$(EMULATOR) $(BIN_DIR)/test-open src/test/spike.rv
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-int-mul
 	$(EMULATOR) $(BIN_DIR)/test-fpu-printf
@@ -126,6 +128,9 @@ $(BIN_DIR)/hello-world-pcrel-pico: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --nmag
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-open.o: $(SRC_DIR)/test-open.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-open: $(OBJ_DIR)/test-open.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-fpu-gen.o: $(SRC_DIR)/test-fpu-gen.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-fpu-gen: $(OBJ_DIR)/test-fpu-gen.o ; $(CC) $(CFLAGS) $^ -o $@

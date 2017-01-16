@@ -19,6 +19,8 @@ namespace riscv {
 		abi_syscall_exit = 93,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
+		abi_syscall_open = 1024,
+		abi_syscall_stat = 1038,
 	};
 
 	template <typename P> struct abi_timeval {
@@ -132,6 +134,23 @@ namespace riscv {
 		}
 	}
 
+	template <typename P> void abi_sys_open(P &proc)
+	{
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		proc.ireg[rv_ireg_a0] = open(pathname, proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+	}
+
+	template <typename P> void abi_sys_stat(P &proc)
+	{
+		struct stat host_stat;
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		memset(&host_stat, 0, sizeof(host_stat));
+		if ((proc.ireg[rv_ireg_a0] = stat(pathname, &host_stat)) == 0) {
+			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+			cvt_abi_stat(guest_stat, &host_stat);
+		}
+	}
+
 	template <typename P> void abi_sys_exit(P &proc)
 	{
 		exit(proc.ireg[rv_ireg_a0]);
@@ -216,6 +235,8 @@ namespace riscv {
 			case abi_syscall_exit:          abi_sys_exit(proc); break;
 			case abi_syscall_gettimeofday:  abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:           abi_sys_brk(proc); break;
+			case abi_syscall_open:          abi_sys_open(proc); break;
+			case abi_syscall_stat:          abi_sys_stat(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7]);
 		}
 	}
