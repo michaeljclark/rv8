@@ -811,7 +811,33 @@ struct rv_assembler
 		 *
 		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
 		 */
-		return line->error(kUnimplementedOperation);
+		auto argv = line->split_args(",");
+		if (argv.size() != 2) {
+			return line->error(kInvalidOperands);
+		}
+
+		/* register operand */
+		auto ri = argv[0].size() == 1 ? ireg_map.find(argv[0][0]) : ireg_map.end();
+		if (ri == ireg_map.end()) {
+			return line->error(kInvalidRegister);
+		}
+
+		/* symbol operand */
+		if (!check_symbol(argv[1]))
+		{
+			return line->error(kInvalidOperands);
+		}
+
+		/* emit auipc with R_RISCV_PCREL_HI20 */
+		as.add_label(1);
+		as.add_reloc(argv[1][0], R_RISCV_PCREL_HI20);
+		as.append(u32(emit_auipc(ri->second, 0)));
+
+		/* emit addi with R_RISCV_PCREL_LO12_I */
+		as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
+		as.append(u32(emit_addi(ri->second, ri->second, 0)));
+
+		return true;
 	}
 
 	bool handle_lla(asm_line_ptr &line)
@@ -824,7 +850,7 @@ struct rv_assembler
 		 *
 		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
 		 */
-		return line->error(kUnimplementedOperation);
+		return handle_la(line);
 	}
 
 	bool handle_li(asm_line_ptr &line)
