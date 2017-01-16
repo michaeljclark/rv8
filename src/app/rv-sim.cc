@@ -266,7 +266,7 @@ struct rv_emulator
 		addr_t map_delta = phdr.p_offset & (page_size-1);
 		addr_t map_offset = phdr.p_offset - map_delta;
 		addr_t map_vaddr = phdr.p_vaddr - map_delta;
-		addr_t map_len = phdr.p_memsz + map_delta;
+		addr_t map_len = round_up(phdr.p_memsz + map_delta, page_size);
 		void *addr = mmap((void*)map_vaddr, map_len,
 			elf_p_flags_mmap(phdr.p_flags), MAP_FIXED | MAP_PRIVATE, fd, map_offset);
 		close(fd);
