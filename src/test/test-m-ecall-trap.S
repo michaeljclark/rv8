@@ -36,12 +36,12 @@ mtvec:
 
 pass:
 	la a0, pass_msg
-	jal puts
+	jal ra, puts
 	j shutdown
 
 fail:
 	la a0, fail_msg
-	jal puts
+	jal ra, puts
 	j shutdown
 
 puts:
