@@ -22,6 +22,7 @@ Notes
 ==========
 - RV32B, RV64B and RV128B
 - Candidate Bit Manipulation Instructions should require at least 4 Base ISA instructions to be considered
+- Rotate instructions are used frequenty in cyptographic ciphers and hashing algorithms
 - Parallel Bit Extract could potentially be named Parallel Bit Gather
 - Parallel Bit Deposit could potentially be named Parallel Bit Scatter
 - Investigate static versus dynamic bit extraction (implementation dependent)
