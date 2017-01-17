@@ -163,6 +163,8 @@ namespace riscv {
 
 		void print_log(decode_type &dec, inst_t inst)
 		{
+			std::fexcept_t flags;
+			fegetexceptflag(&flags, FE_ALL_EXCEPT);
 			static const char *fmt_32 = "%019llu core-%-4zu:%08llx (%s) %-30s %s\n";
 			static const char *fmt_64 = "%019llu core-%-4zu:%016llx (%s) %-30s %s\n";
 			static const char *fmt_128 = "%019llu core-%-4zu:%032llx (%s) %-30s %s\n";
@@ -174,6 +176,7 @@ namespace riscv {
 					P::instret, P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
 			}
 			if (P::log & proc_log_int_reg) print_int_registers();
+			fesetexceptflag(&flags, FE_ALL_EXCEPT);
 		}
 
 		void print_device_registers() {}
