@@ -66,10 +66,16 @@ ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
 CXXFLAGS +=     $(LIBCPP_FLAGS)
 endif
 
-# check if gperftool is enabled
-ifeq ($(enable_profile),1)
+# enable gperftool
+ifeq ($(enable_gperftool),1)
 CXXFLAGS +=    -I$(GPERFTOOL)/include/ -DENABLE_GPERFTOOL
 LDFLAGS +=     -L$(GPERFTOOL)/lib/ -lprofiler
+endif
+
+# enable profile guided compilation
+ifeq ($(enable_profile),1)
+CXXFLAGS +=    -pg
+LDFLAGS +=     -pg
 endif
 
 # check if hardening is enabled. e.g. make enable_harden=1
