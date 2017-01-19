@@ -195,10 +195,7 @@ namespace riscv {
 
 		/* shrink brk */
 		if (new_brk <= proc.mmu.mem->heap_end) {
-			if (new_brk >= proc.mmu.mem->heap_begin && new_brk <= proc.mmu.mem->heap_end) {
-				proc.mmu.mem->brk = new_brk;
-			}
-			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
+			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk = new_brk;
 			return;
 		}
 
