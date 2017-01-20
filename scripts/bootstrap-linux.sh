@@ -107,9 +107,9 @@ if [ ! -d "${LINUX_BUILD_DIR}/.git" ]; then
 	(
 		cd  ${LINUX_BUILD_DIR}
 		git init
-		git remote add -t priv-1.9 origin ${RISCV_LINUX_REPO}
+		git remote add -t master origin ${RISCV_LINUX_REPO}
 		git fetch
-		git checkout -f -t origin/priv-1.9
+		git checkout -f -t origin/master
 	)
 fi
 
