@@ -389,9 +389,10 @@ struct rv_compress_elf
 				auto rbi = bi;
 				if (dec.label_branch) dec.addr = label_addr[dec.label_branch];
 				while (rbi->label_target != dec.label_pair) rbi--;
-				dec.imm = sign_extend<int64_t,12>(addr_t(dec.addr - rbi->pc));
-				rbi->imm = sign_extend<int64_t,32>(addr_t(dec.addr - rbi->pc) & 0xfffff000);
-				if (addr_t(dec.imm + rbi->imm + rbi->pc) < addr_t(dec.addr)) rbi->imm += 0x1000;
+				int64_t addr = dec.addr - rbi->pc;
+				int64_t upper = ((addr + 0x800) >> 12) << 12;
+				dec.imm = addr - upper;
+				rbi->imm = upper;
 				if (dec.imm + rbi->imm + rbi->pc != dec.addr) {
 					panic("unable to relocate instruction pair: %d", dec.label_pair);
 					print_continuation_disassembly(dec);
