@@ -259,6 +259,18 @@ namespace riscv {
 
 		const char* name() { return "rv-sys"; }
 
+		const u64 RTC_FREQ = 10000000;
+		const u64 RTC_DIV = 1000000000 / RTC_FREQ;
+
+		u64 get_time()
+		{
+			/*
+			 * TODO - add hz to config string
+			 * 10MHz is currently hardcoded in BBL
+			 */
+			return host_cpu::get_instance().get_time_ns() / RTC_DIV;
+		}
+
 		std::string create_config_string()
 		{
 			typename P::ux ram_base = 0;
@@ -277,6 +289,7 @@ platform {
 };
 rtc {
   addr 0x%x;
+  hz %d;
 };
 uart {
   addr 0x%x;
@@ -303,6 +316,7 @@ core {
 			std::string cfg_str;
 			sprintf(cfg_str, kConfigFormat,
 				device_rtc->mpa,
+				RTC_FREQ,
 				device_uart->mpa,
 				device_htif->mpa,
 				device_htif->mpa + 8,
@@ -487,17 +501,6 @@ core {
 			    (P::log & (proc_log_csr_mmode | proc_log_csr_smode))) {
 				print_csr_registers();
 			}
-		}
-
-		static u64 get_time()
-		{
-			/*
-			 * TODO - add hz to config string
-			 * 10MHz is currently hardcoded in BBL
-			 */
-			static const u64 RTC_FREQ = 10000000;
-			static const u64 RTC_DIV = 1000000000 / RTC_FREQ;
-			return host_cpu::get_instance().get_time_ns() / RTC_DIV;
 		}
 
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
