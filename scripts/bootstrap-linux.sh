@@ -120,6 +120,7 @@ fi
 
 echo "===[ Creating RISC-V Linux kernel initramfs configuration ]==="
 cp scripts/initramfs.config ${LINUX_BUILD_DIR}/initramfs.config
+cp scripts/inittab ${LINUX_BUILD_DIR}/initramfs/inittab
 
 echo "===[ Copying Busybox into RISC-V Linux kernel initramfs directory ]==="
 cp ${BUSYBOX_BUILD_DIR}/busybox ${LINUX_BUILD_DIR}/initramfs/busybox
