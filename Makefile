@@ -60,6 +60,7 @@ LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 PTH_LDFLAGS_2 = -lpthread
+RT_LDFLAGS =    -lrt
 
 # check if we can use libc++
 ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -130,6 +131,11 @@ else
 ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS_2)), 0)
 LDFLAGS +=      $(PTH_LDFLAGS_2)
 endif
+endif
+
+# check if we can use realtime clock library
+ifeq ($(call check_opt,$(CXX),cc,$(RT_LDFLAGS)), 0)
+LDFLAGS +=      $(RT_LDFLAGS)
 endif
 
 # check if we can use libcxx
