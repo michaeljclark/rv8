@@ -489,6 +489,17 @@ core {
 			}
 		}
 
+		static u64 get_time()
+		{
+			/*
+			 * TODO - add hz to config string
+			 * 10MHz is currently hardcoded in BBL
+			 */
+			static const u64 RTC_FREQ = 10000000;
+			static const u64 RTC_DIV = 1000000000 / RTC_FREQ;
+			return host_cpu::get_instance().get_time_ns() / RTC_DIV;
+		}
+
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 		{
 			/*
@@ -554,7 +565,7 @@ core {
 				                      fenv_clearflags(P::fcsr);
 				                      fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
 				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::cycle, value);    break;
-				case rv_csr_time:     P::time = cpu_cycle_clock();
+				case rv_csr_time:     P::time = get_time();
 				                      P::get_csr(dec, rv_mode_U, op, csr, P::time, value);     break;
 				case rv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
 				case rv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;

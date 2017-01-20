@@ -12,6 +12,10 @@
 #include "util.h"
 #include "host.h"
 
+#if defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
+
 using namespace riscv;
 
 /* BSD/UNIX/Linux */
@@ -131,8 +135,28 @@ host_cpu& host_cpu::get_instance()
 	return singleton;
 }
 
+uint64_t host_cpu::get_time_ns()
+{
+#if defined(__APPLE__)
+	return mach_absolute_time() * timebase;
+#else
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ((uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec) * timebase;
+#endif
+}
+
 host_cpu::host_cpu()
 {
+	/* set timebase */
+#if defined(__APPLE__)
+    mach_timebase_info_data_t timebaseInfo;
+    mach_timebase_info(&timebaseInfo);
+    timebase = timebaseInfo.numer / timebaseInfo.denom;
+#else
+    timebase = 1;
+#endif
+
 #if HAS_X86_CPUID
 	/* zero x86 capabilities */
 	memset(&x86_cpuid_h0, 0, sizeof(x86_cpuid_info));

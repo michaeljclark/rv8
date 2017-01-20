@@ -87,6 +87,8 @@ namespace riscv {
 
     struct host_cpu
     {
+        uint64_t timebase;
+
         static bool enable_debug;
 
         static host_cpu& get_instance();
@@ -96,6 +98,7 @@ namespace riscv {
         host_cpu();
 
         uint32_t get_random_seed();
+        uint64_t get_time_ns();
     };
 }
 
