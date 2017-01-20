@@ -748,7 +748,7 @@ core {
 			 */
 
 			/* NOTE: delegation is implicit based on enable bits in this model */
-			bool sip = device_mipi->ipi_pending(P::hart_id);
+			bool sip = device_mipi->ipi_pending(P::hart_id) || console->has_char();
 			if (sip) {
 				P::mip.r.msip = 1;
 				P::mip.r.ssip = 1;
