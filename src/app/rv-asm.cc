@@ -378,7 +378,7 @@ struct rv_assembler
 		directive_map[".bss"] = std::bind(&rv_assembler::handle_bss, this, _1);
 		directive_map[".size"] = std::bind(&rv_assembler::handle_size, this, _1);
 		directive_map[".string"] = std::bind(&rv_assembler::handle_string, this, _1);
-		directive_map[".asciz"] = std::bind(&rv_assembler::handle_string, this, _1);
+		directive_map[".asciiz"] = std::bind(&rv_assembler::handle_string, this, _1);
 		directive_map[".type"] = std::bind(&rv_assembler::handle_type, this, _1);
 		directive_map[".byte"] = std::bind(&rv_assembler::handle_byte, this, _1);
 		directive_map[".half"] = std::bind(&rv_assembler::handle_half, this, _1);
