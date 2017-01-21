@@ -331,19 +331,23 @@ bool assembler::relocate(reloc_ptr reloc)
 			dec.imm = (label_off - reloc_off);
 			re_encode = true;
 			break;
-		case R_RISCV_HI20:
-			dec.imm = label_off / 0x1000;
+		case R_RISCV_HI20: {
+			dec.imm = ((label_off + 0x800) >> 12) << 12;
 			re_encode = true;
 			break;
+		}
 		case R_RISCV_LO12_I:
-		case R_RISCV_LO12_S:
-			dec.imm = label_off % 0x1000;
+		case R_RISCV_LO12_S: {
+			int upper = ((label_off + 0x800) >> 12) << 12;
+			dec.imm = label_off - upper;
 			re_encode = true;
 			break;
-		case R_RISCV_PCREL_HI20:
-			dec.imm = (label_off - reloc_off) / 0x1000;
+		}
+		case R_RISCV_PCREL_HI20: {
+			dec.imm = ((label_off - reloc_off + 0x800) >> 12) << 12;
 			re_encode = true;
 			break;
+		}
 		case R_RISCV_PCREL_LO12_I:
 		case R_RISCV_PCREL_LO12_S: {
 			/* the label points to an auipc instruction with the %pcrel_hi reloc
@@ -352,12 +356,17 @@ bool assembler::relocate(reloc_ptr reloc)
 			if (ri == relocs_byoffset.end()) {
 				return false;
 			}
-			/* find label associated with the reloc pointed to by our label */
 			reloc = ri->second;
+			reloc_off = reloc_offset(reloc);
+
+			/* find symbol associated with the reloc pointed to by our label */
 			label = lookup_label(reloc->name);
 			if (!label) return false;
 			size_t label_off = label_offset(label);
-			dec.imm = (label_off - reloc_off) % 0x1000;
+
+			/* calculate difference from upper */
+			int upper = ((label_off - reloc_off + 0x800) >> 12) << 12;
+			dec.imm = label_off - upper;
 			re_encode = true;
 			break;
 		}
