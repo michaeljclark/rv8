@@ -602,6 +602,7 @@ struct rv_assembler
 		if (!eval(line, argv[1], result)) {
 			return line->error(kInvalidOperands);
 		}
+		/* TODO - constants should be emitted as ABS symbols */
 		vars[argv[0][0]] = result;
 		return true;
 	}
@@ -835,7 +836,7 @@ struct rv_assembler
 	bool handle_la(asm_line_ptr &line)
 	{
 		/*
-		 * TODO
+		 * Load address
 		 *
 		 * .1: auipc r,    %pcrel_hi(symbol)
 		 *     addi  r, r, %pcrel_lo(1b)
@@ -874,7 +875,7 @@ struct rv_assembler
 	bool handle_lla(asm_line_ptr &line)
 	{
 		/*
-		 * TODO
+		 * Load label address
 		 *
 		 * .1: auipc r,    %pcrel_hi(symbol)
 		 *     addi  r, r, %pcrel_lo(1b)
@@ -887,7 +888,7 @@ struct rv_assembler
 	bool handle_li(asm_line_ptr &line)
 	{
 		/*
-		 * TODO - implement large immediates
+		 * Load immediate
 		 *
 		 * { lui, addiw, slli, addi }
 		 */
@@ -902,11 +903,13 @@ struct rv_assembler
 			return line->error(kInvalidRegister);
 		}
 
-		/* immediate operand */
+		/* evaluate operand */
 		packToken result;
 		if (!eval(line, argv[1], result)) {
 			return line->error(kInvalidOperands);
 		}
+
+		/* load immediate */
 		s64 imm = result.asInt();
 		as.load_imm(ri->second, imm);
 
