@@ -318,6 +318,16 @@ u8* assembler::reloc_buffer(reloc_ptr reloc)
 	return &sections[reloc->offset.first]->buf[reloc->offset.second];
 }
 
+void assembler::reencode_inst(decode &dec, addr_t offset)
+{
+	inst_t inst = encode_inst(dec);
+	size_t len = inst_length(inst);
+	switch (len) {
+		case 2: *(u16*)offset = le16toh(inst & 0xffff); break;
+		case 4: *(u32*)offset = le32toh(inst & 0xffffffff); break;
+	}
+}
+
 bool assembler::relocate(reloc_ptr reloc)
 {
 	/* find target symbol */
@@ -384,6 +394,28 @@ bool assembler::relocate(reloc_ptr reloc)
 			re_encode = true;
 			break;
 		}
+		case R_RISCV_CALL: {
+			/*
+			 * R_RISCV_CALL relocation needs to update two instructions
+			 *
+			 * relocate auipc immediate
+			 */
+			int upper = ((label_off - reloc_off + 0x800) >> 12) << 12;
+			int lower = label_off - reloc_off - upper;
+			dec.imm = upper;
+			re_encode = true;
+
+			/* relocate jalr immediate */
+			{
+				decode dec;
+				addr_t ignore_pc_offset;
+				inst_t inst = inst_fetch(addr_t(reloc_buf + pc_offset), ignore_pc_offset);
+				decode_inst_rv64(dec, inst);
+				dec.imm = lower;
+				reencode_inst(dec, addr_t(reloc_buf + pc_offset));
+			}
+			break;
+		}
 		case R_RISCV_32:
 			*(u32*)reloc_buf = u32(label_off);
 			break;
@@ -394,12 +426,7 @@ bool assembler::relocate(reloc_ptr reloc)
 
 	/* re-encode instruction being relocated */
 	if (re_encode) {
-		inst = encode_inst(dec);
-		size_t len = inst_length(inst);
-		switch (len) {
-			case 2: *(u16*)reloc_buf = le16toh(inst & 0xffff); break;
-			case 4: *(u32*)reloc_buf = le32toh(inst & 0xffffffff); break;
-		}
+		reencode_inst(dec, addr_t(reloc_buf));
 	}
 
 	return true;

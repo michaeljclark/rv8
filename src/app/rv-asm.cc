@@ -893,25 +893,45 @@ struct rv_assembler
 	bool handle_call(asm_line_ptr &line)
 	{
 		/*
-		 * TODO
+		 * call
 		 *
 		 * .1: auipc t1,     %pcrel_hi(symbol)
 		 *     jalr  ra, t1, %pcrel_lo(1b)
 		 *
-		 * relocs: R_RISCV_CALL_PLT
+		 * relocs: R_RISCV_CALL
 		 */
-		return line->error(kUnimplementedOperation);
+		auto argv = line->split_args(",");
+		if (argv.size() != 1 || argv[0].size() != 1) {
+			return line->error(kInvalidOperands);
+		}
+
+		as.add_reloc(argv[0][0], R_RISCV_CALL);
+		asm_auipc(as, rv_ireg_t0, 0);
+		asm_jalr(as, rv_ireg_ra, rv_ireg_t0, 0);
+
+		return true;
 	}
 
 	bool handle_tail(asm_line_ptr &line)
 	{
 		/*
-		 * TODO
+		 * tail
 		 *
 		 * .1: auipc t1,       %pcrel_hi(symbol)
 		 *     jalr  zero, t1, %pcrel_lo(1b)
+		 *
+		 * relocs: R_RISCV_CALL
 		 */
-		return line->error(kUnimplementedOperation);
+		auto argv = line->split_args(",");
+		if (argv.size() != 1 || argv[0].size() != 1) {
+			return line->error(kInvalidOperands);
+		}
+
+		as.add_reloc(argv[0][0], R_RISCV_CALL);
+		asm_auipc(as, rv_ireg_t0, 0);
+		asm_jalr(as, rv_ireg_zero, rv_ireg_t0, 0);
+
+		return true;
 	}
 
 	std::vector<rv_operand_data> opcode_operand_data(size_t op)

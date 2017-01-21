@@ -103,6 +103,7 @@ namespace riscv {
 		size_t reloc_offset(reloc_ptr reloc);
 		u8* reloc_buffer(reloc_ptr reloc);
 
+		void reencode_inst(decode &dec, addr_t offset);
 		bool relocate(reloc_ptr reloc);
 		void link();
 	};
