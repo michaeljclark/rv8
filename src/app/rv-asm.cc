@@ -1249,7 +1249,7 @@ load_store:
 	bool process_line(asm_line_ptr line)
 	{
 		if (debug) {
-			printf("%-30s %s\n",
+			printf("%-24s %s\n",
 				format_string("%s:%d", line->file->filename.c_str(), line->line_num).c_str(),
 				line->str().c_str());
 		}
@@ -1534,7 +1534,7 @@ load_store:
 			decode_inst_rv64(dec, inst);
 			decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
-			printf("%5zx:0x%08llx\t(%8s)\t%s\n",
+			printf("%5zx:0x%-8llx\t(%8s)\t%s\n",
 				text->index, pc, format_inst(inst).c_str(), args.c_str());
 			pc += pc_offset;
 		}
@@ -1542,12 +1542,12 @@ load_store:
 		for (auto &ent : as.labels_byoffset) {
 			auto &label = ent.second;
 			if (label->offset.first == 0) {
-				printf("  ABS:0x%08zx\t0x%08zx\t%s\n",
+				printf("  ABS:0x%-16zx 0x%-16zx %s\n",
 					label->offset.second,
 					as.label_offset(label),
 					label->name.c_str());
 			} else {
-				printf("%5zx:0x%08zx\t0x%08zx\t%s\n",
+				printf("%5zx:0x%-16zx 0x%-16zx %s\n",
 					label->offset.first,
 					label->offset.second,
 					as.label_offset(label),
@@ -1557,7 +1557,7 @@ load_store:
 		printf("\nRelocations\n\n");
 		for (auto &ent : as.relocs_byoffset) {
 			auto &reloc = ent.second;
-			printf("%5zx:0x%08zx\t0x%08zx\t%-20s\t%s\n",
+			printf("%5zx:0x%-16zx 0x%-16zx %-20s %s\n",
 				reloc->offset.first,
 				reloc->offset.second,
 				as.reloc_offset(reloc),
