@@ -389,8 +389,8 @@ struct rv_compress_elf
 				auto rbi = bi;
 				if (dec.label_branch) dec.addr = label_addr[dec.label_branch];
 				while (rbi->label_target != dec.label_pair) rbi--;
-				int64_t addr = dec.addr - rbi->pc;
-				int64_t upper = ((addr + 0x800) >> 12) << 12;
+				int addr = dec.addr - rbi->pc;
+				int upper = ((addr + 0x800) >> 12) << 12;
 				dec.imm = addr - upper;
 				rbi->imm = upper;
 				if (dec.imm + rbi->imm + rbi->pc != dec.addr) {
