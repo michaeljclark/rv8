@@ -1521,11 +1521,18 @@ load_store:
 		printf("\nSymbols\n\n");
 		for (auto &ent : as.labels_byoffset) {
 			auto &label = ent.second;
-			printf("%5zx:0x%08zx\t0x%08zx\t%s\n",
-				label->offset.first,
-				label->offset.second,
-				as.label_offset(label),
-				label->name.c_str());
+			if (label->offset.first == 0) {
+				printf("  ABS:0x%08zx\t0x%08zx\t%s\n",
+					label->offset.second,
+					as.label_offset(label),
+					label->name.c_str());
+			} else {
+				printf("%5zx:0x%08zx\t0x%08zx\t%s\n",
+					label->offset.first,
+					label->offset.second,
+					as.label_offset(label),
+					label->name.c_str());
+			}
 		}
 		printf("\nRelocations\n\n");
 		for (auto &ent : as.relocs_byoffset) {
