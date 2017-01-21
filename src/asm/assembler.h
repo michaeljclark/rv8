@@ -89,6 +89,7 @@ namespace riscv {
 		label_ptr lookup_label(reloc_ptr reloc, std::string name);
 		label_ptr add_label(std::string label_name);
 		label_ptr add_label(s64 num);
+		label_ptr add_constant(std::string label_name, s64 value);
 
 		reloc_ptr lookup_reloc(section_offset offset);
 		reloc_ptr add_reloc(std::string label_name, int rela_type);

@@ -602,8 +602,8 @@ struct rv_assembler
 		if (!eval(line, argv[1], result)) {
 			return line->error(kInvalidOperands);
 		}
-		/* TODO - constants should be emitted as ABS symbols */
 		vars[argv[0][0]] = result;
+		as.add_constant(argv[0][0], result.asInt());
 		return true;
 	}
 

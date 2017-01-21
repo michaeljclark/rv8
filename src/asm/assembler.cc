@@ -256,6 +256,17 @@ label_ptr assembler::add_label(s64 num)
 	}
 }
 
+label_ptr assembler::add_constant(std::string label_name, s64 value)
+{
+	if (labels_byname.find(label_name) != labels_byname.end()) {
+		return label_ptr();
+	}
+	auto l = std::make_shared<label>(label_name, section_offset(0, value));
+	labels_byname[label_name] = l;
+	labels_byoffset[l->offset] = l;
+	return l;
+}
+
 reloc_ptr assembler::lookup_reloc(section_offset offset)
 {
 	auto ri = relocs_byoffset.find(offset);
