@@ -482,6 +482,8 @@ qemu-tests:
 	( cd riscv-qemu-tests && make )
 	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run )
 
+linux: ; ./scripts/bootstrap-linux.sh
+
 test-emulate: ; @echo Please use make test-sim
 
 test-build: test-build-rv64

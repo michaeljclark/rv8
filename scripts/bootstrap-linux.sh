@@ -165,9 +165,15 @@ echo "===[ Building BBL-Lite Repository ]==="
 	make -j$NPROCS
 )
 
+echo "===[ Copying BBL-Lite to target directory ]==="
+if [ ! -d "build/riscv64-unknown-elf/bin" ]; then
+	mkdir -p build/riscv64-unknown-elf/bin
+fi
+cp ${BBL_BUILD_DIR}/build/bbl build/riscv64-unknown-elf/bin/bbl
+
 #
 # Ready to run
 #
 echo "===[ Build complete ]==="
 echo
-echo "usage: rv-sys ${BBL_BUILD_DIR}/build/bbl"
+echo "usage: rv-sys build/riscv64-unknown-elf/bin/bbl"
