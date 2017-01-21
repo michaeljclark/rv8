@@ -515,8 +515,36 @@ struct rv_assembler
 
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
-		/* TODO - handle functions on constant expressions */
-		if (check_function(tokens) || check_private(tokens) || check_local(tokens)) return false;
+		/* check for labels that require relocation */
+		if (check_private(tokens) || check_local(tokens)) return false;
+
+		/*
+		 * handle a subset of functions on constant expressions
+		 *
+		 * TODO - abstract functions so they can be evaluated eagerly or
+		 *        deferred to link time (instead of duplicating logic).
+		 */
+		if (check_function(tokens)) {
+			packToken fnarg;
+			if (tokens[1] == "hi") {
+				if (!eval(line, { tokens[3] }, fnarg)) return false;
+				s32 offset = fnarg.asInt();
+				s32 hi20 = ((offset + 0x800) >> 12) << 12;
+				result = packToken(int64_t(hi20));
+				return true;
+			} else if (tokens[1] == "lo") {
+				if (!eval(line, { tokens[3] }, fnarg)) return false;
+				s32 offset = fnarg.asInt();
+				s32 hi20 = ((offset + 0x800) >> 12) << 12;
+				s32 lo12 = offset - hi20;
+				result = packToken(int64_t(lo12));
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		/*integer constant */
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
@@ -524,6 +552,8 @@ struct rv_assembler
 				return true;
 			}
 		}
+
+		/* invoke expression parser */
 		std::string expr = join(tokens, " ");
 		calculator calc(expr.c_str());
 		result = calc.eval(vars);
