@@ -350,8 +350,11 @@ bool assembler::relocate(reloc_ptr reloc)
 		}
 		case R_RISCV_PCREL_LO12_I:
 		case R_RISCV_PCREL_LO12_S: {
-			/* the label points to an auipc instruction with the %pcrel_hi reloc
-			 * so we need to use the label to look up the previous reloc entry */
+			/*
+			 * the reloc label points to an auipc instruction with the %pcrel_hi
+			 * reloc entry, so we use the label to look up the previous relocation
+			 * entry and use that as the base address for the PC-relative offset
+			 */
 			auto ri = relocs_byoffset.find(section_offset(reloc->offset.first, label_off));
 			if (ri == relocs_byoffset.end()) {
 				return false;
