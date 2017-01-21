@@ -828,8 +828,8 @@ struct rv_assembler
 			return line->error(kInvalidRegister);
 		}
 
-		/* symbol operand */
-		if (!check_symbol(argv[1]))
+		/* symbol or label operand */
+		if (!(check_symbol(argv[1]) || check_private(argv[1]) || check_local(argv[1])))
 		{
 			return line->error(kInvalidOperands);
 		}
