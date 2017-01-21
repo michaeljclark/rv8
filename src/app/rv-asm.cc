@@ -1526,7 +1526,8 @@ load_store:
 
 	void dump()
 	{
-		std::vector<u8> &buf = as.get_section(".text")->buf;
+		auto text = as.get_section(".text");
+		std::vector<u8> &buf = text->buf;
 		addr_t pc = 0, end = buf.size();
 		addr_t pc_offset;
 		decode dec;
@@ -1536,15 +1537,26 @@ load_store:
 			decode_inst_rv64(dec, inst);
 			decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
-			printf("%8llx\t(%8s)\t%s\n",
-				pc, format_inst(inst).c_str(), args.c_str());
+			printf("%5zx:0x%08llx\t(%8s)\t%s\n",
+				text->index, pc, format_inst(inst).c_str(), args.c_str());
 			pc += pc_offset;
 		}
+		printf("\nSymbols\n\n");
+		for (auto &ent : as.labels_byoffset) {
+			auto &label = ent.second;
+			printf("%5zx:0x%08zx\t0x%08zx\t%s\n",
+				label->offset.first,
+				label->offset.second,
+				as.label_offset(label),
+				label->name.c_str());
+		}
 		printf("\nRelocations\n\n");
-		for (auto ent : as.relocs_byoffset) {
+		for (auto &ent : as.relocs_byoffset) {
 			auto &reloc = ent.second;
-			printf("%8zx\t%-20s\t%s\n",
+			printf("%5zx:0x%08zx\t0x%08zx\t%-20s\t%s\n",
+				reloc->offset.first,
 				reloc->offset.second,
+				as.reloc_offset(reloc),
 				elf_rela_type_name(reloc->rela_type),
 				reloc->name.c_str());
 		}
