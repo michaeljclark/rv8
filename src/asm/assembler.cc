@@ -309,7 +309,7 @@ u8* assembler::reloc_buffer(reloc_ptr reloc)
 
 bool assembler::relocate(reloc_ptr reloc)
 {
-	/* find target label */
+	/* find target symbol */
 	label_ptr label = lookup_label(reloc, reloc->name);
 	if (!label) return false;
 	reloc->name = label->name;
