@@ -1172,7 +1172,7 @@ load_store:
 		if (ri == ireg_map.end()) {
 			return line->error(kInvalidRegister);
 		}
-		dec.rs2 = ri->second;
+		dec.rs1 = ri->second;
 
 		if (arg.size() > 3) {
 			arg.erase(arg.begin() + arg.size() - 3, arg.end());
