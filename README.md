@@ -147,7 +147,7 @@ To run the QEMU tests with _`rv-sim`_: ```make qemu-tests```
 
 To run the Privileged System Emulator tests with _`rv-sys`_: ```make test-sys```
 
-To boostrap a bbl, linux kernel and busybox image: ```make linux```
+To bootstrap bbl, linux kernel and busybox image: ```make linux```
 
 To install to `/usr/local/bin`: ```make && sudo make install```
 
