@@ -380,7 +380,7 @@ bool assembler::relocate(reloc_ptr reloc)
 
 			/* calculate difference from upper */
 			int upper = ((label_off - reloc_off + 0x800) >> 12) << 12;
-			dec.imm = label_off - upper;
+			dec.imm = label_off - reloc_off - upper;
 			re_encode = true;
 			break;
 		}
