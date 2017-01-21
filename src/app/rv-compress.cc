@@ -172,6 +172,7 @@ struct rv_compress_elf
 					if (rvxi->op1 != li->op || dec.rs1 != li->rd) continue;
 
 					switch (rvxi->addr) {
+						/*
 						case rva_abs:
 						{
 							dec.is_abs = true;
@@ -184,6 +185,7 @@ struct rv_compress_elf
 							}
 							return true;
 						}
+						*/
 						case rva_pcrel:
 						{
 							dec.is_pcrel = true;
