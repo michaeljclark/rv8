@@ -515,8 +515,10 @@ struct rv_assembler
 
 	bool eval(asm_line_ptr &line, std::vector<std::string> tokens, packToken &result)
 	{
-		/* TODO - handle functions on constant expressions */
+		/* check for labels that require relocation */
 		if (check_function(tokens) || check_private(tokens) || check_local(tokens)) return false;
+
+		/* integer constant */
 		if (tokens.size() == 1) {
 			s64 val;
 			if (parse_integral(tokens[0], val)) {
@@ -524,6 +526,8 @@ struct rv_assembler
 				return true;
 			}
 		}
+
+		/* invoke expression parser */
 		std::string expr = join(tokens, " ");
 		calculator calc(expr.c_str());
 		result = calc.eval(vars);
