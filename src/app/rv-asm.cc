@@ -1492,6 +1492,9 @@ load_store:
 		 */
 
 		std::vector<asm_line_ptr> data;
+		if (debug) {
+			printf("\n[ Source ]\n\n");
+		}
 		read_source(data, input_filename);
 		for (auto &line : data)
 		{
@@ -1528,17 +1531,25 @@ load_store:
 		addr_t pc = 0, end = buf.size();
 		addr_t pc_offset;
 		decode dec;
-		printf("\nDissasembly\n\n");
+		printf("\n[ Dissasembly ]\n\n");
+		printf("%5s:%-18s %s\n",
+			"Sec", "Offset", "Assembly");
+		printf("%5s:%-18s %s\n",
+			"---", "------", "--------");
 		while (pc < end) {
 			inst_t inst = inst_fetch(addr_t(buf.data() + pc), pc_offset);
 			decode_inst_rv64(dec, inst);
 			decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
-			printf("%5zx:0x%-8llx\t(%8s)\t%s\n",
+			printf("%5zx:0x%-16llx (%8s)\t%s\n",
 				text->index, pc, format_inst(inst).c_str(), args.c_str());
 			pc += pc_offset;
 		}
-		printf("\nSymbols\n\n");
+		printf("\n[ Symbols ]\n\n");
+		printf("%5s:%-18s %-18s %s\n",
+			"Sec", "Offset", "Address", "Symbol");
+		printf("%5s:%-18s %-18s %s\n",
+			"---", "------", "--------", "------");
 		for (auto &ent : as.labels_byoffset) {
 			auto &label = ent.second;
 			if (label->offset.first == 0) {
@@ -1554,7 +1565,11 @@ load_store:
 					label->name.c_str());
 			}
 		}
-		printf("\nRelocations\n\n");
+		printf("\n[ Relocations ]\n\n");
+		printf("%5s:%-18s %-18s %-20s %s\n",
+			"Sec", "Offset", "Address", "Relocation", "Symbol");
+		printf("%5s:%-18s %-18s %-20s %s\n",
+			"---", "------", "--------", "----------", "------");
 		for (auto &ent : as.relocs_byoffset) {
 			auto &reloc = ent.second;
 			printf("%5zx:0x%-16zx 0x%-16zx %-20s %s\n",
@@ -1571,9 +1586,7 @@ load_store:
 
 int main(int argc, const char* argv[])
 {
-	printf("\n");
-	printf("rv-asm-0.0.0-prealpha-0\n");
-	printf("\n");
+	printf("\nrv-asm-0.0.0-prealpha-0\n");
 	rv_assembler as;
 	as.parse_commandline(argc, argv);
 	as.assemble();
