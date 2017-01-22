@@ -137,8 +137,8 @@ flw        MOVSS
 fsw        MOVSS
 fmadd.s    VFMADD132SS
 fmsub.s    VFMSUB132SS
-fnmadd.s   VFMADD132SS, XORPS
-fnmsub.s   VFMSUB132SS, XORPS
+fnmadd.s   VFNMSUB132SS
+fnmsub.s   VFNMADD132SS
 fadd.s     ADDSS
 fsub.s     SUBSS
 fmul.s     MULSS
@@ -173,8 +173,8 @@ fld        MOVSD
 fsd        MOVSD
 fmadd.d    VFMADD132SD
 fmsub.d    VFMSUB132SD
-fnmadd.d   VFMADD132SD, XORPD
-fnmsub.d   VFMSUB132SD, XORPD
+fnmadd.d   VFNMSUB132SD
+fnmsub.d   VFNMADD132SD
 fadd.d     ADDSD
 fsub.d     SUBSD
 fmul.d     MULSD
