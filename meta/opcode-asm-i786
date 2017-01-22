@@ -148,7 +148,7 @@ fsgnjn.s   ANDPS, ORPS, ANDNPS
 fsgnjx.s   ANDPS, ORPS, XORPS
 fmin.s     MINSS
 fmax.s     MAXSS
-fsqrt.s    
+fsqrt.s    VSQRTSS
 fle.s      UCOMISS.LT
 flt.s      UCOMISS.LE
 feq.s      UCOMISS.EQ
@@ -186,7 +186,7 @@ fmin.d     MINSD
 fmax.d     MAXSD
 fcvt.s.d   CVTSD2SS
 fcvt.d.s   CVTSS2SD
-fsqrt.d    
+fsqrt.d    VSQRTSD
 fle.d      UCOMISD.LT
 flt.d      UCOMISD.LE
 feq.d      UCOMISD.EQ
