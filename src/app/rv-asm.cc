@@ -388,6 +388,7 @@ struct rv_assembler
 		directive_map[".dtpreldword"] = std::bind(&rv_assembler::handle_dtpreldword, this, _1);
 		directive_map[".option"] = std::bind(&rv_assembler::handle_option, this, _1);
 		directive_map[".zero"] = std::bind(&rv_assembler::handle_zero, this, _1);
+		directive_map[".skip"] = std::bind(&rv_assembler::handle_zero, this, _1);
 		directive_map[".cfi_startproc"] = std::bind(&rv_assembler::handle_none, this, _1);
 		directive_map[".cfi_endproc"] = std::bind(&rv_assembler::handle_none, this, _1);
 		directive_map[".cfi_offset"] = std::bind(&rv_assembler::handle_none, this, _1);
