@@ -539,7 +539,7 @@ void elf_file::copy_to_symbol_table_sections()
 	if (symtab == 0) return;
 
 	elf_section &symtab_section = sections[symtab];
-	shdrs[symtab].sh_info = symbols.size() - 1;
+	shdrs[symtab].sh_info = symbols.size();
 
 	switch (ei_class) {
 		case ELFCLASS32:
