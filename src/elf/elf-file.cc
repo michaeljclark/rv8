@@ -87,9 +87,9 @@ size_t elf_file::add_section(std::string name, Elf64_Word sh_type, Elf64_Xword s
 	shdrs.push_back(Elf64_Shdr{
 		.sh_name = 0,
 		.sh_type = sh_type,
-		.sh_flags = sh_flags,
-		.sh_addralign = sh_addralign
+		.sh_flags = sh_flags
 	});
+	shdrs.back().sh_addralign = sh_addralign;
 	return num;
 }
 
