@@ -42,7 +42,7 @@ void elf_file::clear()
 	name_symbol_map.clear();
 	shstrtab = symtab = strtab = 0;
 	sections.resize(0);
-	relocations.clear();
+	relocations.resize(0);
 }
 
 void elf_file::load(std::string filename, bool headers_only)
@@ -451,16 +451,16 @@ void elf_file::copy_from_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
+					rela = i;
 					size_t length = sections[i].buf.size();
 					Elf32_Rela *rela = (Elf32_Rela*)sections[i].buf.data();
 					Elf32_Rela *rela_end = (Elf32_Rela*)((uint8_t*)rela + length);
-					relocations[i] = std::vector<Elf64_Rela>();
-					auto &rela_vec = relocations[i];
+					relocations.clear();
 					while (rela < rela_end) {
 						elf_bswap_rela32(rela, ei_data, ELFENDIAN_HOST);
 						Elf64_Rela rela64;
 						elf_rela32_to_rela64(&rela64, rela);
-						rela_vec.push_back(rela64);
+						relocations.push_back(rela64);
 						rela++;
 					}
 				}
@@ -470,14 +470,14 @@ void elf_file::copy_from_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
+					rela = i;
 					size_t length = sections[i].buf.size();
 					Elf64_Rela *rela = (Elf64_Rela*)sections[i].buf.data();
 					Elf64_Rela *rela_end = (Elf64_Rela*)((uint8_t*)rela + length);
-					relocations[i] = std::vector<Elf64_Rela>();
-					auto &rela_vec = relocations[i];
+					relocations.clear();
 					while (rela < rela_end) {
 						elf_bswap_rela64(rela, ei_data, ELFENDIAN_HOST);
-						rela_vec.push_back(*rela);
+						relocations.push_back(*rela);
 						rela++;
 					}
 				}
@@ -493,11 +493,12 @@ void elf_file::copy_to_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
+					shdrs[i].sh_entsize = sizeof(Elf32_Rela);
 					shdrs[i].sh_size = sizeof(Elf32_Rela) * relocations.size();
 					sections[i].buf.resize(shdrs[i].sh_size);
 					Elf32_Rela *rela = (Elf32_Rela*)sections[i].buf.data();
-					for (size_t j = 0; j < relocations[i].size(); j++) {
-						elf_rela64_to_rela32(&rela[j], &relocations[i][j]);
+					for (size_t j = 0; j < relocations.size(); j++) {
+						elf_rela64_to_rela32(&rela[j], &relocations[j]);
 						elf_bswap_rela32(&rela[j], ei_data, ELFENDIAN_TARGET);
 					}
 				}
@@ -507,11 +508,12 @@ void elf_file::copy_to_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
+					shdrs[i].sh_entsize = sizeof(Elf64_Rela);
 					shdrs[i].sh_size = sizeof(Elf64_Rela) * relocations.size();
 					sections[i].buf.resize(shdrs[i].sh_size);
 					Elf64_Rela *rela = (Elf64_Rela*)sections[i].buf.data();
-					for (size_t j = 0; j < relocations[i].size(); j++) {
-						memcpy(&rela[j], &relocations[i][j], sizeof(Elf64_Rela));
+					for (size_t j = 0; j < relocations.size(); j++) {
+						memcpy(&rela[j], &relocations[j], sizeof(Elf64_Rela));
 						elf_bswap_rela64(&rela[j], ei_data, ELFENDIAN_TARGET);
 					}
 				}

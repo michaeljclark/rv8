@@ -27,12 +27,13 @@ struct elf_file
 	std::vector<Elf64_Phdr> phdrs;
 	std::vector<Elf64_Shdr> shdrs;
 	std::vector<Elf64_Sym> symbols;
-	std::map<size_t,std::vector<Elf64_Rela>> relocations;
+	std::vector<Elf64_Rela> relocations;
 	std::map<Elf64_Addr,size_t> addr_symbol_map;
 	std::map<const char*,size_t,cmp_str> name_symbol_map;
 	size_t shstrtab;
 	size_t symtab;
 	size_t strtab;
+	size_t rela;
 	std::vector<elf_section> sections;
 
 	elf_file();

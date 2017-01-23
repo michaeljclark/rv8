@@ -341,33 +341,31 @@ void elf_print_symbol_table(elf_file &elf, elf_symbol_colorize_fn colorize)
 
 void elf_print_relocations(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	for (size_t i = 0; i < elf.shdrs.size(); i++) {
-		Elf64_Shdr &shdr = elf.shdrs[i];
-		if (shdr.sh_type & SHT_RELA) {
-			printf("%sSection[%2lu] %-111s%s\n", colorize("title"), i, elf.shdr_name(i), colorize("reset"));
+	if (elf.rela == 0) return;
 
-			printf("\n%sReloc  %-18s %-20s %-30s %-18s%s\n",
-				colorize("title"),
-				"Offset", "Symbol", "Type", "Addend",
-				colorize("reset"));
-			size_t j = 0;
-			for (auto &rela : elf.relocations[i]) {
-				Elf64_Xword sym = ELF64_R_SYM(rela.r_info);
-				Elf64_Xword type = ELF64_R_TYPE(rela.r_info);
-				printf("%s[%4lu]%s %s0x%-16llx%s %-20s %-30s %s0x%-16llx%s\n",
-					colorize("legend"),
-					j++,
-					colorize("reset"),
-					colorize("address"),
-					rela.r_offset,
-					colorize("reset"),
-					elf.sym_name(sym),
-					elf_rela_type_name(type),
-					colorize("address"),
-					rela.r_addend,
-					colorize("reset"));
-			}
-			printf("\n");
-		}
+	printf("%sSection[%2lu] %-111s%s\n", colorize("title"),
+		elf.rela, elf.shdr_name(elf.rela), colorize("reset"));
+
+	printf("\n%sReloc  %-18s %-20s %-30s %-18s%s\n",
+		colorize("title"),
+		"Offset", "Symbol", "Type", "Addend",
+		colorize("reset"));
+	size_t j = 0;
+	for (auto &rela : elf.relocations) {
+		Elf64_Xword sym = ELF64_R_SYM(rela.r_info);
+		Elf64_Xword type = ELF64_R_TYPE(rela.r_info);
+		printf("%s[%4lu]%s %s0x%-16llx%s %-20s %-30s %s0x%-16llx%s\n",
+			colorize("legend"),
+			j++,
+			colorize("reset"),
+			colorize("address"),
+			rela.r_offset,
+			colorize("reset"),
+			elf.sym_name(sym),
+			elf_rela_type_name(type),
+			colorize("address"),
+			rela.r_addend,
+			colorize("reset"));
 	}
+	printf("\n");
 }
