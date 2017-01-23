@@ -47,7 +47,7 @@ struct elf_file
 
 	void clear();
 
-	void init_object();
+	void init_object(int ei_class);
 	size_t add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags,
 		Elf64_Xword sh_addralign);
 	size_t add_symbol(std::string name, Elf32_Word st_bind, Elf32_Word st_type,

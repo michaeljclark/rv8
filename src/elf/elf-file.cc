@@ -45,11 +45,11 @@ void elf_file::clear()
 	relocations.resize(0);
 }
 
-void elf_file::init_object()
+void elf_file::init_object(int ei_class)
 {
 	clear();
-	ei_class = ELFCLASS64;
-	ei_data = ELFDATA2LSB;
+	this->ei_class = ei_class;
+	this->ei_data = ELFDATA2LSB;
 	memset(&ehdr, 0, sizeof(ehdr));
 	ehdr.e_ident[EI_MAG0] = ELFMAG0;
 	ehdr.e_ident[EI_MAG1] = ELFMAG1;
@@ -72,9 +72,7 @@ void elf_file::init_object()
 	strtab =    add_section(".strtab",    SHT_STRTAB,   0,                         1);
 	shdrs[rela_text].sh_info = 1;
 	shdrs[rela_text].sh_link = symtab;
-	shdrs[rela_text].sh_entsize = sizeof(Elf64_Rela);
 	shdrs[symtab].sh_link = strtab;
-	shdrs[symtab].sh_entsize = sizeof(Elf64_Sym);
 	ehdr.e_shstrndx = shstrtab;
 	add_symbol("", STB_LOCAL, STT_NOTYPE, STV_DEFAULT, SHN_UNDEF, 0);
 }
@@ -541,6 +539,7 @@ void elf_file::copy_to_symbol_table_sections()
 
 	switch (ei_class) {
 		case ELFCLASS32:
+			shdrs[symtab].sh_entsize = sizeof(Elf32_Sym);
 			symtab_section.size = shdrs[symtab].sh_size = symbols.size() * sizeof(Elf32_Sym);
 			symtab_section.buf.resize(symtab_section.size);
 			for (size_t i = 0; i < symbols.size(); i++) {
@@ -548,6 +547,7 @@ void elf_file::copy_to_symbol_table_sections()
 			}
 			break;
 		case ELFCLASS64:
+			shdrs[symtab].sh_entsize = sizeof(Elf64_Sym);
 			symtab_section.size = shdrs[symtab].sh_size = symbols.size() * sizeof(Elf64_Sym);
 			symtab_section.buf.resize(symtab_section.size);
 			memcpy(symtab_section.buf.data(), &symbols[0], symtab_section.size);

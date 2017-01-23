@@ -1582,7 +1582,7 @@ load_store:
 		elf_file elf;
 
 		/* init object file */
-		elf.init_object();
+		elf.init_object(ELFCLASS64);
 
 		/* add section data */
 		auto text = as.get_section(".text");
