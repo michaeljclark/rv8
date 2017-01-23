@@ -195,7 +195,7 @@ void elf_file::load(std::string filename, bool headers_only)
 
 	if (headers_only) return;
 
-	// Find strtab and symtab
+	// Find shstrtab, strtab and symtab
 	for (size_t i = 0; i < shdrs.size(); i++) {
 		if (shstrtab == 0 && shdrs[i].sh_type == SHT_STRTAB && ehdr.e_shstrndx == i) {
 			shstrtab = i;
