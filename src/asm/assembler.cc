@@ -157,7 +157,7 @@ void assembler::add_inst(u64 inst)
 void assembler::load_imm_r(ireg5 rd, s64 val)
 {
 	if ((val & ~s64(0x7fffffff)) == 0 || (val & ~s64(0x7fffffff)) == ~s64(0x7fffffff)) {
-		add_inst(emit_lui(rd, s32(val >> 12)));
+		add_inst(emit_lui(rd, (val >> 12) << 12));
 		val -= (val >> 12) << 12;
 		if (val != 0) {
 			add_inst(emit_addi(rd, rd, bitextend(val, 12)));
