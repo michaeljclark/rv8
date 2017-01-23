@@ -75,6 +75,10 @@ void elf_file::init_object(int ei_class)
 	shdrs[symtab].sh_link = strtab;
 	ehdr.e_shstrndx = shstrtab;
 	add_symbol("", STB_LOCAL, STT_NOTYPE, STV_DEFAULT, SHN_UNDEF, 0);
+	add_symbol(".text", STB_LOCAL, STT_SECTION, STV_DEFAULT, text, 0);
+	add_symbol(".data", STB_LOCAL, STT_SECTION, STV_DEFAULT, data, 0);
+	add_symbol(".bss", STB_LOCAL, STT_SECTION, STV_DEFAULT, bss, 0);
+	add_symbol(".rodata", STB_LOCAL, STT_SECTION, STV_DEFAULT, rodata, 0);
 }
 
 size_t elf_file::add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags,
