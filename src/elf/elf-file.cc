@@ -61,15 +61,15 @@ void elf_file::init_object()
 	ehdr.e_type = ET_REL;
 	ehdr.e_machine = EM_RISCV;
 	ehdr.e_version = EV_CURRENT;
-	add_section("", SHT_NULL, 0);
-	text =      add_section(".text",      SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
-	rela_text = add_section(".rela.text", SHT_RELA,     SHF_INFO_LINK);
-	data =      add_section(".data",      SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
-	bss =       add_section(".bss",       SHT_NOBITS,   SHF_ALLOC | SHF_WRITE);
-	rodata =    add_section(".rodata",    SHT_PROGBITS, SHF_ALLOC);
-	shstrtab =  add_section(".shstrtab",  SHT_STRTAB,   0);
-	symtab =    add_section(".symtab",    SHT_SYMTAB,   0);
-	strtab =    add_section(".strtab",    SHT_STRTAB,   0);
+	add_section("", SHT_NULL, 0, 0);
+	text =      add_section(".text",      SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR, 4);
+	rela_text = add_section(".rela.text", SHT_RELA,     SHF_INFO_LINK,             8);
+	data =      add_section(".data",      SHT_PROGBITS, SHF_ALLOC | SHF_WRITE,     1);
+	bss =       add_section(".bss",       SHT_NOBITS,   SHF_ALLOC | SHF_WRITE,     1);
+	rodata =    add_section(".rodata",    SHT_PROGBITS, SHF_ALLOC,                 1);
+	shstrtab =  add_section(".shstrtab",  SHT_STRTAB,   0,                         1);
+	symtab =    add_section(".symtab",    SHT_SYMTAB,   0,                         8);
+	strtab =    add_section(".strtab",    SHT_STRTAB,   0,                         1);
 	shdrs[rela_text].sh_info = 1;
 	shdrs[rela_text].sh_link = symtab;
 	shdrs[rela_text].sh_entsize = sizeof(Elf64_Rela);
@@ -79,14 +79,16 @@ void elf_file::init_object()
 	add_symbol("", STB_LOCAL, STT_NOTYPE, STV_DEFAULT, SHN_UNDEF, 0);
 }
 
-size_t elf_file::add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags)
+size_t elf_file::add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags,
+	Elf64_Xword sh_addralign)
 {
 	size_t num = shdrs.size();
 	sections.push_back(elf_section{ .name = name });
 	shdrs.push_back(Elf64_Shdr{
 		.sh_name = 0,
 		.sh_type = sh_type,
-		.sh_flags = sh_flags
+		.sh_flags = sh_flags,
+		.sh_addralign = sh_addralign
 	});
 	return num;
 }

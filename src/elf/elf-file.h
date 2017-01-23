@@ -48,7 +48,8 @@ struct elf_file
 	void clear();
 
 	void init_object();
-	size_t add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags);
+	size_t add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags,
+		Elf64_Xword sh_addralign);
 	size_t add_symbol(std::string name, Elf32_Word st_bind, Elf32_Word st_type,
 		Elf64_Byte st_other, Elf64_Half st_shndx, Elf64_Addr st_value);
 	size_t add_reloc(Elf64_Addr r_offset, Elf64_Xword r_sym,
