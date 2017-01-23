@@ -243,7 +243,7 @@ label_ptr assembler::add_label(std::string label_name)
 
 label_ptr assembler::add_label(s64 num)
 {
-	size_t i = 0;
+	size_t i = 1;
 	for (;;) {
 		std::string num_label = ".L" + std::to_string(num) + std::to_string(i);
 		auto li = labels_byname.find(num_label);
