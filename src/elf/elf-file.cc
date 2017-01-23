@@ -636,10 +636,16 @@ void elf_file::recalculate_section_offsets()
 	uint64_t next_offset = 0;
 	switch (ei_class) {
 		case ELFCLASS32:
+			ehdr.e_ehsize = sizeof(Elf32_Ehdr);
+			ehdr.e_phentsize = sizeof(Elf32_Phdr);
+			ehdr.e_shentsize = sizeof(Elf32_Shdr);
 			ehdr.e_phoff = sizeof(Elf32_Ehdr);
 			next_offset = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf32_Phdr);
 			break;
 		case ELFCLASS64:
+			ehdr.e_ehsize = sizeof(Elf64_Ehdr);
+			ehdr.e_phentsize = sizeof(Elf64_Phdr);
+			ehdr.e_shentsize = sizeof(Elf64_Shdr);
 			ehdr.e_phoff = sizeof(Elf64_Ehdr);
 			next_offset = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf64_Phdr);
 			break;
