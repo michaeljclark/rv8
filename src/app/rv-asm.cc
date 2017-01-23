@@ -1553,10 +1553,10 @@ load_store:
 			"---", "------", "--------", "------");
 		for (auto &ent : as.labels_byoffset) {
 			auto &label = ent.second;
-			if (label->offset.first == 0) {
+			if (label->offset.first == SHN_ABS) {
 				printf("  ABS:0x%-16zx 0x%-16zx %s\n",
 					label->offset.second,
-					as.label_offset(label),
+					label->offset.second,
 					label->name.c_str());
 			} else {
 				printf("%5zx:0x%-16zx 0x%-16zx %s\n",
