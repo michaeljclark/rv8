@@ -45,6 +45,84 @@ void elf_file::clear()
 	relocations.resize(0);
 }
 
+void elf_file::init_object()
+{
+	clear();
+	ei_class = ELFCLASS64;
+	ei_data = ELFDATA2LSB;
+	memset(&ehdr, 0, sizeof(ehdr));
+	ehdr.e_ident[EI_MAG0] = ELFMAG0;
+	ehdr.e_ident[EI_MAG1] = ELFMAG1;
+	ehdr.e_ident[EI_MAG2] = ELFMAG2;
+	ehdr.e_ident[EI_MAG3] = ELFMAG3;
+	ehdr.e_ident[EI_CLASS] = ei_class;
+	ehdr.e_ident[EI_DATA] = ei_data;
+	ehdr.e_ident[EI_VERSION] = 1;
+	ehdr.e_type = ET_REL;
+	ehdr.e_machine = EM_RISCV;
+	ehdr.e_version = EV_CURRENT;
+	add_section("", SHT_NULL, 0);
+	text =      add_section(".text",      SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR);
+	rela_text = add_section(".rela.text", SHT_RELA,     SHF_INFO_LINK);
+	data =      add_section(".data",      SHT_PROGBITS, SHF_ALLOC | SHF_WRITE);
+	bss =       add_section(".bss",       SHT_NOBITS,   SHF_ALLOC | SHF_WRITE);
+	rodata =    add_section(".rodata",    SHT_PROGBITS, SHF_ALLOC);
+	shstrtab =  add_section(".shstrtab",  SHT_STRTAB,   0);
+	symtab =    add_section(".symtab",    SHT_SYMTAB,   0);
+	strtab =    add_section(".strtab",    SHT_STRTAB,   0);
+	shdrs[rela_text].sh_link = symtab;
+	shdrs[rela_text].sh_entsize = sizeof(Elf64_Rela);
+	shdrs[symtab].sh_link = strtab;
+	shdrs[symtab].sh_entsize = sizeof(Elf64_Sym);
+	ehdr.e_shstrndx = shstrtab;
+	add_symbol("", STB_LOCAL, STT_NOTYPE, STV_DEFAULT, SHN_UNDEF, 0);
+}
+
+size_t elf_file::add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags)
+{
+	size_t num = shdrs.size();
+	sections.push_back(elf_section{ .name = name });
+	shdrs.push_back(Elf64_Shdr{
+		.sh_name = 0,
+		.sh_type = sh_type,
+		.sh_flags = sh_flags
+	});
+	return num;
+}
+
+size_t elf_file::add_symbol(std::string name, Elf32_Word st_bind, Elf32_Word st_type,
+	Elf64_Byte st_other, Elf64_Half st_shndx, Elf64_Addr st_value)
+{
+	if (!symtab || !strtab) return 0;
+	Elf64_Word st_name = sections[strtab].buf.size();
+	std::copy(name.c_str(), name.c_str() + name.length(),
+		std::back_inserter(sections[strtab].buf));
+	sections[strtab].buf.push_back(0);
+	size_t i = symbols.size();
+	symbols.push_back(Elf64_Sym{
+		.st_name = st_name,
+		.st_info = ELF64_ST_INFO(st_bind, st_type),
+		.st_other = st_other,
+		.st_shndx = st_shndx,
+		.st_value = st_value
+	});
+	name_symbol_map[sym_name(i)] = i;
+	addr_symbol_map[i] = st_value;
+	return i;
+}
+
+size_t elf_file::add_reloc(Elf64_Addr r_offset, Elf64_Xword r_sym,
+	Elf64_Xword r_type, Elf64_Sxword r_addend)
+{
+	size_t i = relocations.size();
+	relocations.push_back(Elf64_Rela{
+		.r_offset = r_offset,
+		.r_info = ELF64_R_INFO(r_sym, r_type),
+		.r_addend = r_addend
+	});
+	return i;
+}
+
 void elf_file::load(std::string filename, bool headers_only)
 {
 	FILE *file;
@@ -250,6 +328,9 @@ void elf_file::load(std::string filename, bool headers_only)
 
 	// update relocation table
 	copy_from_relocation_table_sections();
+
+	// update section name list
+	copy_from_section_names();
 }
 
 void elf_file::save(std::string filename)
@@ -263,6 +344,9 @@ void elf_file::save(std::string filename)
 	if (!file) {
 		panic("error fopen: %s: %s", filename.c_str(), strerror(errno));
 	}
+
+	// update section name list
+	copy_to_section_names();
 
 	// update relocation table based on changes to relocations
 	copy_to_relocation_table_sections();
@@ -382,6 +466,29 @@ void elf_file::byteswap_symbol_table(ELFENDIAN endian)
 	}
 }
 
+void elf_file::copy_from_section_names()
+{
+	if (shstrtab == 0) return;
+
+	for (size_t i = 0; i < shdrs.size(); i++) {
+		sections[i].name = shdr_name(i);
+	}
+}
+
+void elf_file::copy_to_section_names()
+{
+	if (shstrtab == 0) return;
+
+	sections[shstrtab].buf.clear();
+	for (size_t i = 0; i < sections.size(); i++) {
+		std::string name = sections[i].name;
+		shdrs[i].sh_name = sections[shstrtab].buf.size();
+		std::copy(name.c_str(), name.c_str() + name.length(),
+			std::back_inserter(sections[shstrtab].buf));
+		sections[shstrtab].buf.push_back(0);
+	}
+}
+
 void elf_file::copy_from_symbol_table_sections()
 {
 	symbols.clear();
@@ -415,7 +522,7 @@ void elf_file::copy_from_symbol_table_sections()
 	for (size_t i = 0; i < symbols.size(); i++) {
 		auto &sym = symbols[i];
 		if (sym.st_value == 0) continue;
-		const char* name = (const char*)offset(shdrs[strtab].sh_offset + sym.st_name);
+		const char* name = sym_name(i);
 		if (!strlen(name)) continue;
 		name_symbol_map[name] = i;
 		addr_symbol_map[sym.st_value] = i;
@@ -451,7 +558,7 @@ void elf_file::copy_from_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
-					rela = i;
+					rela_text = i;
 					size_t length = sections[i].buf.size();
 					Elf32_Rela *rela = (Elf32_Rela*)sections[i].buf.data();
 					Elf32_Rela *rela_end = (Elf32_Rela*)((uint8_t*)rela + length);
@@ -470,7 +577,7 @@ void elf_file::copy_from_relocation_table_sections()
 			for (size_t i = 0; i < shdrs.size(); i++) {
 				Elf64_Shdr &shdr = shdrs[i];
 				if (shdr.sh_type & SHT_RELA) {
-					rela = i;
+					rela_text = i;
 					size_t length = sections[i].buf.size();
 					Elf64_Rela *rela = (Elf64_Rela*)sections[i].buf.data();
 					Elf64_Rela *rela_end = (Elf64_Rela*)((uint8_t*)rela + length);
@@ -488,37 +595,31 @@ void elf_file::copy_from_relocation_table_sections()
 
 void elf_file::copy_to_relocation_table_sections()
 {
+	if (rela_text == 0) return;
+
 	switch (ei_class) {
-		case ELFCLASS32:
-			for (size_t i = 0; i < shdrs.size(); i++) {
-				Elf64_Shdr &shdr = shdrs[i];
-				if (shdr.sh_type & SHT_RELA) {
-					shdrs[i].sh_entsize = sizeof(Elf32_Rela);
-					shdrs[i].sh_size = sizeof(Elf32_Rela) * relocations.size();
-					sections[i].buf.resize(shdrs[i].sh_size);
-					Elf32_Rela *rela = (Elf32_Rela*)sections[i].buf.data();
-					for (size_t j = 0; j < relocations.size(); j++) {
-						elf_rela64_to_rela32(&rela[j], &relocations[j]);
-						elf_bswap_rela32(&rela[j], ei_data, ELFENDIAN_TARGET);
-					}
-				}
+		case ELFCLASS32: {
+			shdrs[rela_text].sh_entsize = sizeof(Elf32_Rela);
+			shdrs[rela_text].sh_size = sizeof(Elf32_Rela) * relocations.size();
+			sections[rela_text].buf.resize(shdrs[rela_text].sh_size);
+			Elf32_Rela *rela = (Elf32_Rela*)sections[rela_text].buf.data();
+			for (size_t j = 0; j < relocations.size(); j++) {
+				elf_rela64_to_rela32(&rela[j], &relocations[j]);
+				elf_bswap_rela32(&rela[j], ei_data, ELFENDIAN_TARGET);
 			}
 			break;
-		case ELFCLASS64:
-			for (size_t i = 0; i < shdrs.size(); i++) {
-				Elf64_Shdr &shdr = shdrs[i];
-				if (shdr.sh_type & SHT_RELA) {
-					shdrs[i].sh_entsize = sizeof(Elf64_Rela);
-					shdrs[i].sh_size = sizeof(Elf64_Rela) * relocations.size();
-					sections[i].buf.resize(shdrs[i].sh_size);
-					Elf64_Rela *rela = (Elf64_Rela*)sections[i].buf.data();
-					for (size_t j = 0; j < relocations.size(); j++) {
-						memcpy(&rela[j], &relocations[j], sizeof(Elf64_Rela));
-						elf_bswap_rela64(&rela[j], ei_data, ELFENDIAN_TARGET);
-					}
-				}
+		}
+		case ELFCLASS64: {
+			shdrs[rela_text].sh_entsize = sizeof(Elf64_Rela);
+			shdrs[rela_text].sh_size = sizeof(Elf64_Rela) * relocations.size();
+			sections[rela_text].buf.resize(shdrs[rela_text].sh_size);
+			Elf64_Rela *rela = (Elf64_Rela*)sections[rela_text].buf.data();
+			for (size_t j = 0; j < relocations.size(); j++) {
+				memcpy(&rela[j], &relocations[j], sizeof(Elf64_Rela));
+				elf_bswap_rela64(&rela[j], ei_data, ELFENDIAN_TARGET);
 			}
 			break;
+		}
 	}
 }
 

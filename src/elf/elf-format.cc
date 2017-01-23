@@ -341,10 +341,10 @@ void elf_print_symbol_table(elf_file &elf, elf_symbol_colorize_fn colorize)
 
 void elf_print_relocations(elf_file &elf, elf_symbol_colorize_fn colorize)
 {
-	if (elf.rela == 0) return;
+	if (elf.rela_text == 0) return;
 
 	printf("%sSection[%2lu] %-111s%s\n", colorize("title"),
-		elf.rela, elf.shdr_name(elf.rela), colorize("reset"));
+		elf.rela_text, elf.shdr_name(elf.rela_text), colorize("reset"));
 
 	printf("\n%sReloc  %-18s %-20s %-30s %-18s%s\n",
 		colorize("title"),

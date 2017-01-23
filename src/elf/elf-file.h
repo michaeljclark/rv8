@@ -11,6 +11,7 @@ struct cmp_str {
 
 struct elf_section
 {
+	std::string name;
 	size_t offset;
 	size_t size;
 	std::vector<uint8_t> buf;
@@ -30,20 +31,35 @@ struct elf_file
 	std::vector<Elf64_Rela> relocations;
 	std::map<Elf64_Addr,size_t> addr_symbol_map;
 	std::map<const char*,size_t,cmp_str> name_symbol_map;
+	std::vector<elf_section> sections;
+
+	size_t text;
+	size_t rela_text;
+	size_t data;
+	size_t bss;
+	size_t rodata;
 	size_t shstrtab;
 	size_t symtab;
 	size_t strtab;
-	size_t rela;
-	std::vector<elf_section> sections;
 
 	elf_file();
 	elf_file(std::string filename);
 
 	void clear();
+
+	void init_object();
+	size_t add_section(std::string name, Elf64_Word sh_type, Elf64_Xword sh_flags);
+	size_t add_symbol(std::string name, Elf32_Word st_bind, Elf32_Word st_type,
+		Elf64_Byte st_other, Elf64_Half st_shndx, Elf64_Addr st_value);
+	size_t add_reloc(Elf64_Addr r_offset, Elf64_Xword r_sym,
+		Elf64_Xword r_type, Elf64_Sxword r_addend);
+
 	void load(std::string filename, bool headers_only = false);
 	void save(std::string filename);
 
 	void byteswap_symbol_table(ELFENDIAN endian);
+	void copy_from_section_names();
+	void copy_to_section_names();
 	void copy_from_relocation_table_sections();
 	void copy_to_relocation_table_sections();
 	void copy_from_symbol_table_sections();
