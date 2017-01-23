@@ -126,15 +126,15 @@ R_RISCV_PCREL_HI20, and R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S pairs are r
 
 The R_RISCV_PCREL_HI20 relocation associates a symbol with an AUIPC instruction where the high 20-bits are relocated to point to a symbol relative to the PC of the instruction.
 
-The AUIPC instruction and relocation is followed by an I-Type instruction (add immediate, load) and R_RISCV_PCREL_LO12_I relocation or S-Type instruction (store) and R_RISCV_PCREL_LO12_S relocation.
+The AUIPC instruction and its relocation are followed by an I-Type instruction (add immediate, load) and R_RISCV_PCREL_LO12_I relocation or an S-Type instruction (store) and R_RISCV_PCREL_LO12_S relocation.
 
-The R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S relocations contains a (typically private) local label symbol that points to the AUIPC instruction which has the R_RISCV_PCREL_HI20 relocation entry that then points to the actual symbol. The relocation takes three steps:
+The R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S relocations contains a (typically private) local label symbol that points to the AUIPC instruction with the R_RISCV_PCREL_HI20 relocation entry that then points to the target symbol. The relocation has three steps:
 
  - R_RISCV_PCREL_LO12_I relocation entry ⟶ label
  - label ⟶ labeled instruction R_RISCV_PCREL_HI20 reloc
  - labeled instruction R_RISCV_PCREL_HI20 reloc ⟶ symbol
 
-To get the symbol address to perform the calculation to fill the 12-bit immediate on the add, load or store instruction we have to find the R_RISCV_PCREL_HI20 relocation entry associated with the AUIPC instruction offset pointed to by the R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S symbol.
+To get the symbol address to perform the calculation to fill the 12-bit immediate on the add, load or store instruction the linker finds the R_RISCV_PCREL_HI20 relocation entry associated with the prior AUIPC instruction offset pointed to by the R_RISCV_PCREL_LO12_I or R_RISCV_PCREL_LO12_S symbol.
 
 ## Glossary
 
