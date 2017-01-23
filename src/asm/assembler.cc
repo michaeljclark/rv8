@@ -93,7 +93,7 @@ section_ptr assembler::get_section(std::string name)
 {
 	auto si = section_map.find(name);
 	if (si == section_map.end()) {
-		auto s = std::make_shared<section>(".text");
+		auto s = std::make_shared<section>(name);
 		s->index = sections.size();
 		section_map.insert(section_map.end(), std::pair<std::string,section_ptr>(name, s));
 		sections.push_back(s);
