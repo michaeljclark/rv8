@@ -43,6 +43,8 @@ struct elf_file
 	void save(std::string filename);
 
 	void byteswap_symbol_table(ELFENDIAN endian);
+	void copy_from_relocation_table_sections();
+	void copy_to_relocation_table_sections();
 	void copy_from_symbol_table_sections();
 	void copy_to_symbol_table_sections();
 	void recalculate_section_offsets();
