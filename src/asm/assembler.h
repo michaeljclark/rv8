@@ -33,6 +33,7 @@ namespace riscv {
 		std::string name;
 		section_offset offset;
 		s64 num;
+		int elf_sym;
 
 		label(std::string name, section_offset offset) :
 			name(name), offset(offset), num(0) {}

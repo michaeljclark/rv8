@@ -301,7 +301,7 @@ void read_source(std::vector<asm_line_ptr> &data, std::string filename)
 struct rv_assembler
 {
 	std::string input_filename;
-	std::string output_filename = "a.out";
+	std::string output_filename = "a.o";
 	bool help_or_error = false;
 	bool bail_on_errors = false;
 	bool debug = false;
@@ -1242,11 +1242,6 @@ load_store:
 		return true;
 	}
 
-	void write_elf(std::string filename)
-	{
-		/* TODO */
-	}
-
 	bool process_line(asm_line_ptr line)
 	{
 		if (debug) {
@@ -1551,7 +1546,7 @@ load_store:
 			"Sec", "Offset", "Address", "Symbol");
 		printf("%5s:%-18s %-18s %s\n",
 			"---", "------", "--------", "------");
-		for (auto &ent : as.labels_byoffset) {
+		for (auto &ent : as.labels_byname) {
 			auto &label = ent.second;
 			if (label->offset.first == SHN_ABS) {
 				printf("  ABS:0x%-16zx 0x%-16zx %s\n",
@@ -1580,6 +1575,62 @@ load_store:
 				elf_rela_type_name(reloc->rela_type),
 				reloc->name.c_str());
 		}
+	}
+
+	void write_elf(std::string filename)
+	{
+		elf_file elf;
+
+		/* init object file */
+		elf.init_object();
+
+		/* add section data */
+		auto text = as.get_section(".text");
+		if (text) {
+			std::copy(text->buf.begin(), text->buf.end(),
+				std::back_inserter(elf.sections[elf.text].buf));
+		}
+		auto data = as.get_section(".data");
+		if (data) {
+			std::copy(data->buf.begin(), data->buf.end(),
+				std::back_inserter(elf.sections[elf.data].buf));
+		}
+		auto rodata = as.get_section(".rodata");
+		if (rodata) {
+			std::copy(rodata->buf.begin(), rodata->buf.end(),
+				std::back_inserter(elf.sections[elf.rodata].buf));
+		}
+
+		/* add symbols */
+		for (auto &ent : as.labels_byname) {
+			auto &label = ent.second;
+			int st_bind = std::find(as.strong_exports.begin(), as.strong_exports.end(),
+				label->name) != as.strong_exports.end() ? STB_GLOBAL : STB_LOCAL;
+			if (label->offset.first == SHN_ABS) {
+				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
+					SHN_ABS, label->offset.second);
+			} else {
+				size_t section_num = 0;
+				std::string section_name = as.sections[label->offset.first]->name;
+				if (section_name == ".text") section_num = elf.text;
+				else if (section_name == ".data") section_num = elf.data;
+				else if (section_name == ".bss") section_num = elf.bss;
+				else if (section_name == ".rodata") section_num = elf.rodata;
+				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
+					section_num, as.label_offset(label));
+			}
+		}
+
+		/* add relocations */
+		for (auto &ent : as.relocs_byoffset) {
+			auto &reloc = ent.second;
+			auto sym_i = as.labels_byname.find(reloc->name);
+			if (sym_i == as.labels_byname.end()) continue;
+			elf.add_reloc(as.reloc_offset(reloc), sym_i->second->elf_sym, reloc->rela_type, 0);
+		}
+
+		/* save elf file */
+		elf.save(filename);
 	}
 };
 
