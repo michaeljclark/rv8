@@ -70,6 +70,7 @@ void elf_file::init_object()
 	shstrtab =  add_section(".shstrtab",  SHT_STRTAB,   0);
 	symtab =    add_section(".symtab",    SHT_SYMTAB,   0);
 	strtab =    add_section(".strtab",    SHT_STRTAB,   0);
+	shdrs[rela_text].sh_info = 1;
 	shdrs[rela_text].sh_link = symtab;
 	shdrs[rela_text].sh_entsize = sizeof(Elf64_Rela);
 	shdrs[symtab].sh_link = strtab;
@@ -534,6 +535,7 @@ void elf_file::copy_to_symbol_table_sections()
 	if (symtab == 0) return;
 
 	elf_section &symtab_section = sections[symtab];
+	shdrs[symtab].sh_info = symbols.size() - 1;
 
 	switch (ei_class) {
 		case ELFCLASS32:
