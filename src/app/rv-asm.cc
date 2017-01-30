@@ -701,8 +701,30 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 		std::string str =  line->args[1];
-		for (size_t i = 0; i < str.size(); i++) {
-			as.append(u8(str[i]));
+		bool lastWasBackslash = false;
+		for (char c: str) {
+			if (c == '\\') {
+				lastWasBackslash = true;
+			} else if (lastWasBackslash) {
+				switch (c) {
+					case '0':  as.append(u8('\0'));  break;
+					case 'a':  as.append(u8('\a'));  break;
+					case 'b':  as.append(u8('\b'));  break;
+					case 'f':  as.append(u8('\f'));  break;
+					case 'n':  as.append(u8('\n'));  break;
+					case 'r':  as.append(u8('\r'));  break;
+					case 't':  as.append(u8('\t'));  break;
+					case 'v':  as.append(u8('\v'));  break;
+					case '\\': as.append(u8('\\'));  break;
+					case '?':  as.append(u8('\?'));  break;
+					case '\'': as.append(u8('\''));  break;
+					case '"':  as.append(u8('"'));   break;
+					default  : as.append(u8(c));     break;
+				}
+				lastWasBackslash= false;
+			} else {
+				as.append(u8(c));
+			}
 		}
 		as.append(u8(0));
 		return true;
