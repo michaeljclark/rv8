@@ -1617,7 +1617,7 @@ load_store:
 				else if (section_name == ".bss") section_num = elf.bss;
 				else if (section_name == ".rodata") section_num = elf.rodata;
 				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
-					section_num, as.label_offset(label));
+					section_num, label->offset.second);
 			}
 		}
 
