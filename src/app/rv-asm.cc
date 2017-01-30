@@ -983,8 +983,6 @@ struct rv_assembler
 	bool handle_opcode(size_t op, asm_line_ptr &line)
 	{
 		decode dec;
-		inst_t inst;
-		size_t inst_len;
 
 		auto argv = line->split_args(",");
 
@@ -1201,12 +1199,7 @@ out:
 		encode_pseudo(dec);
 
 		/* encode instruction */
-		inst = encode_inst(dec);
-		inst_len = inst_length(inst);
-		switch (inst_len) {
-			case 2: as.append(u16(inst)); break;
-			case 4: as.append(u32(inst)); break;
-		}
+		as.add_inst(encode_inst(dec));
 
 		return true;
 
