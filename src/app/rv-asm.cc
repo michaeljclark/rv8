@@ -1669,7 +1669,6 @@ load_store:
 
 int main(int argc, const char* argv[])
 {
-	printf("\nrv-asm-0.0.0-prealpha-0\n");
 	rv_assembler as;
 	as.parse_commandline(argc, argv);
 	as.assemble();
