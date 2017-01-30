@@ -982,9 +982,13 @@ struct rv_assembler
 
 	bool handle_opcode(size_t op, asm_line_ptr &line)
 	{
+		decode dec;
+		inst_t inst;
+		size_t inst_len;
+
 		auto argv = line->split_args(",");
 
-		decode dec{};
+		memset(&dec, 0, sizeof(dec));
 		dec.op = op;
 		auto op_data = opcode_operand_data(op);
 		const char *fmt = rv_inst_format[op];
@@ -1197,7 +1201,12 @@ out:
 		encode_pseudo(dec);
 
 		/* encode instruction */
-		as.append(u32(encode_inst(dec)));
+		inst = encode_inst(dec);
+		inst_len = inst_length(inst);
+		switch (inst_len) {
+			case 2: as.append(u16(inst)); break;
+			case 4: as.append(u32(inst)); break;
+		}
 
 		return true;
 
