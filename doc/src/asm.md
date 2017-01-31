@@ -142,4 +142,8 @@ puts:
         addi a0, a0, 1
         j 1b
 3:      ret
+
+.section .rodata
+msg:
+	.string "Hello World\n"
 ```
