@@ -15,7 +15,14 @@ namespace riscv {
 	typedef std::shared_ptr<label> label_ptr;
 	typedef std::shared_ptr<reloc> reloc_ptr;
 
-	typedef std::pair<size_t,size_t> section_offset;
+	struct section_offset : std::pair<size_t,size_t>
+	{
+		section_offset(size_t section, size_t offset)
+			: std::pair<size_t,size_t>(section, offset) {}
+
+		inline size_t section() { return first; }
+		inline size_t offset() { return second; }
+	};
 
 	struct section
 	{

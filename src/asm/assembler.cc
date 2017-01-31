@@ -300,22 +300,22 @@ void assembler::p2align(size_t s)
 
 size_t assembler::label_offset(label_ptr label)
 {
-	return sections[label->offset.first]->offset + label->offset.second;
+	return sections[label->offset.section()]->offset + label->offset.offset();
 }
 
 u8* assembler::label_buffer(label_ptr label)
 {
-	return &sections[label->offset.first]->buf[label->offset.second];
+	return &sections[label->offset.section()]->buf[label->offset.offset()];
 }
 
 size_t assembler::reloc_offset(reloc_ptr reloc)
 {
-	return sections[reloc->offset.first]->offset + reloc->offset.second;
+	return sections[reloc->offset.section()]->offset + reloc->offset.offset();
 }
 
 u8* assembler::reloc_buffer(reloc_ptr reloc)
 {
-	return &sections[reloc->offset.first]->buf[reloc->offset.second];
+	return &sections[reloc->offset.section()]->buf[reloc->offset.offset()];
 }
 
 void assembler::reencode_inst(decode &dec, addr_t offset)
@@ -376,7 +376,7 @@ bool assembler::relocate(reloc_ptr reloc)
 			 * reloc entry, so we use the label to look up the previous relocation
 			 * entry and use that as the base address for the PC-relative offset
 			 */
-			auto ri = relocs_byoffset.find(section_offset(reloc->offset.first, label_off));
+			auto ri = relocs_byoffset.find(section_offset(reloc->offset.section(), label_off));
 			if (ri == relocs_byoffset.end()) {
 				return false;
 			}
