@@ -334,7 +334,8 @@ bool assembler::relocate(reloc_ptr reloc)
 	label_ptr label = lookup_label(reloc, reloc->name);
 	if (!label) return false;
 	reloc->name = label->name;
-	size_t label_off = label_offset(label);
+	size_t label_off = label->offset.section() == SHN_ABS ?
+		label->offset.offset() : label_offset(label);
 
 	/* decode instruction being relocated */
 	addr_t pc_offset;
