@@ -37,10 +37,10 @@ Directive    | Arguments                    | Description
 .balign      | b,[pad_val=0]                | byte align
 .zero        | integer                      | zero bytes
 
-Pseudo expansions
-----------------------
+Function expansions
+-------------------------
 
-The following table lists assembler pseudo expansions:
+The following table lists assembler function expansions:
 
 Assembler Notation       | Description                 | Instruction / Macro
 :----------------------  | :---------------            | :-------------------
@@ -170,8 +170,18 @@ as seen by objdump:
 Constants
 -------------------
 
-The following example shows the use of constants. The example
-writes a string using polled IO to a UART:
+The following example shows loading a constant using the %hi and
+%lo assembler functions.
+
+```
+.equ UART_BASE, 0x40003000
+
+        lui a0,      %hi(UART_BASE)
+        addi a0, a0, %lo(UART_BASE)
+```
+
+This example uses the `li` pseudo instruction to load a constant
+and writes a string using polled IO to a UART:
 
 ```
 .equ UART_BASE, 0x40003000
