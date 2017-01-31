@@ -3,9 +3,9 @@ Linux
 
 ## Dependencies
 
-- [riscv-tools](https://github.com/riscv/riscv-tools/)
-- [riscv-linux](https://github.com/riscv/riscv-linux/)
-- [riscv-pk](https://github.com/riscv/riscv-pk/)
+- [riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain/)
+- [riscv-linux](https://github.com/michaeljclark/riscv-linux/)
+- [bbl-lite](https://github.com/michaeljclark/bbl-lite/)
 - [riscv-meta](https://github.com/michaeljclark/riscv-meta/)
 
 
@@ -21,11 +21,11 @@ make -j4 && sudo make install
 
 ## Build RISC-V Linux
 
-Build busybox, bbl-lite and riscv-linux:
+Builds busybox, bbl-lite and riscv-linux:
 
 - [busybox](https://busybox.net/)
-- [riscv-linux](https://github.com/michaeljclark/riscv-linux.git/).
-- [bbl-lite](https://github.com/michaeljclark/bbl-lite.git).
+- [riscv-linux](https://github.com/michaeljclark/riscv-linux/)
+- [bbl-lite](https://github.com/michaeljclark/bbl-lite/)
 
 ```
 make linux
