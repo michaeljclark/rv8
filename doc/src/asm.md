@@ -115,28 +115,34 @@ msg:
 Load Immediate
 -------------------
 
-The following example shows the `li` psuedo instruction which is
-used to load immediate values:
+The following example shows the `li` psuedo instruction which
+is used to load immediate values:
 
 ```
-.equ UART_IIR, 0x40003002
+.section .text
+.globl _start
+_start:
 
-        li a0, UART_IIR
+.equ CONSTANT, 0xcafebabe
+
+        li a0, CONSTANT
 ```
 
-which generates the following assembly output:
+which generates the following assembler output as seen by objdump:
 
 ```
 0000000000000000 <_start>:
-   0:	40003537          	lui	a0,0x40003
-   4:	00250513          	addi	a0,a0,2 # 40003002 <UART_IIR>
+   0:	00032537          	lui	    a0,0x32
+   4:	bfb50513          	addi	a0,a0,-1029
+   8:	00e51513          	slli	a0,a0,0xe
+   c:	abe50513          	addi	a0,a0,-1346
 ```
 
 Load Address
 -------------------
 
-The following example shows the `la` psuedo instruction which is
-used to load symbol addresses:
+The following example shows the `la` psuedo instruction which
+is used to load symbol addresses:
 
 ```
 .section .text
@@ -150,7 +156,8 @@ msg:
 	    .string "Hello World\n"
 ```
 
-which generates the following assembler and relocations:
+which generates the following assembler output and relocations 
+as seen by objdump:
 
 ```
 0000000000000000 <_start>:
