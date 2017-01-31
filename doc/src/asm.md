@@ -93,6 +93,17 @@ msg:
 	    .string "Hello World\n"
 ```
 
+which generates the following assembler output and relocations
+as seen by objdump:
+
+```
+0000000000000000 <_start>:
+   0:	000005b7          	lui	a1,0x0
+			0: R_RISCV_HI20	msg
+   4:	00858593          	addi	a1,a1,8 # 8 <.L21>
+			4: R_RISCV_LO12_I	msg
+```
+
 Relative addressing
 --------------------------------
 
@@ -110,6 +121,17 @@ _start:
 .section .rodata
 msg:
 	    .string "Hello World\n"
+```
+
+which generates the following assembler output and relocations
+as seen by objdump:
+
+```
+0000000000000000 <_start>:
+   0:	00000597          	auipc	a1,0x0
+			0: R_RISCV_PCREL_HI20	msg
+   4:	00858593          	addi	a1,a1,8 # 8 <.L21>
+			4: R_RISCV_PCREL_LO12_I	.L11
 ```
 
 Load Immediate
@@ -156,7 +178,7 @@ msg:
 	    .string "Hello World\n"
 ```
 
-which generates the following assembler output and relocations 
+which generates the following assembler output and relocations
 as seen by objdump:
 
 ```
