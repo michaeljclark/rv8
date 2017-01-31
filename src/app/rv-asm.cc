@@ -1572,15 +1572,15 @@ load_store:
 			"---", "------", "--------", "------");
 		for (auto &ent : as.labels_byname) {
 			auto &label = ent.second;
-			if (label->offset.first == SHN_ABS) {
-				printf("  ABS:0x%-16zx 0x%-16zx %s\n",
-					label->offset.second,
-					label->offset.second,
+			if (label->offset.section() == SHN_ABS) {
+				printf("  ABS%19s 0x%-16zx %s\n",
+					"",
+					label->offset.offset(),
 					label->name.c_str());
 			} else {
 				printf("%5zx:0x%-16zx 0x%-16zx %s\n",
-					label->offset.first,
-					label->offset.second,
+					label->offset.section(),
+					label->offset.offset(),
 					as.label_offset(label),
 					label->name.c_str());
 			}
@@ -1593,8 +1593,8 @@ load_store:
 		for (auto &ent : as.relocs_byoffset) {
 			auto &reloc = ent.second;
 			printf("%5zx:0x%-16zx 0x%-16zx %-20s %s\n",
-				reloc->offset.first,
-				reloc->offset.second,
+				reloc->offset.section(),
+				reloc->offset.offset(),
 				as.reloc_offset(reloc),
 				elf_rela_type_name(reloc->rela_type),
 				reloc->name.c_str());
@@ -1630,18 +1630,18 @@ load_store:
 			auto &label = ent.second;
 			int st_bind = std::find(as.strong_exports.begin(), as.strong_exports.end(),
 				label->name) != as.strong_exports.end() ? STB_GLOBAL : STB_LOCAL;
-			if (label->offset.first == SHN_ABS) {
+			if (label->offset.section() == SHN_ABS) {
 				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
 					SHN_ABS, label->offset.second);
 			} else {
 				size_t section_num = 0;
-				std::string section_name = as.sections[label->offset.first]->name;
+				std::string section_name = as.sections[label->offset.section()]->name;
 				if (section_name == ".text") section_num = elf.text;
 				else if (section_name == ".data") section_num = elf.data;
 				else if (section_name == ".bss") section_num = elf.bss;
 				else if (section_name == ".rodata") section_num = elf.rodata;
 				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
-					section_num, label->offset.second);
+					section_num, label->offset.offset());
 			}
 		}
 
