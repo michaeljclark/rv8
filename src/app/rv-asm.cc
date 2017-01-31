@@ -1634,7 +1634,7 @@ load_store:
 				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
 					SHN_ABS, label->offset.second);
 			} else {
-				size_t section_num = 0;
+				size_t section_num = SHN_UNDEF;
 				std::string section_name = as.sections[label->offset.section()]->name;
 				if (section_name == ".text") section_num = elf.text;
 				else if (section_name == ".data") section_num = elf.data;
