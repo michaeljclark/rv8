@@ -12,7 +12,7 @@ Directive    | Arguments                    | Description
 :----------- | :-------------               | :---------------
 .align       | integer                      | align to power of 2 (alias for .p2align)
 .file        | "filename"                   | emit filename FILE LOCAL symbol table
-.globl       | symbol_name                  | emit symbol_name NOTYPE? GLOBAL to symbol table
+.globl       | symbol_name                  | emit symbol_name to GLOBAL to symbol table
 .ident       | "string"                     | ignore
 .section     | [{.text,.data,.rodata,.bss}] | emit section (if not present, default .text) and make current
 .size        | symbol, symbol               | ignore
@@ -44,44 +44,60 @@ The following table lists assembler pseudo expansions:
 
 Assembler Notation       | Description                 | Instruction / Macro
 :----------------------  | :---------------            | :-------------------
-%hi(symbol)              | Absolute                    | lui
-%lo(symbol)              | Absolute                    | load, store, add
-%pcrel_hi(symbol)        | PC-relative                 | auipc
-%pcrel_lo(label)         | PC-relative                 | load, store, add
+%hi(symbol)              | Absolute (HI20)             | lui
+%lo(symbol)              | Absolute (LO12)             | load, store, add
+%pcrel_hi(symbol)        | PC-relative (HI20)          | auipc
+%pcrel_lo(label)         | PC-relative (LO12)          | load, store, add
 %tls_ie_pcrel_hi(symbol) | TLS IE GOT "Initial Exec"   | la.tls.ie
 %tls_gd_pcrel_hi(symbol) | TLS GD GOT "Global Dynamic" | la.tls.gd
 %tprel_hi(symbol)        | TLS LE "Local Exec"         | auipc
 %tprel_lo(label)         | TLS LE "Local Exec"         | load, store, add
-%tprel_add(x)            | TLS LE "Local Exec"         | assembler expansion
+%tprel_add(offset)       | TLS LE "Local Exec"         | add
 %gprel(symbol)           | GP-relative                 | load, store, add
 
 Labels
 ------------
 
-text labels:
+Text labels are used as branch, unconditional jump targets and symbol offsets.
+Text labels are added to the symbol table of the compiled module.
 
 ```
-labels:
+loop:
+    j loop
 ```
 
-numeric labels for `1f`, `1b` type expressions:
+Numeric labels are used for local references. References to local labels are
+suffixed with 'f' for a forward reference or 'b' for a backwards reference.
 
 ```
 1:
+    j 1b
 ```
 
 Absolute addressing
 ------------------------
 
 ```
-	lui a1, %hi(msg)            # load msg(hi)
-	addi a1, a1, %lo(msg)       # load msg(lo)
+.section .text
+	lui a1,       %hi(msg)       # load msg(hi)
+	addi a1, a1,  %lo(msg)       # load msg(lo)
+	jalr ra, puts
+
+.section .rodata
+msg:
+	.string "Hello World"
 ```
 
-Relative addressing example
+Relative addressing
 --------------------------------
 
 ```
-1:	auipc a1, %pcrel_hi(msg)    # load msg(hi)
-	addi a1, a1, %pcrel_lo(1b)  # load msg(lo)
+.section .text
+1:	auipc a1,     %pcrel_hi(msg) # load msg(hi)
+	addi  a1, a1, %pcrel_lo(1b)  # load msg(lo)
+	jalr ra, puts
+
+.section .rodata
+msg:
+	.string "Hello World"
 ```
