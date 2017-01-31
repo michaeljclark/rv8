@@ -63,7 +63,7 @@ Text labels are added to the symbol table of the compiled module.
 
 ```
 loop:
-    j loop
+        j loop
 ```
 
 Numeric labels are used for local references. References to local labels are
@@ -71,7 +71,7 @@ suffixed with 'f' for a forward reference or 'b' for a backwards reference.
 
 ```
 1:
-    j 1b
+        j 1b
 ```
 
 Absolute addressing
@@ -90,7 +90,7 @@ _start:
 
 .section .rodata
 msg:
-	.string "Hello World\n"
+	    .string "Hello World\n"
 ```
 
 Relative addressing
@@ -109,7 +109,55 @@ _start:
 
 .section .rodata
 msg:
-	.string "Hello World\n"
+	    .string "Hello World\n"
+```
+
+Load Immediate
+-------------------
+
+The following example shows the `li` psuedo instruction which is
+used to load immediate values:
+
+```
+.equ UART_IIR, 0x40003002
+
+        li a0, UART_IIR
+```
+
+which generates the following assembly output:
+
+```
+0000000000000000 <_start>:
+   0:	40003537          	lui	a0,0x40003
+   4:	00250513          	addi	a0,a0,2 # 40003002 <UART_IIR>
+```
+
+Load Address
+-------------------
+
+The following example shows the `la` psuedo instruction which is
+used to load symbol addresses:
+
+```
+.section .text
+.globl _start
+_start:
+
+        la a0, msg
+
+.section .rodata
+msg:
+	    .string "Hello World\n"
+```
+
+which generates the following assembler and relocations:
+
+```
+0000000000000000 <_start>:
+   0:	00000517          	auipc	a0,0x0
+			0: R_RISCV_PCREL_HI20	msg
+   4:	00850513          	addi	a0,a0,8 # 8 <_start+0x8>
+			4: R_RISCV_PCREL_LO12_I	.L11
 ```
 
 Constants
@@ -148,5 +196,5 @@ puts:
 
 .section .rodata
 msg:
-	.string "Hello World\n"
+	    .string "Hello World\n"
 ```
