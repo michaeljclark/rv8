@@ -126,6 +126,9 @@ writes a string using polled IO to a UART:
 .equ IIR_TX_RDY, 2
 .equ IIR_RX_RDY, 4
 
+.section .text
+.globl _start
+_start:
 1:      auipc a0, %pcrel_hi(msg)    # load msg(hi)
         addi a0, a0, %pcrel_lo(1b)  # load msg(lo)
 2:      jal ra, puts
