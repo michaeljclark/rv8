@@ -37,7 +37,7 @@ make linux
 The following command starts the simulation:
 
 ```
-rv-sys build/bbl-lite/build/bbl
+rv-sys build/riscv64-unknown-elf/bin/bbl
 ```
 
 Example output:
