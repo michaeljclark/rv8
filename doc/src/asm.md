@@ -1,10 +1,10 @@
 Assembler
 ==============
 
-_work in progress_
+This document gives an overview of RISC-V assembly language.
 
-Directives
------------------
+Assembler Directives
+-------------------------
 
 The following table lists assembler directives:
 
