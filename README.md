@@ -67,6 +67,7 @@ The following table shows the RISC-V Meta tools:
 
 |Name    | Description
 |:------ | :-----------------
+|rv-asm  | Assembler
 |rv-meta | Code and documentation generator
 |rv-bin  | ELF dump, disassmble, compress and histogram
 |rv-sim  | ABI Proxy Simulator
