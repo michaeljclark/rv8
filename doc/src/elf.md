@@ -119,6 +119,15 @@ Enum | ELF Reloc Type       | Description                | Assembler           |
 46   | R_RISCV_RVC_LUI      | Absolute address           |                     | CI-Type (c.lui)
 47   | R_RISCV_GPREL_I      | GP-relative reference      | %gprel(symbol)      | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
 48   | R_RISCV_GPREL_S      | GP-relative reference      | %gprel(symbol)      | S-Type (sb,sh,sw,sd,fsw,fsd)
+49   | R_RISCV_TPREL_I      | TP-relative TLS LE load    |
+50   | R_RISCV_TPREL_S      | TP-relative TLS LE store   |
+51   | R_RISCV_RELAX        | Reloc pair can be relaxed  |
+52   | R_RISCV_SUB6         | Local label subtraction    |
+53   | R_RISCV_SET6         | Local label subtraction    |
+54   | R_RISCV_SET8         | Local label subtraction    |
+55   | R_RISCV_SET16        | Local label subtraction    |
+56   | R_RISCV_SET32        | Local label subtraction    |
+
 
 ### Position Independent Code
 

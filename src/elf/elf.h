@@ -579,6 +579,14 @@ enum {
 	R_RISCV_RVC_LUI = 46,            /* xx, 17:12 Absolute address                                   CI-Type (c.lui) */
 	R_RISCV_GPREL_I = 47,            /* 32, 11:0  PC-relative reference         %gprel(symbol)       I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)   */
 	R_RISCV_GPREL_S = 48             /* 32, 11:0  PC-relative reference         %gprel(symbol)       S-Type (sb,sh,sw,fsw,fsd) */
+	R_RISCV_TPREL_I = 49,            /* 32,       TP-relative TLS LE load */
+	R_RISCV_TPREL_S = 50,            /* 32,       TP-relative TLS LE store */
+	R_RISCV_RELAX = 51,              /*           Reloc pair can be relaxed */
+	R_RISCV_SUB6 = 52,               /*           Local label subtraction */
+	R_RISCV_SET6 = 53,               /*           Local label subtraction */
+	R_RISCV_SET8 = 54,               /*           Local label subtraction */
+	R_RISCV_SET16 = 55,              /*           Local label subtraction */
+	R_RISCV_SET32 = 56,              /*           Local label subtraction */
 };
 
 // RISC-V Ehdr e_flags
