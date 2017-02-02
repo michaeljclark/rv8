@@ -1,5 +1,5 @@
-Assembler
-==============
+RISC-V Assembler
+=========================
 
 This document gives an overview of RISC-V assembly language.
 
