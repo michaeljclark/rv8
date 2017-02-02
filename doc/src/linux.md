@@ -1,6 +1,12 @@
 Linux
 ==========
 
+This document outlines how to build busybox, bbl-lite and riscv-linux
+to run on the riscv-meta `rv-sys` system emulator. Note: The build
+scripts require that the `riscv64-unknown-elf` and `riscv64-linux-gnu`
+toolchains are installed and located in directory specified by the
+environment variable `RISCV`.
+
 ## Dependencies
 
 - [riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain/)
@@ -28,6 +34,7 @@ Builds busybox, bbl-lite and riscv-linux:
 - [bbl-lite](https://github.com/michaeljclark/bbl-lite/)
 
 ```
+cd riscv-meta
 make linux
 ```
 
