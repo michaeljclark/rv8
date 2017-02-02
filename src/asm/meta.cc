@@ -788,6 +788,92 @@ const rv_operand_data rv_operands_T_pred_T_succ[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_f128_frd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_f128_frs1_f128_frs2[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_f128_frs1_f128_frs2_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_f128_frs1_f128_frs2_f128_frs3_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs3, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_f32_frs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_f64_frs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f64, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_s32_rs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_s32, rv_type_ireg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_s64_rs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_s64, rv_type_ireg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_sx_rs1[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_sx_rs1_T_oimm12[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_oimm12, rv_operand_type_offset12, rv_primitive_none, rv_type_offset, 12 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_u32_rs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_u32, rv_type_ireg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f128_frd_u64_rs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_u64, rv_type_ireg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_f32_cfrd_T_cimmldsp[] = {
 	{ rv_operand_name_cfrd, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
 	{ rv_operand_name_cimmldsp, rv_operand_type_uimm9, rv_primitive_none, rv_type_uimm, 9 },
@@ -809,6 +895,13 @@ const rv_operand_data rv_operands_f32_cfrs2_T_cimmsdsp[] = {
 const rv_operand_data rv_operands_f32_cfrs2_T_cimmswsp[] = {
 	{ rv_operand_name_cfrs2, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
 	{ rv_operand_name_cimmswsp, rv_operand_type_uimm8, rv_primitive_none, rv_type_uimm, 8 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f32_frd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
@@ -887,6 +980,13 @@ const rv_operand_data rv_operands_f32_frd_u32_rs1_T_rm[] = {
 const rv_operand_data rv_operands_f32_frd_u64_rs1_T_rm[] = {
 	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
 	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_u64, rv_type_ireg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_f64_frd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_frd, rv_operand_type_freg5, rv_primitive_f64, rv_type_freg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
 	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
@@ -974,6 +1074,13 @@ const rv_operand_data rv_operands_none[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_s32_rd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_s32, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_s32_rd_f32_frs1_T_rm[] = {
 	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_s32, rv_type_ireg, 5 },
 	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
@@ -984,6 +1091,13 @@ const rv_operand_data rv_operands_s32_rd_f32_frs1_T_rm[] = {
 const rv_operand_data rv_operands_s32_rd_f64_frs1_T_rm[] = {
 	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_s32, rv_type_ireg, 5 },
 	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f64, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_s64_rd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_s64, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
 	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
@@ -1116,6 +1230,19 @@ const rv_operand_data rv_operands_sx_rd_T_zimm_T_csr12[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_sx_rd_f128_frs1[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_sx_rd_f128_frs1_f128_frs2[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_sx_rd_f32_frs1[] = {
 	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
 	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
@@ -1231,6 +1358,13 @@ const rv_operand_data rv_operands_sx_rs1_T_oimm20[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_sx_rs1_f128_frs2_T_simm12[] = {
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_simm12, rv_operand_type_offset12, rv_primitive_none, rv_type_offset, 12 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_sx_rs1_f32_frs2_T_simm12[] = {
 	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
 	{ rv_operand_name_frs2, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
@@ -1265,6 +1399,13 @@ const rv_operand_data rv_operands_sx_rs2_T_oimm20[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_u32_rd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_u32, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_u32_rd_f32_frs1_T_rm[] = {
 	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_u32, rv_type_ireg, 5 },
 	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f32, rv_type_freg, 5 },
@@ -1275,6 +1416,13 @@ const rv_operand_data rv_operands_u32_rd_f32_frs1_T_rm[] = {
 const rv_operand_data rv_operands_u32_rd_f64_frs1_T_rm[] = {
 	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_u32, rv_type_ireg, 5 },
 	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f64, rv_type_freg, 5 },
+	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
+const rv_operand_data rv_operands_u64_rd_f128_frs1_T_rm[] = {
+	{ rv_operand_name_rd, rv_operand_type_ireg5, rv_primitive_u64, rv_type_ireg, 5 },
+	{ rv_operand_name_frs1, rv_operand_type_freg5, rv_primitive_f128, rv_type_freg, 5 },
 	{ rv_operand_name_rm, rv_operand_type_arg3, rv_primitive_none, rv_type_arg, 3 },
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
@@ -1486,6 +1634,40 @@ const rv_codec rv_inst_codec[] = {
 	/*             fcvt.d.l */ rv_codec_r_m,
 	/*            fcvt.d.lu */ rv_codec_r_m,
 	/*              fmv.d.x */ rv_codec_r,
+	/*                  flq */ rv_codec_i,
+	/*                  fsq */ rv_codec_s,
+	/*              fmadd.q */ rv_codec_r4_m,
+	/*              fmsub.q */ rv_codec_r4_m,
+	/*             fnmsub.q */ rv_codec_r4_m,
+	/*             fnmadd.q */ rv_codec_r4_m,
+	/*               fadd.q */ rv_codec_r_m,
+	/*               fsub.q */ rv_codec_r_m,
+	/*               fmul.q */ rv_codec_r_m,
+	/*               fdiv.q */ rv_codec_r_m,
+	/*              fsgnj.q */ rv_codec_r,
+	/*             fsgnjn.q */ rv_codec_r,
+	/*             fsgnjx.q */ rv_codec_r,
+	/*               fmin.q */ rv_codec_r,
+	/*               fmax.q */ rv_codec_r,
+	/*             fcvt.s.q */ rv_codec_r_m,
+	/*             fcvt.q.s */ rv_codec_r_m,
+	/*             fcvt.d.q */ rv_codec_r_m,
+	/*             fcvt.q.d */ rv_codec_r_m,
+	/*              fsqrt.q */ rv_codec_r_m,
+	/*                fle.q */ rv_codec_r,
+	/*                flt.q */ rv_codec_r,
+	/*                feq.q */ rv_codec_r,
+	/*             fcvt.w.q */ rv_codec_r_m,
+	/*            fcvt.wu.q */ rv_codec_r_m,
+	/*             fcvt.q.w */ rv_codec_r_m,
+	/*            fcvt.q.wu */ rv_codec_r_m,
+	/*             fclass.q */ rv_codec_r,
+	/*             fcvt.l.q */ rv_codec_r_m,
+	/*            fcvt.lu.q */ rv_codec_r_m,
+	/*              fmv.x.q */ rv_codec_r,
+	/*             fcvt.q.l */ rv_codec_r_m,
+	/*            fcvt.q.lu */ rv_codec_r_m,
+	/*              fmv.q.x */ rv_codec_r,
 	/*           c.addi4spn */ rv_codec_ciw_4spn,
 	/*                c.fld */ rv_codec_cl_ld,
 	/*                 c.lw */ rv_codec_cl_lw,
@@ -1548,6 +1730,9 @@ const rv_codec rv_inst_codec[] = {
 	/*                fmv.d */ rv_codec_r,
 	/*               fabs.d */ rv_codec_r,
 	/*               fneg.d */ rv_codec_r,
+	/*                fmv.q */ rv_codec_r,
+	/*               fabs.q */ rv_codec_r,
+	/*               fneg.q */ rv_codec_r,
 	/*                 beqz */ rv_codec_sb,
 	/*                 bnez */ rv_codec_sb,
 	/*                 blez */ rv_codec_sb,
@@ -1766,6 +1951,40 @@ const char* rv_inst_format[] = {
 	/*             fcvt.d.l */ rv_fmt_rm_frd_rs1,
 	/*            fcvt.d.lu */ rv_fmt_rm_frd_rs1,
 	/*              fmv.d.x */ rv_fmt_frd_rs1,
+	/*                  flq */ rv_fmt_frd_offset_rs1,
+	/*                  fsq */ rv_fmt_frs2_offset_rs1,
+	/*              fmadd.q */ rv_fmt_rm_frd_frs1_frs2_frs3,
+	/*              fmsub.q */ rv_fmt_rm_frd_frs1_frs2_frs3,
+	/*             fnmsub.q */ rv_fmt_rm_frd_frs1_frs2_frs3,
+	/*             fnmadd.q */ rv_fmt_rm_frd_frs1_frs2_frs3,
+	/*               fadd.q */ rv_fmt_rm_frd_frs1_frs2,
+	/*               fsub.q */ rv_fmt_rm_frd_frs1_frs2,
+	/*               fmul.q */ rv_fmt_rm_frd_frs1_frs2,
+	/*               fdiv.q */ rv_fmt_rm_frd_frs1_frs2,
+	/*              fsgnj.q */ rv_fmt_frd_frs1_frs2,
+	/*             fsgnjn.q */ rv_fmt_frd_frs1_frs2,
+	/*             fsgnjx.q */ rv_fmt_frd_frs1_frs2,
+	/*               fmin.q */ rv_fmt_frd_frs1_frs2,
+	/*               fmax.q */ rv_fmt_frd_frs1_frs2,
+	/*             fcvt.s.q */ rv_fmt_rm_frd_frs1,
+	/*             fcvt.q.s */ rv_fmt_rm_frd_frs1,
+	/*             fcvt.d.q */ rv_fmt_rm_frd_frs1,
+	/*             fcvt.q.d */ rv_fmt_rm_frd_frs1,
+	/*              fsqrt.q */ rv_fmt_rm_frd_frs1,
+	/*                fle.q */ rv_fmt_rd_frs1_frs2,
+	/*                flt.q */ rv_fmt_rd_frs1_frs2,
+	/*                feq.q */ rv_fmt_rd_frs1_frs2,
+	/*             fcvt.w.q */ rv_fmt_rm_rd_frs1,
+	/*            fcvt.wu.q */ rv_fmt_rm_rd_frs1,
+	/*             fcvt.q.w */ rv_fmt_rm_frd_rs1,
+	/*            fcvt.q.wu */ rv_fmt_rm_frd_rs1,
+	/*             fclass.q */ rv_fmt_rd_frs1,
+	/*             fcvt.l.q */ rv_fmt_rm_rd_frs1,
+	/*            fcvt.lu.q */ rv_fmt_rm_rd_frs1,
+	/*              fmv.x.q */ rv_fmt_rd_frs1,
+	/*             fcvt.q.l */ rv_fmt_rm_frd_rs1,
+	/*            fcvt.q.lu */ rv_fmt_rm_frd_rs1,
+	/*              fmv.q.x */ rv_fmt_frd_rs1,
 	/*           c.addi4spn */ rv_fmt_rd_rs1_imm,
 	/*                c.fld */ rv_fmt_frd_offset_rs1,
 	/*                 c.lw */ rv_fmt_rd_offset_rs1,
@@ -1828,6 +2047,9 @@ const char* rv_inst_format[] = {
 	/*                fmv.d */ rv_fmt_rd_rs1,
 	/*               fabs.d */ rv_fmt_rd_rs1,
 	/*               fneg.d */ rv_fmt_rd_rs1,
+	/*                fmv.q */ rv_fmt_rd_rs1,
+	/*               fabs.q */ rv_fmt_rd_rs1,
+	/*               fneg.q */ rv_fmt_rd_rs1,
 	/*                 beqz */ rv_fmt_rs1_offset,
 	/*                 bnez */ rv_fmt_rs1_offset,
 	/*                 blez */ rv_fmt_rs2_offset,
@@ -2046,6 +2268,40 @@ const rv_operand_data* rv_inst_operand_data[] = {
 	/*             fcvt.d.l */ rv_operands_f64_frd_s64_rs1_T_rm,
 	/*            fcvt.d.lu */ rv_operands_f64_frd_u64_rs1_T_rm,
 	/*              fmv.d.x */ rv_operands_f64_frd_sx_rs1,
+	/*                  flq */ rv_operands_f128_frd_sx_rs1_T_oimm12,
+	/*                  fsq */ rv_operands_sx_rs1_f128_frs2_T_simm12,
+	/*              fmadd.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_f128_frs3_T_rm,
+	/*              fmsub.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_f128_frs3_T_rm,
+	/*             fnmsub.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_f128_frs3_T_rm,
+	/*             fnmadd.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_f128_frs3_T_rm,
+	/*               fadd.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_T_rm,
+	/*               fsub.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_T_rm,
+	/*               fmul.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_T_rm,
+	/*               fdiv.q */ rv_operands_f128_frd_f128_frs1_f128_frs2_T_rm,
+	/*              fsgnj.q */ rv_operands_f128_frd_f128_frs1_f128_frs2,
+	/*             fsgnjn.q */ rv_operands_f128_frd_f128_frs1_f128_frs2,
+	/*             fsgnjx.q */ rv_operands_f128_frd_f128_frs1_f128_frs2,
+	/*               fmin.q */ rv_operands_f128_frd_f128_frs1_f128_frs2,
+	/*               fmax.q */ rv_operands_f128_frd_f128_frs1_f128_frs2,
+	/*             fcvt.s.q */ rv_operands_f32_frd_f128_frs1_T_rm,
+	/*             fcvt.q.s */ rv_operands_f128_frd_f32_frs1_T_rm,
+	/*             fcvt.d.q */ rv_operands_f64_frd_f128_frs1_T_rm,
+	/*             fcvt.q.d */ rv_operands_f128_frd_f64_frs1_T_rm,
+	/*              fsqrt.q */ rv_operands_f128_frd_f128_frs1_T_rm,
+	/*                fle.q */ rv_operands_sx_rd_f128_frs1_f128_frs2,
+	/*                flt.q */ rv_operands_sx_rd_f128_frs1_f128_frs2,
+	/*                feq.q */ rv_operands_sx_rd_f128_frs1_f128_frs2,
+	/*             fcvt.w.q */ rv_operands_s32_rd_f128_frs1_T_rm,
+	/*            fcvt.wu.q */ rv_operands_u32_rd_f128_frs1_T_rm,
+	/*             fcvt.q.w */ rv_operands_f128_frd_s32_rs1_T_rm,
+	/*            fcvt.q.wu */ rv_operands_f128_frd_u32_rs1_T_rm,
+	/*             fclass.q */ rv_operands_sx_rd_f128_frs1,
+	/*             fcvt.l.q */ rv_operands_s64_rd_f128_frs1_T_rm,
+	/*            fcvt.lu.q */ rv_operands_u64_rd_f128_frs1_T_rm,
+	/*              fmv.x.q */ rv_operands_sx_rd_f128_frs1,
+	/*             fcvt.q.l */ rv_operands_f128_frd_s64_rs1_T_rm,
+	/*            fcvt.q.lu */ rv_operands_f128_frd_u64_rs1_T_rm,
+	/*              fmv.q.x */ rv_operands_f128_frd_sx_rs1,
 	/*           c.addi4spn */ rv_operands_T_crdq_T_cimm4spn,
 	/*                c.fld */ rv_operands_T_cfrdq_T_crs1q_T_cimmd,
 	/*                 c.lw */ rv_operands_T_crdq_T_crs1q_T_cimmw,
@@ -2108,6 +2364,9 @@ const rv_operand_data* rv_inst_operand_data[] = {
 	/*                fmv.d */ rv_operands_sx_rd_sx_rs1,
 	/*               fabs.d */ rv_operands_sx_rd_sx_rs1,
 	/*               fneg.d */ rv_operands_sx_rd_sx_rs1,
+	/*                fmv.q */ rv_operands_sx_rd_sx_rs1,
+	/*               fabs.q */ rv_operands_sx_rd_sx_rs1,
+	/*               fneg.q */ rv_operands_sx_rd_sx_rs1,
 	/*                 beqz */ rv_operands_sx_rs1_T_oimm20,
 	/*                 bnez */ rv_operands_sx_rs1_T_oimm20,
 	/*                 blez */ rv_operands_sx_rs2_T_oimm20,
@@ -2326,6 +2585,40 @@ const riscv::inst_t rv_inst_match[] = {
 	/*             fcvt.d.l */ 0x00000000d2200053,
 	/*            fcvt.d.lu */ 0x00000000d2300053,
 	/*              fmv.d.x */ 0x00000000f2000053,
+	/*                  flq */ 0x0000000000004007,
+	/*                  fsq */ 0x0000000000004027,
+	/*              fmadd.q */ 0x0000000006000043,
+	/*              fmsub.q */ 0x0000000006000047,
+	/*             fnmsub.q */ 0x000000000600004b,
+	/*             fnmadd.q */ 0x000000000600004f,
+	/*               fadd.q */ 0x0000000006000053,
+	/*               fsub.q */ 0x000000000e000053,
+	/*               fmul.q */ 0x0000000016000053,
+	/*               fdiv.q */ 0x000000001e000053,
+	/*              fsgnj.q */ 0x0000000026000053,
+	/*             fsgnjn.q */ 0x0000000026001053,
+	/*             fsgnjx.q */ 0x0000000026002053,
+	/*               fmin.q */ 0x000000002e000053,
+	/*               fmax.q */ 0x000000002e001053,
+	/*             fcvt.s.q */ 0x0000000040300053,
+	/*             fcvt.q.s */ 0x0000000046000053,
+	/*             fcvt.d.q */ 0x0000000042300053,
+	/*             fcvt.q.d */ 0x0000000046100053,
+	/*              fsqrt.q */ 0x000000005e000053,
+	/*                fle.q */ 0x00000000a6000053,
+	/*                flt.q */ 0x00000000a6001053,
+	/*                feq.q */ 0x00000000a6002053,
+	/*             fcvt.w.q */ 0x00000000c6000053,
+	/*            fcvt.wu.q */ 0x00000000c6100053,
+	/*             fcvt.q.w */ 0x00000000d6000053,
+	/*            fcvt.q.wu */ 0x00000000d6100053,
+	/*             fclass.q */ 0x00000000e6001053,
+	/*             fcvt.l.q */ 0x00000000c6200053,
+	/*            fcvt.lu.q */ 0x00000000c6300053,
+	/*              fmv.x.q */ 0x00000000e6000053,
+	/*             fcvt.q.l */ 0x00000000d6200053,
+	/*            fcvt.q.lu */ 0x00000000d6300053,
+	/*              fmv.q.x */ 0x00000000f6000053,
 	/*           c.addi4spn */ 0x0000000000000000,
 	/*                c.fld */ 0x0000000000002000,
 	/*                 c.lw */ 0x0000000000004000,
@@ -2388,6 +2681,9 @@ const riscv::inst_t rv_inst_match[] = {
 	/*                fmv.d */ 0x0000000000000000,
 	/*               fabs.d */ 0x0000000000000000,
 	/*               fneg.d */ 0x0000000000000000,
+	/*                fmv.q */ 0x0000000000000000,
+	/*               fabs.q */ 0x0000000000000000,
+	/*               fneg.q */ 0x0000000000000000,
 	/*                 beqz */ 0x0000000000000000,
 	/*                 bnez */ 0x0000000000000000,
 	/*                 blez */ 0x0000000000000000,
@@ -2606,6 +2902,40 @@ const riscv::inst_t rv_inst_mask[] = {
 	/*             fcvt.d.l */ 0x00000000fff0007f,
 	/*            fcvt.d.lu */ 0x00000000fff0007f,
 	/*              fmv.d.x */ 0x00000000fff0707f,
+	/*                  flq */ 0x000000000000707f,
+	/*                  fsq */ 0x000000000000707f,
+	/*              fmadd.q */ 0x000000000600007f,
+	/*              fmsub.q */ 0x000000000600007f,
+	/*             fnmsub.q */ 0x000000000600007f,
+	/*             fnmadd.q */ 0x000000000600007f,
+	/*               fadd.q */ 0x00000000fe00007f,
+	/*               fsub.q */ 0x00000000fe00007f,
+	/*               fmul.q */ 0x00000000fe00007f,
+	/*               fdiv.q */ 0x00000000fe00007f,
+	/*              fsgnj.q */ 0x00000000fe00707f,
+	/*             fsgnjn.q */ 0x00000000fe00707f,
+	/*             fsgnjx.q */ 0x00000000fe00707f,
+	/*               fmin.q */ 0x00000000fe00707f,
+	/*               fmax.q */ 0x00000000fe00707f,
+	/*             fcvt.s.q */ 0x00000000fff0007f,
+	/*             fcvt.q.s */ 0x00000000fff0007f,
+	/*             fcvt.d.q */ 0x00000000fff0007f,
+	/*             fcvt.q.d */ 0x00000000fff0007f,
+	/*              fsqrt.q */ 0x00000000fff0007f,
+	/*                fle.q */ 0x00000000fe00707f,
+	/*                flt.q */ 0x00000000fe00707f,
+	/*                feq.q */ 0x00000000fe00707f,
+	/*             fcvt.w.q */ 0x00000000fff0007f,
+	/*            fcvt.wu.q */ 0x00000000fff0007f,
+	/*             fcvt.q.w */ 0x00000000fff0007f,
+	/*            fcvt.q.wu */ 0x00000000fff0007f,
+	/*             fclass.q */ 0x00000000fff0707f,
+	/*             fcvt.l.q */ 0x00000000fff0007f,
+	/*            fcvt.lu.q */ 0x00000000fff0007f,
+	/*              fmv.x.q */ 0x00000000fff0707f,
+	/*             fcvt.q.l */ 0x00000000fff0007f,
+	/*            fcvt.q.lu */ 0x00000000fff0007f,
+	/*              fmv.q.x */ 0x00000000fff0707f,
 	/*           c.addi4spn */ 0x000000000000e003,
 	/*                c.fld */ 0x000000000000e003,
 	/*                 c.lw */ 0x000000000000e003,
@@ -2668,6 +2998,9 @@ const riscv::inst_t rv_inst_mask[] = {
 	/*                fmv.d */ 0x0000000000000000,
 	/*               fabs.d */ 0x0000000000000000,
 	/*               fneg.d */ 0x0000000000000000,
+	/*                fmv.q */ 0x0000000000000000,
+	/*               fabs.q */ 0x0000000000000000,
+	/*               fneg.q */ 0x0000000000000000,
 	/*                 beqz */ 0x0000000000000000,
 	/*                 bnez */ 0x0000000000000000,
 	/*                 blez */ 0x0000000000000000,
@@ -2782,6 +3115,21 @@ const rvc_constraint rvcc_fabs_d[] = {
 };
 
 const rvc_constraint rvcc_fneg_d[] = {
+	rvc_rs2_eq_rs1,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fmv_q[] = {
+	rvc_rs2_eq_rs1,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fabs_q[] = {
+	rvc_rs2_eq_rs1,
+	rvc_end
+};
+
+const rvc_constraint rvcc_fneg_q[] = {
 	rvc_rs2_eq_rs1,
 	rvc_end
 };
@@ -3046,6 +3394,21 @@ const rv_comp_data rvcp_fsgnjx_d[] = {
 	{ rv_op_illegal, nullptr }
 };
 
+const rv_comp_data rvcp_fsgnj_q[] = {
+	{ rv_op_fmv_q, rvcc_fmv_q },
+	{ rv_op_illegal, nullptr }
+};
+
+const rv_comp_data rvcp_fsgnjn_q[] = {
+	{ rv_op_fneg_q, rvcc_fneg_q },
+	{ rv_op_illegal, nullptr }
+};
+
+const rv_comp_data rvcp_fsgnjx_q[] = {
+	{ rv_op_fabs_q, rvcc_fabs_q },
+	{ rv_op_illegal, nullptr }
+};
+
 
 const rv_comp_data* rv_inst_pseudo[] = {
 	/*              unknown */ nullptr,
@@ -3240,6 +3603,40 @@ const rv_comp_data* rv_inst_pseudo[] = {
 	/*             fcvt.d.l */ nullptr,
 	/*            fcvt.d.lu */ nullptr,
 	/*              fmv.d.x */ nullptr,
+	/*                  flq */ nullptr,
+	/*                  fsq */ nullptr,
+	/*              fmadd.q */ nullptr,
+	/*              fmsub.q */ nullptr,
+	/*             fnmsub.q */ nullptr,
+	/*             fnmadd.q */ nullptr,
+	/*               fadd.q */ nullptr,
+	/*               fsub.q */ nullptr,
+	/*               fmul.q */ nullptr,
+	/*               fdiv.q */ nullptr,
+	/*              fsgnj.q */ rvcp_fsgnj_q,
+	/*             fsgnjn.q */ rvcp_fsgnjn_q,
+	/*             fsgnjx.q */ rvcp_fsgnjx_q,
+	/*               fmin.q */ nullptr,
+	/*               fmax.q */ nullptr,
+	/*             fcvt.s.q */ nullptr,
+	/*             fcvt.q.s */ nullptr,
+	/*             fcvt.d.q */ nullptr,
+	/*             fcvt.q.d */ nullptr,
+	/*              fsqrt.q */ nullptr,
+	/*                fle.q */ nullptr,
+	/*                flt.q */ nullptr,
+	/*                feq.q */ nullptr,
+	/*             fcvt.w.q */ nullptr,
+	/*            fcvt.wu.q */ nullptr,
+	/*             fcvt.q.w */ nullptr,
+	/*            fcvt.q.wu */ nullptr,
+	/*             fclass.q */ nullptr,
+	/*             fcvt.l.q */ nullptr,
+	/*            fcvt.lu.q */ nullptr,
+	/*              fmv.x.q */ nullptr,
+	/*             fcvt.q.l */ nullptr,
+	/*            fcvt.q.lu */ nullptr,
+	/*              fmv.q.x */ nullptr,
 	/*           c.addi4spn */ nullptr,
 	/*                c.fld */ nullptr,
 	/*                 c.lw */ nullptr,
@@ -3302,6 +3699,9 @@ const rv_comp_data* rv_inst_pseudo[] = {
 	/*                fmv.d */ nullptr,
 	/*               fabs.d */ nullptr,
 	/*               fneg.d */ nullptr,
+	/*                fmv.q */ nullptr,
+	/*               fabs.q */ nullptr,
+	/*               fneg.q */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
@@ -3520,6 +3920,40 @@ const rv_comp_data rv_inst_depseudo[] = {
 	/*             fcvt.d.l */ { rv_op_illegal, nullptr },
 	/*            fcvt.d.lu */ { rv_op_illegal, nullptr },
 	/*              fmv.d.x */ { rv_op_illegal, nullptr },
+	/*                  flq */ { rv_op_illegal, nullptr },
+	/*                  fsq */ { rv_op_illegal, nullptr },
+	/*              fmadd.q */ { rv_op_illegal, nullptr },
+	/*              fmsub.q */ { rv_op_illegal, nullptr },
+	/*             fnmsub.q */ { rv_op_illegal, nullptr },
+	/*             fnmadd.q */ { rv_op_illegal, nullptr },
+	/*               fadd.q */ { rv_op_illegal, nullptr },
+	/*               fsub.q */ { rv_op_illegal, nullptr },
+	/*               fmul.q */ { rv_op_illegal, nullptr },
+	/*               fdiv.q */ { rv_op_illegal, nullptr },
+	/*              fsgnj.q */ { rv_op_illegal, nullptr },
+	/*             fsgnjn.q */ { rv_op_illegal, nullptr },
+	/*             fsgnjx.q */ { rv_op_illegal, nullptr },
+	/*               fmin.q */ { rv_op_illegal, nullptr },
+	/*               fmax.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.s.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.q.s */ { rv_op_illegal, nullptr },
+	/*             fcvt.d.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.q.d */ { rv_op_illegal, nullptr },
+	/*              fsqrt.q */ { rv_op_illegal, nullptr },
+	/*                fle.q */ { rv_op_illegal, nullptr },
+	/*                flt.q */ { rv_op_illegal, nullptr },
+	/*                feq.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.w.q */ { rv_op_illegal, nullptr },
+	/*            fcvt.wu.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.q.w */ { rv_op_illegal, nullptr },
+	/*            fcvt.q.wu */ { rv_op_illegal, nullptr },
+	/*             fclass.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.l.q */ { rv_op_illegal, nullptr },
+	/*            fcvt.lu.q */ { rv_op_illegal, nullptr },
+	/*              fmv.x.q */ { rv_op_illegal, nullptr },
+	/*             fcvt.q.l */ { rv_op_illegal, nullptr },
+	/*            fcvt.q.lu */ { rv_op_illegal, nullptr },
+	/*              fmv.q.x */ { rv_op_illegal, nullptr },
 	/*           c.addi4spn */ { rv_op_illegal, nullptr },
 	/*                c.fld */ { rv_op_illegal, nullptr },
 	/*                 c.lw */ { rv_op_illegal, nullptr },
@@ -3582,6 +4016,9 @@ const rv_comp_data rv_inst_depseudo[] = {
 	/*                fmv.d */ { rv_op_fsgnj_d, rvcc_fmv_d },
 	/*               fabs.d */ { rv_op_fsgnjx_d, rvcc_fabs_d },
 	/*               fneg.d */ { rv_op_fsgnjn_d, rvcc_fneg_d },
+	/*                fmv.q */ { rv_op_fsgnj_q, rvcc_fmv_q },
+	/*               fabs.q */ { rv_op_fsgnjx_q, rvcc_fabs_q },
+	/*               fneg.q */ { rv_op_fsgnjn_q, rvcc_fneg_q },
 	/*                 beqz */ { rv_op_beq, rvcc_beqz },
 	/*                 bnez */ { rv_op_bne, rvcc_bnez },
 	/*                 blez */ { rv_op_bge, rvcc_blez },
@@ -3800,6 +4237,40 @@ const rv_comp_data* rv_inst_comp_rv32[] = {
 	/*             fcvt.d.l */ nullptr,
 	/*            fcvt.d.lu */ nullptr,
 	/*              fmv.d.x */ nullptr,
+	/*                  flq */ nullptr,
+	/*                  fsq */ nullptr,
+	/*              fmadd.q */ nullptr,
+	/*              fmsub.q */ nullptr,
+	/*             fnmsub.q */ nullptr,
+	/*             fnmadd.q */ nullptr,
+	/*               fadd.q */ nullptr,
+	/*               fsub.q */ nullptr,
+	/*               fmul.q */ nullptr,
+	/*               fdiv.q */ nullptr,
+	/*              fsgnj.q */ nullptr,
+	/*             fsgnjn.q */ nullptr,
+	/*             fsgnjx.q */ nullptr,
+	/*               fmin.q */ nullptr,
+	/*               fmax.q */ nullptr,
+	/*             fcvt.s.q */ nullptr,
+	/*             fcvt.q.s */ nullptr,
+	/*             fcvt.d.q */ nullptr,
+	/*             fcvt.q.d */ nullptr,
+	/*              fsqrt.q */ nullptr,
+	/*                fle.q */ nullptr,
+	/*                flt.q */ nullptr,
+	/*                feq.q */ nullptr,
+	/*             fcvt.w.q */ nullptr,
+	/*            fcvt.wu.q */ nullptr,
+	/*             fcvt.q.w */ nullptr,
+	/*            fcvt.q.wu */ nullptr,
+	/*             fclass.q */ nullptr,
+	/*             fcvt.l.q */ nullptr,
+	/*            fcvt.lu.q */ nullptr,
+	/*              fmv.x.q */ nullptr,
+	/*             fcvt.q.l */ nullptr,
+	/*            fcvt.q.lu */ nullptr,
+	/*              fmv.q.x */ nullptr,
 	/*           c.addi4spn */ nullptr,
 	/*                c.fld */ nullptr,
 	/*                 c.lw */ nullptr,
@@ -3862,6 +4333,9 @@ const rv_comp_data* rv_inst_comp_rv32[] = {
 	/*                fmv.d */ nullptr,
 	/*               fabs.d */ nullptr,
 	/*               fneg.d */ nullptr,
+	/*                fmv.q */ nullptr,
+	/*               fabs.q */ nullptr,
+	/*               fneg.q */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
@@ -4080,6 +4554,40 @@ const rv_comp_data* rv_inst_comp_rv64[] = {
 	/*             fcvt.d.l */ nullptr,
 	/*            fcvt.d.lu */ nullptr,
 	/*              fmv.d.x */ nullptr,
+	/*                  flq */ nullptr,
+	/*                  fsq */ nullptr,
+	/*              fmadd.q */ nullptr,
+	/*              fmsub.q */ nullptr,
+	/*             fnmsub.q */ nullptr,
+	/*             fnmadd.q */ nullptr,
+	/*               fadd.q */ nullptr,
+	/*               fsub.q */ nullptr,
+	/*               fmul.q */ nullptr,
+	/*               fdiv.q */ nullptr,
+	/*              fsgnj.q */ nullptr,
+	/*             fsgnjn.q */ nullptr,
+	/*             fsgnjx.q */ nullptr,
+	/*               fmin.q */ nullptr,
+	/*               fmax.q */ nullptr,
+	/*             fcvt.s.q */ nullptr,
+	/*             fcvt.q.s */ nullptr,
+	/*             fcvt.d.q */ nullptr,
+	/*             fcvt.q.d */ nullptr,
+	/*              fsqrt.q */ nullptr,
+	/*                fle.q */ nullptr,
+	/*                flt.q */ nullptr,
+	/*                feq.q */ nullptr,
+	/*             fcvt.w.q */ nullptr,
+	/*            fcvt.wu.q */ nullptr,
+	/*             fcvt.q.w */ nullptr,
+	/*            fcvt.q.wu */ nullptr,
+	/*             fclass.q */ nullptr,
+	/*             fcvt.l.q */ nullptr,
+	/*            fcvt.lu.q */ nullptr,
+	/*              fmv.x.q */ nullptr,
+	/*             fcvt.q.l */ nullptr,
+	/*            fcvt.q.lu */ nullptr,
+	/*              fmv.q.x */ nullptr,
 	/*           c.addi4spn */ nullptr,
 	/*                c.fld */ nullptr,
 	/*                 c.lw */ nullptr,
@@ -4142,6 +4650,9 @@ const rv_comp_data* rv_inst_comp_rv64[] = {
 	/*                fmv.d */ nullptr,
 	/*               fabs.d */ nullptr,
 	/*               fneg.d */ nullptr,
+	/*                fmv.q */ nullptr,
+	/*               fabs.q */ nullptr,
+	/*               fneg.q */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
@@ -4360,6 +4871,40 @@ const rv_comp_data* rv_inst_comp_rv128[] = {
 	/*             fcvt.d.l */ nullptr,
 	/*            fcvt.d.lu */ nullptr,
 	/*              fmv.d.x */ nullptr,
+	/*                  flq */ nullptr,
+	/*                  fsq */ nullptr,
+	/*              fmadd.q */ nullptr,
+	/*              fmsub.q */ nullptr,
+	/*             fnmsub.q */ nullptr,
+	/*             fnmadd.q */ nullptr,
+	/*               fadd.q */ nullptr,
+	/*               fsub.q */ nullptr,
+	/*               fmul.q */ nullptr,
+	/*               fdiv.q */ nullptr,
+	/*              fsgnj.q */ nullptr,
+	/*             fsgnjn.q */ nullptr,
+	/*             fsgnjx.q */ nullptr,
+	/*               fmin.q */ nullptr,
+	/*               fmax.q */ nullptr,
+	/*             fcvt.s.q */ nullptr,
+	/*             fcvt.q.s */ nullptr,
+	/*             fcvt.d.q */ nullptr,
+	/*             fcvt.q.d */ nullptr,
+	/*              fsqrt.q */ nullptr,
+	/*                fle.q */ nullptr,
+	/*                flt.q */ nullptr,
+	/*                feq.q */ nullptr,
+	/*             fcvt.w.q */ nullptr,
+	/*            fcvt.wu.q */ nullptr,
+	/*             fcvt.q.w */ nullptr,
+	/*            fcvt.q.wu */ nullptr,
+	/*             fclass.q */ nullptr,
+	/*             fcvt.l.q */ nullptr,
+	/*            fcvt.lu.q */ nullptr,
+	/*              fmv.x.q */ nullptr,
+	/*             fcvt.q.l */ nullptr,
+	/*            fcvt.q.lu */ nullptr,
+	/*              fmv.q.x */ nullptr,
 	/*           c.addi4spn */ nullptr,
 	/*                c.fld */ nullptr,
 	/*                 c.lw */ nullptr,
@@ -4422,6 +4967,9 @@ const rv_comp_data* rv_inst_comp_rv128[] = {
 	/*                fmv.d */ nullptr,
 	/*               fabs.d */ nullptr,
 	/*               fneg.d */ nullptr,
+	/*                fmv.q */ nullptr,
+	/*               fabs.q */ nullptr,
+	/*               fneg.q */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
@@ -4640,6 +5188,40 @@ const int rv_inst_decomp_rv32[] = {
 	/*             fcvt.d.l */ rv_op_illegal,
 	/*            fcvt.d.lu */ rv_op_illegal,
 	/*              fmv.d.x */ rv_op_illegal,
+	/*                  flq */ rv_op_illegal,
+	/*                  fsq */ rv_op_illegal,
+	/*              fmadd.q */ rv_op_illegal,
+	/*              fmsub.q */ rv_op_illegal,
+	/*             fnmsub.q */ rv_op_illegal,
+	/*             fnmadd.q */ rv_op_illegal,
+	/*               fadd.q */ rv_op_illegal,
+	/*               fsub.q */ rv_op_illegal,
+	/*               fmul.q */ rv_op_illegal,
+	/*               fdiv.q */ rv_op_illegal,
+	/*              fsgnj.q */ rv_op_illegal,
+	/*             fsgnjn.q */ rv_op_illegal,
+	/*             fsgnjx.q */ rv_op_illegal,
+	/*               fmin.q */ rv_op_illegal,
+	/*               fmax.q */ rv_op_illegal,
+	/*             fcvt.s.q */ rv_op_illegal,
+	/*             fcvt.q.s */ rv_op_illegal,
+	/*             fcvt.d.q */ rv_op_illegal,
+	/*             fcvt.q.d */ rv_op_illegal,
+	/*              fsqrt.q */ rv_op_illegal,
+	/*                fle.q */ rv_op_illegal,
+	/*                flt.q */ rv_op_illegal,
+	/*                feq.q */ rv_op_illegal,
+	/*             fcvt.w.q */ rv_op_illegal,
+	/*            fcvt.wu.q */ rv_op_illegal,
+	/*             fcvt.q.w */ rv_op_illegal,
+	/*            fcvt.q.wu */ rv_op_illegal,
+	/*             fclass.q */ rv_op_illegal,
+	/*             fcvt.l.q */ rv_op_illegal,
+	/*            fcvt.lu.q */ rv_op_illegal,
+	/*              fmv.x.q */ rv_op_illegal,
+	/*             fcvt.q.l */ rv_op_illegal,
+	/*            fcvt.q.lu */ rv_op_illegal,
+	/*              fmv.q.x */ rv_op_illegal,
 	/*           c.addi4spn */ rv_op_addi,
 	/*                c.fld */ rv_op_fld,
 	/*                 c.lw */ rv_op_lw,
@@ -4702,6 +5284,9 @@ const int rv_inst_decomp_rv32[] = {
 	/*                fmv.d */ rv_op_illegal,
 	/*               fabs.d */ rv_op_illegal,
 	/*               fneg.d */ rv_op_illegal,
+	/*                fmv.q */ rv_op_illegal,
+	/*               fabs.q */ rv_op_illegal,
+	/*               fneg.q */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,
@@ -4920,6 +5505,40 @@ const int rv_inst_decomp_rv64[] = {
 	/*             fcvt.d.l */ rv_op_illegal,
 	/*            fcvt.d.lu */ rv_op_illegal,
 	/*              fmv.d.x */ rv_op_illegal,
+	/*                  flq */ rv_op_illegal,
+	/*                  fsq */ rv_op_illegal,
+	/*              fmadd.q */ rv_op_illegal,
+	/*              fmsub.q */ rv_op_illegal,
+	/*             fnmsub.q */ rv_op_illegal,
+	/*             fnmadd.q */ rv_op_illegal,
+	/*               fadd.q */ rv_op_illegal,
+	/*               fsub.q */ rv_op_illegal,
+	/*               fmul.q */ rv_op_illegal,
+	/*               fdiv.q */ rv_op_illegal,
+	/*              fsgnj.q */ rv_op_illegal,
+	/*             fsgnjn.q */ rv_op_illegal,
+	/*             fsgnjx.q */ rv_op_illegal,
+	/*               fmin.q */ rv_op_illegal,
+	/*               fmax.q */ rv_op_illegal,
+	/*             fcvt.s.q */ rv_op_illegal,
+	/*             fcvt.q.s */ rv_op_illegal,
+	/*             fcvt.d.q */ rv_op_illegal,
+	/*             fcvt.q.d */ rv_op_illegal,
+	/*              fsqrt.q */ rv_op_illegal,
+	/*                fle.q */ rv_op_illegal,
+	/*                flt.q */ rv_op_illegal,
+	/*                feq.q */ rv_op_illegal,
+	/*             fcvt.w.q */ rv_op_illegal,
+	/*            fcvt.wu.q */ rv_op_illegal,
+	/*             fcvt.q.w */ rv_op_illegal,
+	/*            fcvt.q.wu */ rv_op_illegal,
+	/*             fclass.q */ rv_op_illegal,
+	/*             fcvt.l.q */ rv_op_illegal,
+	/*            fcvt.lu.q */ rv_op_illegal,
+	/*              fmv.x.q */ rv_op_illegal,
+	/*             fcvt.q.l */ rv_op_illegal,
+	/*            fcvt.q.lu */ rv_op_illegal,
+	/*              fmv.q.x */ rv_op_illegal,
 	/*           c.addi4spn */ rv_op_addi,
 	/*                c.fld */ rv_op_fld,
 	/*                 c.lw */ rv_op_lw,
@@ -4982,6 +5601,9 @@ const int rv_inst_decomp_rv64[] = {
 	/*                fmv.d */ rv_op_illegal,
 	/*               fabs.d */ rv_op_illegal,
 	/*               fneg.d */ rv_op_illegal,
+	/*                fmv.q */ rv_op_illegal,
+	/*               fabs.q */ rv_op_illegal,
+	/*               fneg.q */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,
@@ -5200,6 +5822,40 @@ const int rv_inst_decomp_rv128[] = {
 	/*             fcvt.d.l */ rv_op_illegal,
 	/*            fcvt.d.lu */ rv_op_illegal,
 	/*              fmv.d.x */ rv_op_illegal,
+	/*                  flq */ rv_op_illegal,
+	/*                  fsq */ rv_op_illegal,
+	/*              fmadd.q */ rv_op_illegal,
+	/*              fmsub.q */ rv_op_illegal,
+	/*             fnmsub.q */ rv_op_illegal,
+	/*             fnmadd.q */ rv_op_illegal,
+	/*               fadd.q */ rv_op_illegal,
+	/*               fsub.q */ rv_op_illegal,
+	/*               fmul.q */ rv_op_illegal,
+	/*               fdiv.q */ rv_op_illegal,
+	/*              fsgnj.q */ rv_op_illegal,
+	/*             fsgnjn.q */ rv_op_illegal,
+	/*             fsgnjx.q */ rv_op_illegal,
+	/*               fmin.q */ rv_op_illegal,
+	/*               fmax.q */ rv_op_illegal,
+	/*             fcvt.s.q */ rv_op_illegal,
+	/*             fcvt.q.s */ rv_op_illegal,
+	/*             fcvt.d.q */ rv_op_illegal,
+	/*             fcvt.q.d */ rv_op_illegal,
+	/*              fsqrt.q */ rv_op_illegal,
+	/*                fle.q */ rv_op_illegal,
+	/*                flt.q */ rv_op_illegal,
+	/*                feq.q */ rv_op_illegal,
+	/*             fcvt.w.q */ rv_op_illegal,
+	/*            fcvt.wu.q */ rv_op_illegal,
+	/*             fcvt.q.w */ rv_op_illegal,
+	/*            fcvt.q.wu */ rv_op_illegal,
+	/*             fclass.q */ rv_op_illegal,
+	/*             fcvt.l.q */ rv_op_illegal,
+	/*            fcvt.lu.q */ rv_op_illegal,
+	/*              fmv.x.q */ rv_op_illegal,
+	/*             fcvt.q.l */ rv_op_illegal,
+	/*            fcvt.q.lu */ rv_op_illegal,
+	/*              fmv.q.x */ rv_op_illegal,
 	/*           c.addi4spn */ rv_op_illegal,
 	/*                c.fld */ rv_op_illegal,
 	/*                 c.lw */ rv_op_illegal,
@@ -5262,6 +5918,9 @@ const int rv_inst_decomp_rv128[] = {
 	/*                fmv.d */ rv_op_illegal,
 	/*               fabs.d */ rv_op_illegal,
 	/*               fneg.d */ rv_op_illegal,
+	/*                fmv.q */ rv_op_illegal,
+	/*               fabs.q */ rv_op_illegal,
+	/*               fneg.q */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,

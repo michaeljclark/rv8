@@ -24,6 +24,9 @@ fneg.s      fsgnjn.s               rd,rs1      rs2_eq_rs1
 fmv.d       fsgnj.d                rd,rs1      rs2_eq_rs1
 fabs.d      fsgnjx.d               rd,rs1      rs2_eq_rs1
 fneg.d      fsgnjn.d               rd,rs1      rs2_eq_rs1
+fmv.q       fsgnj.q                rd,rs1      rs2_eq_rs1
+fabs.q      fsgnjx.q               rd,rs1      rs2_eq_rs1
+fneg.q      fsgnjn.q               rd,rs1      rs2_eq_rs1
 beqz        beq                    rs1,offset  rs2_eq_x0
 bnez        bne                    rs1,offset  rs2_eq_x0
 blez        bge                    rs2,offset  rs1_eq_x0

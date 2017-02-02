@@ -256,6 +256,46 @@ fcvt.d.l   frd rs1  24..20=2 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m
 fcvt.d.lu  frd rs1  24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3 r·m+fr       rv64d rv128d
 fmv.d.x    frd rs1  24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3 r+fr         rv64d rv128d
 
+# RV32Q    "RV32Q Standard Extension for Quad-Precision Floating-Point"
+
+flq        frd rs1           oimm12      14..12=4          6..2=0x01 1..0=3 i+lf    rv32q rv64q rv128q
+fsq        rs1 frs2          simm12      14..12=4          6..2=0x09 1..0=3 s+f     rv32q rv64q rv128q
+fmadd.q    frd frs1 frs2 frs3            rm       26..25=3 6..2=0x10 1..0=3 r4·m    rv32q rv64q rv128q
+fmsub.q    frd frs1 frs2 frs3            rm       26..25=3 6..2=0x11 1..0=3 r4·m    rv32q rv64q rv128q
+fnmsub.q   frd frs1 frs2 frs3            rm       26..25=3 6..2=0x12 1..0=3 r4·m    rv32q rv64q rv128q
+fnmadd.q   frd frs1 frs2 frs3            rm       26..25=3 6..2=0x13 1..0=3 r4·m    rv32q rv64q rv128q
+fadd.q     frd frs1 frs2     31..27=0x00 rm       26..25=3 6..2=0x14 1..0=3 r·m+3f  rv32q rv64q rv128q
+fsub.q     frd frs1 frs2     31..27=0x01 rm       26..25=3 6..2=0x14 1..0=3 r·m+3f  rv32q rv64q rv128q
+fmul.q     frd frs1 frs2     31..27=0x02 rm       26..25=3 6..2=0x14 1..0=3 r·m+3f  rv32q rv64q rv128q
+fdiv.q     frd frs1 frs2     31..27=0x03 rm       26..25=3 6..2=0x14 1..0=3 r·m+3f  rv32q rv64q rv128q
+fsgnj.q    frd frs1 frs2     31..27=0x04 14..12=0 26..25=3 6..2=0x14 1..0=3 r+3f    rv32q rv64q rv128q
+fsgnjn.q   frd frs1 frs2     31..27=0x04 14..12=1 26..25=3 6..2=0x14 1..0=3 r+3f    rv32q rv64q rv128q
+fsgnjx.q   frd frs1 frs2     31..27=0x04 14..12=2 26..25=3 6..2=0x14 1..0=3 r+3f    rv32q rv64q rv128q
+fmin.q     frd frs1 frs2     31..27=0x05 14..12=0 26..25=3 6..2=0x14 1..0=3 r+3f    rv32q rv64q rv128q
+fmax.q     frd frs1 frs2     31..27=0x05 14..12=1 26..25=3 6..2=0x14 1..0=3 r+3f    rv32q rv64q rv128q
+fcvt.s.q   frd frs1 24..20=3 31..27=0x08 rm       26..25=0 6..2=0x14 1..0=3 r·m+ff  rv32q rv64q rv128q
+fcvt.q.s   frd frs1 24..20=0 31..27=0x08 rm       26..25=3 6..2=0x14 1..0=3 r·m+ff  rv32q rv64q rv128q
+fcvt.d.q   frd frs1 24..20=3 31..27=0x08 rm       26..25=1 6..2=0x14 1..0=3 r·m+ff  rv32q rv64q rv128q
+fcvt.q.d   frd frs1 24..20=1 31..27=0x08 rm       26..25=3 6..2=0x14 1..0=3 r·m+ff  rv32q rv64q rv128q
+fsqrt.q    frd frs1 24..20=0 31..27=0x0B rm       26..25=3 6..2=0x14 1..0=3 r·m+ff  rv32q rv64q rv128q
+fle.q      rd frs1 frs2      31..27=0x14 14..12=0 26..25=3 6..2=0x14 1..0=3 r+rff   rv32q rv64q rv128q
+flt.q      rd frs1 frs2      31..27=0x14 14..12=1 26..25=3 6..2=0x14 1..0=3 r+rff   rv32q rv64q rv128q
+feq.q      rd frs1 frs2      31..27=0x14 14..12=2 26..25=3 6..2=0x14 1..0=3 r+rff   rv32q rv64q rv128q
+fcvt.w.q   rd frs1  24..20=0 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf  rv32q rv64q rv128q
+fcvt.wu.q  rd frs1  24..20=1 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf  rv32q rv64q rv128q
+fcvt.q.w   frd rs1  24..20=0 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr  rv32q rv64q rv128q
+fcvt.q.wu  frd rs1  24..20=1 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr  rv32q rv64q rv128q
+fclass.q   rd frs1  24..20=0 31..27=0x1C 14..12=1 26..25=3 6..2=0x14 1..0=3 r+rf    rv32q rv64q rv128q
+
+# RV64Q    "RV64Q Standard Extension for Quad-Precision Floating-Point (in addition to RV32Q)"
+
+fcvt.l.q   rd frs1 24..20=2 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf         rv64q rv128q
+fcvt.lu.q  rd frs1 24..20=3 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf         rv64q rv128q
+fmv.x.q    rd frs1 24..20=0 31..27=0x1C 14..12=0 26..25=3 6..2=0x14 1..0=3 r+rf           rv64q rv128q
+fcvt.q.l   frd rs1 24..20=2 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr         rv64q rv128q
+fcvt.q.lu  frd rs1 24..20=3 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr         rv64q rv128q
+fmv.q.x    frd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=3 6..2=0x14 1..0=3 r+fr           rv64q rv128q
+
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 
 #frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f rv128f

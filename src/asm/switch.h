@@ -147,10 +147,11 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					}
 					break;
 				case 1:
-					// flw fld
+					// flw fld flq
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 2: if (rvf) op = rv_op_flw; break;
 						case 3: if (rvd) op = rv_op_fld; break;
+						case 4: if (rvq) op = rv_op_flq; break;
 					}
 					break;
 				case 3:
@@ -228,10 +229,11 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					}
 					break;
 				case 9:
-					// fsw fsd
+					// fsw fsd fsq
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 2: if (rvf) op = rv_op_fsw; break;
 						case 3: if (rvd) op = rv_op_fsd; break;
+						case 4: if (rvq) op = rv_op_fsq; break;
 					}
 					break;
 				case 11:
@@ -327,31 +329,35 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					}
 					break;
 				case 16:
-					// fmadd.s fmadd.d
+					// fmadd.s fmadd.d fmadd.q
 					switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
 						case 0: if (rvf) op = rv_op_fmadd_s; break;
 						case 1: if (rvd) op = rv_op_fmadd_d; break;
+						case 3: if (rvq) op = rv_op_fmadd_q; break;
 					}
 					break;
 				case 17:
-					// fmsub.s fmsub.d
+					// fmsub.s fmsub.d fmsub.q
 					switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
 						case 0: if (rvf) op = rv_op_fmsub_s; break;
 						case 1: if (rvd) op = rv_op_fmsub_d; break;
+						case 3: if (rvq) op = rv_op_fmsub_q; break;
 					}
 					break;
 				case 18:
-					// fnmsub.s fnmsub.d
+					// fnmsub.s fnmsub.d fnmsub.q
 					switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
 						case 0: if (rvf) op = rv_op_fnmsub_s; break;
 						case 1: if (rvd) op = rv_op_fnmsub_d; break;
+						case 3: if (rvq) op = rv_op_fnmsub_q; break;
 					}
 					break;
 				case 19:
-					// fnmadd.s fnmadd.d
+					// fnmadd.s fnmadd.d fnmadd.q
 					switch (((inst >> 25) & 0b11) /* inst[26:25] */) {
 						case 0: if (rvf) op = rv_op_fnmadd_s; break;
 						case 1: if (rvd) op = rv_op_fnmadd_d; break;
+						case 3: if (rvq) op = rv_op_fnmadd_q; break;
 					}
 					break;
 				case 20:
@@ -359,12 +365,16 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					switch (((inst >> 25) & 0b1111111) /* inst[31:25] */) {
 						case 0: if (rvf) op = rv_op_fadd_s; break;
 						case 1: if (rvd) op = rv_op_fadd_d; break;
+						case 3: if (rvq) op = rv_op_fadd_q; break;
 						case 4: if (rvf) op = rv_op_fsub_s; break;
 						case 5: if (rvd) op = rv_op_fsub_d; break;
+						case 7: if (rvq) op = rv_op_fsub_q; break;
 						case 8: if (rvf) op = rv_op_fmul_s; break;
 						case 9: if (rvd) op = rv_op_fmul_d; break;
+						case 11: if (rvq) op = rv_op_fmul_q; break;
 						case 12: if (rvf) op = rv_op_fdiv_s; break;
 						case 13: if (rvd) op = rv_op_fdiv_d; break;
+						case 15: if (rvq) op = rv_op_fdiv_q; break;
 						case 16:
 							// fsgnj.s fsgnjn.s fsgnjx.s
 							switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
@@ -381,6 +391,14 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 2: if (rvd) op = rv_op_fsgnjx_d; break;
 							}
 							break;
+						case 19:
+							// fsgnj.q fsgnjn.q fsgnjx.q
+							switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+								case 0: if (rvq) op = rv_op_fsgnj_q; break;
+								case 1: if (rvq) op = rv_op_fsgnjn_q; break;
+								case 2: if (rvq) op = rv_op_fsgnjx_q; break;
+							}
+							break;
 						case 20:
 							// fmin.s fmax.s
 							switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
@@ -395,16 +413,32 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 1: if (rvd) op = rv_op_fmax_d; break;
 							}
 							break;
+						case 23:
+							// fmin.q fmax.q
+							switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+								case 0: if (rvq) op = rv_op_fmin_q; break;
+								case 1: if (rvq) op = rv_op_fmax_q; break;
+							}
+							break;
 						case 32:
-							// fcvt.s.d
+							// fcvt.s.d fcvt.s.q
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 1: if (rvd) op = rv_op_fcvt_s_d; break;
+								case 3: if (rvq) op = rv_op_fcvt_s_q; break;
 							}
 							break;
 						case 33:
-							// fcvt.d.s
+							// fcvt.d.s fcvt.d.q
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvd) op = rv_op_fcvt_d_s; break;
+								case 3: if (rvq) op = rv_op_fcvt_d_q; break;
+							}
+							break;
+						case 35:
+							// fcvt.q.s fcvt.q.d
+							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+								case 0: if (rvq) op = rv_op_fcvt_q_s; break;
+								case 1: if (rvq) op = rv_op_fcvt_q_d; break;
 							}
 							break;
 						case 44:
@@ -417,6 +451,12 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							// fsqrt.d
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
 								case 0: if (rvd) op = rv_op_fsqrt_d; break;
+							}
+							break;
+						case 47:
+							// fsqrt.q
+							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+								case 0: if (rvq) op = rv_op_fsqrt_q; break;
 							}
 							break;
 						case 80:
@@ -433,6 +473,14 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 0: if (rvd) op = rv_op_fle_d; break;
 								case 1: if (rvd) op = rv_op_flt_d; break;
 								case 2: if (rvd) op = rv_op_feq_d; break;
+							}
+							break;
+						case 83:
+							// fle.q flt.q feq.q
+							switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
+								case 0: if (rvq) op = rv_op_fle_q; break;
+								case 1: if (rvq) op = rv_op_flt_q; break;
+								case 2: if (rvq) op = rv_op_feq_q; break;
 							}
 							break;
 						case 96:
@@ -453,6 +501,15 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 3: if (rvd) op = rv_op_fcvt_lu_d; break;
 							}
 							break;
+						case 99:
+							// fcvt.w.q fcvt.wu.q fcvt.l.q fcvt.lu.q
+							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+								case 0: if (rvq) op = rv_op_fcvt_w_q; break;
+								case 1: if (rvq) op = rv_op_fcvt_wu_q; break;
+								case 2: if (rvq) op = rv_op_fcvt_l_q; break;
+								case 3: if (rvq) op = rv_op_fcvt_lu_q; break;
+							}
+							break;
 						case 104:
 							// fcvt.s.w fcvt.s.wu fcvt.s.l fcvt.s.lu
 							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
@@ -471,6 +528,15 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 3: if (rvd) op = rv_op_fcvt_d_lu; break;
 							}
 							break;
+						case 107:
+							// fcvt.q.w fcvt.q.wu fcvt.q.l fcvt.q.lu
+							switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+								case 0: if (rvq) op = rv_op_fcvt_q_w; break;
+								case 1: if (rvq) op = rv_op_fcvt_q_wu; break;
+								case 2: if (rvq) op = rv_op_fcvt_q_l; break;
+								case 3: if (rvq) op = rv_op_fcvt_q_lu; break;
+							}
+							break;
 						case 112:
 							// fmv.x.s fclass.s
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
@@ -485,6 +551,13 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 								case 1: if (rvd) op = rv_op_fclass_d; break;
 							}
 							break;
+						case 115:
+							// fclass.q fmv.x.q
+							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+								case 0: if (rvq) op = rv_op_fmv_x_q; break;
+								case 1: if (rvq) op = rv_op_fclass_q; break;
+							}
+							break;
 						case 120:
 							// fmv.s.x
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
@@ -495,6 +568,12 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 							// fmv.d.x
 							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
 								case 0: if (rvd) op = rv_op_fmv_d_x; break;
+							}
+							break;
+						case 123:
+							// fmv.q.x
+							switch (((inst >> 17) & 0b11111000) | ((inst >> 12) & 0b00000111) /* inst[24:20|14:12] */) {
+								case 0: if (rvq) op = rv_op_fmv_q_x; break;
 							}
 							break;
 					}

@@ -31,7 +31,7 @@ std::vector<cmdline_option> rv_gen_latex::get_cmdline_options()
 }
 
 static const ssize_t kLatexTableColumns = 32;
-static const ssize_t kLatexTableRows = 52;
+static const ssize_t kLatexTableRows = 43;
 static const ssize_t kLatexReserveRows = 5;
 
 static const char* kLatexDocumentBegin =
