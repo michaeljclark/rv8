@@ -216,6 +216,14 @@ const char* elf_rela_type_name(int v) {
 		case R_RISCV_RVC_LUI: return "R_RISCV_RVC_LUI";
 		case R_RISCV_GPREL_I: return "R_RISCV_GPREL_I";
 		case R_RISCV_GPREL_S: return "R_RISCV_GPREL_S";
+		case R_RISCV_TPREL_I: return "R_RISCV_TPREL_I";
+		case R_RISCV_TPREL_S: return "R_RISCV_TPREL_S";
+		case R_RISCV_RELAX: return "R_RISCV_RELAX";
+		case R_RISCV_SUB6: return "R_RISCV_SUB6";
+		case R_RISCV_SET6: return "R_RISCV_SET6";
+		case R_RISCV_SET8: return "R_RISCV_SET8";
+		case R_RISCV_SET16: return "R_RISCV_SET16";
+		case R_RISCV_SET32: return "R_RISCV_SET32";
 		default: return "UNKNOWN";
 	}
 }
