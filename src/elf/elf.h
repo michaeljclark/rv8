@@ -578,7 +578,7 @@ enum {
 	R_RISCV_RVC_JUMP = 45,           /* xx, 11:1  PC-relative jump offset                            CJ-Type (c.j) */
 	R_RISCV_RVC_LUI = 46,            /* xx, 17:12 Absolute address                                   CI-Type (c.lui) */
 	R_RISCV_GPREL_I = 47,            /* 32, 11:0  PC-relative reference         %gprel(symbol)       I-Type (lb,lbu,lh,lhu,lw,lwu,flw,fld,addi,addiw)   */
-	R_RISCV_GPREL_S = 48             /* 32, 11:0  PC-relative reference         %gprel(symbol)       S-Type (sb,sh,sw,fsw,fsd) */
+	R_RISCV_GPREL_S = 48,            /* 32, 11:0  PC-relative reference         %gprel(symbol)       S-Type (sb,sh,sw,fsw,fsd) */
 	R_RISCV_TPREL_I = 49,            /* 32,       TP-relative TLS LE load */
 	R_RISCV_TPREL_S = 50,            /* 32,       TP-relative TLS LE store */
 	R_RISCV_RELAX = 51,              /*           Reloc pair can be relaxed */
