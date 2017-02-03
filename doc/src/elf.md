@@ -89,7 +89,7 @@ Enum | ELF Reloc Type       | Description                | Assembler           |
 16   | R_RISCV_BRANCH       | PC-relative branch offset  |                     | SB-Type (beq,bne,blt,bge,bltu,bgeu)
 17   | R_RISCV_JAL          | PC-relative jump offset    |                     | UJ-Type (jal)
 18   | R_RISCV_CALL         | PC-relative function call  |                     | MACRO call,tail (auipc+jalr)
-19   | R_RISCV_CALL_PLT     | PC-relative function call  |                     | MACRO call,tail (auipc+jalr)
+19   | R_RISCV_CALL_PLT     | PC-relative function call  |                     | MACRO call,tail (auipc+jalr) PIC
 20   | R_RISCV_GOT_HI20     | PC-relative GOT offset     |                     | MACRO la
 21   | R_RISCV_TLS_GOT_HI20 | PC-relative TLS IE GOT ref | %tls_ie_pcrel_hi(x) | MACRO la.tls.ie
 22   | R_RISCV_TLS_GD_HI20  | PC-relative TLS GD GOT ref | %tls_gd_pcrel_hi(x) | MACRO la.tls.gd
@@ -119,14 +119,14 @@ Enum | ELF Reloc Type       | Description                | Assembler           |
 46   | R_RISCV_RVC_LUI      | Absolute address           |                     | CI-Type (c.lui)
 47   | R_RISCV_GPREL_I      | GP-relative reference      |                     | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld,addi,addiw)
 48   | R_RISCV_GPREL_S      | GP-relative reference      |                     | S-Type (sb,sh,sw,sd,fsw,fsd)
-49   | R_RISCV_TPREL_I      | TP-relative TLS LE load    |
-50   | R_RISCV_TPREL_S      | TP-relative TLS LE store   |
-51   | R_RISCV_RELAX        | Reloc pair can be relaxed  |
-52   | R_RISCV_SUB6         | Local label subtraction    |
-53   | R_RISCV_SET6         | Local label subtraction    |
-54   | R_RISCV_SET8         | Local label subtraction    |
-55   | R_RISCV_SET16        | Local label subtraction    |
-56   | R_RISCV_SET32        | Local label subtraction    |
+49   | R_RISCV_TPREL_I      | TP-relative TLS LE load    |                     | I-Type (lb,lbu,lh,lhu,lw,lwu,ld,flw,fld)
+50   | R_RISCV_TPREL_S      | TP-relative TLS LE store   |                     | S-Type (sb,sh,sw,sd,fsw,fsd)
+51   | R_RISCV_RELAX        | Reloc pair can be relaxed  |                     | 
+52   | R_RISCV_SUB6         | Local label subtraction    |                     | 
+53   | R_RISCV_SET6         | Local label subtraction    |                     | 
+54   | R_RISCV_SET8         | Local label subtraction    |                     | 
+55   | R_RISCV_SET16        | Local label subtraction    |                     | 
+56   | R_RISCV_SET32        | Local label subtraction    |                     | 
 
 
 ### Position Independent Code
