@@ -2,12 +2,11 @@
 # <pseudo opcode> <opcode> <format> <constraint...>
 
 nop         addi                   none        rd_eq_x0 rs1_eq_x0 imm_eq_zero
-#lla,la     slli,addi              rd,symbol   # (R_RISCV_PCREL_LO12_I)                       ; Global constant
-#lla,la     lui,{addi,addiw}       rd,symbol   # (R_RISCV_PCREL_LO12_I)                       ; Global PIC symbol
-#la         auipc,{ld,lw}          rd,symbol   # (R_RISCV_GOT_HI20,     R_RISCV_PCREL_LO12_I) ; Local PIC or non-PIC symbol
-#lla,la     auipc,addi             rd,symbol   # (R_RISCV_PCREL_HI20,   R_RISCV_PCREL_LO12_I) ; Local PIC symbol
+#lla,la     {lui,slli,addi,addiw}  rd,symbol   #                                              ; Constant
+#la         auipc,{ld,lw}          rd,symbol   # (R_RISCV_GOT_HI20,     R_RISCV_PCREL_LO12_I) ; -fpic symbol
+#lla,la     auipc,addi             rd,symbol   # (R_RISCV_PCREL_HI20,   R_RISCV_PCREL_LO12_I) ; -fno-pic symbol (default)
 #la.tls.gd  auipc,addi             rd,symbol   # (R_RISCV_TLS_GD_HI20,  R_RISCV_PCREL_LO12_I) ; TLS model global dynamic
-#la.tls.ie  auipc,{addi,addiw}     rd,symbol   # (R_RISCV_TLS_GOT_HI20, R_RISCV_PCREL_LO12_I) ; TLS model initial exec
+#la.tls.ie  auipc,{ld,lw}          rd,symbol   # (R_RISCV_TLS_GOT_HI20, R_RISCV_PCREL_LO12_I) ; TLS model initial exec
 #li         {lui,slli,addi,addiw}  rd,rs1
 mv          addi                   rd,rs1      imm_eq_zero
 not         xori                   rd,rs1      imm_eq_n1
