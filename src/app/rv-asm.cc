@@ -305,6 +305,7 @@ struct rv_assembler
 	bool help_or_error = false;
 	bool bail_on_errors = false;
 	bool debug = false;
+	bool pic = false;
 
 	int ext = rv_set_imafdc;
 	int width = rv_isa_rv64;
@@ -450,6 +451,12 @@ struct rv_assembler
 			{ "-i", "--isa", cmdline_arg_type_string,
 				"ISA Extensions (ima, imac, imafd, imafdc)",
 				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
+			{ "-fpic", "--fpic", cmdline_arg_type_string,
+				"Generate position independent code",
+				[&](std::string s) { return (pic = true); } },
+			{ "-fno-pic", "--fno-pic", cmdline_arg_type_string,
+				"Don't generate position independent code",
+				[&](std::string s) { return !(pic = false); } },
 			{ "-m32", "--riscv32", cmdline_arg_type_string,
 				"Assembler for RISC-V 32",
 				[&](std::string s) { return (width = rv_isa_rv32); } },
@@ -857,14 +864,31 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 
-		/* emit auipc with R_RISCV_PCREL_HI20 */
-		as.add_label(1);
-		as.add_reloc(argv[1][0], R_RISCV_PCREL_HI20);
-		asm_auipc(as, ri->second, 0);
+		if (line->args[0] == "la" && pic == true) {
+			/* emit auipc with R_RISCV_GOT_HI20 */
+			as.add_label(1);
+			as.add_reloc(argv[1][0], R_RISCV_GOT_HI20);
+			asm_auipc(as, ri->second, 0);
 
-		/* emit addi with R_RISCV_PCREL_LO12_I */
-		as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
-		asm_addi(as, ri->second, ri->second, 0);
+			/* emit lw|ld|lq with R_RISCV_PCREL_LO12_I */
+			as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
+			if (width == rv_isa_rv32) {
+				asm_lw(as, ri->second, ri->second, 0);
+			} else if (width == rv_isa_rv64) {
+				asm_ld(as, ri->second, ri->second, 0);
+			} else if (width == rv_isa_rv128) {
+				asm_lq(as, ri->second, ri->second, 0);
+			}
+		} else {
+			/* emit auipc with R_RISCV_PCREL_HI20 */
+			as.add_label(1);
+			as.add_reloc(argv[1][0], R_RISCV_PCREL_HI20);
+			asm_auipc(as, ri->second, 0);
+
+			/* emit addi with R_RISCV_PCREL_LO12_I */
+			as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
+			asm_addi(as, ri->second, ri->second, 0);
+		}
 
 		return true;
 	}
@@ -928,7 +952,7 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 
-		as.add_reloc(argv[0][0], R_RISCV_CALL);
+		as.add_reloc(argv[0][0], pic ? R_RISCV_CALL_PLT : R_RISCV_CALL);
 		asm_auipc(as, rv_ireg_t0, 0);
 		asm_jalr(as, rv_ireg_ra, rv_ireg_t0, 0);
 
@@ -950,7 +974,7 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 
-		as.add_reloc(argv[0][0], R_RISCV_CALL);
+		as.add_reloc(argv[0][0], pic ? R_RISCV_CALL_PLT : R_RISCV_CALL);
 		asm_auipc(as, rv_ireg_t0, 0);
 		asm_jalr(as, rv_ireg_zero, rv_ireg_t0, 0);
 
@@ -1558,7 +1582,13 @@ load_store:
 			"---", "------", "--------");
 		while (pc < end) {
 			inst_t inst = inst_fetch(addr_t(buf.data() + pc), pc_offset);
-			decode_inst_rv64(dec, inst);
+			if (width == rv_isa_rv32) {
+				decode_inst_rv32(dec, inst);
+			} else if (width == rv_isa_rv64) {
+				decode_inst_rv64(dec, inst);
+			} else if (width == rv_isa_rv128) {
+				decode_inst_rv128(dec, inst);
+			}
 			decode_pseudo_inst(dec);
 			std::string args = disasm_inst_simple(dec);
 			printf("%5zx:0x%-16llx (%8s)\t%s\n",
