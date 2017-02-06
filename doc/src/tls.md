@@ -28,6 +28,7 @@ Use for PIC dynamic executables.
 - Variable attribute: `__thread int i __attribute__((tls_model("inital-exec")));`
 - Constant: TLS_MODEL_INITIAL_EXEC
 - Asm: `la.tls.ie; tp-relative add`
+- ELF flags: DF_STATIC_TLS
 
 ## Local Dynamic
 
