@@ -306,6 +306,7 @@ struct rv_assembler
 	bool bail_on_errors = false;
 	bool debug = false;
 	bool pic = false;
+	bool rvc = false;
 
 	int ext = rv_set_imafdc;
 	int width = rv_isa_rv64;
@@ -811,7 +812,21 @@ struct rv_assembler
 
 	bool handle_option(asm_line_ptr &line)
 	{
-		/* TODO - rvc,norvc,push,pop */
+		/* TODO - pic,nopic,rvc,norvc,push,pop */
+		auto argv = line->split_args(",");
+		if (argv.size() != 1 || argv[0].size() != 1) {
+			return line->error(kInvalidOperands);
+		}
+		std::string option = argv[0][0];
+		if (option == "pic") {
+			pic = true;
+		} else if (option == "rvc") {
+			rvc = true;
+		} else if (option == "norvc") {
+			rvc = false;
+		} else {
+			return line->error(kUnimplementedOperation);
+		}
 		return true;
 	}
 
@@ -1221,6 +1236,17 @@ struct rv_assembler
 out:
 		/* translate pseudo instructions to regular instruction */
 		encode_pseudo(dec);
+
+		/* compress */
+		if (rvc) {
+			if (width == rv_isa_rv32) {
+				compress_inst_rv32(dec);
+			} else if (width == rv_isa_rv64) {
+				compress_inst_rv64(dec);
+			} else if (width == rv_isa_rv128) {
+				compress_inst_rv128(dec);
+			}
+		}
 
 		/* encode instruction */
 		as.add_inst(encode_inst(dec));
