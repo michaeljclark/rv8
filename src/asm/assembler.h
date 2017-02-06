@@ -52,6 +52,7 @@ namespace riscv {
 		section_ptr section;
 		std::string name;
 		int rela_type;
+		int elf_sym;
 
 		reloc(section_offset offset, std::string name, int rela_type) :
 			offset(offset), name(name), rela_type(rela_type) {}
@@ -95,6 +96,7 @@ namespace riscv {
 		label_ptr lookup_label_f(reloc_ptr reloc, s64 num);
 		label_ptr lookup_label_b(reloc_ptr reloc, s64 num);
 		label_ptr lookup_label(reloc_ptr reloc, std::string name);
+		label_ptr add_label(std::string label_name, section_offset offset);
 		label_ptr add_label(std::string label_name);
 		label_ptr add_label(s64 num);
 		label_ptr add_constant(std::string label_name, s64 value);

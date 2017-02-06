@@ -230,15 +230,21 @@ label_ptr assembler::lookup_label(reloc_ptr reloc, std::string name)
 	return lookup_label(name);
 }
 
-label_ptr assembler::add_label(std::string label_name)
+
+label_ptr assembler::add_label(std::string label_name, section_offset offset)
 {
 	if (labels_byname.find(label_name) != labels_byname.end()) {
 		return label_ptr();
 	}
-	auto l = std::make_shared<label>(label_name, current_offset());
+	auto l = std::make_shared<label>(label_name, offset);
 	labels_byname[label_name] = l;
 	labels_byoffset[l->offset] = l;
 	return l;
+}
+
+label_ptr assembler::add_label(std::string label_name)
+{
+	return add_label(label_name, current_offset());
 }
 
 label_ptr assembler::add_label(s64 num)

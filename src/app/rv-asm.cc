@@ -1676,6 +1676,15 @@ load_store:
 				std::back_inserter(elf.sections[elf.rodata].buf));
 		}
 
+		/* add labels for extern relocations */
+		for (auto &ent : as.relocs_byoffset) {
+			auto &reloc = ent.second;
+			auto sym_i = as.labels_byname.find(reloc->name);
+			if (sym_i == as.labels_byname.end()) {
+				as.add_label(reloc->name, section_offset(SHN_UNDEF, 0));
+			}
+		}
+
 		/* add symbols */
 		for (auto &ent : as.labels_byname) {
 			auto &label = ent.second;
@@ -1683,7 +1692,10 @@ load_store:
 				label->name) != as.strong_exports.end() ? STB_GLOBAL : STB_LOCAL;
 			if (label->offset.section() == SHN_ABS) {
 				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
-					SHN_ABS, label->offset.second);
+					label->offset.section(), label->offset.second);
+			} else if (label->offset.section() == SHN_UNDEF) {
+				label->elf_sym = elf.add_symbol(label->name, STB_GLOBAL, STT_NOTYPE, STV_DEFAULT,
+					label->offset.section(), label->offset.second);
 			} else {
 				size_t section_num = SHN_UNDEF;
 				std::string section_name = as.sections[label->offset.section()]->name;
