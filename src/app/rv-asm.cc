@@ -396,8 +396,10 @@ struct rv_assembler
 		directive_map[".cfi_offset"] = std::bind(&rv_assembler::handle_none, this, _1);
 		directive_map[".cfi_def_cfa"] = std::bind(&rv_assembler::handle_none, this, _1);
 		directive_map[".cfi_def_cfa_offset"] = std::bind(&rv_assembler::handle_none, this, _1);
+		directive_map["la.tls.ie"] = std::bind(&rv_assembler::handle_la, this, _1);
+		directive_map["la.tls.gd"] = std::bind(&rv_assembler::handle_la, this, _1);
 		directive_map["la"] = std::bind(&rv_assembler::handle_la, this, _1);
-		directive_map["lla"] = std::bind(&rv_assembler::handle_lla, this, _1);
+		directive_map["lla"] = std::bind(&rv_assembler::handle_la, this, _1);
 		directive_map["li"] = std::bind(&rv_assembler::handle_li, this, _1);
 		directive_map["call"] = std::bind(&rv_assembler::handle_call, this, _1);
 		directive_map["tail"] = std::bind(&rv_assembler::handle_tail, this, _1);
@@ -879,10 +881,14 @@ struct rv_assembler
 			return line->error(kInvalidOperands);
 		}
 
-		if (line->args[0] == "la" && pic == true) {
-			/* emit auipc with R_RISCV_GOT_HI20 */
+		if ((line->args[0] == "la" && pic == true) ||
+			line->args[0] == "la.tls.ie")
+		{
+			/* la (PIC)  - emit auipc with R_RISCV_GOT_HI20 */
+			/* la.tls.ie - emit auipc with R_RISCV_TLS_GOT_HI20 */
 			as.add_label(1);
-			as.add_reloc(argv[1][0], R_RISCV_GOT_HI20);
+			as.add_reloc(argv[1][0], line->args[0] == "la.tls.ie" ?
+				R_RISCV_TLS_GOT_HI20 : R_RISCV_GOT_HI20);
 			asm_auipc(as, ri->second, 0);
 
 			/* emit lw|ld|lq with R_RISCV_PCREL_LO12_I */
@@ -895,9 +901,11 @@ struct rv_assembler
 				asm_lq(as, ri->second, ri->second, 0);
 			}
 		} else {
-			/* emit auipc with R_RISCV_PCREL_HI20 */
+			/* la        - emit auipc with R_RISCV_PCREL_HI20 */
+			/* la.tls.gd - emit auipc with R_RISCV_TLS_GD_HI20 */
 			as.add_label(1);
-			as.add_reloc(argv[1][0], R_RISCV_PCREL_HI20);
+			as.add_reloc(argv[1][0], line->args[0] == "la.tls.gd" ?
+				R_RISCV_TLS_GD_HI20 : R_RISCV_PCREL_HI20);
 			asm_auipc(as, ri->second, 0);
 
 			/* emit addi with R_RISCV_PCREL_LO12_I */
@@ -906,19 +914,6 @@ struct rv_assembler
 		}
 
 		return true;
-	}
-
-	bool handle_lla(asm_line_ptr &line)
-	{
-		/*
-		 * Load label address
-		 *
-		 * .1: auipc r,    %pcrel_hi(symbol)
-		 *     addi  r, r, %pcrel_lo(1b)
-		 *
-		 * relocs: R_RISCV_PCREL_HI20, R_RISCV_PCREL_LO12_I
-		 */
-		return handle_la(line);
 	}
 
 	bool handle_li(asm_line_ptr &line)
