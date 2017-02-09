@@ -1254,6 +1254,42 @@ load_store:
 		}
 		std::vector<std::string> arg = argv[0];
 
+		/* check for the macro form and emit auipc plus relocations */
+		if (check_symbol(arg)) {
+			int reg;
+			switch (dec.op) {
+				case rv_op_lb:
+				case rv_op_lbu:
+				case rv_op_lw:
+				case rv_op_lwu:
+				case rv_op_ld:
+				case rv_op_ldu:
+				case rv_op_lq:
+				case rv_op_flw:
+				case rv_op_fld:
+					reg = dec.rd;
+					break;
+				case rv_op_sb:
+				case rv_op_sw:
+				case rv_op_sd:
+				case rv_op_sq:
+				case rv_op_fsw:
+				case rv_op_fsd:
+					reg = dec.rs2;
+					break;
+			}
+
+			/* emit auipc with R_RISCV_PCREL_HI20 */
+			as.add_label(1);
+			as.add_reloc(arg[0], R_RISCV_PCREL_HI20);
+			asm_auipc(as, reg, 0);
+
+			/* emit lw|ld|lq with R_RISCV_PCREL_LO12_I */
+			as.add_reloc("1b", R_RISCV_PCREL_LO12_I);
+			dec.rs1 = reg;
+			goto out;
+		}
+
 		if (arg.size() < 3 || (*(arg.end() - 3) != "(") || (*(arg.end() - 1) != ")")) {
 			return line->error(kInvalidOperands);
 		}
