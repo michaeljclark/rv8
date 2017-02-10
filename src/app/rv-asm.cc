@@ -965,8 +965,8 @@ struct rv_assembler
 		}
 
 		as.add_reloc(argv[0][0], pic ? R_RISCV_CALL_PLT : R_RISCV_CALL);
-		asm_auipc(as, rv_ireg_t0, 0);
-		asm_jalr(as, rv_ireg_ra, rv_ireg_t0, 0);
+		asm_auipc(as, rv_ireg_t1, 0);
+		asm_jalr(as, rv_ireg_ra, rv_ireg_t1, 0);
 
 		return true;
 	}
@@ -987,8 +987,8 @@ struct rv_assembler
 		}
 
 		as.add_reloc(argv[0][0], pic ? R_RISCV_CALL_PLT : R_RISCV_CALL);
-		asm_auipc(as, rv_ireg_t0, 0);
-		asm_jalr(as, rv_ireg_zero, rv_ireg_t0, 0);
+		asm_auipc(as, rv_ireg_t1, 0);
+		asm_jalr(as, rv_ireg_zero, rv_ireg_t1, 0);
 
 		return true;
 	}
