@@ -42,7 +42,7 @@ bool assembler::check_symbol(std::string arg)
 	// [_\w][_\w\d]*
 	if (arg.size() < 1 || !(std::isalpha(arg[0]) || arg[0] == '_')) return false;
 	for (auto ci = arg.begin() + 1; ci != arg.end(); ci++) {
-		if (!(std::isalnum(*ci) || *ci == '_')) return false;
+		if (!(std::isalnum(*ci) || *ci == '_' || *ci == '.')) return false;
 	}
 	return true;
 }
@@ -53,7 +53,7 @@ bool assembler::check_private(std::string arg)
 	if (arg.size() < 2 || arg[0] != '.' ||
 		!(std::isalpha(arg[1]) || arg[1] == '_')) return false;
 	for (auto ci = arg.begin() + 2; ci != arg.end(); ci++) {
-		if (!(std::isalnum(*ci) || *ci == '_')) return false;
+		if (!(std::isalnum(*ci) || *ci == '_' || *ci == '.')) return false;
 	}
 	return true;
 }
