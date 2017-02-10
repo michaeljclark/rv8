@@ -1256,7 +1256,7 @@ load_store:
 
 		/* check for the macro form and emit auipc plus relocations */
 		if (check_symbol(arg)) {
-			int reg;
+			int reg = rv_ireg_zero;
 			switch (dec.op) {
 				case rv_op_lb:
 				case rv_op_lbu:
@@ -1267,6 +1267,7 @@ load_store:
 				case rv_op_lq:
 				case rv_op_flw:
 				case rv_op_fld:
+				case rv_op_flq:
 					reg = dec.rd;
 					break;
 				case rv_op_sb:
@@ -1275,6 +1276,7 @@ load_store:
 				case rv_op_sq:
 				case rv_op_fsw:
 				case rv_op_fsd:
+				case rv_op_fsq:
 					reg = dec.rs2;
 					break;
 			}
