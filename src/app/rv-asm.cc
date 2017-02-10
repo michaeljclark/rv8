@@ -822,6 +822,8 @@ struct rv_assembler
 		std::string option = argv[0][0];
 		if (option == "pic") {
 			pic = true;
+		} else if (option == "nopic") {
+			pic = false;
 		} else if (option == "rvc") {
 			rvc = true;
 		} else if (option == "norvc") {
