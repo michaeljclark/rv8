@@ -59,6 +59,7 @@ void elf_file::init_object(int ei_class)
 	ehdr.e_ident[EI_DATA] = ei_data;
 	ehdr.e_ident[EI_VERSION] = 1;
 	ehdr.e_type = ET_REL;
+	ehdr.e_flags = EF_RISCV_FLOAT_ABI_DOUBLE;
 	ehdr.e_machine = EM_RISCV;
 	ehdr.e_version = EV_CURRENT;
 	add_section("", SHT_NULL, 0, 0);

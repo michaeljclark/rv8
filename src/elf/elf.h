@@ -592,7 +592,11 @@ enum {
 // RISC-V Ehdr e_flags
 
 enum {
-	EF_RISCV_EXT_MASK = 0x03ffffff, /* Processor extension mask from 'misa' CSR */
+	EF_RISCV_RVC = 0x1,
+	EF_RISCV_FLOAT_ABI_SINGLE = 0x2,
+	EF_RISCV_FLOAT_ABI_DOUBLE = 0x4,
+	EF_RISCV_FLOAT_ABI_QUAD = 0x6,
+	EF_RISCV_RVE = 0x8
 };
 
 // Dynamic Flags
