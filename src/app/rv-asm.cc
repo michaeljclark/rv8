@@ -1075,6 +1075,7 @@ struct rv_assembler
 							} else {
 								dec.imm = result.asInt();
 							}
+							argv.pop_front();
 							goto out;
 						} else {
 							return line->error(kInvalidRegister);
@@ -1234,6 +1235,13 @@ out:
 		/* translate pseudo instructions to regular instruction */
 		encode_pseudo(dec);
 
+		/* check for trailing relocation */
+		if (argv.size() == 1 && check_reloc(argv[0])) {
+			if (!handle_reloc(line, dec, argv[0])) {
+				return line->error(kInvalidOperands);
+			}
+		}
+
 		/* compress */
 		if (rvc) {
 			if (width == rv_isa_rv32) {
@@ -1332,6 +1340,7 @@ load_store:
 		} else {
 			dec.imm = 0;
 		}
+		argv.pop_front();
 
 		goto out;
 	}
@@ -1440,7 +1449,6 @@ load_store:
 	int handle_reloc_pcrel_hi(decode &dec)
 	{
 		switch (dec.op) {
-			case rv_op_lui:
 			case rv_op_auipc:
 				return R_RISCV_PCREL_HI20;
 		}
@@ -1485,16 +1493,45 @@ load_store:
 
 	int handle_reloc_tprel_hi(decode &dec)
 	{
-		return R_RISCV_NONE; /* TODO */
+		switch (dec.op) {
+			case rv_op_lui:
+				return R_RISCV_TPREL_HI20;
+		}
+		return R_RISCV_NONE;
 	}
 
 	int handle_reloc_tprel_lo(decode &dec)
 	{
-		return R_RISCV_NONE; /* TODO */
+		switch (dec.op) {
+			case rv_op_addi:
+			case rv_op_addiw:
+			case rv_op_lb:
+			case rv_op_lbu:
+			case rv_op_lh:
+			case rv_op_lhu:
+			case rv_op_lw:
+			case rv_op_lwu:
+			case rv_op_ld:
+			case rv_op_fld:
+			case rv_op_flw:
+				return R_RISCV_TPREL_LO12_I;
+			case rv_op_sb:
+			case rv_op_sh:
+			case rv_op_sw:
+			case rv_op_sd:
+			case rv_op_fsw:
+			case rv_op_fsd:
+				return R_RISCV_TPREL_LO12_S;
+		}
+		return R_RISCV_NONE;
 	}
 
 	int handle_reloc_tprel_add(decode &dec)
 	{
+		switch (dec.op) {
+			case rv_op_add:
+				return R_RISCV_TPREL_ADD;
+		}
 		return R_RISCV_NONE; /* TODO */
 	}
 
