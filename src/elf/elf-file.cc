@@ -129,6 +129,15 @@ size_t elf_file::add_reloc(Elf64_Addr r_offset, Elf64_Xword r_sym,
 	return i;
 }
 
+size_t elf_file::section_num(std::string section_name)
+{
+	if (section_name == ".text") return text;
+	else if (section_name == ".data") return data;
+	else if (section_name == ".bss") return bss;
+	else if (section_name == ".rodata") return rodata;
+	else return SHN_UNDEF;
+}
+
 void elf_file::load(std::string filename, bool headers_only)
 {
 	FILE *file;
@@ -540,7 +549,14 @@ void elf_file::copy_to_symbol_table_sections()
 	if (symtab == 0) return;
 
 	elf_section &symtab_section = sections[symtab];
-	shdrs[symtab].sh_info = symbols.size();
+
+	// set sh_info to index of first global symbol
+	for (size_t i = 0; i < symbols.size(); i++) {
+		if (ELF64_ST_BIND(symbols[i].st_info) == STB_GLOBAL) {
+			shdrs[symtab].sh_info = i;
+			break;
+		}
+	}
 
 	switch (ei_class) {
 		case ELFCLASS32:

@@ -54,6 +54,7 @@ struct elf_file
 		Elf64_Byte st_other, Elf64_Half st_shndx, Elf64_Addr st_value);
 	size_t add_reloc(Elf64_Addr r_offset, Elf64_Xword r_sym,
 		Elf64_Xword r_type, Elf64_Sxword r_addend);
+	size_t section_num(std::string name);
 
 	void load(std::string filename, bool headers_only = false);
 	void save(std::string filename);

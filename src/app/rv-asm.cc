@@ -1759,28 +1759,40 @@ load_store:
 			auto sym_i = as.labels_byname.find(reloc->name);
 			if (sym_i == as.labels_byname.end()) {
 				as.add_label(reloc->name, section_offset(SHN_UNDEF, 0));
+				as.global(reloc->name);
 			}
 		}
 
 		/* add symbols */
 		for (auto &ent : as.labels_byname) {
 			auto &label = ent.second;
-			int st_bind = std::find(as.strong_exports.begin(), as.strong_exports.end(),
-				label->name) != as.strong_exports.end() ? STB_GLOBAL : STB_LOCAL;
+			if (std::find(as.strong_exports.begin(), as.strong_exports.end(),
+				label->name) != as.strong_exports.end()) continue; /* skip globals */
 			if (label->offset.section() == SHN_ABS) {
-				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
+				label->elf_sym = elf.add_symbol(label->name, STB_LOCAL, STT_NOTYPE, STV_DEFAULT,
+					label->offset.section(), label->offset.second);
+			} else if (label->offset.section() == SHN_UNDEF) {
+				label->elf_sym = elf.add_symbol(label->name, STB_LOCAL, STT_NOTYPE, STV_DEFAULT,
+					label->offset.section(), label->offset.second);
+			} else {
+				size_t section_num = elf.section_num(as.sections[label->offset.section()]->name);
+				label->elf_sym = elf.add_symbol(label->name, STB_LOCAL, STT_NOTYPE, STV_DEFAULT,
+					section_num, label->offset.offset());
+			}
+		}
+
+		/* add global symbols */
+		for (auto &name : as.strong_exports) {
+			auto &label = as.labels_byname[name];
+			if (label->offset.section() == SHN_ABS) {
+				label->elf_sym = elf.add_symbol(label->name, STB_GLOBAL, STT_NOTYPE, STV_DEFAULT,
 					label->offset.section(), label->offset.second);
 			} else if (label->offset.section() == SHN_UNDEF) {
 				label->elf_sym = elf.add_symbol(label->name, STB_GLOBAL, STT_NOTYPE, STV_DEFAULT,
 					label->offset.section(), label->offset.second);
 			} else {
-				size_t section_num = SHN_UNDEF;
-				std::string section_name = as.sections[label->offset.section()]->name;
-				if (section_name == ".text") section_num = elf.text;
-				else if (section_name == ".data") section_num = elf.data;
-				else if (section_name == ".bss") section_num = elf.bss;
-				else if (section_name == ".rodata") section_num = elf.rodata;
-				label->elf_sym = elf.add_symbol(label->name, st_bind, STT_NOTYPE, STV_DEFAULT,
+				size_t section_num = elf.section_num(as.sections[label->offset.section()]->name);
+				label->elf_sym = elf.add_symbol(label->name, STB_GLOBAL, STT_NOTYPE, STV_DEFAULT,
 					section_num, label->offset.offset());
 			}
 		}
