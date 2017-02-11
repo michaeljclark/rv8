@@ -37,8 +37,16 @@
  *
  *   template <typename T> inline riscv::inst_t riscv::encode_inst(T &dec)
  *
- * Pseudo instructions can be encoded by first calling encode_psuedo
- * to translate to a regular instruction (false is returned if the
+ * Pseudo instructions
+ * ===================
+ * Pseudo instructions can be decoded by calling decode_pseudo_inst.
+ * This will use constraints to transform a regular instruction into a
+ * pseudo instruction.
+ *
+ *	 template <typename T> inline bool riscv::decode_pseudo_inst(T &dec)
+ *
+ * Pseudo instructions can be encoded by calling encode_psuedo
+ * to translate it to a regular instruction (false is returned if the
  * intruction is not a valid pseudo-instruction) followed by calling
  * the normal enocde_inst function.
  *
