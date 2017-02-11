@@ -1564,6 +1564,10 @@ load_store:
 	int handle_reloc_other(decode &dec)
 	{
 		switch (dec.op) {
+			case rv_op_ble:
+			case rv_op_bleu:
+			case rv_op_bgt:
+			case rv_op_bgtu:
 			case rv_op_beq:
 			case rv_op_bne:
 			case rv_op_blt:
