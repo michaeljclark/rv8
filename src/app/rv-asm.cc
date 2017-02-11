@@ -1584,7 +1584,7 @@ load_store:
 			case rv_op_add:
 				return R_RISCV_TPREL_ADD;
 		}
-		return R_RISCV_NONE; /* TODO */
+		return R_RISCV_NONE;
 	}
 
 	int handle_reloc_gprel(decode &dec)
