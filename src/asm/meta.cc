@@ -1740,16 +1740,16 @@ const rv_codec rv_inst_codec[] = {
 	/*                fmv.q */ rv_codec_r,
 	/*               fabs.q */ rv_codec_r,
 	/*               fneg.q */ rv_codec_r,
-	/*                  ble */ rv_codec_sb,
-	/*                 bleu */ rv_codec_sb,
-	/*                  bgt */ rv_codec_sb,
-	/*                 bgtu */ rv_codec_sb,
 	/*                 beqz */ rv_codec_sb,
 	/*                 bnez */ rv_codec_sb,
 	/*                 blez */ rv_codec_sb,
 	/*                 bgez */ rv_codec_sb,
 	/*                 bltz */ rv_codec_sb,
 	/*                 bgtz */ rv_codec_sb,
+	/*                  ble */ rv_codec_sb,
+	/*                 bleu */ rv_codec_sb,
+	/*                  bgt */ rv_codec_sb,
+	/*                 bgtu */ rv_codec_sb,
 	/*                    j */ rv_codec_uj,
 	/*                  ret */ rv_codec_i,
 	/*                   jr */ rv_codec_i,
@@ -2061,16 +2061,16 @@ const char* rv_inst_format[] = {
 	/*                fmv.q */ rv_fmt_rd_rs1,
 	/*               fabs.q */ rv_fmt_rd_rs1,
 	/*               fneg.q */ rv_fmt_rd_rs1,
-	/*                  ble */ rv_fmt_rs2_rs1_offset,
-	/*                 bleu */ rv_fmt_rs2_rs1_offset,
-	/*                  bgt */ rv_fmt_rs2_rs1_offset,
-	/*                 bgtu */ rv_fmt_rs2_rs1_offset,
 	/*                 beqz */ rv_fmt_rs1_offset,
 	/*                 bnez */ rv_fmt_rs1_offset,
 	/*                 blez */ rv_fmt_rs2_offset,
 	/*                 bgez */ rv_fmt_rs1_offset,
 	/*                 bltz */ rv_fmt_rs1_offset,
 	/*                 bgtz */ rv_fmt_rs2_offset,
+	/*                  ble */ rv_fmt_rs2_rs1_offset,
+	/*                 bleu */ rv_fmt_rs2_rs1_offset,
+	/*                  bgt */ rv_fmt_rs2_rs1_offset,
+	/*                 bgtu */ rv_fmt_rs2_rs1_offset,
 	/*                    j */ rv_fmt_offset,
 	/*                  ret */ rv_fmt_none,
 	/*                   jr */ rv_fmt_rs1,
@@ -2382,16 +2382,16 @@ const rv_operand_data* rv_inst_operand_data[] = {
 	/*                fmv.q */ rv_operands_sx_rd_sx_rs1,
 	/*               fabs.q */ rv_operands_sx_rd_sx_rs1,
 	/*               fneg.q */ rv_operands_sx_rd_sx_rs1,
-	/*                  ble */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
-	/*                 bleu */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
-	/*                  bgt */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
-	/*                 bgtu */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
 	/*                 beqz */ rv_operands_sx_rs1_T_oimm20,
 	/*                 bnez */ rv_operands_sx_rs1_T_oimm20,
 	/*                 blez */ rv_operands_sx_rs2_T_oimm20,
 	/*                 bgez */ rv_operands_sx_rs1_T_oimm20,
 	/*                 bltz */ rv_operands_sx_rs1_T_oimm20,
 	/*                 bgtz */ rv_operands_sx_rs2_T_oimm20,
+	/*                  ble */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
+	/*                 bleu */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
+	/*                  bgt */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
+	/*                 bgtu */ rv_operands_sx_rs2_sx_rs1_T_oimm20,
 	/*                    j */ rv_operands_T_oimm20,
 	/*                  ret */ rv_operands_none,
 	/*                   jr */ rv_operands_sx_rs1,
@@ -2703,16 +2703,16 @@ const riscv::inst_t rv_inst_match[] = {
 	/*                fmv.q */ 0x0000000000000000,
 	/*               fabs.q */ 0x0000000000000000,
 	/*               fneg.q */ 0x0000000000000000,
-	/*                  ble */ 0x0000000000000000,
-	/*                 bleu */ 0x0000000000000000,
-	/*                  bgt */ 0x0000000000000000,
-	/*                 bgtu */ 0x0000000000000000,
 	/*                 beqz */ 0x0000000000000000,
 	/*                 bnez */ 0x0000000000000000,
 	/*                 blez */ 0x0000000000000000,
 	/*                 bgez */ 0x0000000000000000,
 	/*                 bltz */ 0x0000000000000000,
 	/*                 bgtz */ 0x0000000000000000,
+	/*                  ble */ 0x0000000000000000,
+	/*                 bleu */ 0x0000000000000000,
+	/*                  bgt */ 0x0000000000000000,
+	/*                 bgtu */ 0x0000000000000000,
 	/*                    j */ 0x0000000000000000,
 	/*                  ret */ 0x0000000000000000,
 	/*                   jr */ 0x0000000000000000,
@@ -3024,16 +3024,16 @@ const riscv::inst_t rv_inst_mask[] = {
 	/*                fmv.q */ 0x0000000000000000,
 	/*               fabs.q */ 0x0000000000000000,
 	/*               fneg.q */ 0x0000000000000000,
-	/*                  ble */ 0x0000000000000000,
-	/*                 bleu */ 0x0000000000000000,
-	/*                  bgt */ 0x0000000000000000,
-	/*                 bgtu */ 0x0000000000000000,
 	/*                 beqz */ 0x0000000000000000,
 	/*                 bnez */ 0x0000000000000000,
 	/*                 blez */ 0x0000000000000000,
 	/*                 bgez */ 0x0000000000000000,
 	/*                 bltz */ 0x0000000000000000,
 	/*                 bgtz */ 0x0000000000000000,
+	/*                  ble */ 0x0000000000000000,
+	/*                 bleu */ 0x0000000000000000,
+	/*                  bgt */ 0x0000000000000000,
+	/*                 bgtu */ 0x0000000000000000,
 	/*                    j */ 0x0000000000000000,
 	/*                  ret */ 0x0000000000000000,
 	/*                   jr */ 0x0000000000000000,
@@ -3161,22 +3161,6 @@ const rvc_constraint rvcc_fneg_q[] = {
 	rvc_end
 };
 
-const rvc_constraint rvcc_ble[] = {
-	rvc_end
-};
-
-const rvc_constraint rvcc_bleu[] = {
-	rvc_end
-};
-
-const rvc_constraint rvcc_bgt[] = {
-	rvc_end
-};
-
-const rvc_constraint rvcc_bgtu[] = {
-	rvc_end
-};
-
 const rvc_constraint rvcc_beqz[] = {
 	rvc_rs2_eq_x0,
 	rvc_end
@@ -3204,6 +3188,22 @@ const rvc_constraint rvcc_bltz[] = {
 
 const rvc_constraint rvcc_bgtz[] = {
 	rvc_rs1_eq_x0,
+	rvc_end
+};
+
+const rvc_constraint rvcc_ble[] = {
+	rvc_end
+};
+
+const rvc_constraint rvcc_bleu[] = {
+	rvc_end
+};
+
+const rvc_constraint rvcc_bgt[] = {
+	rvc_end
+};
+
+const rvc_constraint rvcc_bgtu[] = {
 	rvc_end
 };
 
@@ -3328,16 +3328,16 @@ const rv_comp_data rvcp_bne[] = {
 };
 
 const rv_comp_data rvcp_blt[] = {
-	{ rv_op_bgt, rvcc_bgt },
 	{ rv_op_bltz, rvcc_bltz },
 	{ rv_op_bgtz, rvcc_bgtz },
+	{ rv_op_bgt, rvcc_bgt },
 	{ rv_op_illegal, nullptr }
 };
 
 const rv_comp_data rvcp_bge[] = {
-	{ rv_op_ble, rvcc_ble },
 	{ rv_op_blez, rvcc_blez },
 	{ rv_op_bgez, rvcc_bgez },
+	{ rv_op_ble, rvcc_ble },
 	{ rv_op_illegal, nullptr }
 };
 
@@ -3757,16 +3757,16 @@ const rv_comp_data* rv_inst_pseudo[] = {
 	/*                fmv.q */ nullptr,
 	/*               fabs.q */ nullptr,
 	/*               fneg.q */ nullptr,
-	/*                  ble */ nullptr,
-	/*                 bleu */ nullptr,
-	/*                  bgt */ nullptr,
-	/*                 bgtu */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
 	/*                 bgez */ nullptr,
 	/*                 bltz */ nullptr,
 	/*                 bgtz */ nullptr,
+	/*                  ble */ nullptr,
+	/*                 bleu */ nullptr,
+	/*                  bgt */ nullptr,
+	/*                 bgtu */ nullptr,
 	/*                    j */ nullptr,
 	/*                  ret */ nullptr,
 	/*                   jr */ nullptr,
@@ -4078,16 +4078,16 @@ const rv_comp_data rv_inst_depseudo[] = {
 	/*                fmv.q */ { rv_op_fsgnj_q, rvcc_fmv_q },
 	/*               fabs.q */ { rv_op_fsgnjx_q, rvcc_fabs_q },
 	/*               fneg.q */ { rv_op_fsgnjn_q, rvcc_fneg_q },
-	/*                  ble */ { rv_op_bge, rvcc_ble },
-	/*                 bleu */ { rv_op_bgeu, rvcc_bleu },
-	/*                  bgt */ { rv_op_blt, rvcc_bgt },
-	/*                 bgtu */ { rv_op_bltu, rvcc_bgtu },
 	/*                 beqz */ { rv_op_beq, rvcc_beqz },
 	/*                 bnez */ { rv_op_bne, rvcc_bnez },
 	/*                 blez */ { rv_op_bge, rvcc_blez },
 	/*                 bgez */ { rv_op_bge, rvcc_bgez },
 	/*                 bltz */ { rv_op_blt, rvcc_bltz },
 	/*                 bgtz */ { rv_op_blt, rvcc_bgtz },
+	/*                  ble */ { rv_op_bge, rvcc_ble },
+	/*                 bleu */ { rv_op_bgeu, rvcc_bleu },
+	/*                  bgt */ { rv_op_blt, rvcc_bgt },
+	/*                 bgtu */ { rv_op_bltu, rvcc_bgtu },
 	/*                    j */ { rv_op_jal, rvcc_j },
 	/*                  ret */ { rv_op_jalr, rvcc_ret },
 	/*                   jr */ { rv_op_jalr, rvcc_jr },
@@ -4399,16 +4399,16 @@ const rv_comp_data* rv_inst_comp_rv32[] = {
 	/*                fmv.q */ nullptr,
 	/*               fabs.q */ nullptr,
 	/*               fneg.q */ nullptr,
-	/*                  ble */ nullptr,
-	/*                 bleu */ nullptr,
-	/*                  bgt */ nullptr,
-	/*                 bgtu */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
 	/*                 bgez */ nullptr,
 	/*                 bltz */ nullptr,
 	/*                 bgtz */ nullptr,
+	/*                  ble */ nullptr,
+	/*                 bleu */ nullptr,
+	/*                  bgt */ nullptr,
+	/*                 bgtu */ nullptr,
 	/*                    j */ nullptr,
 	/*                  ret */ nullptr,
 	/*                   jr */ nullptr,
@@ -4720,16 +4720,16 @@ const rv_comp_data* rv_inst_comp_rv64[] = {
 	/*                fmv.q */ nullptr,
 	/*               fabs.q */ nullptr,
 	/*               fneg.q */ nullptr,
-	/*                  ble */ nullptr,
-	/*                 bleu */ nullptr,
-	/*                  bgt */ nullptr,
-	/*                 bgtu */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
 	/*                 bgez */ nullptr,
 	/*                 bltz */ nullptr,
 	/*                 bgtz */ nullptr,
+	/*                  ble */ nullptr,
+	/*                 bleu */ nullptr,
+	/*                  bgt */ nullptr,
+	/*                 bgtu */ nullptr,
 	/*                    j */ nullptr,
 	/*                  ret */ nullptr,
 	/*                   jr */ nullptr,
@@ -5041,16 +5041,16 @@ const rv_comp_data* rv_inst_comp_rv128[] = {
 	/*                fmv.q */ nullptr,
 	/*               fabs.q */ nullptr,
 	/*               fneg.q */ nullptr,
-	/*                  ble */ nullptr,
-	/*                 bleu */ nullptr,
-	/*                  bgt */ nullptr,
-	/*                 bgtu */ nullptr,
 	/*                 beqz */ nullptr,
 	/*                 bnez */ nullptr,
 	/*                 blez */ nullptr,
 	/*                 bgez */ nullptr,
 	/*                 bltz */ nullptr,
 	/*                 bgtz */ nullptr,
+	/*                  ble */ nullptr,
+	/*                 bleu */ nullptr,
+	/*                  bgt */ nullptr,
+	/*                 bgtu */ nullptr,
 	/*                    j */ nullptr,
 	/*                  ret */ nullptr,
 	/*                   jr */ nullptr,
@@ -5362,16 +5362,16 @@ const int rv_inst_decomp_rv32[] = {
 	/*                fmv.q */ rv_op_illegal,
 	/*               fabs.q */ rv_op_illegal,
 	/*               fneg.q */ rv_op_illegal,
-	/*                  ble */ rv_op_illegal,
-	/*                 bleu */ rv_op_illegal,
-	/*                  bgt */ rv_op_illegal,
-	/*                 bgtu */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,
 	/*                 bgez */ rv_op_illegal,
 	/*                 bltz */ rv_op_illegal,
 	/*                 bgtz */ rv_op_illegal,
+	/*                  ble */ rv_op_illegal,
+	/*                 bleu */ rv_op_illegal,
+	/*                  bgt */ rv_op_illegal,
+	/*                 bgtu */ rv_op_illegal,
 	/*                    j */ rv_op_illegal,
 	/*                  ret */ rv_op_illegal,
 	/*                   jr */ rv_op_illegal,
@@ -5683,16 +5683,16 @@ const int rv_inst_decomp_rv64[] = {
 	/*                fmv.q */ rv_op_illegal,
 	/*               fabs.q */ rv_op_illegal,
 	/*               fneg.q */ rv_op_illegal,
-	/*                  ble */ rv_op_illegal,
-	/*                 bleu */ rv_op_illegal,
-	/*                  bgt */ rv_op_illegal,
-	/*                 bgtu */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,
 	/*                 bgez */ rv_op_illegal,
 	/*                 bltz */ rv_op_illegal,
 	/*                 bgtz */ rv_op_illegal,
+	/*                  ble */ rv_op_illegal,
+	/*                 bleu */ rv_op_illegal,
+	/*                  bgt */ rv_op_illegal,
+	/*                 bgtu */ rv_op_illegal,
 	/*                    j */ rv_op_illegal,
 	/*                  ret */ rv_op_illegal,
 	/*                   jr */ rv_op_illegal,
@@ -6004,16 +6004,16 @@ const int rv_inst_decomp_rv128[] = {
 	/*                fmv.q */ rv_op_illegal,
 	/*               fabs.q */ rv_op_illegal,
 	/*               fneg.q */ rv_op_illegal,
-	/*                  ble */ rv_op_illegal,
-	/*                 bleu */ rv_op_illegal,
-	/*                  bgt */ rv_op_illegal,
-	/*                 bgtu */ rv_op_illegal,
 	/*                 beqz */ rv_op_illegal,
 	/*                 bnez */ rv_op_illegal,
 	/*                 blez */ rv_op_illegal,
 	/*                 bgez */ rv_op_illegal,
 	/*                 bltz */ rv_op_illegal,
 	/*                 bgtz */ rv_op_illegal,
+	/*                  ble */ rv_op_illegal,
+	/*                 bleu */ rv_op_illegal,
+	/*                  bgt */ rv_op_illegal,
+	/*                 bgtu */ rv_op_illegal,
 	/*                    j */ rv_op_illegal,
 	/*                  ret */ rv_op_illegal,
 	/*                   jr */ rv_op_illegal,

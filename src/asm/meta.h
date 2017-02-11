@@ -985,16 +985,16 @@ enum rv_op
 	rv_op_fmv_q = 288,                 	/* Quadruple-precision move */
 	rv_op_fabs_q = 289,                	/* Quadruple-precision absolute value */
 	rv_op_fneg_q = 290,                	/* Quadruple-precision negate */
-	rv_op_ble = 291,                   
-	rv_op_bleu = 292,                  
-	rv_op_bgt = 293,                   
-	rv_op_bgtu = 294,                  
-	rv_op_beqz = 295,                  	/* Branch if = zero */
-	rv_op_bnez = 296,                  	/* Branch if ≠ zero */
-	rv_op_blez = 297,                  	/* Branch if ≤ zero */
-	rv_op_bgez = 298,                  	/* Branch if ≥ zero */
-	rv_op_bltz = 299,                  	/* Branch if < zero */
-	rv_op_bgtz = 300,                  	/* Branch if > zero */
+	rv_op_beqz = 291,                  	/* Branch if = zero */
+	rv_op_bnez = 292,                  	/* Branch if ≠ zero */
+	rv_op_blez = 293,                  	/* Branch if ≤ zero */
+	rv_op_bgez = 294,                  	/* Branch if ≥ zero */
+	rv_op_bltz = 295,                  	/* Branch if < zero */
+	rv_op_bgtz = 296,                  	/* Branch if > zero */
+	rv_op_ble = 297,                   
+	rv_op_bleu = 298,                  
+	rv_op_bgt = 299,                   
+	rv_op_bgtu = 300,                  
 	rv_op_j = 301,                     	/* Jump */
 	rv_op_ret = 302,                   	/* Return from subroutine */
 	rv_op_jr = 303,                    	/* Jump register */
