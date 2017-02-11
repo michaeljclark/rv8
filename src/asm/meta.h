@@ -916,9 +916,9 @@ enum rv_op
 	rv_op_fclass_q = 219,              	/* FP Classify (QP) */
 	rv_op_fcvt_l_q = 220,              	/* FP Convert Float to Double Word (QP) */
 	rv_op_fcvt_lu_q = 221,             	/* FP Convert Float to Double Word Unsigned (QP) */
-	rv_op_fmv_x_q = 222,               	/* FP Move to Integer Register (QP) */
-	rv_op_fcvt_q_l = 223,              	/* FP Convert Double Word to Float (QP) */
-	rv_op_fcvt_q_lu = 224,             	/* FP Convert Double Word Unsigned Float (QP) */
+	rv_op_fcvt_q_l = 222,              	/* FP Convert Double Word to Float (QP) */
+	rv_op_fcvt_q_lu = 223,             	/* FP Convert Double Word Unsigned Float (QP) */
+	rv_op_fmv_x_q = 224,               	/* FP Move to Integer Register (QP) */
 	rv_op_fmv_q_x = 225,               	/* FP Move from Integer Register (QP) */
 	rv_op_c_addi4spn = 226,            
 	rv_op_c_fld = 227,                 

@@ -231,9 +231,12 @@ fclass.q   "rd ← rd ← f128_classify(f128(frs1))"
 
 fcvt.l.q   "frm ← rm ; rd ← s64(f128(frs1))"
 fcvt.lu.q  "frm ← rm ; if f128(frs1) > 0 then rd ← u64(f128(frs1) else rd ← 0"
-fmv.x.q    "rd ← s64(frs1)"
 fcvt.q.l   "frm ← rm ; frd ← f128(u64(rs1))"
 fcvt.q.lu  "frm ← rm ; frd ← f128(s64(rs1))"
+
+# RV128Q   "RV128Q Standard Extension for Quadruple-Precision Floating-Point (in addition to RV64Q)"
+
+fmv.x.q    "rd ← s64(frs1)"
 fmv.q.x    "frd ← u64(rs1)"
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"

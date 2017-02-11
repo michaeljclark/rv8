@@ -238,9 +238,12 @@ fclass.q   "FP Classify (QP)"
 
 fcvt.l.q   "FP Convert Float to Double Word (QP)"
 fcvt.lu.q  "FP Convert Float to Double Word Unsigned (QP)"
-fmv.x.q    "FP Move to Integer Register (QP)"
 fcvt.q.l   "FP Convert Double Word to Float (QP)"
 fcvt.q.lu  "FP Convert Double Word Unsigned Float (QP)"
+
+# RV128Q   "RV128Q Standard Extension for Quadruple-Precision Floating-Point (in addition to RV64Q)"
+
+fmv.x.q    "FP Move to Integer Register (QP)"
 fmv.q.x    "FP Move from Integer Register (QP)"
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"

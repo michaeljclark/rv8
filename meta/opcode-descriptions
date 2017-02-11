@@ -228,9 +228,7 @@ fcvt.w.q   "Convert the quadruple-precision value in frs1 to a 32-bit signed int
 fcvt.wu.q  "Convert the quadruple-precision value in frs1 to a 32-bit unsigned integer, then write the result to rd"
 fcvt.q.w   "Convert the 64-bit signed integer in rs1 to a quadruple-precision value, then write the result to frd"
 fcvt.q.wu  "Convert the 64-bit unsigned integer in rs1 to a quadruple-precision value, then write the result to frd"
-fmv.x.q    "Write the sign extended quadruple-precision value in frs1 into integer register rd"
 fclass.q   "Set rd to a 10-bit mask indicating the class of the quadruple-precision value in frs1"
-fmv.q.x    "Write the 64-bit integer register rs1 into the quadruple-precision register frd"
 
 # RV64Q    "RV64Q Standard Extension for Quadruple-Precision Floating-Point (in addition to RV32Q)"
 
@@ -238,6 +236,11 @@ fcvt.l.q   "Convert the quadruple-precision value in frs1 to a 64-bit signed int
 fcvt.lu.q  "Convert the quadruple-precision value in frs1 to a 64-bit unsigned integer, then write the result to rd"
 fcvt.q.l   "Convert the 64-bit signed integer in rs1 to a quadruple-precision value, then write the result to frd"
 fcvt.q.lu  "Convert the 64-bit unsigned integer in rs1 to a quadruple-precision value, then write the result to frd"
+
+# RV128Q   "RV128Q Standard Extension for Quadruple-Precision Floating-Point (in addition to RV64Q)"
+
+fmv.x.q    "Write the sign extended quadruple-precision value in frs1 into integer register rd"
+fmv.q.x    "Write the 64-bit integer register rs1 into the quadruple-precision register frd"
 
 # RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
 

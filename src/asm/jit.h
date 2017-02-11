@@ -230,9 +230,9 @@ namespace riscv
 	inst_t emit_fclass_q(ireg5 rd, freg5 frs1);
 	inst_t emit_fcvt_l_q(ireg5 rd, freg5 frs1, arg3 rm);
 	inst_t emit_fcvt_lu_q(ireg5 rd, freg5 frs1, arg3 rm);
-	inst_t emit_fmv_x_q(ireg5 rd, freg5 frs1);
 	inst_t emit_fcvt_q_l(freg5 frd, ireg5 rs1, arg3 rm);
 	inst_t emit_fcvt_q_lu(freg5 frd, ireg5 rs1, arg3 rm);
+	inst_t emit_fmv_x_q(ireg5 rd, freg5 frs1);
 	inst_t emit_fmv_q_x(freg5 frd, ireg5 rs1);
 
 	bool asm_lui(assembler &as, ireg5 rd, simm32 imm20);
@@ -456,9 +456,9 @@ namespace riscv
 	bool asm_fclass_q(assembler &as, ireg5 rd, freg5 frs1);
 	bool asm_fcvt_l_q(assembler &as, ireg5 rd, freg5 frs1, arg3 rm);
 	bool asm_fcvt_lu_q(assembler &as, ireg5 rd, freg5 frs1, arg3 rm);
-	bool asm_fmv_x_q(assembler &as, ireg5 rd, freg5 frs1);
 	bool asm_fcvt_q_l(assembler &as, freg5 frd, ireg5 rs1, arg3 rm);
 	bool asm_fcvt_q_lu(assembler &as, freg5 frd, ireg5 rs1, arg3 rm);
+	bool asm_fmv_x_q(assembler &as, ireg5 rd, freg5 frs1);
 	bool asm_fmv_q_x(assembler &as, freg5 frd, ireg5 rs1);
 }
 

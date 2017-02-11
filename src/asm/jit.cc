@@ -2503,16 +2503,6 @@ inst_t riscv::emit_fcvt_lu_q(ireg5 rd, freg5 frs1, arg3 rm)
 	return encode_inst(dec);
 }
 
-inst_t riscv::emit_fmv_x_q(ireg5 rd, freg5 frs1)
-{
-	decode dec;
-	if (!(rd.valid() && frs1.valid())) return 0; /* illegal instruction */
-	dec.op = rv_op_fmv_x_q;
-	dec.rd = rd;
-	dec.rs1 = frs1;
-	return encode_inst(dec);
-}
-
 inst_t riscv::emit_fcvt_q_l(freg5 frd, ireg5 rs1, arg3 rm)
 {
 	decode dec;
@@ -2532,6 +2522,16 @@ inst_t riscv::emit_fcvt_q_lu(freg5 frd, ireg5 rs1, arg3 rm)
 	dec.rd = frd;
 	dec.rs1 = rs1;
 	dec.rm = rm;
+	return encode_inst(dec);
+}
+
+inst_t riscv::emit_fmv_x_q(ireg5 rd, freg5 frs1)
+{
+	decode dec;
+	if (!(rd.valid() && frs1.valid())) return 0; /* illegal instruction */
+	dec.op = rv_op_fmv_x_q;
+	dec.rd = rd;
+	dec.rs1 = frs1;
 	return encode_inst(dec);
 }
 
@@ -5248,17 +5248,6 @@ bool riscv::asm_fcvt_lu_q(assembler &as, ireg5 rd, freg5 frs1, arg3 rm)
 	return true;
 }
 
-bool riscv::asm_fmv_x_q(assembler &as, ireg5 rd, freg5 frs1)
-{
-	decode dec;
-	if (!(rd.valid() && frs1.valid())) return false; /* illegal instruction */
-	dec.op = rv_op_fmv_x_q;
-	dec.rd = rd;
-	dec.rs1 = frs1;
-	as.add_inst(encode_inst(dec));
-	return true;
-}
-
 bool riscv::asm_fcvt_q_l(assembler &as, freg5 frd, ireg5 rs1, arg3 rm)
 {
 	decode dec;
@@ -5279,6 +5268,17 @@ bool riscv::asm_fcvt_q_lu(assembler &as, freg5 frd, ireg5 rs1, arg3 rm)
 	dec.rd = frd;
 	dec.rs1 = rs1;
 	dec.rm = rm;
+	as.add_inst(encode_inst(dec));
+	return true;
+}
+
+bool riscv::asm_fmv_x_q(assembler &as, ireg5 rd, freg5 frs1)
+{
+	decode dec;
+	if (!(rd.valid() && frs1.valid())) return false; /* illegal instruction */
+	dec.op = rv_op_fmv_x_q;
+	dec.rd = rd;
+	dec.rs1 = frs1;
 	as.add_inst(encode_inst(dec));
 	return true;
 }

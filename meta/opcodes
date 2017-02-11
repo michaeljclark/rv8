@@ -291,12 +291,15 @@ fclass.q   rd frs1  24..20=0 31..27=0x1C 14..12=1 26..25=3 6..2=0x14 1..0=3 r+rf
 
 fcvt.l.q   rd frs1 24..20=2 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf         rv64q rv128q
 fcvt.lu.q  rd frs1 24..20=3 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3 r·m+rf         rv64q rv128q
-fmv.x.q    rd frs1 24..20=0 31..27=0x1C 14..12=0 26..25=3 6..2=0x14 1..0=3 r+rf           rv64q rv128q
 fcvt.q.l   frd rs1 24..20=2 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr         rv64q rv128q
 fcvt.q.lu  frd rs1 24..20=3 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3 r·m+fr         rv64q rv128q
+
+# RV128Q   "RV128Q Standard Extension for Quadruple-Precision Floating-Point (in addition to RV64Q)"
+
+fmv.x.q    rd frs1 24..20=0 31..27=0x1C 14..12=0 26..25=3 6..2=0x14 1..0=3 r+rf           rv64q rv128q
 fmv.q.x    frd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=3 6..2=0x14 1..0=3 r+fr           rv64q rv128q
 
-# RV32FD   "RV32F and RV32D Common Floating-Point Instructions"
+# RV32FD   "RV32F and RV32D žommon Floating-Point Instructions"
 
 #frcsr     rd       19..15=0 31..20=0x003 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f rv128f
 #frrm      rd       19..15=0 31..20=0x002 14..12=2 6..2=0x1C 1..0=3         i·csr  rv32f rv64f rv128f
