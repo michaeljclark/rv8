@@ -985,29 +985,33 @@ enum rv_op
 	rv_op_fmv_q = 288,                 	/* Quadruple-precision move */
 	rv_op_fabs_q = 289,                	/* Quadruple-precision absolute value */
 	rv_op_fneg_q = 290,                	/* Quadruple-precision negate */
-	rv_op_beqz = 291,                  	/* Branch if = zero */
-	rv_op_bnez = 292,                  	/* Branch if ≠ zero */
-	rv_op_blez = 293,                  	/* Branch if ≤ zero */
-	rv_op_bgez = 294,                  	/* Branch if ≥ zero */
-	rv_op_bltz = 295,                  	/* Branch if < zero */
-	rv_op_bgtz = 296,                  	/* Branch if > zero */
-	rv_op_j = 297,                     	/* Jump */
-	rv_op_ret = 298,                   	/* Return from subroutine */
-	rv_op_jr = 299,                    	/* Jump register */
-	rv_op_rdcycle = 300,               	/* Read Cycle Counter Status Register */
-	rv_op_rdtime = 301,                	/* Read Timer Status register */
-	rv_op_rdinstret = 302,             	/* Read Instructions Retired Status Register */
-	rv_op_rdcycleh = 303,              	/* Read Cycle Counter Status Register (upper 32-bits on RV32) */
-	rv_op_rdtimeh = 304,               	/* Read Timer Status register (upper 32-bits on RV32) */
-	rv_op_rdinstreth = 305,            	/* Read Instructions Retired Status Register (upper 32-bits on RV32) */
-	rv_op_frcsr = 306,                 	/* Read FP Control and Status Register */
-	rv_op_frrm = 307,                  	/* Read FP Rounding Mode */
-	rv_op_frflags = 308,               	/* Read FP Accrued Exception Flags */
-	rv_op_fscsr = 309,                 	/* Set FP Control and Status Register */
-	rv_op_fsrm = 310,                  	/* Set FP Rounding Mode */
-	rv_op_fsflags = 311,               	/* Set FP Accrued Exception Flags */
-	rv_op_fsrmi = 312,                 	/* Set FP Rounding Mode Immediate */
-	rv_op_fsflagsi = 313,              	/* Set FP Accrued Exception Flags Immediate */
+	rv_op_ble = 291,                   
+	rv_op_bleu = 292,                  
+	rv_op_bgt = 293,                   
+	rv_op_bgtu = 294,                  
+	rv_op_beqz = 295,                  	/* Branch if = zero */
+	rv_op_bnez = 296,                  	/* Branch if ≠ zero */
+	rv_op_blez = 297,                  	/* Branch if ≤ zero */
+	rv_op_bgez = 298,                  	/* Branch if ≥ zero */
+	rv_op_bltz = 299,                  	/* Branch if < zero */
+	rv_op_bgtz = 300,                  	/* Branch if > zero */
+	rv_op_j = 301,                     	/* Jump */
+	rv_op_ret = 302,                   	/* Return from subroutine */
+	rv_op_jr = 303,                    	/* Jump register */
+	rv_op_rdcycle = 304,               	/* Read Cycle Counter Status Register */
+	rv_op_rdtime = 305,                	/* Read Timer Status register */
+	rv_op_rdinstret = 306,             	/* Read Instructions Retired Status Register */
+	rv_op_rdcycleh = 307,              	/* Read Cycle Counter Status Register (upper 32-bits on RV32) */
+	rv_op_rdtimeh = 308,               	/* Read Timer Status register (upper 32-bits on RV32) */
+	rv_op_rdinstreth = 309,            	/* Read Instructions Retired Status Register (upper 32-bits on RV32) */
+	rv_op_frcsr = 310,                 	/* Read FP Control and Status Register */
+	rv_op_frrm = 311,                  	/* Read FP Rounding Mode */
+	rv_op_frflags = 312,               	/* Read FP Accrued Exception Flags */
+	rv_op_fscsr = 313,                 	/* Set FP Control and Status Register */
+	rv_op_fsrm = 314,                  	/* Set FP Rounding Mode */
+	rv_op_fsflags = 315,               	/* Set FP Accrued Exception Flags */
+	rv_op_fsrmi = 316,                 	/* Set FP Rounding Mode Immediate */
+	rv_op_fsflagsi = 317,              	/* Set FP Accrued Exception Flags Immediate */
 };
 
 /* Primitive data structure */

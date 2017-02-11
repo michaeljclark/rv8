@@ -54,6 +54,7 @@ const char* rv_fmt_rd_csr_zimm =           "O\t0,c,7";
 const char* rv_fmt_rs2_offset_rs1 =        "O\t2,i(1)";
 const char* rv_fmt_frs2_offset_rs1 =       "O\t5,i(1)";
 const char* rv_fmt_rs1_rs2_offset =        "O\t1,2,o";
+const char* rv_fmt_rs2_rs1_offset =        "O\t2,1,o";
 const char* rv_fmt_aqrl_rd_rs2_rs1 =       "OAR\t0,2,(1)";
 const char* rv_fmt_aqrl_rd_rs1 =           "OAR\t0,(1)";
 const char* rv_fmt_rd =                    "O\t0";

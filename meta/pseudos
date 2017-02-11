@@ -32,6 +32,10 @@ blez        bge                    rs2,offset  rs1_eq_x0
 bgez        bge                    rs1,offset  rs2_eq_x0
 bltz        blt                    rs1,offset  rs2_eq_x0
 bgtz        blt                    rs2,offset  rs1_eq_x0
+ble         bge                    rs2,rs1,offset
+bleu        bgeu                   rs2,rs1,offset
+bgt         blt                    rs2,rs1,offset
+bgtu        bltu                   rs2,rs1,offset
 j           jal                    offset      rd_eq_x0
 jal         jal                    offset      rd_eq_ra
 ret         jalr                   none        rd_eq_x0 rs1_eq_ra

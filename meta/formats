@@ -27,6 +27,7 @@ rd,csr,zimm
 rs2,offset(rs1)
 frs2,offset(rs1)
 rs1,rs2,offset
+rs2,rs1,offset
 aqrl,rd,rs2,(rs1)
 aqrl,rd,(rs1)
 
