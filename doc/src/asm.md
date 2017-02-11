@@ -8,34 +8,36 @@ Assembler Directives
 
 The following table lists assembler directives:
 
-Directive    | Arguments                    | Description
-:----------- | :-------------               | :---------------
-.align       | integer                      | align to power of 2 (alias for .p2align)
-.file        | "filename"                   | emit filename FILE LOCAL symbol table
-.globl       | symbol_name                  | emit symbol_name to GLOBAL to symbol table
-.ident       | "string"                     | ignore
-.section     | [{.text,.data,.rodata,.bss}] | emit section (if not present, default .text) and make current
-.size        | symbol, symbol               | ignore
-.text        |                              | emit .text section (if not present) and make current
-.data        |                              | emit .data section (if not present) and make current
-.rodata      |                              | emit .rodata section (if not present) and make current
-.bss         |                              | emit .bss section (if not present) and make current
-.string      | "string"                     | emit string
-.asciz       | "string"                     | emit string (alias for .string)
-.equ         | name, value                  | constant definition
-.macro       | name arg1 [, argn]           | begin macro definition \argname to substitute
-.endm        |                              | end macro definition
-.type        | symbol, @function            | ignore
-.option      | {rvc,norvc,push,pop}         | RISC-V options
-.byte        |                              | 8-bit comma separated words
-.half        |                              | 16-bit comma separated words
-.word        |                              | 32-bit comma separated words
-.dword       |                              | 64-bit comma separated words
-.dtprelword  |                              | 32-bit thread local word
-.dtpreldword |                              | 64-bit thread local word
-.p2align     | p2,[pad_val=0],max           | align to power of 2
-.balign      | b,[pad_val=0]                | byte align
-.zero        | integer                      | zero bytes
+Directive    | Arguments                      | Description
+:----------- | :-------------                 | :---------------
+.align       | integer                        | align to power of 2 (alias for .p2align)
+.file        | "filename"                     | emit filename FILE LOCAL symbol table
+.globl       | symbol_name                    | emit symbol_name to symbol table (scope GLOBAL)
+.local       | symbol_name                    | emit symbol_name to symbol table (scope LOCAL)
+.comm        | symbol_name,size,align         | emit common object to .bss section
+.ident       | "string"                       | ignore
+.section     | [{.text,.data,.rodata,.bss}]   | emit section (if not present, default .text) and make current
+.size        | symbol, symbol                 | ignore
+.text        |                                | emit .text section (if not present) and make current
+.data        |                                | emit .data section (if not present) and make current
+.rodata      |                                | emit .rodata section (if not present) and make current
+.bss         |                                | emit .bss section (if not present) and make current
+.string      | "string"                       | emit string
+.asciz       | "string"                       | emit string (alias for .string)
+.equ         | name, value                    | constant definition
+.macro       | name arg1 [, argn]             | begin macro definition \argname to substitute
+.endm        |                                | end macro definition
+.type        | symbol, @function              | ignore
+.option      | {rvc,norvc,pic,nopic,push,pop} | RISC-V options
+.byte        |                                | 8-bit comma separated words
+.half        |                                | 16-bit comma separated words
+.word        |                                | 32-bit comma separated words
+.dword       |                                | 64-bit comma separated words
+.dtprelword  |                                | 32-bit thread local word
+.dtpreldword |                                | 64-bit thread local word
+.p2align     | p2,[pad_val=0],max             | align to power of 2
+.balign      | b,[pad_val=0]                  | byte align
+.zero        | integer                        | zero bytes
 
 Function expansions
 -------------------------
