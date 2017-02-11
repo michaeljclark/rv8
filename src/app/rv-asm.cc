@@ -301,7 +301,7 @@ void read_source(std::vector<asm_line_ptr> &data, std::string filename)
 struct rv_assembler
 {
 	std::string input_filename;
-	std::string output_filename = "a.o";
+	std::string output_filename;
 	bool help_or_error = false;
 	bool bail_on_errors = false;
 	bool debug = false;
@@ -488,6 +488,13 @@ struct rv_assembler
 		}
 
 		input_filename = result.first[0];
+		if (output_filename.size() == 0) {
+			std::vector<std::string> parts = split(input_filename, ".");
+			if (parts.size() > 1) {
+				parts.back() = "o";
+				output_filename = join(parts, ".");
+			}
+		}
 	}
 
 	bool check_symbol(std::vector<std::string> &args)
