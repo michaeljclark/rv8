@@ -369,7 +369,9 @@ struct rv_assembler
 		directive_map[".eqv"] = std::bind(&rv_assembler::handle_equ, this, _1);
 		directive_map[".file"] = std::bind(&rv_assembler::handle_file, this, _1);
 		directive_map[".globl"] = std::bind(&rv_assembler::handle_globl, this, _1);
+		directive_map[".local"] = std::bind(&rv_assembler::handle_local, this, _1);
 		directive_map[".weak"] = std::bind(&rv_assembler::handle_weak, this, _1);
+		directive_map[".comm"] = std::bind(&rv_assembler::handle_comm, this, _1);
 		directive_map[".ident"] = std::bind(&rv_assembler::handle_ident, this, _1);
 		directive_map[".macro"] = std::bind(&rv_assembler::handle_macro, this, _1);
 		directive_map[".endm"] = std::bind(&rv_assembler::handle_endm, this, _1);
@@ -617,12 +619,61 @@ struct rv_assembler
 		return true;
 	}
 
+	bool handle_local(asm_line_ptr &line)
+	{
+		if (line->args.size() != 2) {
+			return line->error(kInvalidOperands);
+		}
+		/* TODO */
+		return true;
+	}
+
 	bool handle_weak(asm_line_ptr &line)
 	{
 		if (line->args.size() != 2) {
 			return line->error(kInvalidOperands);
 		}
 		as.weak(line->args[1]);
+		return true;
+	}
+
+	bool handle_comm(asm_line_ptr &line)
+	{
+		/*
+		 * .comm symbol_name, <size>, <align>
+		 *
+		 * emit common object to .bss
+		 */
+		auto argv = line->split_args(",");
+		if (argv.size() != 3) {
+			return line->error(kInvalidOperands);
+		}
+		packToken result;
+		if (!eval(line, argv[1], result)) {
+			return line->error(kInvalidOperands);
+		}
+		s64 length = result.asInt();
+		if (!eval(line, argv[2], result)) {
+			return line->error(kInvalidOperands);
+		}
+		s64 align = result.asInt();
+
+		/*
+		 * TODO - symbol table type and size
+		 *
+		 * st_type = STT_OBJECT
+		 * st_size = length
+		 */
+		std::string symbol = argv[0][0];
+		auto save = as.current;
+		as.get_section(".bss");
+		as.balign(align);
+		as.add_label(symbol);
+		for (s64 i = 0; i < length; i++) {
+			as.append(u8(0));
+		}
+		as.current = save;
+
 		return true;
 	}
 
