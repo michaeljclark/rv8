@@ -1296,7 +1296,15 @@ out:
 			}
 		}
 
-		/* compress */
+		/*
+		 * compress
+		 *
+		 * TODO - handle compressed instruction relocations:
+		 *
+		 * - R_RISCV_RVC_BRANCH
+		 * - R_RISCV_RVC_JUMP
+		 * - R_RISCV_RVC_LUI
+		 */
 		if (rvc) {
 			if (width == rv_isa_rv32) {
 				compress_inst_rv32(dec);
