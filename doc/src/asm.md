@@ -50,12 +50,9 @@ Assembler Notation       | Description                 | Instruction / Macro
 %lo(symbol)              | Absolute (LO12)             | load, store, add
 %pcrel_hi(symbol)        | PC-relative (HI20)          | auipc
 %pcrel_lo(label)         | PC-relative (LO12)          | load, store, add
-%tls_ie_pcrel_hi(symbol) | TLS IE GOT "Initial Exec"   | la.tls.ie
-%tls_gd_pcrel_hi(symbol) | TLS GD GOT "Global Dynamic" | la.tls.gd
 %tprel_hi(symbol)        | TLS LE "Local Exec"         | auipc
 %tprel_lo(label)         | TLS LE "Local Exec"         | load, store, add
 %tprel_add(offset)       | TLS LE "Local Exec"         | add
-%gprel(symbol)           | GP-relative                 | load, store, add
 
 Labels
 ------------

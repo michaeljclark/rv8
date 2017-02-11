@@ -414,8 +414,6 @@ struct rv_assembler
 		 * %lo(symbol)               Absolute imm12
 		 * %pcrel_hi(symbol)         PC-relative imm20
 		 * %pcrel_lo(label)          PC-relative imm12
-		 * %tls_ie_pcrel_hi(symbol)  TLS IE GOT "Initial Exec"
-		 * %tls_gd_pcrel_hi(symbol)  TLS GD GOT "Global Dynamic"
 		 * %tprel_hi(symbol)         TLS LE "Local Exec"
 		 * %tprel_lo(label)          TLS LE "Local Exec"
 		 * %tprel_add(expr)          TLS LE "Local Exec"
@@ -425,8 +423,6 @@ struct rv_assembler
 		reloc_map["lo"] = std::bind(&rv_assembler::handle_reloc_lo, this, _1);
 		reloc_map["pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_pcrel_hi, this, _1);
 		reloc_map["pcrel_lo"] = std::bind(&rv_assembler::handle_reloc_pcrel_lo, this, _1);
-		reloc_map["tls_ie_pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_tls_ie_pcrel_hi, this, _1);
-		reloc_map["tls_gd_pcrel_hi"] = std::bind(&rv_assembler::handle_reloc_tls_gd_pcrel_hi, this, _1);
 		reloc_map["tprel_hi"] = std::bind(&rv_assembler::handle_reloc_tprel_hi, this, _1);
 		reloc_map["tprel_lo"] = std::bind(&rv_assembler::handle_reloc_tprel_lo, this, _1);
 		reloc_map["tprel_add"] = std::bind(&rv_assembler::handle_reloc_tprel_add, this, _1);
@@ -1537,16 +1533,6 @@ load_store:
 				return R_RISCV_PCREL_LO12_S;
 		}
 		return R_RISCV_NONE;
-	}
-
-	int handle_reloc_tls_ie_pcrel_hi(decode &dec)
-	{
-		return R_RISCV_NONE; /* TODO */
-	}
-
-	int handle_reloc_tls_gd_pcrel_hi(decode &dec)
-	{
-		return R_RISCV_NONE; /* TODO */
 	}
 
 	int handle_reloc_tprel_hi(decode &dec)
