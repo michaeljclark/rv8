@@ -487,7 +487,7 @@ struct rv_assembler
 
 		input_filename = result.first[0];
 		if (output_filename.size() == 0) {
-			std::vector<std::string> parts = split(input_filename, ".");
+			std::vector<std::string> parts = split(split(input_filename, "/").back(), ".");
 			if (parts.size() > 1) {
 				parts.back() = "o";
 				output_filename = join(parts, ".");
