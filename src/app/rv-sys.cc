@@ -176,15 +176,21 @@ struct rv_emulator
 		if (fd < 0) {
 			panic("map_executable: error: open: %s: %s", filename, strerror(errno));
 		}
-		void *addr = mmap(nullptr, phdr.p_memsz,
-			elf_p_flags_mmap(phdr.p_flags), MAP_PRIVATE, fd, phdr.p_offset);
+
+		addr_t map_delta = phdr.p_offset & (page_size-1);
+		addr_t map_offset = phdr.p_offset - map_delta;
+		addr_t map_vaddr = phdr.p_vaddr - map_delta;
+		addr_t map_len = round_up(phdr.p_memsz + map_delta, page_size);
+
+		void *addr = mmap(nullptr, map_len,
+			elf_p_flags_mmap(phdr.p_flags), MAP_PRIVATE, fd, map_offset);
 		close(fd);
 		if (addr == MAP_FAILED) {
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
 		/* add the mmap to the emulator soft_mmu */
-		proc.mmu.mem->add_mmap(map_addr, addr_t(addr), phdr.p_memsz,
+		proc.mmu.mem->add_mmap(map_vaddr, addr_t(addr), map_len,
 			pma_type_main | elf_pma_flags(phdr.p_flags));
 	}
 
