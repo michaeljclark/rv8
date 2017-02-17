@@ -31,6 +31,8 @@ TARGET_DIR = $(TARGET)
 endif
 
 ASSEMBLY = \
+	$(ASM_DIR)/test-cond-1-rv64.s \
+	$(ASM_DIR)/test-cond-1-amd64.s \
 	$(ASM_DIR)/test-loop-1-rv64.s \
 	$(ASM_DIR)/test-loop-1-amd64.s \
 	$(ASM_DIR)/test-loop-2-rv64.s \
@@ -55,6 +57,8 @@ ASSEMBLY = \
 	$(ASM_DIR)/test-thread-1-amd64.s
 
 OBJECTS = \
+	$(OBJ_DIR)/test-cond-1-rv64.o \
+	$(OBJ_DIR)/test-cond-1-amd64.o \
 	$(OBJ_DIR)/test-loop-1-rv64.o \
 	$(OBJ_DIR)/test-loop-1-amd64.o \
 	$(OBJ_DIR)/test-loop-2-rv64.o \
@@ -84,6 +88,11 @@ dirs: ; @mkdir -p $(ASM_DIR) $(OBJ_DIR)
 
 clean:
 	rm -f $(PROGRAMS) *.o
+
+$(ASM_DIR)/test-cond-1-rv64.s: $(SRC_DIR)/test-cond-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-cond-1-rv64.o: $(SRC_DIR)/test-cond-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
+$(ASM_DIR)/test-cond-1-amd64.s: $(SRC_DIR)/test-cond-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -S $^ -o $@
+$(OBJ_DIR)/test-cond-1-amd64.o: $(SRC_DIR)/test-cond-1.cc ; $(HOST_CXX) $(HOST_CXXFLAGS) -c $^ -o $@
 
 $(ASM_DIR)/test-loop-1-rv64.s: $(SRC_DIR)/test-loop-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -S $^ -o $@
 $(OBJ_DIR)/test-loop-1-rv64.o: $(SRC_DIR)/test-loop-1.cc ; $(TARGET_CXX) $(TARGET_CXXFLAGS) -c $^ -o $@
