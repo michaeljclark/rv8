@@ -76,8 +76,6 @@ namespace riscv {
 						debug("unknown htif command: %d", device);
 						break;
 				}
-			} else {
-				debug("unknown htif device: %d", command);
 			}
 		}
 
@@ -108,7 +106,7 @@ namespace riscv {
 				val = u32(htif_fromhost >> 32);
 			}
 			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx -> 0x%04x\n", addr_t(va), val);
+				printf("htif_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
 			}
 		}
 
@@ -123,17 +121,18 @@ namespace riscv {
 				val = htif_fromhost;
 			}
 			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx -> 0x%08llx\n", addr_t(va), val);
+				printf("htif_mmio:0x%04llx -> 0x%016llx\n", addr_t(va), val);
 			}
 		}
 
 		void store_32(UX va, u32 val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx <- 0x%04x\n", addr_t(va), val);
+				printf("htif_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
 			}
 			if (va == 0) {
 				htif_tohost = (htif_tohost & (u64(-1) << 32)) | val;
+				handle_output();
 			}
 			else if (va == 4) {
 				htif_tohost = (htif_tohost & (u64(-1) >> 32)) | (u64(val) << 32);
@@ -150,7 +149,7 @@ namespace riscv {
 		void store_64(UX va, u64 val)
 		{
 			if (proc.log & proc_log_mmio) {
-				printf("htif_mmio:0x%04llx <- 0x%08llx\n", addr_t(va), val);
+				printf("htif_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
 			}
 			if (va == 0) {
 				htif_tohost = val;
