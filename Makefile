@@ -45,7 +45,8 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
-                -I$(TOP_DIR)/src/util
+                -I$(TOP_DIR)/src/util \
+                -I$(TOP_DIR)/asmjit/src/asmjit
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations
@@ -159,6 +160,7 @@ OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 
 # helper functions
+asmjit_src_objs =  $(subst asmjit/src,$(OBJ_DIR),$(subst .cpp,.o,$(1)))
 cxx_src_objs =  $(subst $(SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 cxx_src_deps =  $(subst $(SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1)))
 cc_src_objs =   $(subst $(SRC_DIR),$(OBJ_DIR),$(subst .c,.o,$(1)))
@@ -232,6 +234,39 @@ LIBEDIT_SRCS =   $(SRC_DIR)/edit/chared.c \
                  $(SRC_DIR)/edit/vi.c
 LIBEDIT_OBJS =   $(call cc_src_objs, $(LIBEDIT_SRCS))
 LIBEDIT_LIB =    $(LIB_DIR)/libedit.a
+
+# libasmjit_x86
+X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
+                asmjit/src/asmjit/base/assembler.cpp \
+                asmjit/src/asmjit/base/codebuilder.cpp \
+                asmjit/src/asmjit/base/codecompiler.cpp \
+                asmjit/src/asmjit/base/codeemitter.cpp \
+                asmjit/src/asmjit/base/codeholder.cpp \
+                asmjit/src/asmjit/base/constpool.cpp \
+                asmjit/src/asmjit/base/cpuinfo.cpp \
+                asmjit/src/asmjit/base/func.cpp \
+                asmjit/src/asmjit/base/globals.cpp \
+                asmjit/src/asmjit/base/logging.cpp \
+                asmjit/src/asmjit/base/operand.cpp \
+                asmjit/src/asmjit/base/osutils.cpp \
+                asmjit/src/asmjit/base/regalloc.cpp \
+                asmjit/src/asmjit/base/runtime.cpp \
+                asmjit/src/asmjit/base/string.cpp \
+                asmjit/src/asmjit/base/utils.cpp \
+                asmjit/src/asmjit/base/vmem.cpp \
+                asmjit/src/asmjit/base/zone.cpp \
+                asmjit/src/asmjit/x86/x86assembler.cpp \
+                asmjit/src/asmjit/x86/x86builder.cpp \
+                asmjit/src/asmjit/x86/x86compiler.cpp \
+                asmjit/src/asmjit/x86/x86inst.cpp \
+                asmjit/src/asmjit/x86/x86internal.cpp \
+                asmjit/src/asmjit/x86/x86logging.cpp \
+                asmjit/src/asmjit/x86/x86operand.cpp \
+                asmjit/src/asmjit/x86/x86operand_regs.cpp \
+                asmjit/src/asmjit/x86/x86regalloc.cpp \
+                asmjit/src/asmjit/x86/x86ssetoavxpass.cpp
+X86_OBJS =      $(call asmjit_src_objs, $(X86_SRCS))
+X86_LIB =       $(LIB_DIR)/libasmjit_x86.a
 
 # libexpr
 LIBEXPR_SRCS =   $(SRC_DIR)/expr/builtin-features.cc \
@@ -336,6 +371,11 @@ RV_SIM_BIN =      $(BIN_DIR)/rv-sim
 RV_SYS_SRCS =     $(SRC_DIR)/app/rv-sys.cc
 RV_SYS_OBJS =     $(call cxx_src_objs, $(RV_SYS_SRCS))
 RV_SYS_BIN =      $(BIN_DIR)/rv-sys
+
+# test-asmjit
+TEST_ASMJIT_SRCS = $(SRC_DIR)/app/test-asmjit.cc
+TEST_ASMJIT_OBJS = $(call cxx_src_objs, $(TEST_ASMJIT_SRCS))
+TEST_ASMJIT_BIN =  $(BIN_DIR)/test-asmjit
 
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/test-bits.cc
@@ -584,7 +624,7 @@ $(TEST_CC_SRC): $(RV_META_BIN) $(RV_META_DATA)
 
 # lib targets
 
-$(ASMJIT_LIB): $(ASMJIT_OBJS)
+$(X86_LIB): $(X86_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
@@ -642,7 +682,7 @@ $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FM
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(ASMJIT_LIB)
+$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(X86_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -708,6 +748,9 @@ cmd = $2
 else
 cmd = @echo "$1"; $2
 endif
+
+$(OBJ_DIR)/%.o : asmjit/src/%.cpp ; @mkdir -p $(shell dirname $@) ;
+	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
 
 $(SRC_DIR)/%.cc : $(SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, RAGEL $@, $(RAGEL) $< -o $@)
