@@ -1,6 +1,9 @@
 project(riscv-meta)
 cmake_minimum_required(VERSION 3.1.0)
 
+set(ASMJIT_STATIC true)
+add_subdirectory(asmjit)
+
 set(
 	libedit_SOURCES
 	src/edit/chared.c
