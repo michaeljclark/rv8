@@ -13,35 +13,46 @@ Crypto Binary Translation
 
 Present day attacks on operating systems and application software are
 typically based on static analysis of binaries. The exploitation of
-software vulnerabilities uses static information based on versioned binaries
-running on the target system. Return Orientated Programming (ROP) attacks
-for example use the location of known executable gadgets in the target
+software vulnerabilities uses static information based on known versions
+of executables running on the target system. Return Orientated Programming
+(ROP) attacks use the location of known executable gadgets in the target
 application binary image to bypass present day security defenses such as
-non-executable heap and stack, by injecting the return addresses of
-executable gadgets onto the stack, escalating buffer overflow vulnerabilities
-into remote execution vulnerabilities.
+non-executable heap and stack. ROP-oriented programming alows escalation
+of stack buffer overflow vulnerabilities by injecting the return addresses
+of executable gadgets onto the stack, diverting control flow on procedure
+return, allowing escalation of a stack buffer overflow into a potential
+remote execution vulnerabily.
 
-The assumption made by all present zero day shell code or exploit payloads
-is the ability to call C library routines or system calls to elevate the
-Return Orientated Programming (ROP) sequence into executing payload code on
-the target system, ultimately escalating privileges. These assumptions are
-based on the target system exposing a standard (ABI) Application Binary Image.
+The assumption made by all present zero day shell code or exploits is that
+payloads can rely on a known execution environment such as the ability to
+call C library routines or system calls to elevate the explooit sequence into
+executing payload code on the target system, ultimately escalating privileges.
+These assumptions are based on the target system exposing a standard (ABI)
+Application Binary Image.
 
 Crypto Binary Translation introduces runtime interposition between
 applications and the target operating system by using keyspace in the
 ABI (Application Binary Interface) to bond an application to a custom
 randomised version of the ABI, thus preventing all exploits that are based
-on static analysis. Addresses, System call numbers, register assignments
-and code layout are randomised bonding each application to the operating
-system making the target system immune to all exploit payloads, effectively
-making an ABI randomisation state space with a high order e.g. 2^n where
-n > 112 bits.
+on static analysis of binaries and the target system ABI. Addresses, System
+call numbers, register assignments and code layout are randomised into a
+state-space whereby bonding each application is bonded to the target operating
+system making the target system immune to traditional exploit payloads.
+If the state-space of possible ABI combinations is of a high enough order e.g.
+2^n where n > 112 bits, then it becomes a quantum cryptographic problem
+to find the ABI key. This approach differs radically to code signature
+systems that verify executables or traditional anti-virus that work on
+pattern recognition. In the case of a cryptographic ABI, to exploit a
+vulnerability, the exploit writer must not only exploit a bug that allows
+execution of their payload, they must search the state-space of possible
+ABI randomisations before their payload will execute.
 
 Present day systems make use of Address Space Layout Randomisation (ASLR)
 to introduce a small amount of entropy into the address space making
 attacks based on static function addresses more difficult, however ASLR
 systems are limited in the amount of address space they can use for
 randomisation due to the use of canonical pointers (sign extended pointers).
+
 Canonical Pointers are enforced on present day commodity 64-bit systems
 under the guise of allowing for address space growth, and the net result
 is that they limit the address space entopy to the order of 20 bits. Also,
@@ -68,29 +79,29 @@ Binary Translation using an entropy coded ABI.
 
 Using the large address space introduced by 128-bit systems combined with
 the relaxation of canonical pointer requirements, the additional address
-space in the pointer can be used for embedding keys. The amount of entropy
+space in code pointers can be used for embedding keys. The amount of entropy
 in pointers on a system that requries 40-bits of address space increases
-from 24 bits to 88 bits. Large Address Space Entropy needs changes to
-the target system MMU (Memory Management Unit) to allow keys to be stored
-in unused pointer bits.
+from 24 bits to 88 bits when moving from 64-bits to 128-bits. Large Address
+Space Entropy needs changes to the target system MMU (Memory Management Unit)
+to allow keys to be stored in unused pointer bits.
 
 ## Execute Only Memory Pages
 
-With the introduction of execute only memory in modern microprocessor
-memory protection units, there becomes the possibility of loading secrets
-from memory in the target application address space that are not subject
-to exfiltration using arbitrary memory read primitives. The combination
-of large address space entropy and execute only memory pages provides
-a mechanism for applications to load pointers with keys containing a
-large amount of entropy while also limiting exfiltration potential.
+With the introduction of execute-only memory pages in microprocessor memory
+protection units, there becomes the possibility of loading secrets from memory
+in the target application address space that are no longer subject to
+exfiltration using exploitation of arbitrary memory read primitives. The
+combination of large address space entropy and execute-only memory pages
+provides a mechanism for applications to load encrypted pointers containing
+a large amount of entropy with limited exfiltration potential.
 
 ## Upcall Trampolines
 
 Execute Only Memory Pages located at randomised addresses can contain
-upcall keys loaded using immediate instructions that can't be exfiltrated
-using arbitrary memory read primitives. Keys are loaded in trampoline code
-sequences at randomised addresses and are used to call privileged
-functions in the operating system or hypervisor.
+upcall keys that are loaded using immediate instructions that can't be
+exfiltrated using arbitrary memory read primitives. Upcall keys are loaded
+in trampoline code sequences at randomised addresses and are used to call
+privileged functions in the operating system or hypervisor.
 
 ## Basic Block Reorder Entropy
 
