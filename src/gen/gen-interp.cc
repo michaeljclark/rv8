@@ -44,15 +44,10 @@ static void print_interp_h(rv_gen *gen)
 		printf("riscv::addr_t exec_inst_%s(T &dec, P &proc, riscv::addr_t pc_offset)\n",
 			isa_width.second.c_str());
 		printf("{\n");
-		printf("\tenum { xlen = %zu };\n", isa_width.first);
-		if (isa_width.first == 128) {
-			printf("\ttypedef __int%zu_t sx;\n", isa_width.first);
-			printf("\ttypedef __uint%zu_t ux;\n", isa_width.first);
-		} else {
-			printf("\ttypedef int%zu_t sx;\n", isa_width.first);
-			printf("\ttypedef uint%zu_t ux;\n", isa_width.first);
-		}
 		printf("\tusing namespace riscv;\n");
+		printf("\tenum { xlen = %zu };\n", isa_width.first);
+		printf("\ttypedef s%zu sx;\n", isa_width.first);
+		printf("\ttypedef u%zu ux;\n", isa_width.first);
 		printf("\n");
 		printf("\tswitch (dec.op) {\n");
 		for (auto &opcode : gen->all_opcodes) {

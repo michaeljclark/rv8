@@ -12,10 +12,10 @@
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
 riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 {
-	enum { xlen = 32 };
-	typedef int32_t sx;
-	typedef uint32_t ux;
 	using namespace riscv;
+	enum { xlen = 32 };
+	typedef s32 sx;
+	typedef u32 ux;
 
 	switch (dec.op) {
 		case rv_op_lui:
@@ -568,10 +568,10 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
 riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 {
-	enum { xlen = 64 };
-	typedef int64_t sx;
-	typedef uint64_t ux;
 	using namespace riscv;
+	enum { xlen = 64 };
+	typedef s64 sx;
+	typedef u64 ux;
 
 	switch (dec.op) {
 		case rv_op_lui:
@@ -1314,10 +1314,10 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
 riscv::addr_t exec_inst_rv128(T &dec, P &proc, riscv::addr_t pc_offset)
 {
-	enum { xlen = 128 };
-	typedef __int128_t sx;
-	typedef __uint128_t ux;
 	using namespace riscv;
+	enum { xlen = 128 };
+	typedef s128 sx;
+	typedef u128 ux;
 
 	switch (dec.op) {
 		case rv_op_lui:
