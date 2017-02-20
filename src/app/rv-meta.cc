@@ -51,6 +51,7 @@ rv_gen::rv_gen()
 	generators.push_back(std::make_shared<rv_gen_operands>(this));
 	generators.push_back(std::make_shared<rv_gen_strings>(this));
 	generators.push_back(std::make_shared<rv_gen_switch>(this));
+	generators.push_back(std::make_shared<rv_gen_tablegen>(this));
 }
 
 void rv_gen::generate(int argc, const char *argv[])

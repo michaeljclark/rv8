@@ -187,7 +187,7 @@ target_link_libraries(rv-bin riscv_asm riscv_elf riscv_fmt riscv_util)
 
 add_executable(rv-meta ${rv_meta_SOURCES})
 target_compile_features(rv-meta PRIVATE cxx_generic_lambdas)
-target_link_libraries(rv-meta riscv_model riscv_gen riscv_util)
+target_link_libraries(rv-meta riscv_model riscv_gen riscv_fmt riscv_util)
 
 add_executable(rv-sim ${rv_sim_SOURCES})
 target_compile_features(rv-sim PRIVATE cxx_generic_lambdas)

@@ -297,7 +297,8 @@ RV_GEN_SRCS =   $(SRC_DIR)/gen/gen-cc.cc \
                 $(SRC_DIR)/gen/gen-meta.cc \
                 $(SRC_DIR)/gen/gen-operands.cc \
                 $(SRC_DIR)/gen/gen-strings.cc \
-                $(SRC_DIR)/gen/gen-switch.cc
+                $(SRC_DIR)/gen/gen-switch.cc \
+                $(SRC_DIR)/gen/gen-tablegen.cc
 RV_GEN_OBJS =   $(call cxx_src_objs, $(RV_GEN_SRCS))
 RV_GEN_LIB =    $(LIB_DIR)/libriscv_gen.a
 
@@ -674,7 +675,7 @@ $(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
+$(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_FMT_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
