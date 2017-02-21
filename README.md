@@ -37,6 +37,7 @@ The future goals of the RISC-V Meta project are:
 - RISC-V Linux ABI randomisation and entropy coding
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
+- RISC-V [Crypto Binary Translation](doc/src/bintrans.md)
 
 See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) and
 [RISC-V Instruction Types](/doc/pdf/riscv-types.pdf) for sample LaTeX output.
