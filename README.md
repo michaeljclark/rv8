@@ -373,6 +373,7 @@ References
 - [The Netwide Assembler](http://repo.or.cz/nasm.git)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [Optimizing Binary Translation of Dynamically Generated Code](http://plrg.eecs.uci.edu/publications/cgo15.pdf)
+- [Using Dynamic Binary Translation to Fuse Dependent Instructions](http://www.cgo.org/cgo2004/papers/17_61_HU_S.pdf)
 - [librando: Transparent Code Randomization for Just-in-Time Compilers](https://www.ics.uci.edu/~ahomescu/ccs13librando_printed.pdf)
 - [Abstractions for Practical Virtual Machine Replay](https://www.cs.utah.edu/~aburtsev/doc/vee16-xentt.pdf)
 - [A Secure Processor Architecture for Encrypted Computation on Untrusted Programs](https://people.csail.mit.edu/devadas/pubs/ascend-stc12.pdf)
