@@ -363,6 +363,11 @@ RV_BIN_SRCS =   $(SRC_DIR)/app/rv-compress.cc \
 RV_BIN_OBJS =   $(call cxx_src_objs, $(RV_BIN_SRCS))
 RV_BIN_BIN =    $(BIN_DIR)/rv-bin
 
+# rv-jit
+RV_JIT_SRCS =     $(SRC_DIR)/app/rv-jit.cc
+RV_JIT_OBJS =     $(call cxx_src_objs, $(RV_JIT_SRCS))
+RV_JIT_BIN =      $(BIN_DIR)/rv-jit
+
 # rv-sim
 RV_SIM_SRCS =     $(SRC_DIR)/app/rv-sim.cc
 RV_SIM_OBJS =     $(call cxx_src_objs, $(RV_SIM_SRCS))
@@ -444,6 +449,7 @@ ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
            $(RV_STR_SRC) \
            $(RV_UTIL_SRCS) \
            $(RV_BIN_SRCS) \
+           $(RV_JIT_SRCS) \
            $(RV_META_SRCS) \
            $(RV_SIM_SRCS) \
            $(RV_SYS_SRCS) \
@@ -463,6 +469,7 @@ ALL_CC_SRCS = $(LIBEDIT_SRCS)
 BINARIES = $(RV_ASSEMBLER_BIN) \
            $(RV_META_BIN) \
            $(RV_BIN_BIN) \
+           $(RV_JIT_BIN) \
            $(RV_SIM_BIN) \
            $(RV_SYS_BIN) \
            $(TEST_ASMJIT_BIN) \
@@ -683,7 +690,7 @@ $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FM
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(X86_LIB)
+$(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(X86_LIB) $(LIBEDIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -692,6 +699,10 @@ $(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FM
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(RV_CRYPTO_LIB) $(LIBEDIT_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+
+$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_FMT_LIB) $(X86_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
