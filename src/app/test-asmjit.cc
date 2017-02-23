@@ -49,54 +49,46 @@ public:
   }
 };
 
-struct rv_jit
+static void test1()
 {
-	elf_file elf;
+	static const char* fmt = "Hello World %d\n";
 
-	rv_jit() {}
+	MyErrorHandler errorHandler;
+	JitRuntime runtime;
+	CodeHolder code;
 
-	void test()
-	{
-		static const char* fmt = "Hello World %d\n";
+	code.init(runtime.getCodeInfo());
+	code.setErrorHandler(&errorHandler);
 
-		MyErrorHandler errorHandler;
-		JitRuntime runtime;
-		CodeHolder code;
+	X86Compiler c(&code);
 
-		code.init(runtime.getCodeInfo());
-		code.setErrorHandler(&errorHandler);
+	c.addFunc(FuncSignature2<void, int, int>(CallConv::kIdHost));
+	X86Gp x = c.newInt32("x");
+	X86Gp y = c.newInt32("y");
+	c.setArg(0, x);
+	c.setArg(1, y);
+	c.add(x, y);
 
-		X86Compiler c(&code);
+	CCFuncCall* call;
+	call = c.call(imm_ptr((void*)printf), FuncSignature2<int, char*, int>(CallConv::kIdHost));
+	call->setArg(0, imm_ptr(fmt));
+	call->setArg(1, x);
+	call->setRet(0, x);
 
-		c.addFunc(FuncSignature2<void, int, int>(CallConv::kIdHost));
-		X86Gp x = c.newInt32("x");
-		X86Gp y = c.newInt32("y");
-		c.setArg(0, x);
-		c.setArg(1, y);
-		c.add(x, y);
+	c.ret();
+	c.endFunc();
+	c.finalize();
 
-		CCFuncCall* call;
-		call = c.call(imm_ptr((void*)printf), FuncSignature2<int, char*, int>(CallConv::kIdHost));
-		call->setArg(0, imm_ptr(fmt));
-		call->setArg(1, x);
-		call->setRet(0, x);
-
-		c.ret();
-		c.endFunc();
-		c.finalize();
-
-		typedef int (*FuncType)(int, int);
-		FuncType func;
-		Error err = runtime.add(&func, &code);
-		if (err) printf("Error\n");
-		func(1, 2);
-	}
-};
+	typedef int (*FuncType)(int, int);
+	FuncType func;
+	Error err = runtime.add(&func, &code);
+	if (err) printf("Error\n");
+	func(1, 2);
+}
 
 int main(int argc, char *argv[])
 {
-	rv_jit jit;
-	jit.test();
+	test1();
 
 	return 0;
 }
