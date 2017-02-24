@@ -5,10 +5,10 @@
 
 # DRAFT - Work in Progress - This contains approximate mappings
 
-lui        
-auipc      
-jal        
-jalr       
+lui        MOV
+auipc      MOV
+jal        JMP, CALL
+jalr       CALL
 beq        CMP, JE
 bne        CMP, JNE
 blt        CMP, JL
