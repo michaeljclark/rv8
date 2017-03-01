@@ -5,6 +5,12 @@
 # Requires RISCV environment variable to be set
 # RISCV = /opt/riscv/toolchain
 
+# host
+OS := $(shell uname -s | sed 's/ /_/' | tr A-Z a-z)
+CPU := $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
+BIN = build/$(OS)_$(CPU)/bin
+
+# target
 CC = ${RISCV}/bin/${TARGET}-gcc
 CXX = ${RISCV}/bin/${TARGET}-g++
 AS = ${RISCV}/bin/${TARGET}-as
@@ -59,6 +65,9 @@ ASSEMBLY = \
 	$(ASM_DIR)/test-jump-tables-no.s
 
 PROGRAMS = \
+	$(BIN_DIR)/asm-call \
+	$(BIN_DIR)/asm-la \
+	$(BIN_DIR)/asm-li \
 	$(BIN_DIR)/hello-world-libc \
 	$(BIN_DIR)/hello-world-libc-strip \
 	$(BIN_DIR)/hello-world-abs \
@@ -110,6 +119,15 @@ test-sys: all
 	$(EMULATOR) $(BIN_DIR)/test-m-ecall-trap
 	$(EMULATOR) $(BIN_DIR)/test-m-mmio-timer
 	$(EMULATOR) $(BIN_DIR)/test-m-sv39
+
+$(OBJ_DIR)/asm-call.o: $(SRC_DIR)/asm-call.s ; $(BIN)/rv-asm $^ -o $@
+$(BIN_DIR)/asm-call: $(OBJ_DIR)/asm-call.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/asm-la.o: $(SRC_DIR)/asm-la.s ; $(BIN)/rv-asm $^ -o $@
+$(BIN_DIR)/asm-la: $(OBJ_DIR)/asm-la.o ; $(LD) $^ -o $@
+
+$(OBJ_DIR)/asm-li.o: $(SRC_DIR)/asm-li.s ; $(BIN)/rv-asm $^ -o $@
+$(BIN_DIR)/asm-li: $(OBJ_DIR)/asm-li.o ; $(LD) $^ -o $@
 
 $(ASM_DIR)/hello-world-libc.s: $(SRC_DIR)/hello-world-libc.c ; $(CC) $(CFLAGS) -S -nostartfiles $^ -o $@
 $(OBJ_DIR)/hello-world-libc.o: $(SRC_DIR)/hello-world-libc.c ; $(CC) $(CFLAGS) -c $^ -o $@
