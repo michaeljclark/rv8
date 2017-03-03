@@ -84,6 +84,7 @@ namespace riscv {
 			add_command(cmd_ascii,  2, 2, "ascii",  "<addr>",           "ASCII Dump Memory");
 			add_command(cmd_break,  1, 2, "break",  "[<addr>]",         "Set or display breakpoint");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
+			add_command(cmd_hist,   1, 1, "hist",   "[rev]",            "Show histogram");
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
 			add_command(cmd_run,    1, 2, "run",    "[count]",          "Step processor");
@@ -300,6 +301,38 @@ namespace riscv {
 		{
 			st.proc->print_csr_registers();
 			st.proc->print_int_registers();
+			return 0;
+		}
+
+		static std::string repeat_str(std::string str, size_t count)
+		{
+			std::string s;
+			for (size_t i = 0; i < count; i++) s += str;
+			return s;
+		}
+
+		static size_t cmd_hist(cmd_state &st, args_t &args)
+		{
+			size_t max_chars = 80;
+			bool reverse_sort = (args.size() == 2 && args[1] == "rev");
+			std::vector<hist_pair_t> hist_s;
+
+			size_t max = 0;
+			for (auto ent : st.proc->hist) {
+				if (ent.second > max) max = ent.second;
+				hist_s.push_back(ent);
+			}
+
+			std::sort(hist_s.begin(), hist_s.end(), [&] (const hist_pair_t &a, const hist_pair_t &b) {
+				return reverse_sort ? a.second < b.second : a.second > b.second;
+			});
+
+			size_t i = 0;
+			for (auto ent : hist_s) {
+				printf("%5lu. %-10s[%-6lu] %s\n",
+					++i, ent.first.c_str(), ent.second,
+					repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
+			}
 			return 0;
 		}
 

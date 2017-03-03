@@ -28,6 +28,9 @@ namespace riscv {
 
 	/* Processor base template */
 
+	typedef std::map<std::string,size_t> hist_map_t;
+	typedef std::pair<std::string,size_t> hist_pair_t;
+
 	template<typename T, typename P, typename M>
 	struct processor_impl : P
 	{
@@ -36,6 +39,7 @@ namespace riscv {
 		typedef M mmu_type;
 
 		mmu_type mmu;
+		hist_map_t hist;
 
 		processor_impl() : P() {}
 
@@ -63,6 +67,28 @@ namespace riscv {
 				case rv_operand_name_frs2: return dec.rs2;
 				case rv_operand_name_frs3: return dec.rs3;
 				default: return 0;
+			}
+		}
+
+		void histogram_add_regs(decode &dec)
+		{
+			std::string key;
+			const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
+			while (operand_data->type != rv_type_none) {
+				switch (operand_data->type) {
+					case rv_type_ireg:
+					case rv_type_freg: {
+						key = std::string(operand_data->type == rv_type_ireg ?
+							rv_ireg_name_sym[regnum(dec, operand_data->operand_name)] :
+							rv_freg_name_sym[regnum(dec, operand_data->operand_name)]);
+						auto hi = hist.find(key);
+						if (hi == hist.end()) hist.insert(hist_pair_t(key, 1));
+						else hi->second++;
+						break;
+					}
+					default: break;
+				}
+				operand_data++;
 			}
 		}
 
@@ -163,20 +189,21 @@ namespace riscv {
 
 		void print_log(decode_type &dec, inst_t inst)
 		{
-			std::fexcept_t flags;
-			fegetexceptflag(&flags, FE_ALL_EXCEPT);
 			static const char *fmt_32 = "%019llu core-%-4zu:%08llx (%s) %-30s %s\n";
 			static const char *fmt_64 = "%019llu core-%-4zu:%016llx (%s) %-30s %s\n";
 			static const char *fmt_128 = "%019llu core-%-4zu:%032llx (%s) %-30s %s\n";
+			if (P::log & proc_log_histogram) histogram_add_regs(dec);
 			if (P::log & proc_log_inst) {
+				std::fexcept_t flags;
+				fegetexceptflag(&flags, FE_ALL_EXCEPT);
 				if (!(P::log & proc_log_no_pseudo)) decode_pseudo_inst(dec);
 				std::string args = disasm_inst_simple(dec);
 				std::string op_args = (P::log & proc_log_operands) ? format_operands(dec) : std::string();
 				printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
 					P::instret, P::hart_id, addr_t(P::pc), format_inst(inst).c_str(), args.c_str(), op_args.c_str());
+				fesetexceptflag(&flags, FE_ALL_EXCEPT);
 			}
 			if (P::log & proc_log_int_reg) print_int_registers();
-			fesetexceptflag(&flags, FE_ALL_EXCEPT);
 		}
 
 		void print_device_registers() {}
