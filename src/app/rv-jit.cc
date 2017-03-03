@@ -570,6 +570,9 @@ struct rv_jit
 
 int main(int argc, const char *argv[], const char* envp[])
 {
+	printf("\n");
+	printf("rv-jit-0.0.0-prealpha-0\n");
+	printf("\n");
 	rv_jit jit;
 	jit.parse_commandline(argc, argv, envp);
 	jit.exec();
