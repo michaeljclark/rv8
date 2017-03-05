@@ -317,9 +317,10 @@ namespace riscv {
 			bool reverse_sort = (args.size() == 2 && args[1] == "rev");
 			std::vector<hist_pair_t> hist_s;
 
-			size_t max = 0;
+			size_t max = 0, total = 0;
 			for (auto ent : st.proc->hist) {
 				if (ent.second > max) max = ent.second;
+				total += ent.second;
 				hist_s.push_back(ent);
 			}
 
@@ -329,11 +330,12 @@ namespace riscv {
 
 			size_t i = 0;
 			for (auto ent : hist_s) {
-				printf("%5lu. %-10s[%-6lu] %s\n",
+				printf("%5lu. %-10s %5.2f%% [%-6lu] %s\n",
 					++i,
 					ent.first < 32 ?
 						rv_ireg_name_sym[ent.first] :
 						rv_freg_name_sym[ent.first - 32],
+					(float)ent.second / (float)total * 100.0f,
 					ent.second,
 					repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
 			}
