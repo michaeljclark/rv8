@@ -146,7 +146,7 @@ struct rv_histogram_elf
 
 		size_t i = 0;
 		for (auto ent : hist_s) {
-			printf("%5lu. %-10s[%-6lu]%s%s%s\n",
+			printf("%5lu. %-10s[%-9lu]%s%s%s\n",
 				++i, ent.first.c_str(), ent.second,
 				hash_bars ? " " : "",
 				hash_bars ? use_char.c_str() : "",
