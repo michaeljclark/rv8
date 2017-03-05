@@ -17,42 +17,43 @@ The following is a sketch of a static register mapping for x86:
 
  - rax, translator temporary (IMUL/DIV, temporary for destructive ALU ops)
  - rdx, translator temporary (IMUL/DIV)
- - rsp, translator static spill slots ([rsp + 0] pointer to translator private area)
+ - rbp, translator static spill slots ([rbp - 8] pointer to translator private)
+ - rsp, translator call stack
 
-Reg | Reg  | Target register (or static spill slot)
-:-- | :--  | :--
-x0  | zero |
-x1  | ra   | rcx
-x2  | sp   | rbp
-x3  | gp   | [rsp + 8]
-x4  | tp   | [rsp + 16]
-x5  | t0   | rsi
-x6  | t1   | rdi
-x7  | t2   | rbx
-x8  | s0   | [rsp + 24]
-x9  | s1   | [rsp + 32]
-x10 | a0   | r8
-x11 | a1   | r9
-x12 | a2   | r10
-x13 | a3   | r11
-x14 | a4   | r12
-x15 | a5   | r13
-x16 | a6   | r14
-x17 | a7   | r15
-x18 | s2   | [rsp + 40]
-x19 | s3   | [rsp + 48]
-x20 | s4   | [rsp + 56]
-x21 | s5   | [rsp + 64]
-x22 | s6   | [rsp + 72]
-x23 | s7   | [rsp + 80]
-x24 | s8   | [rsp + 88]
-x25 | s9   | [rsp + 96]
-x26 | s10  | [rsp + 104]
-x27 | s11  | [rsp + 112]
-x28 | t3   | [rsp + 120]
-x29 | t4   | [rsp + 128]
-x30 | t5   | [rsp + 136]
-x31 | t6   | [rsp + 144]
+Reg | Reg  | x86 | Spill Slot
+:-- | :--  | :-- | :--
+x0  | zero |     |
+x1  | ra   | rcx | [rbp - 16]
+x2  | sp   | rbx | [rbp - 26]
+x3  | gp   |     | [rbp - 32]
+x4  | tp   |     | [rbp - 40]
+x5  | t0   | rsi | [rbp - 48]
+x6  | t1   | rdi | [rbp - 56]
+x7  | t2   |     | [rbp - 64]
+x8  | s0   |     | [rbp - 72]
+x9  | s1   |     | [rbp - 80]
+x10 | a0   | r8  | [rbp - 88]
+x11 | a1   | r9  | [rbp - 96]
+x12 | a2   | r10 | [rbp - 104]
+x13 | a3   | r11 | [rbp - 112]
+x14 | a4   | r12 | [rbp - 120]
+x15 | a5   | r13 | [rbp - 128]
+x16 | a6   | r14 | [rbp - 136]
+x17 | a7   | r15 | [rbp - 144]
+x18 | s2   |     | [rbp - 152]
+x19 | s3   |     | [rbp - 160]
+x20 | s4   |     | [rbp - 168]
+x21 | s5   |     | [rbp - 176]
+x22 | s6   |     | [rbp - 184]
+x23 | s7   |     | [rbp - 192]
+x24 | s8   |     | [rbp - 200]
+x25 | s9   |     | [rbp - 208]
+x26 | s10  |     | [rbp - 216]
+x27 | s11  |     | [rbp - 224]
+x28 | t3   |     | [rbp - 232]
+x29 | t4   |     | [rbp - 240]
+x30 | t5   |     | [rbp - 248]
+x31 | t6   |     | [rbp - 256]
 
 ## Dynamic Register Usage
 
