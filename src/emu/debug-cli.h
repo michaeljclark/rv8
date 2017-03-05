@@ -330,7 +330,11 @@ namespace riscv {
 			size_t i = 0;
 			for (auto ent : hist_s) {
 				printf("%5lu. %-10s[%-6lu] %s\n",
-					++i, ent.first.c_str(), ent.second,
+					++i,
+					ent.first < 32 ?
+						rv_ireg_name_sym[ent.first] :
+						rv_freg_name_sym[ent.first - 32],
+					ent.second,
 					repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
 			}
 			return 0;

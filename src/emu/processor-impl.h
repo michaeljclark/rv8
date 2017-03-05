@@ -28,8 +28,8 @@ namespace riscv {
 
 	/* Processor base template */
 
-	typedef std::map<std::string,size_t> hist_map_t;
-	typedef std::pair<std::string,size_t> hist_pair_t;
+	typedef std::map<size_t,size_t> hist_map_t;
+	typedef std::pair<size_t,size_t> hist_pair_t;
 
 	template<typename T, typename P, typename M>
 	struct processor_impl : P
@@ -70,22 +70,25 @@ namespace riscv {
 			}
 		}
 
+
+		void histogram_add_key(size_t key)
+		{
+			auto hi = hist.find(key);
+			if (hi == hist.end()) hist.insert(hist_pair_t(key, 1));
+			else hi->second++;
+		}
+
 		void histogram_add_regs(decode &dec)
 		{
-			std::string key;
 			const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
 			while (operand_data->type != rv_type_none) {
 				switch (operand_data->type) {
 					case rv_type_ireg:
-					case rv_type_freg: {
-						key = std::string(operand_data->type == rv_type_ireg ?
-							rv_ireg_name_sym[regnum(dec, operand_data->operand_name)] :
-							rv_freg_name_sym[regnum(dec, operand_data->operand_name)]);
-						auto hi = hist.find(key);
-						if (hi == hist.end()) hist.insert(hist_pair_t(key, 1));
-						else hi->second++;
+						histogram_add_key(regnum(dec, operand_data->operand_name));
 						break;
-					}
+					case rv_type_freg:
+						histogram_add_key(32 + regnum(dec, operand_data->operand_name));
+						break;
 					default: break;
 				}
 				operand_data++;
