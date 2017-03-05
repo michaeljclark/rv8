@@ -294,220 +294,152 @@ struct rv_jit
 		elf.load(elf_filename);
 	}
 
-	enum match_type {
-		match_cancel,
-		match_continue,
-		match_done_skip_last,
-		match_done,
-	};
-
 	template <typename T>
-	struct inst_matcher
+	struct fusion_matcher
 	{
+		enum match_state {
+			match_state_none,
+			match_state_auipc,
+			match_state_call,
+			match_state_la,
+			match_state_li,
+			match_state_lui,
+		};
 
-		typedef std::unique_ptr<inst_matcher> ptr;
-
-		virtual match_type match(T &dec) = 0;
-	};
-
-	template <typename T>
-	struct call_matcher : inst_matcher<T>
-	{
-		int rd = -1;
 		u64 imm;
-
-		static std::unique_ptr<inst_matcher<T>> start_match(T &dec)
-		{
-			std::unique_ptr<inst_matcher<T>> m;
-			switch (dec.op) {
-				case rv_op_auipc:
-					m = std::make_unique<call_matcher>();
-			}
-			if (m) m->match(dec);
-			return m;
-		}
-
-		match_type match(T &dec)
-		{
-			switch (dec.op) {
-				case rv_op_auipc:
-					if (rd == -1) {
-						rd = dec.rd;
-						imm = dec.imm;
-						return match_continue;
-					}
-					return match_cancel;
-				case rv_op_jalr:
-					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
-						imm += dec.imm;
-						goto done;
-					}
-				default:
-					return match_cancel;
-			}
-		done:
-			// TODO - emit psuedo
-			printf("\tcall 0x%llx\n", imm);
-			return match_done;
-		}
-	};
-
-	template <typename T>
-	struct la_matcher : inst_matcher<T>
-	{
 		int rd = -1;
-		u64 imm;
-
-		static std::unique_ptr<inst_matcher<T>> start_match(T &dec)
-		{
-			std::unique_ptr<inst_matcher<T>> m;
-			switch (dec.op) {
-				case rv_op_auipc:
-					m = std::make_unique<la_matcher>();
-			}
-			if (m) m->match(dec);
-			return m;
-		}
-
-		match_type match(T &dec)
-		{
-			switch (dec.op) {
-				case rv_op_auipc:
-					if (rd == -1) {
-						rd = dec.rd;
-						imm = dec.imm;
-						return match_continue;
-					}
-					return match_cancel;
-				case rv_op_addi:
-					if (rd == dec.rd && rd == dec.rs1) {
-						imm += dec.imm;
-						goto done;
-					}
-				default:
-					return match_cancel;
-			}
-		done:
-			// TODO - emit psuedo
-			printf("\tla.pcrel %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
-			return match_done;
-		}
-	};
-
-	template <typename T>
-	struct li_matcher : inst_matcher<T>
-	{
-		int rd = -1;
-		u64 imm;
-
-		static std::unique_ptr<inst_matcher<T>> start_match(T &dec)
-		{
-			std::unique_ptr<inst_matcher<T>> m;
-			switch (dec.op) {
-				case rv_op_lui:
-					m = std::make_unique<li_matcher>();
-				case rv_op_addi:
-					if (dec.rs1 == rv_ireg_zero)
-						m = std::make_unique<li_matcher>();
-			}
-			if (m) m->match(dec);
-			return m;
-		}
-
-		match_type match(T &dec)
-		{
-			switch (dec.op) {
-				case rv_op_lui:
-					if (rd == -1) {
-						rd = dec.rd;
-						imm = dec.imm;
-						return match_continue;
-					}
-				case rv_op_addi:
-					if (rd == -1 && dec.rs1 == rv_ireg_zero) {
-						rd = dec.rd;
-						imm = dec.imm;
-						return match_continue;
-					}
-					if (rd == -1) return match_cancel;
-					if (rd != dec.rd || rd != dec.rs1) goto done;
-					imm += dec.imm;
-					return match_continue;
-				case rv_op_slli:
-					if (rd == -1) return match_cancel;
-					if (rd != dec.rd || rd != dec.rs1) goto done;
-					imm <<= dec.imm;
-					return match_continue;
-			}
-		done:
-			// TODO - emit psuedo
-			printf("\tli %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
-			return match_done_skip_last;
-		}
-	};
-
-	template <typename T>
-	struct match_state
-	{
-		std::vector<typename inst_matcher<T>::ptr> matches;
 		std::vector<T> decode_trace;
+		match_state state = match_state_none;
 
-		template <typename M>
-		void check_match(T &dec)
+		void emit(T &dec)
 		{
-			auto m = M::start_match(dec);
-			if (m) matches.push_back(std::move(m));
+			decode_pseudo_inst(dec);
+			printf("\t%s\n", disasm_inst_simple(dec).c_str());
+		}
+
+		void emit_trace()
+		{
+			for (auto &dec : decode_trace) emit(dec);
+			decode_trace.clear();
+		}
+
+		void clear_trace()
+		{
+			state = match_state_none;
+			decode_trace.clear();
+		}
+
+		void emit_li()
+		{
+			clear_trace();
+			printf("\tli %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+		}
+
+		void emit_la()
+		{
+			clear_trace();
+			printf("\tla.pcrel %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+		}
+
+		void emit_call()
+		{
+			clear_trace();
+			printf("\tcall 0x%llx\n", imm);
 		}
 
 		void match(T &dec)
 		{
-			bool found_match = false;
-			decode_trace.push_back(dec);
-			for (auto mi = matches.begin(); mi != matches.end();) {
-				match_type mt = (*mi)->match(dec);
-				switch (mt) {
-					case match_continue: mi++;
-						break;
-					case match_cancel:
-						mi = matches.erase(mi);
-						break;
-					case match_done:
-						mi = matches.erase(mi);
-						decode_trace.clear();
-						found_match = true;
-						break;
-					case match_done_skip_last:
-						mi = matches.erase(mi);
-						decode_trace.clear();
-						decode_trace.push_back(dec);
-						found_match = true;
-						break;
-				}
+		reparse:
+			switch(state) {
+				case match_state_none:
+					switch (dec.op) {
+						case rv_op_addi:
+							if (dec.rs1 == rv_ireg_zero) {
+								rd = dec.rd;
+								imm = dec.imm;
+								state = match_state_li;
+								decode_trace.push_back(dec);
+								return;
+							}
+							break;
+						case rv_op_auipc:
+							rd = dec.rd;
+							imm = dec.imm;
+							state = match_state_auipc;
+							decode_trace.push_back(dec);
+							return;
+						case rv_op_lui:
+							rd = dec.rd;
+							imm = dec.imm;
+							state = match_state_lui;
+							decode_trace.push_back(dec);
+							return;
+						default:
+							break;
+					}
+					break;
+				case match_state_auipc:
+					switch (dec.op) {
+						case rv_op_addi: state = match_state_la; goto reparse;
+						case rv_op_jalr: state = match_state_call; goto reparse;
+						default:
+							emit_trace();
+							break;
+					}
+					break;
+				case match_state_lui:
+					switch (dec.op) {
+						case rv_op_slli: state = match_state_li; goto reparse;
+						case rv_op_addi: state = match_state_li; goto reparse;
+						default:
+							emit_trace();
+							break;
+					}
+					break;
+				case match_state_li:
+					switch (dec.op) {
+						case rv_op_addi:
+							if (rd == dec.rd && rd == dec.rs1) {
+								imm += dec.imm;
+								return;
+							}
+							break;
+						case rv_op_slli:
+							if (rd == dec.rd && rd == dec.rs1) {
+								imm <<= dec.imm;
+								return;
+							}
+							break;
+						default:
+							break;
+					}
+					emit_li();
+					break;
+				case match_state_la:
+					if (rd == dec.rd && rd == dec.rs1) {
+						imm += dec.imm;
+						emit_la();
+						return;
+					}
+					emit_trace();
+					break;
+				case match_state_call:
+					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
+						imm += dec.imm;
+						emit_call();
+						return;
+					}
+					emit_trace();
+					break;
 			}
-			if (found_match) {
-				for (auto &dec : decode_trace) {
-					decode_pseudo_inst(dec);
-					std::string args = disasm_inst_simple(dec);
-					printf("\t%s\n", args.c_str());
-				}
-			}
-			if (matches.size() == 0) {
-				check_match<call_matcher<T>>(dec);
-				check_match<la_matcher<T>>(dec);
-				check_match<li_matcher<T>>(dec);
-			}
-			if (matches.size() == 0 && !found_match) {
-				decode_pseudo_inst(dec);
-				std::string args = disasm_inst_simple(dec);
-				printf("\t%s\n", args.c_str());
-			}
+			emit(dec);
 		}
 	};
 
 	template <typename P>
 	void trace(P proc)
 	{
-		match_state<typename P::decode_type> m;
+		fusion_matcher<typename P::decode_type> m;
 
 		for(;;) {
 			typename P::decode_type dec;
