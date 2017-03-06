@@ -374,6 +374,7 @@ References
 - [The Netwide Assembler](http://repo.or.cz/nasm.git)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [Optimizing Binary Translation of Dynamically Generated Code](http://plrg.eecs.uci.edu/publications/cgo15.pdf)
+- [Live Range Hole Allocation in Dynamic Binary Translation](http://amas-bt.cs.virginia.edu/2011proceedings/amasbt2011-p2.pdf)
 - [Dynamic Re-compilation of Binary RISC Code for CISC Architectures](https://www.weihenstephan.org/~michaste/down/steil-recompilation.pdf)
 - [Using Dynamic Binary Translation to Fuse Dependent Instructions](http://www.cgo.org/cgo2004/papers/17_61_HU_S.pdf)
 - [librando: Transparent Code Randomization for Just-in-Time Compilers](https://www.ics.uci.edu/~ahomescu/ccs13librando_printed.pdf)
