@@ -1,11 +1,14 @@
 # Register Allocation
 
-The translator maps RISC-V registers to host registers
-and the remaining registers are assigned to static spill slots.
-Dynamic register allocation is too expensive to perform during
-runtime translation as the graph colouring problem is NP Complete.
-Instead the translator takes advantage of the static location
-of the spill frame such that spilt registers remain in L1 cache.
+The translator maps a subset of RISC-V registers to host registers
+and the remaining registers are assigned to a spill area.
+
+The optimal register assignment method of lifting registers into
+SSA form and solving the graph colouring problem is NP Complete.
+
+The translator may implement a form of dynamic register renames
+by setting a subset of `n` bits in a 32-bit word with the bit
+position indicating the register assignment for a basic block.
 
 ## Mapping Randomisation
 
