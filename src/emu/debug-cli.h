@@ -84,7 +84,7 @@ namespace riscv {
 			add_command(cmd_ascii,  2, 2, "ascii",  "<addr>",           "ASCII Dump Memory");
 			add_command(cmd_break,  1, 2, "break",  "[<addr>]",         "Set or display breakpoint");
 			add_command(cmd_mem,    1, 1, "map",    "",                 "Show memory map");
-			add_command(cmd_hist,   1, 1, "hist",   "[rev]",            "Show histogram");
+			add_command(cmd_hist,   2, 3, "hist",   "reg|pc [rev]",     "Show histogram");
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
 			add_command(cmd_run,    1, 2, "run",    "[count]",          "Step processor");
@@ -314,30 +314,79 @@ namespace riscv {
 		static size_t cmd_hist(cmd_state &st, args_t &args)
 		{
 			size_t max_chars = 80;
-			bool reverse_sort = (args.size() == 2 && args[1] == "rev");
-			std::vector<hist_pair_t> hist_s;
+			bool hist_reg = (args[1] == "reg"), hist_pc = (args[1] == "pc");
+			bool reverse_sort = (args.size() == 3 && args[2] == "rev");
 
-			size_t max = 0, total = 0;
-			for (auto ent : st.proc->hist) {
-				if (ent.second > max) max = ent.second;
-				total += ent.second;
-				hist_s.push_back(ent);
+			if (!hist_reg && !hist_pc) {
+				printf("%s: histogram type must be 'reg' or 'pc'\n",
+					args[0].c_str());
 			}
 
-			std::sort(hist_s.begin(), hist_s.end(), [&] (const hist_pair_t &a, const hist_pair_t &b) {
-				return reverse_sort ? a.second < b.second : a.second > b.second;
-			});
+			if (hist_pc) {
 
-			size_t i = 0;
-			for (auto ent : hist_s) {
-				printf("%5lu. %-10s %5.2f%% [%-9lu] %s\n",
-					++i,
-					ent.first < 32 ?
-						rv_ireg_name_sym[ent.first] :
-						rv_freg_name_sym[ent.first - 32],
-					(float)ent.second / (float)total * 100.0f,
-					ent.second,
-					repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
+				size_t addr_count = st.proc->hist_pc.size();
+				size_t addr_shift = 0;
+				while (addr_count > 64) {
+					addr_count >>= 1;
+					addr_shift++;
+				}
+
+				hist_pc_map_t hist_pc_reduce;
+				for (auto ent : st.proc->hist_pc) {
+					addr_t key = ent.first >> addr_shift;
+					auto hi = hist_pc_reduce.find(key);
+					if (hi == hist_pc_reduce.end()) hist_pc_reduce.insert(hist_pc_pair_t(key, ent.second));
+					else hi->second += ent.second;
+				}
+
+				size_t max = 0, total = 0;
+				std::vector<hist_pc_pair_t> hist_pc_s;
+				for (auto ent : hist_pc_reduce) {
+					if (ent.second > max) max = ent.second;
+					total += ent.second;
+					hist_pc_s.push_back(hist_pc_pair_t(ent.first << addr_shift, ent.second));
+				}
+
+				std::sort(hist_pc_s.begin(), hist_pc_s.end(), [&] (const hist_pc_pair_t &a, const hist_pc_pair_t &b) {
+					return reverse_sort ? a.second < b.second : a.second > b.second;
+				});
+
+				size_t i = 0;
+				for (auto ent : hist_pc_s) {
+					printf("%5lu. 0x%016llx %5.2f%% [%-9lu] %s\n",
+						++i,
+						ent.first,
+						(float)ent.second / (float)total * 100.0f,
+						ent.second,
+						repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
+				}
+			}
+
+			if (hist_reg) {
+
+				size_t max = 0, total = 0;
+				std::vector<hist_reg_pair_t> hist_reg_s;
+				for (auto ent : st.proc->hist_reg) {
+					if (ent.second > max) max = ent.second;
+					total += ent.second;
+					hist_reg_s.push_back(ent);
+				}
+
+				std::sort(hist_reg_s.begin(), hist_reg_s.end(), [&] (const hist_reg_pair_t &a, const hist_reg_pair_t &b) {
+					return reverse_sort ? a.second < b.second : a.second > b.second;
+				});
+
+				size_t i = 0;
+				for (auto ent : hist_reg_s) {
+					printf("%5lu. %-10s %5.2f%% [%-9lu] %s\n",
+						++i,
+						ent.first < 32 ?
+							rv_ireg_name_sym[ent.first] :
+							rv_freg_name_sym[ent.first - 32],
+						(float)ent.second / (float)total * 100.0f,
+						ent.second,
+						repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
+				}
 			}
 			return 0;
 		}

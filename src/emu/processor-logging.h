@@ -23,7 +23,8 @@ namespace riscv {
 		proc_log_ebreak_cli =      1<<10,      /* Switch to debug CLI on ebreak */
 		proc_log_trap_cli =        1<<11,      /* Switch to debug CLI on trap */
 		proc_log_no_pseudo =       1<<12,      /* Don't decode pseudoinstructions */
-		proc_log_histogram =       1<<13       /* Populate register histogram */
+		proc_log_hist_reg =        1<<13,      /* Populate register histogram */
+		proc_log_hist_pc =         1<<14       /* Populate program counter histogram */
 	};
 
 }

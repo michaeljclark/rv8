@@ -307,6 +307,7 @@ usage: rv-sys [<options>] <elf_file>
                --log-pagewalks, -v            Log Pagewalks
                    --log-traps, -t            Log Traps
     --register-usage-histogram, -H            Record register usage
+          --pc-usage-histogram, -J            Record program counter usage
                        --debug, -d            Start up in debugger
                   --debug-trap, -T            Start up in debugger and enter debugger on trap
                    --no-pseudo, -x            Disable Pseudoinstruction decoding

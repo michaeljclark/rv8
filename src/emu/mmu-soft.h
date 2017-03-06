@@ -125,6 +125,12 @@ namespace riscv {
 			{
 				proc.raise(rv_cause_fault_fetch, pc);
 			} else {
+
+				/* record pc histogram using machine physical address */
+				if (proc.log & proc_log_hist_pc) {
+					proc.histogram_add_pc(mpa);
+				}
+
 				/* fetch instruction using memory segment interface */
 				u32 inst_32;
 				segment->load(uva, inst_32);

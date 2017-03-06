@@ -28,8 +28,10 @@ namespace riscv {
 
 	/* Processor base template */
 
-	typedef std::map<size_t,size_t> hist_map_t;
-	typedef std::pair<size_t,size_t> hist_pair_t;
+	typedef std::map<addr_t,size_t> hist_pc_map_t;
+	typedef std::pair<addr_t,size_t> hist_pc_pair_t;
+	typedef std::map<size_t,size_t> hist_reg_map_t;
+	typedef std::pair<size_t,size_t> hist_reg_pair_t;
 
 	template<typename T, typename P, typename M>
 	struct processor_impl : P
@@ -39,7 +41,8 @@ namespace riscv {
 		typedef M mmu_type;
 
 		mmu_type mmu;
-		hist_map_t hist;
+		hist_pc_map_t hist_pc;
+		hist_reg_map_t hist_reg;
 
 		processor_impl() : P() {}
 
@@ -71,10 +74,17 @@ namespace riscv {
 		}
 
 
-		void histogram_add_key(size_t key)
+		void histogram_add_pc(addr_t key)
 		{
-			auto hi = hist.find(key);
-			if (hi == hist.end()) hist.insert(hist_pair_t(key, 1));
+			auto hi = hist_pc.find(key);
+			if (hi == hist_pc.end()) hist_pc.insert(hist_pc_pair_t(key, 1));
+			else hi->second++;
+		}
+
+		void histogram_add_reg(size_t key)
+		{
+			auto hi = hist_reg.find(key);
+			if (hi == hist_reg.end()) hist_reg.insert(hist_reg_pair_t(key, 1));
 			else hi->second++;
 		}
 
@@ -84,10 +94,10 @@ namespace riscv {
 			while (operand_data->type != rv_type_none) {
 				switch (operand_data->type) {
 					case rv_type_ireg:
-						histogram_add_key(regnum(dec, operand_data->operand_name));
+						histogram_add_reg(regnum(dec, operand_data->operand_name));
 						break;
 					case rv_type_freg:
-						histogram_add_key(32 + regnum(dec, operand_data->operand_name));
+						histogram_add_reg(32 + regnum(dec, operand_data->operand_name));
 						break;
 					default: break;
 				}
@@ -195,7 +205,7 @@ namespace riscv {
 			static const char *fmt_32 = "%019llu core-%-4zu:%08llx (%s) %-30s %s\n";
 			static const char *fmt_64 = "%019llu core-%-4zu:%016llx (%s) %-30s %s\n";
 			static const char *fmt_128 = "%019llu core-%-4zu:%032llx (%s) %-30s %s\n";
-			if (P::log & proc_log_histogram) histogram_add_regs(dec);
+			if (P::log & proc_log_hist_reg) histogram_add_regs(dec);
 			if (P::log & proc_log_inst) {
 				std::fexcept_t flags;
 				fegetexceptflag(&flags, FE_ALL_EXCEPT);
