@@ -17,15 +17,15 @@ software vulnerabilities uses static information based on known versions
 of executables running on the target system. Return Orientated Programming
 (ROP) attacks use the location of known executable gadgets in the target
 application binary image to bypass present day security defenses such as
-non-executable heap and stack. ROP-oriented programming alows escalation
+non-executable heap and stack. ROP-oriented programming allows escalation
 of stack buffer overflow vulnerabilities by injecting the return addresses
 of executable gadgets onto the stack, diverting control flow on procedure
 return, allowing escalation of a stack buffer overflow into a potential
-remote execution vulnerabily.
+remote execution vulnerability.
 
 The assumption made by all present zero day shell code or exploits is that
 payloads can rely on a known execution environment such as the ability to
-call C library routines or system calls to elevate the explooit sequence into
+call C library routines or system calls to elevate the exploit sequence into
 executing payload code on the target system, ultimately escalating privileges.
 These assumptions are based on the target system exposing a standard (ABI)
 Application Binary Image.
@@ -55,7 +55,7 @@ randomisation due to the use of canonical pointers (sign extended pointers).
 
 Canonical Pointers are enforced on present day commodity 64-bit systems
 under the guise of allowing for address space growth, and the net result
-is that they limit the address space entopy to the order of 20 bits. Also,
+is that they limit the address space entropy to the order of 20 bits. Also,
 the use of arbitrary memory read primitives can be used to leak the offset
 used in the randomisation of the address space thereby providing the
 ability to bypass ASLR. Brute force can also be used effectively against
@@ -72,7 +72,7 @@ executable to prevent present day static analysis techniques:
 - Register Assignment Entropy
 - Syscall Table Entropy
 
-The combination of these technique shall be referred to as Cryptographic
+The combination of these techniques shall be referred to as Cryptographic
 Binary Translation using an entropy coded ABI.
 
 ## Large Address Space Entropy
@@ -80,7 +80,7 @@ Binary Translation using an entropy coded ABI.
 Using the large address space introduced by 128-bit systems combined with
 the relaxation of canonical pointer requirements, the additional address
 space in code pointers can be used for embedding keys. The amount of entropy
-in pointers on a system that requries 40-bits of address space increases
+in pointers on a system that requires 40-bits of address space increases
 from 24 bits to 88 bits when moving from 64-bits to 128-bits. Large Address
 Space Entropy needs changes to the target system MMU (Memory Management Unit)
 to allow keys to be stored in unused pointer bits.
@@ -105,7 +105,7 @@ privileged functions in the operating system or hypervisor.
 
 ## Basic Block Reorder Entropy
 
-In compiled code a basic block is a sequence of code without branches.
+In compiled code, a basic block is a sequence of code without branches.
 Typical exploits against static code such as ROP (Return Orientated
 Programming) exploits scan known binaries for known offsets. Basic
 Block Reorder Entropy changes the order of each basic block during
