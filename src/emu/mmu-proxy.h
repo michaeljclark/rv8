@@ -47,6 +47,10 @@ namespace riscv {
 
 		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
 		{
+			/* record pc histogram using machine physical address */
+			if (proc.log & proc_log_hist_pc) {
+				proc.histogram_add_pc(pc);
+			}
 			return riscv::inst_fetch(pc, pc_offset);
 		}
 
