@@ -644,15 +644,33 @@ struct rv_jit
 	{
 		cmdline_option options[] =
 		{
-			{ "-h", "--help", cmdline_arg_type_none,
-				"Show help",
-				[&](std::string s) { return (help_or_error = true); } },
+			{ "-l", "--log-instructions", cmdline_arg_type_none,
+				"Log Instructions",
+				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap)); } },
+			{ "-o", "--log-operands", cmdline_arg_type_none,
+				"Log Instructions and Operands",
+				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap | proc_log_operands)); } },
+			{ "-m", "--log-memory-map", cmdline_arg_type_none,
+				"Log Memory Map Information",
+				[&](std::string s) { return (proc_logs |= proc_log_memory); } },
+			{ "-r", "--log-registers", cmdline_arg_type_none,
+				"Log Registers (defaults to integer registers)",
+				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
+			{ "-d", "--debug", cmdline_arg_type_none,
+				"Start up in debugger CLI",
+				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
+			{ "-x", "--no-pseudo", cmdline_arg_type_none,
+				"Disable Pseudoinstruction decoding",
+				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
 			{ "-t", "--trace", cmdline_arg_type_none,
 				"Enable hotspot tracer",
 				[&](std::string s) { proc_logs |= proc_log_hist_pc | proc_log_hotspot_trap; return true; } },
 			{ "-l", "--trace-length", cmdline_arg_type_string,
 				"Hotspot trace length",
 				[&](std::string s) { trace_length = strtoull(s.c_str(), nullptr, 10); return true; } },
+			{ "-h", "--help", cmdline_arg_type_none,
+				"Show help",
+				[&](std::string s) { return (help_or_error = true); } },
 			{ nullptr, nullptr, cmdline_arg_type_none,   nullptr, nullptr }
 		};
 
