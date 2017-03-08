@@ -370,6 +370,8 @@ struct processor_runloop : processor_fault, P
 
 		/* TODO - implement trace cache and JIT codegen */
 
+		printf("trace-begin pc=0x%016llx\n", P::pc);
+
 		P::log &= ~proc_log_hotspot_trap;
 
 		tracer.emit_prolog();
@@ -380,13 +382,17 @@ struct processor_runloop : processor_fault, P
 			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			P::inst_decode(dec, inst);
 			tracer.match(dec);
-			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
+			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) {
+				break;
+			}
 			P::pc += new_offset;
 		}
 
 		tracer.emit_epilog();
 
 		P::log |= proc_log_hotspot_trap;
+
+		printf("trace-end   pc=0x%016llx\n", P::pc);
 
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
@@ -425,8 +431,6 @@ struct processor_runloop : processor_fault, P
 					 * - initially just trace RVI subset
 					 * - mark untraceable instructions with sentinel
 					 */
-					printf("trace pc=0x%016llx\n", P::pc);
-					P::print_log(dec, inst);
 					trace();
 					return exit_cause_continue;
 			}
