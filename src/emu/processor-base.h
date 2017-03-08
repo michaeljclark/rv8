@@ -176,7 +176,7 @@ namespace riscv {
 
 		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
-			running(true), debugging(false), breakpoint(0), hotspot_iters(100),
+			running(true), debugging(false), breakpoint(0), hotspot_iters(0),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 
 		/* Internal setjmp/longjump causes */
