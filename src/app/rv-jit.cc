@@ -74,10 +74,11 @@
 using namespace riscv;
 using namespace asmjit;
 
-
-template <typename T>
-struct fusion_matcher
+template <typename P>
+struct fusion_tracer : public ErrorHandler
 {
+	typedef typename P::decode_type decode;
+
 	enum match_state {
 		match_state_none,
 		match_state_auipc,
@@ -87,12 +88,40 @@ struct fusion_matcher
 		match_state_lui,
 	};
 
+	P proc;
+	X86Assembler as;
+
 	u64 imm;
 	int rd = -1;
-	std::vector<T> decode_trace;
+	std::vector<decode> decode_trace;
 	match_state state = match_state_none;
 
-	void emit(T &dec)
+	fusion_tracer(P &proc, CodeHolder &code) : proc(proc), as(&code)
+	{
+		code.setErrorHandler(this);
+	}
+
+	virtual bool handleError(Error err, const char* message, CodeEmitter* origin) {
+		printf("%s\n", message);
+		return false;
+	}
+
+	void emit_prolog()
+	{
+		bool isWinOS = static_cast<bool>(ASMJIT_OS_WINDOWS);
+		as.push(x86::rbp);
+		as.mov(x86::rbp, isWinOS ? x86::rcx : x86::rdi);
+	}
+
+	void emit_epilog()
+	{
+		/* TODO - save in flight registers back to in memory register file */
+
+		as.pop(x86::rbp);
+		as.ret();
+	}
+
+	void emit(decode &dec)
 	{
 		decode_pseudo_inst(dec);
 		printf("\t%s\n", disasm_inst_simple(dec).c_str());
@@ -119,7 +148,7 @@ struct fusion_matcher
 	void emit_la()
 	{
 		clear_trace();
-		printf("\tla.pcrel %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+		printf("\tla %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
 	}
 
 	void emit_call()
@@ -128,7 +157,7 @@ struct fusion_matcher
 		printf("\tcall 0x%llx\n", imm);
 	}
 
-	void match(T &dec)
+	void match(decode &dec)
 	{
 	reparse:
 		switch(state) {
@@ -230,7 +259,10 @@ struct processor_runloop : processor_fault, P
 	static const size_t inst_cache_size = 8191;
 	static const int inst_step = 100000;
 
+	typedef int (*TraceFunc)(P *proc);
+
 	std::shared_ptr<debug_cli<P>> cli;
+	JitRuntime rt;
 
 	struct rv_inst_cache_ent
 	{
@@ -330,21 +362,35 @@ struct processor_runloop : processor_fault, P
 		}
 	}
 
-	void trace()
+	TraceFunc trace()
 	{
-		fusion_matcher<typename P::decode_type> m;
+		CodeHolder code;
+		code.init(rt.getCodeInfo());
+		fusion_tracer<P> tracer(*this, code);
 
 		/* TODO - implement trace cache and JIT codegen */
+
+		P::log &= ~proc_log_hotspot_trap;
+
+		tracer.emit_prolog();
 
 		for(;;) {
 			typename P::decode_type dec;
 			addr_t pc_offset, new_offset;
 			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			P::inst_decode(dec, inst);
-			m.match(dec);
+			tracer.match(dec);
 			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
 			P::pc += new_offset;
 		}
+
+		tracer.emit_epilog();
+
+		P::log |= proc_log_hotspot_trap;
+
+		TraceFunc fn;
+		Error err = rt.add(&fn, &code);
+		return err ? fn : nullptr;
 	}
 
 	exit_cause step(size_t count)
@@ -372,6 +418,14 @@ struct processor_runloop : processor_fault, P
 				case P::internal_cause_poweroff:
 					return exit_cause_poweroff;
 				case P::internal_cause_hotspot:
+					/*
+					 * TODO
+					 *
+					 * - lookup generated trace in trace cache
+					 * - initially just trace RVI subset
+					 * - mark untraceable instructions with sentinel
+					 */
+					printf("trace pc=0x%016llx\n", P::pc);
 					P::print_log(dec, inst);
 					trace();
 					return exit_cause_continue;
@@ -436,7 +490,6 @@ struct rv_jit
 	int proc_logs = 0;
 	bool help_or_error = false;
 	std::string elf_filename;
-	JitRuntime rt;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
