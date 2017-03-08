@@ -49,7 +49,10 @@ namespace riscv {
 		{
 			/* record pc histogram using machine physical address */
 			if (proc.log & proc_log_hist_pc) {
-				proc.histogram_add_pc(pc);
+				size_t iters = proc.histogram_add_pc(pc);
+				if ((proc.log & proc_log_hotspot_trap) && iters >= proc.hotspot_iters) {
+					proc.raise(P::internal_cause_hotspot, pc);
+				}
 			}
 			return riscv::inst_fetch(pc, pc_offset);
 		}

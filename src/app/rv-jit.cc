@@ -68,12 +68,346 @@
 #include "unknown-abi.h"
 #include "processor-proxy.h"
 #include "debug-cli.h"
-#include "processor-runloop.h"
 
 #include "asmjit.h"
 
 using namespace riscv;
 using namespace asmjit;
+
+
+template <typename T>
+struct fusion_matcher
+{
+	enum match_state {
+		match_state_none,
+		match_state_auipc,
+		match_state_call,
+		match_state_la,
+		match_state_li,
+		match_state_lui,
+	};
+
+	u64 imm;
+	int rd = -1;
+	std::vector<T> decode_trace;
+	match_state state = match_state_none;
+
+	void emit(T &dec)
+	{
+		decode_pseudo_inst(dec);
+		printf("\t%s\n", disasm_inst_simple(dec).c_str());
+	}
+
+	void emit_trace()
+	{
+		for (auto &dec : decode_trace) emit(dec);
+		decode_trace.clear();
+	}
+
+	void clear_trace()
+	{
+		state = match_state_none;
+		decode_trace.clear();
+	}
+
+	void emit_li()
+	{
+		clear_trace();
+		printf("\tli %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+	}
+
+	void emit_la()
+	{
+		clear_trace();
+		printf("\tla.pcrel %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+	}
+
+	void emit_call()
+	{
+		clear_trace();
+		printf("\tcall 0x%llx\n", imm);
+	}
+
+	void match(T &dec)
+	{
+	reparse:
+		switch(state) {
+			case match_state_none:
+				switch (dec.op) {
+					case rv_op_addi:
+						if (dec.rs1 == rv_ireg_zero) {
+							rd = dec.rd;
+							imm = dec.imm;
+							state = match_state_li;
+							decode_trace.push_back(dec);
+							return;
+						}
+						break;
+					case rv_op_auipc:
+						rd = dec.rd;
+						imm = dec.imm;
+						state = match_state_auipc;
+						decode_trace.push_back(dec);
+						return;
+					case rv_op_lui:
+						rd = dec.rd;
+						imm = dec.imm;
+						state = match_state_lui;
+						decode_trace.push_back(dec);
+						return;
+					default:
+						break;
+				}
+				break;
+			case match_state_auipc:
+				switch (dec.op) {
+					case rv_op_addi: state = match_state_la; goto reparse;
+					case rv_op_jalr: state = match_state_call; goto reparse;
+					default:
+						emit_trace();
+						break;
+				}
+				break;
+			case match_state_lui:
+				switch (dec.op) {
+					case rv_op_slli: state = match_state_li; goto reparse;
+					case rv_op_addi: state = match_state_li; goto reparse;
+					default:
+						emit_trace();
+						break;
+				}
+				break;
+			case match_state_li:
+				switch (dec.op) {
+					case rv_op_addi:
+						if (rd == dec.rd && rd == dec.rs1) {
+							imm += dec.imm;
+							return;
+						}
+						break;
+					case rv_op_slli:
+						if (rd == dec.rd && rd == dec.rs1) {
+							imm <<= dec.imm;
+							return;
+						}
+						break;
+					default:
+						break;
+				}
+				emit_li();
+				break;
+			case match_state_la:
+				if (rd == dec.rd && rd == dec.rs1) {
+					imm += dec.imm;
+					emit_la();
+					return;
+				}
+				emit_trace();
+				break;
+			case match_state_call:
+				if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
+					imm += dec.imm;
+					emit_call();
+					return;
+				}
+				emit_trace();
+				break;
+		}
+		emit(dec);
+	}
+};
+
+struct processor_fault
+{
+	static processor_fault *current;
+};
+
+processor_fault* processor_fault::current = nullptr;
+
+template <typename P>
+struct processor_runloop : processor_fault, P
+{
+	static const size_t inst_cache_size = 8191;
+	static const int inst_step = 100000;
+
+	std::shared_ptr<debug_cli<P>> cli;
+
+	struct rv_inst_cache_ent
+	{
+		inst_t inst;
+		typename P::decode_type dec;
+	};
+
+	rv_inst_cache_ent inst_cache[inst_cache_size];
+
+	processor_runloop() : cli(std::make_shared<debug_cli<P>>()) {}
+	processor_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli) {}
+
+	static void signal_handler(int signum, siginfo_t *info, void *)
+	{
+		static_cast<processor_runloop<P>*>
+			(processor_fault::current)->signal_dispatch(signum, info);
+	}
+
+	void signal_dispatch(int signum, siginfo_t *info)
+	{
+		printf("SIGNAL   :%s pc:0x%0llx si_addr:0x%0llx\n",
+			signal_name(signum), (addr_t)P::pc, (addr_t)info->si_addr);
+
+		/* let the processor longjmp */
+		P::signal(signum, info);
+	}
+
+	void init()
+	{
+		// block signals before so we don't deadlock in signal handlers
+		sigset_t set;
+		sigemptyset(&set);
+		sigaddset(&set, SIGSEGV);
+		sigaddset(&set, SIGTERM);
+		sigaddset(&set, SIGQUIT);
+		sigaddset(&set, SIGINT);
+		sigaddset(&set, SIGHUP);
+		sigaddset(&set, SIGUSR1);
+		if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
+			panic("can't set thread signal mask: %s", strerror(errno));
+		}
+
+		// disable unwanted signals
+		sigset_t sigpipe_set;
+		sigemptyset(&sigpipe_set);
+		sigaddset(&sigpipe_set, SIGPIPE);
+		sigprocmask(SIG_BLOCK, &sigpipe_set, nullptr);
+
+		// install signal handler
+		struct sigaction sigaction_handler;
+		memset(&sigaction_handler, 0, sizeof(sigaction_handler));
+		sigaction_handler.sa_sigaction = &processor_runloop<P>::signal_handler;
+		sigaction_handler.sa_flags = SA_SIGINFO;
+		sigaction(SIGSEGV, &sigaction_handler, nullptr);
+		sigaction(SIGTERM, &sigaction_handler, nullptr);
+		sigaction(SIGQUIT, &sigaction_handler, nullptr);
+		sigaction(SIGINT, &sigaction_handler, nullptr);
+		sigaction(SIGHUP, &sigaction_handler, nullptr);
+		sigaction(SIGUSR1, &sigaction_handler, nullptr);
+		processor_fault::current = this;
+
+		/* unblock signals */
+		if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
+			panic("can't set thread signal mask: %s", strerror(errno));
+		}
+
+		/* processor initialization */
+		P::init();
+	}
+
+	void run(exit_cause ex = exit_cause_continue)
+	{
+		u32 logsave = P::log;
+		size_t count = inst_step;
+		for (;;) {
+			switch (ex) {
+				case exit_cause_continue:
+					break;
+				case exit_cause_cli:
+					P::debugging = true;
+					count = cli->run(this);
+					if (count == size_t(-1)) {
+						P::debugging = false;
+						P::log = logsave;
+						count = inst_step;
+					} else {
+						P::log |= (proc_log_inst | proc_log_operands | proc_log_trap);
+					}
+					break;
+				case exit_cause_poweroff:
+					return;
+			}
+			ex = step(count);
+			if (P::debugging && ex == exit_cause_continue) {
+				ex = exit_cause_cli;
+			}
+		}
+	}
+
+	void trace()
+	{
+		fusion_matcher<typename P::decode_type> m;
+
+		/* TODO - implement trace cache and JIT codegen */
+
+		for(;;) {
+			typename P::decode_type dec;
+			addr_t pc_offset, new_offset;
+			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
+			P::inst_decode(dec, inst);
+			m.match(dec);
+			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
+			P::pc += new_offset;
+		}
+	}
+
+	exit_cause step(size_t count)
+	{
+		typename P::decode_type dec;
+		typename P::ux inststop = P::instret + count;
+		addr_t pc_offset, new_offset;
+		inst_t inst = 0;
+
+		/* interrupt service routine */
+		P::time = cpu_cycle_clock();
+		P::isr();
+
+		/* trap return path */
+		int cause;
+		if (unlikely((cause = setjmp(P::env)) > 0)) {
+			cause -= P::internal_cause_offset;
+			switch(cause) {
+				case P::internal_cause_cli:
+					return exit_cause_cli;
+				case P::internal_cause_fatal:
+					P::print_csr_registers();
+					P::print_int_registers();
+					return exit_cause_poweroff;
+				case P::internal_cause_poweroff:
+					return exit_cause_poweroff;
+				case P::internal_cause_hotspot:
+					P::print_log(dec, inst);
+					trace();
+					return exit_cause_continue;
+			}
+			P::trap(dec, cause);
+			if (!P::running) return exit_cause_poweroff;
+		}
+
+		/* step the processor */
+		while (P::instret < inststop) {
+			if (P::pc == P::breakpoint && P::breakpoint != 0) {
+				return exit_cause_cli;
+			}
+			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
+			inst_t inst_cache_key = inst % inst_cache_size;
+			if (inst_cache[inst_cache_key].inst == inst) {
+				dec = inst_cache[inst_cache_key].dec;
+			} else {
+				P::inst_decode(dec, inst);
+				inst_cache[inst_cache_key].inst = inst;
+				inst_cache[inst_cache_key].dec = dec;
+			}
+			if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
+				(new_offset = P::inst_priv(dec, pc_offset)) != -1)
+			{
+				if (P::log) P::print_log(dec, inst);
+				P::pc += new_offset;
+				P::cycle++;
+				P::instret++;
+			} else {
+				P::raise(rv_cause_illegal_instruction, P::pc);
+			}
+		}
+		return exit_cause_continue;
+	}
+};
 
 using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy<processor_rv64imafdc_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
@@ -259,6 +593,9 @@ struct rv_jit
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
+			{ "-t", "--trace", cmdline_arg_type_none,
+				"Enable hotspot tracer",
+				[&](std::string s) { proc_logs |= proc_log_hist_pc | proc_log_hotspot_trap; return true; } },
 			{ nullptr, nullptr, cmdline_arg_type_none,   nullptr, nullptr }
 		};
 
@@ -294,164 +631,6 @@ struct rv_jit
 		elf.load(elf_filename);
 	}
 
-	template <typename T>
-	struct fusion_matcher
-	{
-		enum match_state {
-			match_state_none,
-			match_state_auipc,
-			match_state_call,
-			match_state_la,
-			match_state_li,
-			match_state_lui,
-		};
-
-		u64 imm;
-		int rd = -1;
-		std::vector<T> decode_trace;
-		match_state state = match_state_none;
-
-		void emit(T &dec)
-		{
-			decode_pseudo_inst(dec);
-			printf("\t%s\n", disasm_inst_simple(dec).c_str());
-		}
-
-		void emit_trace()
-		{
-			for (auto &dec : decode_trace) emit(dec);
-			decode_trace.clear();
-		}
-
-		void clear_trace()
-		{
-			state = match_state_none;
-			decode_trace.clear();
-		}
-
-		void emit_li()
-		{
-			clear_trace();
-			printf("\tli %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
-		}
-
-		void emit_la()
-		{
-			clear_trace();
-			printf("\tla.pcrel %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
-		}
-
-		void emit_call()
-		{
-			clear_trace();
-			printf("\tcall 0x%llx\n", imm);
-		}
-
-		void match(T &dec)
-		{
-		reparse:
-			switch(state) {
-				case match_state_none:
-					switch (dec.op) {
-						case rv_op_addi:
-							if (dec.rs1 == rv_ireg_zero) {
-								rd = dec.rd;
-								imm = dec.imm;
-								state = match_state_li;
-								decode_trace.push_back(dec);
-								return;
-							}
-							break;
-						case rv_op_auipc:
-							rd = dec.rd;
-							imm = dec.imm;
-							state = match_state_auipc;
-							decode_trace.push_back(dec);
-							return;
-						case rv_op_lui:
-							rd = dec.rd;
-							imm = dec.imm;
-							state = match_state_lui;
-							decode_trace.push_back(dec);
-							return;
-						default:
-							break;
-					}
-					break;
-				case match_state_auipc:
-					switch (dec.op) {
-						case rv_op_addi: state = match_state_la; goto reparse;
-						case rv_op_jalr: state = match_state_call; goto reparse;
-						default:
-							emit_trace();
-							break;
-					}
-					break;
-				case match_state_lui:
-					switch (dec.op) {
-						case rv_op_slli: state = match_state_li; goto reparse;
-						case rv_op_addi: state = match_state_li; goto reparse;
-						default:
-							emit_trace();
-							break;
-					}
-					break;
-				case match_state_li:
-					switch (dec.op) {
-						case rv_op_addi:
-							if (rd == dec.rd && rd == dec.rs1) {
-								imm += dec.imm;
-								return;
-							}
-							break;
-						case rv_op_slli:
-							if (rd == dec.rd && rd == dec.rs1) {
-								imm <<= dec.imm;
-								return;
-							}
-							break;
-						default:
-							break;
-					}
-					emit_li();
-					break;
-				case match_state_la:
-					if (rd == dec.rd && rd == dec.rs1) {
-						imm += dec.imm;
-						emit_la();
-						return;
-					}
-					emit_trace();
-					break;
-				case match_state_call:
-					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
-						imm += dec.imm;
-						emit_call();
-						return;
-					}
-					emit_trace();
-					break;
-			}
-			emit(dec);
-		}
-	};
-
-	template <typename P>
-	void trace(P proc)
-	{
-		fusion_matcher<typename P::decode_type> m;
-
-		for(;;) {
-			typename P::decode_type dec;
-			addr_t pc_offset, new_offset;
-			inst_t inst = proc.mmu.inst_fetch(proc, proc.pc, pc_offset);
-			proc.inst_decode(dec, inst);
-			m.match(dec);
-			if ((new_offset = proc.inst_exec(dec, pc_offset)) == -1) break;
-			proc.pc += new_offset;
-		}
-	}
-
 	/* Start the execuatable with the given proxy processor template */
 	template <typename P>
 	void start_jit()
@@ -481,8 +660,14 @@ struct rv_jit
 		/* Initialize interpreter */
 		proc.init();
 
-		/* Trace */
-		trace(proc);
+		/* Run the CPU until it halts */
+		proc.run(proc.log & proc_log_ebreak_cli
+			? exit_cause_cli : exit_cause_continue);
+
+		/* Unmap memory segments */
+		for (auto &seg: proc.mmu.mem->segments) {
+			munmap(seg.first, seg.second);
+		}
 	}
 
 	void exec()
