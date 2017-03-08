@@ -123,7 +123,6 @@ struct fusion_tracer : public ErrorHandler
 
 	void emit(decode &dec)
 	{
-		decode_pseudo_inst(dec);
 		printf("\t%s\n", disasm_inst_simple(dec).c_str());
 	}
 
