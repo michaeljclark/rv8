@@ -77,9 +77,13 @@ namespace riscv {
 		size_t histogram_add_pc(addr_t key)
 		{
 			auto hi = hist_pc.find(key);
-			if (hi == hist_pc.end()) hist_pc.insert(hist_pc_pair_t(key, 1));
-			else hi->second++;
-			return hi->second;
+			if (hi == hist_pc.end()) {
+				hist_pc.insert(hist_pc_pair_t(key, 1));
+				return 1;
+			} else {
+				hi->second++;
+				return hi->second;
+			}
 		}
 
 		void histogram_add_reg(size_t key)
