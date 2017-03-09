@@ -88,17 +88,20 @@ struct fusion_tracer : public ErrorHandler
 		match_state_lui,
 	};
 
-	P proc;
+	P &proc;
 	X86Assembler as;
 
 	u64 imm;
-	int rd = -1;
+	int rd;
 	addr_t pc;
 
 	match_state state;
+	int regstate[P::ireg_count];
+	std::map<addr_t,Label> labels;
 	std::vector<std::pair<addr_t,decode>> decode_trace;
 
-	fusion_tracer(P &proc, CodeHolder &code) : proc(proc), as(&code), state(match_state_none)
+	fusion_tracer(P &proc, CodeHolder &code)
+		: proc(proc), as(&code), imm(0), rd(0), pc(0), state(match_state_none), regstate()
 	{
 		code.setErrorHandler(this);
 	}
@@ -136,14 +139,33 @@ struct fusion_tracer : public ErrorHandler
 		decode_trace.clear();
 	}
 
-	bool emit(addr_t pc, decode &dec)
+	bool emit_add(addr_t pc, decode &dec)
 	{
-		printf("\t0x%016llx\t%s\n", pc, disasm_inst_simple(dec).c_str());
+		/* TODO - emit asm */
+		return true;
+	}
+
+	bool emit_addi(addr_t pc, decode &dec)
+	{
+		/* TODO - emit asm */
+		return true;
+	}
+
+	bool emit_bne(addr_t pc, decode &dec)
+	{
+		/* TODO - emit asm */
+		return true;
+	}
+
+	bool emit_ld(addr_t pc, decode &dec)
+	{
+		/* TODO - emit asm */
 		return true;
 	}
 
 	bool emit_li()
 	{
+		/* TODO - emit asm */
 		clear_trace();
 		printf("\t0x%016llx\tli\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
 		return true;
@@ -151,20 +173,41 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_la()
 	{
+		/* TODO - emit asm */
 		clear_trace();
 		printf("\t0x%016llx\tla\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
-		return true;
+		return false;
 	}
 
 	bool emit_call()
 	{
+		/* TODO - emit asm */
 		clear_trace();
 		printf("\t0x%016llx\tcall\t0x%llx\n", pc, imm);
-		return true;
+		return false;
+	}
+
+	bool emit(addr_t pc, decode &dec)
+	{
+		printf("\t0x%016llx\t%s\n", pc, disasm_inst_simple(dec).c_str());
+		switch(dec.op) {
+			case rv_op_add: return emit_add(pc, dec);
+			case rv_op_addi: return emit_addi(pc, dec);
+			case rv_op_bne: return emit_bne(pc, dec);
+			case rv_op_ld: return emit_ld(pc, dec);
+		}
+		return false;
 	}
 
 	bool trace(addr_t pc, decode &dec)
 	{
+		auto li = labels.find(pc);
+		if (li != labels.end()) return false; /* trace complete */
+		Label l = as.newLabel();
+		labels[pc] = l;
+		as.bind(l);
+		proc.histogram_set_pc(pc, P::hostspot_trace_skip);
+
 	reparse:
 		switch(state) {
 			case match_state_none:
@@ -391,7 +434,7 @@ struct processor_runloop : processor_fault, P
 			addr_t pc_offset, new_offset;
 			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			P::inst_decode(dec, inst);
-			if (!tracer.trace(P::pc, dec)) {
+			if (tracer.trace(P::pc, dec) == false) {
 				break;
 			}
 			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) {
@@ -408,9 +451,7 @@ struct processor_runloop : processor_fault, P
 
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
-		if (true /* unconditionally skip for now */ || err) {
-			P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
-		} else {
+		if (false /* unconditionally skip for now */ && err) {
 			trace_cache[trace_pc] = fn;
 			P::histogram_set_pc(trace_pc, P::hostspot_trace_cached);
 		}

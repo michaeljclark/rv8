@@ -85,7 +85,9 @@ namespace riscv {
 				hist_pc.insert(hist_pc_pair_t(key, 1));
 				return 1;
 			} else {
-				hi->second++;
+				if (hi->second < P::hostspot_trace_limit) {
+					hi->second++;
+				}
 				return hi->second;
 			}
 		}

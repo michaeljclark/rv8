@@ -194,6 +194,7 @@ namespace riscv {
 
 		/* program counter histogram sentinels */
 		enum : size_t {
+			hostspot_trace_limit = std::numeric_limits<size_t>::max() - 2,
 			hostspot_trace_cached = std::numeric_limits<size_t>::max() - 1,
 			hostspot_trace_skip = std::numeric_limits<size_t>::max()
 		};
