@@ -93,10 +93,12 @@ struct fusion_tracer : public ErrorHandler
 
 	u64 imm;
 	int rd = -1;
-	std::vector<decode> decode_trace;
-	match_state state = match_state_none;
+	addr_t pc;
 
-	fusion_tracer(P &proc, CodeHolder &code) : proc(proc), as(&code)
+	match_state state;
+	std::vector<std::pair<addr_t,decode>> decode_trace;
+
+	fusion_tracer(P &proc, CodeHolder &code) : proc(proc), as(&code), state(match_state_none)
 	{
 		code.setErrorHandler(this);
 	}
@@ -121,14 +123,10 @@ struct fusion_tracer : public ErrorHandler
 		as.ret();
 	}
 
-	void emit(decode &dec)
-	{
-		printf("\t%s\n", disasm_inst_simple(dec).c_str());
-	}
-
 	void emit_trace()
 	{
-		for (auto &dec : decode_trace) emit(dec);
+		state = match_state_none;
+		for (auto &t : decode_trace) emit(t.first, t.second);
 		decode_trace.clear();
 	}
 
@@ -138,25 +136,30 @@ struct fusion_tracer : public ErrorHandler
 		decode_trace.clear();
 	}
 
+	void emit(addr_t pc, decode &dec)
+	{
+		printf("\t0x%016llx\t%s\n", pc, disasm_inst_simple(dec).c_str());
+	}
+
 	void emit_li()
 	{
 		clear_trace();
-		printf("\tli %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+		printf("\t0x%016llx\tli\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
 	}
 
 	void emit_la()
 	{
 		clear_trace();
-		printf("\tla %s, 0x%llx\n", rv_ireg_name_sym[rd], imm);
+		printf("\t0x%016llx\tla\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
 	}
 
 	void emit_call()
 	{
 		clear_trace();
-		printf("\tcall 0x%llx\n", imm);
+		printf("\t0x%016llx\tcall\t0x%llx\n", pc, imm);
 	}
 
-	void match(decode &dec)
+	void trace(addr_t pc, decode &dec)
 	{
 	reparse:
 		switch(state) {
@@ -164,24 +167,27 @@ struct fusion_tracer : public ErrorHandler
 				switch (dec.op) {
 					case rv_op_addi:
 						if (dec.rs1 == rv_ireg_zero) {
+							this->pc = pc;
 							rd = dec.rd;
 							imm = dec.imm;
 							state = match_state_li;
-							decode_trace.push_back(dec);
+							decode_trace.push_back(std::make_pair(pc, dec));
 							return;
 						}
 						break;
 					case rv_op_auipc:
+						this->pc = pc;
 						rd = dec.rd;
 						imm = dec.imm;
 						state = match_state_auipc;
-						decode_trace.push_back(dec);
+						decode_trace.push_back(std::make_pair(pc, dec));
 						return;
 					case rv_op_lui:
+						this->pc = pc;
 						rd = dec.rd;
 						imm = dec.imm;
 						state = match_state_lui;
-						decode_trace.push_back(dec);
+						decode_trace.push_back(std::make_pair(pc, dec));
 						return;
 					default:
 						break;
@@ -239,9 +245,10 @@ struct fusion_tracer : public ErrorHandler
 					return;
 				}
 				emit_trace();
+				state = match_state_none;
 				break;
 		}
-		emit(dec);
+		emit(pc, dec);
 	}
 };
 
@@ -382,7 +389,7 @@ struct processor_runloop : processor_fault, P
 			addr_t pc_offset, new_offset;
 			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			P::inst_decode(dec, inst);
-			tracer.match(dec);
+			tracer.trace(P::pc, dec);
 			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) {
 				break;
 			}
