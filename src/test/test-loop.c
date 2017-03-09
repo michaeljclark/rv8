@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int arr[] = {
+long arr[] = {
 	1, 2, 3,
 	4, 5, 6,
 	7, 8, 9,
@@ -14,11 +14,11 @@ int arr[] = {
 
 int main()
 {
-	int total = 0;
+	long total = 0;
 	for (size_t i = 0; i < 100000; i++) {
-		for (size_t j = 0; j < (sizeof(arr)/sizeof(int)); j++) {
+		for (size_t j = 0; j < (sizeof(arr)/sizeof(long)); j++) {
 			total += arr[j];
 		}
 	}
-	printf("total=%d\n", total);
+	printf("total=%ld\n", total);
 }
