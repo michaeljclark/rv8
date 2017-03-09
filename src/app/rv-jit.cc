@@ -261,6 +261,7 @@ struct processor_runloop : processor_fault, P
 	typedef int (*TraceFunc)(P *proc);
 
 	std::shared_ptr<debug_cli<P>> cli;
+	std::map<addr_t,TraceFunc> trace_cache;
 	JitRuntime rt;
 
 	struct rv_inst_cache_ent
@@ -361,13 +362,14 @@ struct processor_runloop : processor_fault, P
 		}
 	}
 
-	TraceFunc trace()
+	void start_trace()
 	{
 		CodeHolder code;
 		code.init(rt.getCodeInfo());
 		fusion_tracer<P> tracer(*this, code);
+		addr_t trace_pc = P::pc;
 
-		/* TODO - implement trace cache and JIT codegen */
+		/* TODO - implement JIT codegen */
 
 		printf("trace-begin pc=0x%016llx\n", P::pc);
 
@@ -395,7 +397,18 @@ struct processor_runloop : processor_fault, P
 
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
-		return err ? fn : nullptr;
+		if (true /* unconditionally skip for now */ || err) {
+			P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
+		} else {
+			trace_cache[trace_pc] = fn;
+			P::histogram_set_pc(trace_pc, P::hostspot_trace_cached);
+		}
+	}
+
+	void exec_trace()
+	{
+		TraceFunc fn = trace_cache[P::pc];
+		fn(this);
 	}
 
 	exit_cause step(size_t count)
@@ -423,14 +436,10 @@ struct processor_runloop : processor_fault, P
 				case P::internal_cause_poweroff:
 					return exit_cause_poweroff;
 				case P::internal_cause_hotspot:
-					/*
-					 * TODO
-					 *
-					 * - lookup generated trace in trace cache
-					 * - initially just trace RVI subset
-					 * - mark untraceable instructions with sentinel
-					 */
-					trace();
+					start_trace();
+					return exit_cause_continue;
+				case P::internal_cause_traced:
+					exec_trace();
 					return exit_cause_continue;
 			}
 			P::trap(dec, cause);

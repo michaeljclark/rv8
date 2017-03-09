@@ -73,6 +73,10 @@ namespace riscv {
 			}
 		}
 
+		void histogram_set_pc(addr_t key, size_t val)
+		{
+			hist_pc[key] = val;
+		}
 
 		size_t histogram_add_pc(addr_t key)
 		{

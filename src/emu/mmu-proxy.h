@@ -50,8 +50,19 @@ namespace riscv {
 			/* record pc histogram using machine physical address */
 			if (proc.log & proc_log_hist_pc) {
 				size_t iters = proc.histogram_add_pc(pc);
-				if ((proc.log & proc_log_hotspot_trap) && iters >= proc.hotspot_iters) {
-					proc.raise(P::internal_cause_hotspot, pc);
+				if (proc.log & proc_log_hotspot_trap) {
+					switch (iters) {
+						case P::hostspot_trace_cached:
+							proc.raise(P::internal_cause_traced, pc);
+							break;
+						case P::hostspot_trace_skip:
+							break;
+						default:
+							if (iters >= proc.hotspot_iters) {
+								proc.raise(P::internal_cause_hotspot, pc);
+							}
+							break;
+					}
 				}
 			}
 			return riscv::inst_fetch(pc, pc_offset);
