@@ -15,6 +15,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <limits>
 #include <map>
 
 #include <sys/mman.h>
