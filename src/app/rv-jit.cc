@@ -888,10 +888,12 @@ struct processor_runloop : processor_fault, P
 			if (P::pc == P::breakpoint && P::breakpoint != 0) {
 				return exit_cause_cli;
 			}
-			auto ti = trace_cache.find(P::pc);
-			if (ti != trace_cache.end()) {
-				ti->second(static_cast<processor_rv64imafd*>(this));
-				continue;
+			if (P::log & proc_log_hotspot_trap) {
+				auto ti = trace_cache.find(P::pc);
+				if (ti != trace_cache.end()) {
+					ti->second(static_cast<processor_rv64imafd*>(this));
+					continue;
+				}
 			}
 			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			inst_t inst_cache_key = inst % inst_cache_size;
