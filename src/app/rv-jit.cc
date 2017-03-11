@@ -16,6 +16,7 @@
 #include <climits>
 #include <cfloat>
 #include <cfenv>
+#include <cstddef>
 #include <limits>
 #include <array>
 #include <string>
@@ -94,14 +95,17 @@ struct fusion_tracer : public ErrorHandler
 	u64 imm;
 	int rd;
 	addr_t pc;
+	inst_t inst;
+	addr_t term_pc;
 
 	match_state state;
 	int regstate[P::ireg_count];
+	Label term;
 	std::map<addr_t,Label> labels;
 	std::vector<std::pair<addr_t,decode>> decode_trace;
 
 	fusion_tracer(P &proc, CodeHolder &code)
-		: proc(proc), as(&code), imm(0), rd(0), pc(0), state(match_state_none), regstate()
+		: proc(proc), as(&code), imm(0), rd(0), pc(0), term_pc(0), state(match_state_none), regstate()
 	{
 		code.setErrorHandler(this);
 	}
@@ -111,17 +115,108 @@ struct fusion_tracer : public ErrorHandler
 		return false;
 	}
 
+	const char* x86_reg_str(int rdx)
+	{
+		switch (rdx) {
+			case 0: return "rax";
+			case 1: return "rcx";
+			case 2: return "rdx";
+			case 3: return "rbx";
+			case 4: return "rsp";
+			case 5: return "rbp";
+			case 6: return "rsi";
+			case 7: return "rdi";
+			case 8: return "r8";
+			case 9: return "r9";
+			case 10: return "r10";
+			case 11: return "r11";
+			case 12: return "r12";
+			case 13: return "r13";
+			case 14: return "r14";
+			case 15: return "r15";
+		}
+		return "";
+	}
+
+	const char* frame_reg_str(int reg)
+	{
+		static char buf[32];
+		snprintf(buf, sizeof(buf), "[rbp + %lu]", offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
+		return buf;
+	}
+
+	static int x86_reg(int rd)
+	{
+		switch (rd) {
+			case rv_ireg_zero: return 0;
+			case rv_ireg_ra: return 1;  /* rcx */
+			case rv_ireg_sp: return 3;  /* rbx */
+			case rv_ireg_t0: return 6;  /* rsi */
+			case rv_ireg_t1: return 7;  /* rdi */
+			case rv_ireg_a0: return 8;  /* r8  */
+			case rv_ireg_a1: return 9;  /* r9  */
+			case rv_ireg_a2: return 10; /* r10 */
+			case rv_ireg_a3: return 11; /* r11 */
+			case rv_ireg_a4: return 12; /* r12 */
+			case rv_ireg_a5: return 13; /* r13 */
+			case rv_ireg_a6: return 14; /* r14 */
+			case rv_ireg_a7: return 15; /* r15 */
+		}
+		return -1;
+	}
+
+	const X86Mem frame_reg(int reg)
+	{
+		return x86::ptr(x86::rbp, offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
+	}
+
 	void emit_prolog()
 	{
-		bool isWinOS = static_cast<bool>(ASMJIT_OS_WINDOWS);
 		as.push(x86::rbp);
-		as.mov(x86::rbp, isWinOS ? x86::rcx : x86::rdi);
+		as.push(x86::rbx);
+		as.push(x86::r12);
+		as.push(x86::r13);
+		as.push(x86::r14);
+		as.push(x86::r15);
+		as.mov(x86::rbp, x86::rdi);
+		as.mov(x86::rcx, frame_reg(rv_ireg_ra));
+		as.mov(x86::rbx, frame_reg(rv_ireg_sp));
+		as.mov(x86::rsi, frame_reg(rv_ireg_t0));
+		as.mov(x86::rdi, frame_reg(rv_ireg_t1));
+		as.mov(x86::r8,  frame_reg(rv_ireg_a0));
+		as.mov(x86::r9,  frame_reg(rv_ireg_a1));
+		as.mov(x86::r10, frame_reg(rv_ireg_a2));
+		as.mov(x86::r11, frame_reg(rv_ireg_a3));
+		as.mov(x86::r12, frame_reg(rv_ireg_a4));
+		as.mov(x86::r13, frame_reg(rv_ireg_a5));
+		as.mov(x86::r14, frame_reg(rv_ireg_a6));
+		as.mov(x86::r15, frame_reg(rv_ireg_a7));
+		term = as.newLabel();
 	}
 
 	void emit_epilog()
 	{
-		/* TODO - save in flight registers back to in memory register file */
-
+		if (term_pc) {
+			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
+		}
+		as.bind(term);
+		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
+		as.mov(frame_reg(rv_ireg_sp), x86::rbx);
+		as.mov(frame_reg(rv_ireg_t0), x86::rsi);
+		as.mov(frame_reg(rv_ireg_t1), x86::rdi);
+		as.mov(frame_reg(rv_ireg_a0), x86::r8);
+		as.mov(frame_reg(rv_ireg_a1), x86::r9);
+		as.mov(frame_reg(rv_ireg_a2), x86::r10);
+		as.mov(frame_reg(rv_ireg_a3), x86::r11);
+		as.mov(frame_reg(rv_ireg_a4), x86::r12);
+		as.mov(frame_reg(rv_ireg_a5), x86::r13);
+		as.mov(frame_reg(rv_ireg_a6), x86::r14);
+		as.mov(frame_reg(rv_ireg_a7), x86::r15);
+		as.pop(x86::r15);
+		as.pop(x86::r14);
+		as.pop(x86::r13);
+		as.pop(x86::r12);
+		as.pop(x86::rbx);
 		as.pop(x86::rbp);
 		as.ret();
 	}
@@ -141,25 +236,302 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_add(addr_t pc, decode &dec)
 	{
-		/* TODO - emit asm */
+		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		}
+		else if (dec.rs1 == rv_ireg_zero) {
+			// mov rd, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs2x));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs2));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs2x));
+					printf("\t\tmov %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs2));
+					printf("\t\tmov %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else if (dec.rs2 == rv_ireg_zero) {
+			// mov rd, rs1
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+					printf("\t\tmov %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else if (dec.rd == dec.rs1) {
+			// add rd, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.add(x86::gpq(rdx), x86::gpq(rs2x));
+					printf("\t\tadd %s %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.add(x86::gpq(rdx), frame_reg(dec.rs2));
+					printf("\t\tadd %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.add(frame_reg(dec.rd), x86::gpq(rs2x));
+					printf("\t\tadd %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.add(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs2));
+					printf("\t\tadd %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else {
+			// mov rd, rs1
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+					printf("\t\tadd %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+			// add rs, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.add(x86::gpq(rdx), x86::gpq(rs2x));
+					printf("\t\tadd %s %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.add(x86::gpq(rdx), frame_reg(dec.rs2));
+					printf("\t\tadd %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.add(frame_reg(dec.rd), x86::gpq(rs2x));
+					printf("\t\tadd %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.add(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs2));
+					printf("\t\tadd %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+		}
 		return true;
 	}
 
 	bool emit_addi(addr_t pc, decode &dec)
 	{
-		/* TODO - emit asm */
+		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		}
+		else if (dec.rs1 == rv_ireg_zero) {
+			// mov rd, imm
+			if (rdx > 0) {
+				as.mov(x86::gpq(rdx), dec.imm);
+				printf("\t\tmov %s %d\n", x86_reg_str(rdx), dec.imm);
+			} else {
+				as.mov(frame_reg(dec.rd), dec.imm);
+				printf("\t\tmov %s %d\n", frame_reg_str(dec.rd), dec.imm);
+			}
+		}
+		else if (dec.rd == dec.rs1) {
+			// add rd, imm
+			if (rdx > 0) {
+				as.add(x86::gpq(rdx), dec.imm);
+				printf("\t\tadd %s %d\n", x86_reg_str(rdx), dec.imm);
+			} else {
+				as.add(frame_reg(dec.rd), dec.imm);
+				printf("\t\tadd %s %d\n", frame_reg_str(dec.rd), dec.imm);
+			}
+		}
+		else {
+			// mov rd, rs1
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					printf("\t\tmov %s %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					printf("\t\tmov %s %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+					printf("\t\tadd %s rax\n", frame_reg_str(dec.rd));
+				}
+			}
+			// add rd, imm
+			if (rdx > 0) {
+				as.add(x86::gpq(rdx), dec.imm);
+				printf("\t\tadd %s %d\n", x86_reg_str(rdx), dec.imm);
+			} else {
+				as.add(frame_reg(dec.rd), dec.imm);
+				printf("\t\tadd %s %d\n", frame_reg_str(dec.rd), dec.imm);
+			}
+		}
 		return true;
 	}
 
 	bool emit_bne(addr_t pc, decode &dec)
 	{
-		/* TODO - emit asm */
+		int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+		if (dec.rs1 == rv_ireg_zero) {
+			if (rs2x > 0) {
+				as.cmp(x86::gpq(rs2x), 0);
+				printf("\t\tcmp %s $0\n", x86_reg_str(rs2x));
+			} else {
+				as.cmp(frame_reg(dec.rs2), 0);
+				printf("\t\tcmp %s $0\n", frame_reg_str(dec.rs2));
+			}
+		}
+		else if (dec.rs2 == rv_ireg_zero) {
+			if (rs1x > 0) {
+				as.cmp(x86::gpq(rs1x), 0);
+				printf("\t\tcmp %s $0\n", x86_reg_str(rs1x));
+			} else {
+				as.cmp(frame_reg(dec.rs1), 0);
+				printf("\t\tcmp %s $0\n", frame_reg_str(dec.rs1));
+			}
+		}
+		else if (rs1x > 0) {
+			if (rs2x > 0) {
+				as.cmp(x86::gpq(rs1x), x86::gpq(rs2x));
+				printf("\t\tcmp %s %s\n", x86_reg_str(rs1x), x86_reg_str(rs2x));
+			} else {
+				as.cmp(x86::gpq(rs1x), frame_reg(dec.rs2));
+				printf("\t\tcmp %s %s\n", x86_reg_str(rs1x), frame_reg_str(dec.rs2));
+			}
+		}
+		else {
+			if (rs2x > 0) {
+				as.cmp(frame_reg(dec.rs1), x86::gpq(rs2x));
+				printf("\t\tcmp %s %s\n", frame_reg_str(dec.rs1), x86_reg_str(rs2x));
+			} else {
+				as.mov(x86::rax, frame_reg(dec.rs1));
+				as.cmp(x86::rax, frame_reg(dec.rs2));
+				printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+				printf("\t\tcmp rax %s\n", frame_reg_str(dec.rs1));
+			}
+		}
+
+		bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
+		addr_t branch_pc = pc + dec.imm;
+		addr_t cont_pc = pc + inst_length(inst);
+		if (cond) {
+			auto li = labels.find(branch_pc);
+			if (li == labels.end()) {
+				Label l = as.newLabel();
+				as.jne(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				as.bind(l);
+				term_pc = branch_pc;
+				printf("\t\tjne pc_0x%016llx\n", branch_pc);
+				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
+				printf("\t\tjmp term\n");
+			} else {
+				as.jne(li->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				printf("\t\tjne pc_0x%016llx\n", branch_pc);
+				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
+				printf("\t\tjmp term\n");
+			}
+		}
+		else {
+			auto li = labels.find(cont_pc);
+			if (li == labels.end()) {
+				Label l = as.newLabel();
+				as.je(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				as.bind(l);
+				term_pc = cont_pc;
+				printf("\t\tje pc_0x%016llx\n", cont_pc);
+				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
+				printf("\t\tjmp term\n");
+			} else {
+				as.je(li->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				printf("\t\tje pc_0x%016llx\n", cont_pc);
+				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
+				printf("\t\tjmp term\n");
+			}
+		}
+
 		return true;
 	}
 
 	bool emit_ld(addr_t pc, decode &dec)
 	{
-		/* TODO - emit asm */
+		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		}
+		else {
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::gpq(rs1x), dec.imm));
+					printf("\t\tmov %s qword ptr [%s + %d]\n", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::rax, dec.imm));
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+					printf("\t\tmov %s qword ptr [rax + %d]\n", x86_reg_str(rdx), dec.imm);
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
+					printf("\t\tmov rax qword ptr [%s + %d]\n", x86_reg_str(rs1x), dec.imm);
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(x86::rax, x86::qword_ptr(x86::rax, dec.imm));
+					printf("\t\tmov rax %s\n", frame_reg_str(dec.rs1));
+					printf("\t\tmov rax qword ptr [rax + %d]\n", dec.imm);
+				}
+				as.mov(frame_reg(dec.rd), x86::rax);
+				printf("\t\tmov %s rax\n", frame_reg_str(dec.rd));
+			}
+		}
 		return true;
 	}
 
@@ -199,8 +571,9 @@ struct fusion_tracer : public ErrorHandler
 		return false;
 	}
 
-	bool trace(addr_t pc, decode &dec)
+	bool trace(addr_t pc, decode &dec, inst_t inst)
 	{
+		this->inst = inst;
 		auto li = labels.find(pc);
 		if (li != labels.end()) return false; /* trace complete */
 		Label l = as.newLabel();
@@ -310,7 +683,7 @@ struct processor_runloop : processor_fault, P
 	static const size_t inst_cache_size = 8191;
 	static const int inst_step = 100000;
 
-	typedef int (*TraceFunc)(P *proc);
+	typedef int (*TraceFunc)(processor_rv64imafd *proc);
 
 	std::shared_ptr<debug_cli<P>> cli;
 	std::map<addr_t,TraceFunc> trace_cache;
@@ -434,7 +807,7 @@ struct processor_runloop : processor_fault, P
 			addr_t pc_offset, new_offset;
 			inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			P::inst_decode(dec, inst);
-			if (tracer.trace(P::pc, dec) == false) {
+			if (tracer.trace(P::pc, dec, inst) == false) {
 				break;
 			}
 			if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) {
@@ -447,11 +820,11 @@ struct processor_runloop : processor_fault, P
 
 		P::log |= proc_log_hotspot_trap;
 
-		printf("trace-end   pc=0x%016llx\n", P::pc);
+		printf("trace-end   pc=0x%016llx\n\n", P::pc);
 
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
-		if (false /* unconditionally skip for now */ && err) {
+		if (!err) {
 			trace_cache[trace_pc] = fn;
 			P::histogram_set_pc(trace_pc, P::hostspot_trace_cached);
 		}
@@ -460,7 +833,7 @@ struct processor_runloop : processor_fault, P
 	void exec_trace()
 	{
 		TraceFunc fn = trace_cache[P::pc];
-		fn(this);
+		fn(static_cast<processor_rv64imafd*>(this));
 	}
 
 	exit_cause step(size_t count)
@@ -502,6 +875,11 @@ struct processor_runloop : processor_fault, P
 		while (P::instret < inststop) {
 			if (P::pc == P::breakpoint && P::breakpoint != 0) {
 				return exit_cause_cli;
+			}
+			auto ti = trace_cache.find(P::pc);
+			if (ti != trace_cache.end()) {
+				ti->second(static_cast<processor_rv64imafd*>(this));
+				continue;
 			}
 			inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 			inst_t inst_cache_key = inst % inst_cache_size;
