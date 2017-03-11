@@ -97,20 +97,17 @@ struct fusion_tracer : public ErrorHandler
 
 	P &proc;
 	X86Assembler as;
-
 	u64 imm;
 	int rd;
 	addr_t term_pc;
 	addr_t pseudo_pc;
-
 	match_state state;
-	int regstate[P::ireg_count];
 	Label term;
 	std::map<addr_t,Label> labels;
 	std::vector<decode> decode_trace;
 
 	fusion_tracer(P &proc, CodeHolder &code)
-		: proc(proc), as(&code), imm(0), rd(0), state(match_state_none), regstate()
+		: proc(proc), as(&code), imm(0), rd(0), state(match_state_none)
 	{
 		code.setErrorHandler(this);
 	}
