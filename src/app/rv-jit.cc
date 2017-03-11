@@ -840,6 +840,12 @@ struct processor_runloop : processor_fault, P
 
 		printf("trace-end   pc=0x%016llx\n\n", P::pc);
 
+		/*
+		 * TODO - prevent adding empty trace due to unimplemented instructions
+		 *
+		 * Use P::hostspot_trace_skip
+		 */
+
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
 		if (!err) {
