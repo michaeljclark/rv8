@@ -78,7 +78,13 @@ using namespace asmjit;
 template <typename P>
 struct fusion_tracer : public ErrorHandler
 {
-	typedef typename P::decode_type decode;
+	struct decode : P::decode_type
+	{
+		addr_t pc;
+		inst_t inst;
+
+		decode(typename P::decode_type decode) : P::decode_type(decode) {}
+	};
 
 	enum match_state {
 		match_state_none,
@@ -94,8 +100,8 @@ struct fusion_tracer : public ErrorHandler
 
 	u64 imm;
 	int rd;
-	addr_t pc;
-	inst_t inst;
+	addr_t term_pc;
+	addr_t pseudo_pc;
 
 	match_state state;
 	int regstate[P::ireg_count];
@@ -104,7 +110,7 @@ struct fusion_tracer : public ErrorHandler
 	std::vector<decode> decode_trace;
 
 	fusion_tracer(P &proc, CodeHolder &code)
-		: proc(proc), as(&code), imm(0), rd(0), pc(0), state(match_state_none), regstate()
+		: proc(proc), as(&code), imm(0), rd(0), state(match_state_none), regstate()
 	{
 		code.setErrorHandler(this);
 	}
@@ -195,8 +201,8 @@ struct fusion_tracer : public ErrorHandler
 
 	void emit_epilog()
 	{
-		as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)pc);
-		printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), pc);
+		as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
+		printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), term_pc);
 		printf("\t\tterm:\n");
 		as.bind(term);
 		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
@@ -452,8 +458,8 @@ struct fusion_tracer : public ErrorHandler
 		}
 
 		bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
-		addr_t branch_pc = pc + dec.imm;
-		addr_t cont_pc = pc + inst_length(inst);
+		addr_t branch_pc = dec.pc + dec.imm;
+		addr_t cont_pc = dec.pc + inst_length(dec.inst);
 		if (cond) {
 			auto li = labels.find(branch_pc);
 			if (li == labels.end()) {
@@ -538,7 +544,7 @@ struct fusion_tracer : public ErrorHandler
 	{
 		int rdx = x86_reg(rd);
 		clear_trace();
-		printf("\t# 0x%016llx\tli\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
+		printf("\t# 0x%016llx\tli\t%s, 0x%llx\n", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		if (rd == rv_ireg_zero) {
 			// nop
 		} else {
@@ -557,7 +563,7 @@ struct fusion_tracer : public ErrorHandler
 	{
 		clear_trace();
 		/* TODO - emit asm */
-		printf("\t# 0x%016llx\tla\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
+		printf("\t# 0x%016llx\tla\t%s, 0x%llx\n", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		return false;
 	}
 
@@ -565,13 +571,13 @@ struct fusion_tracer : public ErrorHandler
 	{
 		clear_trace();
 		/* TODO - emit asm */
-		printf("\t# 0x%016llx\tcall\t0x%llx\n", pc, imm);
+		printf("\t# 0x%016llx\tcall\t0x%llx\n", pseudo_pc, imm);
 		return false;
 	}
 
 	bool emit(decode &dec)
 	{
-		printf("\t# 0x%016llx\t%s\n", pc, disasm_inst_simple(dec).c_str());
+		printf("\t# 0x%016llx\t%s\n", dec.pc, disasm_inst_simple(dec).c_str());
 		switch(dec.op) {
 			case rv_op_add: return emit_add(dec);
 			case rv_op_addi: return emit_addi(dec);
@@ -581,19 +587,13 @@ struct fusion_tracer : public ErrorHandler
 		return false;
 	}
 
-	bool trace(addr_t pc, decode &dec, inst_t inst)
+	bool trace(addr_t pc, decode dec, inst_t inst)
 	{
-		/*
-		 * TODO - track program counter at start of sequence for fused instructions
-		 *
-		 * Note the program counter of a preceding instruction may be printed
-		 * next to the output trace as we don't yet store the program  counter
-		 * in the trace history.
-		 */
-		this->pc = pc;
-		this->inst = inst;
+		dec.pc = pc;
+		dec.inst = inst;
 		auto li = labels.find(pc);
 		if (li != labels.end()) {
+			term_pc = pc;
 			emit_trace();
 			return false; /* trace complete */
 		}
@@ -610,6 +610,7 @@ struct fusion_tracer : public ErrorHandler
 						if (dec.rs1 == rv_ireg_zero) {
 							rd = dec.rd;
 							imm = dec.imm;
+							pseudo_pc = dec.pc;
 							state = match_state_li;
 							decode_trace.push_back(dec);
 							return true;
@@ -618,12 +619,14 @@ struct fusion_tracer : public ErrorHandler
 					case rv_op_auipc:
 						rd = dec.rd;
 						imm = dec.imm;
+						pseudo_pc = dec.pc;
 						state = match_state_auipc;
 						decode_trace.push_back(dec);
 						return true;
 					case rv_op_lui:
 						rd = dec.rd;
 						imm = dec.imm;
+						pseudo_pc = dec.pc;
 						state = match_state_lui;
 						decode_trace.push_back(dec);
 						return true;
@@ -684,6 +687,8 @@ struct fusion_tracer : public ErrorHandler
 				state = match_state_none;
 				break;
 		}
+
+		term_pc = pc;
 		return emit(dec);
 	}
 };
