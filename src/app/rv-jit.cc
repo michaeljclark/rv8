@@ -806,8 +806,6 @@ struct processor_runloop : processor_fault, P
 		fusion_tracer<P> tracer(*this, code);
 		addr_t trace_pc = P::pc;
 
-		/* TODO - implement JIT codegen */
-
 		printf("trace-begin pc=0x%016llx\n", P::pc);
 
 		P::log &= ~proc_log_hotspot_trap;
