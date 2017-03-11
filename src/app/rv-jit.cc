@@ -198,6 +198,7 @@ struct fusion_tracer : public ErrorHandler
 	{
 		if (term_pc) {
 			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
+			printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), term_pc);
 		}
 		as.bind(term);
 		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
@@ -464,9 +465,10 @@ struct fusion_tracer : public ErrorHandler
 				as.jmp(term);
 				as.bind(l);
 				term_pc = branch_pc;
-				printf("\t\tjne pc_0x%016llx\n", branch_pc);
+				printf("\t\tjne 1f\n");
 				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
 				printf("\t\tjmp term\n");
+				printf("\t\t1:\n");
 			} else {
 				as.jne(li->second);
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
@@ -485,9 +487,10 @@ struct fusion_tracer : public ErrorHandler
 				as.jmp(term);
 				as.bind(l);
 				term_pc = cont_pc;
-				printf("\t\tje pc_0x%016llx\n", cont_pc);
+				printf("\t\tje 1f\n");
 				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
 				printf("\t\tjmp term\n");
+				printf("\t\t1:\n");
 			} else {
 				as.je(li->second);
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
