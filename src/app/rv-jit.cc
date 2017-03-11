@@ -96,16 +96,15 @@ struct fusion_tracer : public ErrorHandler
 	int rd;
 	addr_t pc;
 	inst_t inst;
-	addr_t term_pc;
 
 	match_state state;
 	int regstate[P::ireg_count];
 	Label term;
 	std::map<addr_t,Label> labels;
-	std::vector<std::pair<addr_t,decode>> decode_trace;
+	std::vector<decode> decode_trace;
 
 	fusion_tracer(P &proc, CodeHolder &code)
-		: proc(proc), as(&code), imm(0), rd(0), pc(0), term_pc(0), state(match_state_none), regstate()
+		: proc(proc), as(&code), imm(0), rd(0), pc(0), state(match_state_none), regstate()
 	{
 		code.setErrorHandler(this);
 	}
@@ -196,10 +195,9 @@ struct fusion_tracer : public ErrorHandler
 
 	void emit_epilog()
 	{
-		if (term_pc) {
-			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
-			printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), term_pc);
-		}
+		as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)pc);
+		printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), pc);
+		printf("\t\tterm:\n");
 		as.bind(term);
 		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
 		as.mov(frame_reg(rv_ireg_sp), x86::rbx);
@@ -225,7 +223,7 @@ struct fusion_tracer : public ErrorHandler
 	void emit_trace()
 	{
 		state = match_state_none;
-		for (auto &t : decode_trace) emit(t.first, t.second);
+		for (auto &dec : decode_trace) emit(dec);
 		decode_trace.clear();
 	}
 
@@ -235,7 +233,7 @@ struct fusion_tracer : public ErrorHandler
 		decode_trace.clear();
 	}
 
-	bool emit_add(addr_t pc, decode &dec)
+	bool emit_add(decode &dec)
 	{
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 		if (dec.rd == rv_ireg_zero) {
@@ -352,7 +350,7 @@ struct fusion_tracer : public ErrorHandler
 		return true;
 	}
 
-	bool emit_addi(addr_t pc, decode &dec)
+	bool emit_addi(decode &dec)
 	{
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 		if (dec.rd == rv_ireg_zero) {
@@ -411,7 +409,7 @@ struct fusion_tracer : public ErrorHandler
 		return true;
 	}
 
-	bool emit_bne(addr_t pc, decode &dec)
+	bool emit_bne(decode &dec)
 	{
 		int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 		if (dec.rs1 == rv_ireg_zero) {
@@ -464,7 +462,6 @@ struct fusion_tracer : public ErrorHandler
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
 				as.jmp(term);
 				as.bind(l);
-				term_pc = branch_pc;
 				printf("\t\tjne 1f\n");
 				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
 				printf("\t\tjmp term\n");
@@ -486,7 +483,6 @@ struct fusion_tracer : public ErrorHandler
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
 				as.jmp(term);
 				as.bind(l);
-				term_pc = cont_pc;
 				printf("\t\tje 1f\n");
 				printf("\t\tmov [rbp + %lu] 0x%016llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
 				printf("\t\tjmp term\n");
@@ -504,7 +500,7 @@ struct fusion_tracer : public ErrorHandler
 		return true;
 	}
 
-	bool emit_ld(addr_t pc, decode &dec)
+	bool emit_ld(decode &dec)
 	{
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 		if (dec.rd == rv_ireg_zero) {
@@ -540,45 +536,61 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_li()
 	{
-		/* TODO - emit asm */
+		int rdx = x86_reg(rd);
 		clear_trace();
 		printf("\t0x%016llx\tli\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
+		if (rd == rv_ireg_zero) {
+			// nop
+		} else {
+			if (rdx > 0) {
+				as.mov(x86::gpq(rdx), (unsigned)imm);
+				printf("\t\tmov %s 0x%016llx\n", x86_reg_str(rdx), imm);
+			} else {
+				as.mov(frame_reg(rd), (unsigned)imm);
+				printf("\t\tmov %s 0x%016llx\n", frame_reg_str(rd), imm);
+			}
+		}
 		return true;
 	}
 
 	bool emit_la()
 	{
-		/* TODO - emit asm */
 		clear_trace();
+		/* TODO - emit asm */
 		printf("\t0x%016llx\tla\t%s, 0x%llx\n", pc, rv_ireg_name_sym[rd], imm);
 		return false;
 	}
 
 	bool emit_call()
 	{
-		/* TODO - emit asm */
 		clear_trace();
+		/* TODO - emit asm */
 		printf("\t0x%016llx\tcall\t0x%llx\n", pc, imm);
 		return false;
 	}
 
-	bool emit(addr_t pc, decode &dec)
+	bool emit(decode &dec)
 	{
 		printf("\t0x%016llx\t%s\n", pc, disasm_inst_simple(dec).c_str());
 		switch(dec.op) {
-			case rv_op_add: return emit_add(pc, dec);
-			case rv_op_addi: return emit_addi(pc, dec);
-			case rv_op_bne: return emit_bne(pc, dec);
-			case rv_op_ld: return emit_ld(pc, dec);
+			case rv_op_add: return emit_add(dec);
+			case rv_op_addi: return emit_addi(dec);
+			case rv_op_bne: return emit_bne(dec);
+			case rv_op_ld: return emit_ld(dec);
 		}
 		return false;
 	}
 
 	bool trace(addr_t pc, decode &dec, inst_t inst)
 	{
+		/* TODO - track program counter at start of sequence for fused instructions */
+		this->pc = pc;
 		this->inst = inst;
 		auto li = labels.find(pc);
-		if (li != labels.end()) return false; /* trace complete */
+		if (li != labels.end()) {
+			emit_trace();
+			return false; /* trace complete */
+		}
 		Label l = as.newLabel();
 		labels[pc] = l;
 		as.bind(l);
@@ -590,27 +602,24 @@ struct fusion_tracer : public ErrorHandler
 				switch (dec.op) {
 					case rv_op_addi:
 						if (dec.rs1 == rv_ireg_zero) {
-							this->pc = pc;
 							rd = dec.rd;
 							imm = dec.imm;
 							state = match_state_li;
-							decode_trace.push_back(std::make_pair(pc, dec));
+							decode_trace.push_back(dec);
 							return true;
 						}
 						break;
 					case rv_op_auipc:
-						this->pc = pc;
 						rd = dec.rd;
 						imm = dec.imm;
 						state = match_state_auipc;
-						decode_trace.push_back(std::make_pair(pc, dec));
+						decode_trace.push_back(dec);
 						return true;
 					case rv_op_lui:
-						this->pc = pc;
 						rd = dec.rd;
 						imm = dec.imm;
 						state = match_state_lui;
-						decode_trace.push_back(std::make_pair(pc, dec));
+						decode_trace.push_back(dec);
 						return true;
 					default:
 						break;
@@ -669,7 +678,7 @@ struct fusion_tracer : public ErrorHandler
 				state = match_state_none;
 				break;
 		}
-		return emit(pc, dec);
+		return emit(dec);
 	}
 };
 
