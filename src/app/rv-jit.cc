@@ -833,6 +833,8 @@ struct processor_runloop : processor_fault, P
 				break;
 			}
 			P::pc += new_offset;
+			P::cycle++;
+			P::instret++;
 		}
 
 		tracer.emit_epilog();
