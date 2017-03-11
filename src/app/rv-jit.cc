@@ -583,7 +583,13 @@ struct fusion_tracer : public ErrorHandler
 
 	bool trace(addr_t pc, decode &dec, inst_t inst)
 	{
-		/* TODO - track program counter at start of sequence for fused instructions */
+		/*
+		 * TODO - track program counter at start of sequence for fused instructions
+		 *
+		 * Note the program counter of a preceding instruction may be printed
+		 * next to the output trace as we don't yet store the program  counter
+		 * in the trace history.
+		 */
 		this->pc = pc;
 		this->inst = inst;
 		auto li = labels.find(pc);
