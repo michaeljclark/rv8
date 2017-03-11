@@ -812,7 +812,8 @@ struct processor_runloop : processor_fault, P
 		CodeHolder code;
 		code.init(rt.getCodeInfo());
 		fusion_tracer<P> tracer(*this, code);
-		addr_t trace_pc = P::pc;
+		typename P::ux trace_pc = P::pc;
+		typename P::ux trace_instret = P::instret;
 
 		printf("trace-begin pc=0x%016llx\n", P::pc);
 
@@ -840,11 +841,7 @@ struct processor_runloop : processor_fault, P
 
 		printf("trace-end   pc=0x%016llx\n\n", P::pc);
 
-		/*
-		 * TODO - prevent adding empty trace due to unimplemented instructions
-		 *
-		 * Use P::hostspot_trace_skip
-		 */
+		if (P::instret == trace_instret) return;
 
 		TraceFunc fn;
 		Error err = rt.add(&fn, &code);
