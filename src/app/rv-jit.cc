@@ -955,7 +955,7 @@ struct rv_jit
 	elf_file elf;
 	host_cpu &cpu;
 	int proc_logs = 0;
-	int trace_length = 100;
+	int trace_iters = 100;
 	bool help_or_error = false;
 	std::string elf_filename;
 
@@ -1132,9 +1132,9 @@ struct rv_jit
 			{ "-t", "--trace", cmdline_arg_type_none,
 				"Enable hotspot tracer",
 				[&](std::string s) { proc_logs |= proc_log_hist_pc | proc_log_hotspot_trap; return true; } },
-			{ "-l", "--trace-length", cmdline_arg_type_string,
-				"Hotspot trace length",
-				[&](std::string s) { trace_length = strtoull(s.c_str(), nullptr, 10); return true; } },
+			{ "-l", "--trace-iters", cmdline_arg_type_string,
+				"Hotspot trace iterations",
+				[&](std::string s) { trace_iters = strtoull(s.c_str(), nullptr, 10); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -1185,7 +1185,7 @@ struct rv_jit
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
-		proc.hotspot_iters = trace_length;
+		proc.hotspot_iters = trace_iters;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
