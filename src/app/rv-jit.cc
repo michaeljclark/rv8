@@ -199,8 +199,8 @@ struct fusion_tracer : public ErrorHandler
 	void emit_epilog()
 	{
 		as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
-		printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), term_pc);
-		printf("\t\tterm:\n");
+		log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), term_pc);
+		log_trace("\t\tterm:");
 		as.bind(term);
 		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
 		as.mov(frame_reg(rv_ireg_sp), x86::rbx);
@@ -236,8 +236,21 @@ struct fusion_tracer : public ErrorHandler
 		decode_trace.clear();
 	}
 
+	void log_trace(const char* fmt, ...)
+	{
+		if (proc.log & proc_log_jit_trace) {
+			char buf[128];
+			va_list arg;
+			va_start(arg, fmt);
+			vsnprintf(buf, sizeof(buf), fmt, arg);
+			va_end(arg);
+			printf("%s\n", buf);
+		}
+	}
+
 	bool emit_add(decode &dec)
 	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 		if (dec.rd == rv_ireg_zero) {
 			// nop
@@ -247,20 +260,20 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs2x > 0) {
 					as.mov(x86::gpq(rdx), x86::gpq(rs2x));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
 				} else {
 					as.mov(x86::gpq(rdx), frame_reg(dec.rs2));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
 				}
 			} else {
 				if (rs2x > 0) {
 					as.mov(frame_reg(dec.rd), x86::gpq(rs2x));
-					printf("\t\tmov %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs2));
 					as.mov(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs2));
-					printf("\t\tmov %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 		}
@@ -269,20 +282,20 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs1x > 0) {
 					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
 				}
 			} else {
 				if (rs1x > 0) {
 					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-					printf("\t\tmov %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 		}
@@ -291,20 +304,20 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs2x > 0) {
 					as.add(x86::gpq(rdx), x86::gpq(rs2x));
-					printf("\t\tadd %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+					log_trace("\t\tadd %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
 				} else {
 					as.add(x86::gpq(rdx), frame_reg(dec.rs2));
-					printf("\t\tadd %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+					log_trace("\t\tadd %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
 				}
 			} else {
 				if (rs2x > 0) {
 					as.add(frame_reg(dec.rd), x86::gpq(rs2x));
-					printf("\t\tadd %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+					log_trace("\t\tadd %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs2));
 					as.add(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs2));
-					printf("\t\tadd %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 		}
@@ -313,40 +326,40 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs1x > 0) {
 					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
 				}
 			} else {
 				if (rs1x > 0) {
 					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-					printf("\t\tadd %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 			// add rs, rs2
 			if (rdx > 0) {
 				if (rs2x > 0) {
 					as.add(x86::gpq(rdx), x86::gpq(rs2x));
-					printf("\t\tadd %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs2x));
+					log_trace("\t\tadd %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
 				} else {
 					as.add(x86::gpq(rdx), frame_reg(dec.rs2));
-					printf("\t\tadd %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+					log_trace("\t\tadd %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
 				}
 			} else {
 				if (rs2x > 0) {
 					as.add(frame_reg(dec.rd), x86::gpq(rs2x));
-					printf("\t\tadd %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+					log_trace("\t\tadd %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs2));
 					as.add(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs2));
-					printf("\t\tadd %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 		}
@@ -355,6 +368,7 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_addi(decode &dec)
 	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 		if (dec.rd == rv_ireg_zero) {
 			// nop
@@ -363,20 +377,20 @@ struct fusion_tracer : public ErrorHandler
 			// mov rd, imm
 			if (rdx > 0) {
 				as.mov(x86::gpq(rdx), dec.imm);
-				printf("\t\tmov %s, %d\n", x86_reg_str(rdx), dec.imm);
+				log_trace("\t\tmov %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
 				as.mov(frame_reg(dec.rd), dec.imm);
-				printf("\t\tmov %s, %d\n", frame_reg_str(dec.rd), dec.imm);
+				log_trace("\t\tmov %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
 		else if (dec.rd == dec.rs1) {
 			// add rd, imm
 			if (rdx > 0) {
 				as.add(x86::gpq(rdx), dec.imm);
-				printf("\t\tadd %s, %d\n", x86_reg_str(rdx), dec.imm);
+				log_trace("\t\tadd %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
 				as.add(frame_reg(dec.rd), dec.imm);
-				printf("\t\tadd %s, %d\n", frame_reg_str(dec.rd), dec.imm);
+				log_trace("\t\tadd %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
 		else {
@@ -384,29 +398,29 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs1x > 0) {
 					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-					printf("\t\tmov %s, %s\n", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
 				}
 			} else {
 				if (rs1x > 0) {
 					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-					printf("\t\tmov %s, %s\n", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(frame_reg(dec.rd), x86::rax);
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-					printf("\t\tadd %s, rax\n", frame_reg_str(dec.rd));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 			// add rd, imm
 			if (rdx > 0) {
 				as.add(x86::gpq(rdx), dec.imm);
-				printf("\t\tadd %s, %d\n", x86_reg_str(rdx), dec.imm);
+				log_trace("\t\tadd %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
 				as.add(frame_reg(dec.rd), dec.imm);
-				printf("\t\tadd %s, %d\n", frame_reg_str(dec.rd), dec.imm);
+				log_trace("\t\tadd %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
 		return true;
@@ -414,43 +428,44 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_bne(decode &dec)
 	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 		if (dec.rs1 == rv_ireg_zero) {
 			if (rs2x > 0) {
 				as.cmp(x86::gpq(rs2x), 0);
-				printf("\t\tcmp %s, 0\n", x86_reg_str(rs2x));
+				log_trace("\t\tcmp %s, 0", x86_reg_str(rs2x));
 			} else {
 				as.cmp(frame_reg(dec.rs2), 0);
-				printf("\t\tcmp %s, 0\n", frame_reg_str(dec.rs2));
+				log_trace("\t\tcmp %s, 0", frame_reg_str(dec.rs2));
 			}
 		}
 		else if (dec.rs2 == rv_ireg_zero) {
 			if (rs1x > 0) {
 				as.cmp(x86::gpq(rs1x), 0);
-				printf("\t\tcmp %s, 0\n", x86_reg_str(rs1x));
+				log_trace("\t\tcmp %s, 0", x86_reg_str(rs1x));
 			} else {
 				as.cmp(frame_reg(dec.rs1), 0);
-				printf("\t\tcmp %s, 0\n", frame_reg_str(dec.rs1));
+				log_trace("\t\tcmp %s, 0", frame_reg_str(dec.rs1));
 			}
 		}
 		else if (rs1x > 0) {
 			if (rs2x > 0) {
 				as.cmp(x86::gpq(rs1x), x86::gpq(rs2x));
-				printf("\t\tcmp %s, %s\n", x86_reg_str(rs1x), x86_reg_str(rs2x));
+				log_trace("\t\tcmp %s, %s", x86_reg_str(rs1x), x86_reg_str(rs2x));
 			} else {
 				as.cmp(x86::gpq(rs1x), frame_reg(dec.rs2));
-				printf("\t\tcmp %s, %s\n", x86_reg_str(rs1x), frame_reg_str(dec.rs2));
+				log_trace("\t\tcmp %s, %s", x86_reg_str(rs1x), frame_reg_str(dec.rs2));
 			}
 		}
 		else {
 			if (rs2x > 0) {
 				as.cmp(frame_reg(dec.rs1), x86::gpq(rs2x));
-				printf("\t\tcmp %s, %s\n", frame_reg_str(dec.rs1), x86_reg_str(rs2x));
+				log_trace("\t\tcmp %s, %s", frame_reg_str(dec.rs1), x86_reg_str(rs2x));
 			} else {
 				as.mov(x86::rax, frame_reg(dec.rs1));
 				as.cmp(x86::rax, frame_reg(dec.rs2));
-				printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-				printf("\t\tcmp rax, %s\n", frame_reg_str(dec.rs1));
+				log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+				log_trace("\t\tcmp rax, %s", frame_reg_str(dec.rs1));
 			}
 		}
 
@@ -465,17 +480,17 @@ struct fusion_tracer : public ErrorHandler
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
 				as.jmp(term);
 				as.bind(l);
-				printf("\t\tjne 1f\n");
-				printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
-				printf("\t\tjmp term\n");
-				printf("\t\t1:\n");
+				log_trace("\t\tjne 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
 			} else {
 				as.jne(li->second);
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
 				as.jmp(term);
-				printf("\t\tjne pc_0x%016llx\n", branch_pc);
-				printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), cont_pc);
-				printf("\t\tjmp term\n");
+				log_trace("\t\tjne 0x%016llx", branch_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
 			}
 		}
 		else {
@@ -486,17 +501,17 @@ struct fusion_tracer : public ErrorHandler
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
 				as.jmp(term);
 				as.bind(l);
-				printf("\t\tje 1f\n");
-				printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
-				printf("\t\tjmp term\n");
-				printf("\t\t1:\n");
+				log_trace("\t\tje 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
 			} else {
 				as.je(li->second);
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
 				as.jmp(term);
-				printf("\t\tje pc_0x%016llx\n", cont_pc);
-				printf("\t\tmov [rbp + %lu], 0x%llx\n", offsetof(processor_rv64imafd, pc), branch_pc);
-				printf("\t\tjmp term\n");
+				log_trace("\t\tje 0x%016llx", cont_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
 			}
 		}
 
@@ -505,6 +520,7 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_ld(decode &dec)
 	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 		if (dec.rd == rv_ireg_zero) {
 			// nop
@@ -513,25 +529,25 @@ struct fusion_tracer : public ErrorHandler
 			if (rdx > 0) {
 				if (rs1x > 0) {
 					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::gpq(rs1x), dec.imm));
-					printf("\t\tmov %s, qword ptr [%s + %d]\n", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
+					log_trace("\t\tmov %s, qword ptr [%s + %d]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::rax, dec.imm));
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-					printf("\t\tmov %s, qword ptr [rax + %d]\n", x86_reg_str(rdx), dec.imm);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, qword ptr [rax + %d]", x86_reg_str(rdx), dec.imm);
 				}
 			} else {
 				if (rs1x > 0) {
 					as.mov(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
-					printf("\t\tmov rax, qword ptr [%s + %d]\n", x86_reg_str(rs1x), dec.imm);
+					printf("\t\tmov rax, qword ptr [%s + %d]", x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(x86::rax, x86::qword_ptr(x86::rax, dec.imm));
-					printf("\t\tmov rax, %s\n", frame_reg_str(dec.rs1));
-					printf("\t\tmov rax, qword ptr [rax + %d]\n", dec.imm);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov rax, qword ptr [rax + %d]", dec.imm);
 				}
 				as.mov(frame_reg(dec.rd), x86::rax);
-				printf("\t\tmov %s, rax\n", frame_reg_str(dec.rd));
+				log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
 			}
 		}
 		return true;
@@ -539,18 +555,18 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_li()
 	{
+		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		int rdx = x86_reg(rd);
 		clear_trace();
-		printf("\t# 0x%016llx\tli\t%s, 0x%llx\n", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		if (rd == rv_ireg_zero) {
 			// nop
 		} else {
 			if (rdx > 0) {
 				as.mov(x86::gpq(rdx), (unsigned)imm);
-				printf("\t\tmov %s, %lld\n", x86_reg_str(rdx), imm);
+				log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), imm);
 			} else {
 				as.mov(frame_reg(rd), (unsigned)imm);
-				printf("\t\tmov %s, %lld\n", frame_reg_str(rd), imm);
+				log_trace("\t\tmov %s, %lld", frame_reg_str(rd), imm);
 			}
 		}
 		return true;
@@ -558,23 +574,22 @@ struct fusion_tracer : public ErrorHandler
 
 	bool emit_la()
 	{
+		log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		clear_trace();
 		/* TODO - emit asm */
-		printf("\t# 0x%016llx\tla\t%s, 0x%llx\n", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		return false;
 	}
 
 	bool emit_call()
 	{
+		log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
 		clear_trace();
 		/* TODO - emit asm */
-		printf("\t# 0x%016llx\tcall\t0x%llx\n", pseudo_pc, imm);
 		return false;
 	}
 
 	bool emit(decode &dec)
 	{
-		printf("\t# 0x%016llx\t%s\n", dec.pc, disasm_inst_simple(dec).c_str());
 		switch(dec.op) {
 			case rv_op_add: return emit_add(dec);
 			case rv_op_addi: return emit_addi(dec);
@@ -815,7 +830,7 @@ struct processor_runloop : processor_fault, P
 		typename P::ux trace_pc = P::pc;
 		typename P::ux trace_instret = P::instret;
 
-		printf("trace-begin pc=0x%016llx\n", P::pc);
+		tracer.log_trace("jit-trace-begin pc=0x%016llx", P::pc);
 
 		P::log &= ~proc_log_hotspot_trap;
 
@@ -841,7 +856,7 @@ struct processor_runloop : processor_fault, P
 
 		P::log |= proc_log_hotspot_trap;
 
-		printf("trace-end   pc=0x%016llx\n\n", P::pc);
+		tracer.log_trace("jit-trace-end   pc=0x%016llx\n", P::pc);
 
 		if (P::instret == trace_instret) return;
 
@@ -902,7 +917,13 @@ struct processor_runloop : processor_fault, P
 			if (P::log & proc_log_hotspot_trap) {
 				auto ti = trace_cache.find(P::pc);
 				if (ti != trace_cache.end()) {
+					if (P::log & proc_log_jit_exec) {
+						printf("jit-exec-begin pc=0x%016llx\n", P::pc);
+					}
 					ti->second(static_cast<processor_rv64imafd*>(this));
+					if (P::log & proc_log_jit_exec) {
+						printf("jit-exec-end   pc=0x%016llx\n", P::pc);
+					}
 					continue;
 				}
 			}
@@ -1123,6 +1144,12 @@ struct rv_jit
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers (defaults to integer registers)",
 				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
+			{ "-T", "--log-jit-trace", cmdline_arg_type_none,
+				"Log JIT trace",
+				[&](std::string s) { return (proc_logs |= proc_log_jit_trace); } },
+			{ "-E", "--log-jit-exec", cmdline_arg_type_none,
+				"Log JIT exec",
+				[&](std::string s) { return (proc_logs |= proc_log_jit_exec); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger CLI",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
