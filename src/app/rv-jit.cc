@@ -99,7 +99,6 @@ struct fusion_tracer : public ErrorHandler
 	X86Assembler as;
 	u64 imm;
 	int rd;
-	addr_t term_pc;
 	addr_t pseudo_pc;
 	match_state state;
 	Label term;
@@ -198,8 +197,6 @@ struct fusion_tracer : public ErrorHandler
 
 	void emit_epilog()
 	{
-		as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)term_pc);
-		log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), term_pc);
 		log_trace("\t\tterm:");
 		as.bind(term);
 		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
@@ -470,49 +467,47 @@ struct fusion_tracer : public ErrorHandler
 		}
 
 		bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
+
 		addr_t branch_pc = dec.pc + dec.imm;
 		addr_t cont_pc = dec.pc + inst_length(dec.inst);
-		if (cond) {
-			auto li = labels.find(branch_pc);
-			if (li == labels.end()) {
-				Label l = as.newLabel();
-				as.jne(l);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
-				as.jmp(term);
-				as.bind(l);
-				log_trace("\t\tjne 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-			} else {
-				as.jne(li->second);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
-				as.jmp(term);
-				log_trace("\t\tjne 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
+		auto branch_i = labels.find(branch_pc);
+		auto cont_i = labels.find(cont_pc);
+
+		if (branch_i != labels.end() && cont_i != labels.end()) {
+			as.jne(branch_i->second);
+			as.jmp(cont_i->second);
+			log_trace("\t\tjne 0x%016llx", branch_pc);
+			log_trace("\t\tjmp 0x%016llx", cont_pc);
 		}
-		else {
-			auto li = labels.find(cont_pc);
-			if (li == labels.end()) {
-				Label l = as.newLabel();
-				as.je(l);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
-				as.jmp(term);
-				as.bind(l);
-				log_trace("\t\tje 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-			} else {
-				as.je(li->second);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
-				as.jmp(term);
-				log_trace("\t\tje 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
-				log_trace("\t\tjmp term");
-			}
+		else if (cond && branch_i != labels.end()) {
+			as.jne(branch_i->second);
+			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+			as.jmp(term);
+			log_trace("\t\tjne 0x%016llx", branch_pc);
+			log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+			log_trace("\t\tjmp term");
+		}
+		else if (!cond && cont_i != labels.end()) {
+			as.je(cont_i->second);
+			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+			as.jmp(term);
+			log_trace("\t\tje 0x%016llx", cont_pc);
+			log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+			log_trace("\t\tjmp term");
+		} else {
+			Label l = as.newLabel();
+			as.jne(l);
+			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+			as.jmp(term);
+			as.bind(l);
+			as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+			as.jmp(term);
+			log_trace("\t\tjne 1f");
+			log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+			log_trace("\t\tjmp term");
+			log_trace("\t\t1:");
+			log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+			log_trace("\t\tjmp term");
 		}
 
 		return true;
@@ -605,7 +600,6 @@ struct fusion_tracer : public ErrorHandler
 		dec.inst = inst;
 		auto li = labels.find(pc);
 		if (li != labels.end()) {
-			term_pc = pc;
 			emit_trace();
 			return false; /* trace complete */
 		}
@@ -700,7 +694,6 @@ struct fusion_tracer : public ErrorHandler
 				break;
 		}
 
-		term_pc = pc;
 		return emit(dec);
 	}
 };
@@ -856,7 +849,7 @@ struct processor_runloop : processor_fault, P
 
 		P::log |= proc_log_hotspot_trap;
 
-		tracer.log_trace("jit-trace-end   pc=0x%016llx\n", P::pc);
+		tracer.log_trace("jit-trace-end   pc=0x%016llx", P::pc);
 
 		if (P::instret == trace_instret) return;
 
@@ -918,11 +911,13 @@ struct processor_runloop : processor_fault, P
 				auto ti = trace_cache.find(P::pc);
 				if (ti != trace_cache.end()) {
 					if (P::log & proc_log_jit_exec) {
-						printf("jit-exec-begin pc=0x%016llx\n", P::pc);
+						printf("jit-exec-begin  pc=0x%016llx fn=%p\n", P::pc, ti->second);
+						if (P::log & proc_log_int_reg) P::print_int_registers();
 					}
 					ti->second(static_cast<processor_rv64imafd*>(this));
 					if (P::log & proc_log_jit_exec) {
-						printf("jit-exec-end   pc=0x%016llx\n", P::pc);
+						printf("jit-exec-end    pc=0x%016llx\n", P::pc);
+						if (P::log & proc_log_int_reg) P::print_int_registers();
 					}
 					continue;
 				}
