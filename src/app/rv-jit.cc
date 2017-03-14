@@ -608,6 +608,7 @@ struct fusion_tracer : public ErrorHandler
 		as.bind(l);
 		proc.histogram_set_pc(pc, P::hostspot_trace_skip);
 
+#if 0
 	reparse:
 		switch(state) {
 			case match_state_none:
@@ -693,6 +694,7 @@ struct fusion_tracer : public ErrorHandler
 				state = match_state_none;
 				break;
 		}
+#endif
 
 		return emit(dec);
 	}
