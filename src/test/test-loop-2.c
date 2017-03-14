@@ -15,7 +15,7 @@ long arr[] = {
 int main()
 {
 	long total = 0;
-	for (size_t i = 0; i < 100000; i++) {
+	for (size_t i = 0; i < 1000000; i++) {
 		for (size_t j = 0; j < (sizeof(arr)/sizeof(long)); j++) {
 			total += arr[j];
 		}
