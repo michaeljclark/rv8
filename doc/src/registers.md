@@ -18,8 +18,8 @@ The register mapping may eventually be randomised by the translator.
 
 The following is a sketch of a static register mapping for x86:
 
- - rax, translator temporary (IMUL/DIV, temporary for destructive ALU ops)
- - rdx, translator temporary (IMUL/DIV)
+ - rax, translator temporary
+ - rdx, translator temporary
  - rbp, translator static spill slots ([rbp + 0] holds the program counter)
  - rsp, translator call stack
 
