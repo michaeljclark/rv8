@@ -606,7 +606,6 @@ struct fusion_tracer : public ErrorHandler
 		Label l = as.newLabel();
 		labels[pc] = l;
 		as.bind(l);
-		proc.histogram_set_pc(pc, P::hostspot_trace_skip);
 
 #if 0
 	reparse:
