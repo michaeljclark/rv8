@@ -76,7 +76,7 @@ using namespace riscv;
 using namespace asmjit;
 
 template <typename P>
-struct fusion_tracer : public ErrorHandler
+struct fusion_emitter : public ErrorHandler
 {
 	struct decode : P::decode_type
 	{
@@ -86,27 +86,13 @@ struct fusion_tracer : public ErrorHandler
 		decode(typename P::decode_type decode) : P::decode_type(decode) {}
 	};
 
-	enum match_state {
-		match_state_none,
-		match_state_auipc,
-		match_state_call,
-		match_state_la,
-		match_state_li,
-		match_state_lui,
-	};
-
 	P &proc;
 	X86Assembler as;
-	u64 imm;
-	int rd;
-	addr_t pseudo_pc;
-	match_state state;
 	Label term;
 	std::map<addr_t,Label> labels;
-	std::vector<decode> decode_trace;
 
-	fusion_tracer(P &proc, CodeHolder &code)
-		: proc(proc), as(&code), imm(0), rd(0), state(match_state_none)
+	fusion_emitter(P &proc, CodeHolder &code)
+		: proc(proc), as(&code)
 	{
 		code.setErrorHandler(this);
 	}
@@ -218,19 +204,6 @@ struct fusion_tracer : public ErrorHandler
 		as.pop(x86::rbx);
 		as.pop(x86::rbp);
 		as.ret();
-	}
-
-	void emit_trace()
-	{
-		state = match_state_none;
-		for (auto &dec : decode_trace) emit(dec);
-		decode_trace.clear();
-	}
-
-	void clear_trace()
-	{
-		state = match_state_none;
-		decode_trace.clear();
 	}
 
 	void log_trace(const char* fmt, ...)
@@ -548,41 +521,6 @@ struct fusion_tracer : public ErrorHandler
 		return true;
 	}
 
-	bool emit_li()
-	{
-		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
-		int rdx = x86_reg(rd);
-		clear_trace();
-		if (rd == rv_ireg_zero) {
-			// nop
-		} else {
-			if (rdx > 0) {
-				as.mov(x86::gpq(rdx), (unsigned)imm);
-				log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), imm);
-			} else {
-				as.mov(frame_reg(rd), (unsigned)imm);
-				log_trace("\t\tmov %s, %lld", frame_reg_str(rd), imm);
-			}
-		}
-		return true;
-	}
-
-	bool emit_la()
-	{
-		log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
-		clear_trace();
-		/* TODO - emit asm */
-		return false;
-	}
-
-	bool emit_call()
-	{
-		log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
-		clear_trace();
-		/* TODO - emit asm */
-		return false;
-	}
-
 	bool emit(decode &dec)
 	{
 		switch(dec.op) {
@@ -600,14 +538,88 @@ struct fusion_tracer : public ErrorHandler
 		dec.inst = inst;
 		auto li = labels.find(pc);
 		if (li != labels.end()) {
-			emit_trace();
 			return false; /* trace complete */
 		}
 		Label l = as.newLabel();
 		labels[pc] = l;
 		as.bind(l);
+		return emit(dec);
+	}
+};
 
-#if 0
+template <typename P>
+struct fusion_tracer
+{
+	struct decode : P::decode_type
+	{
+		addr_t pc;
+		inst_t inst;
+
+		decode(typename P::decode_type decode) : P::decode_type(decode) {}
+	};
+
+	enum match_state {
+		match_state_none,
+		match_state_auipc,
+		match_state_call,
+		match_state_la,
+		match_state_li,
+		match_state_lui,
+	};
+
+	P &proc;
+	u64 imm;
+	int rd;
+	addr_t pseudo_pc;
+	match_state state;
+	std::vector<decode> decode_trace;
+
+	fusion_tracer(P &proc)
+		: proc(proc), imm(0), rd(0), state(match_state_none) {}
+
+	void emit_trace()
+	{
+		state = match_state_none;
+		for (auto &dec : decode_trace) emit(dec);
+		decode_trace.clear();
+	}
+
+	void clear_trace()
+	{
+		state = match_state_none;
+		decode_trace.clear();
+	}
+
+	bool emit_li()
+	{
+		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
+		clear_trace();
+		return false;
+	}
+
+	bool emit_la()
+	{
+		log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
+		clear_trace();
+		return false;
+	}
+
+	bool emit_call()
+	{
+		log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
+		clear_trace();
+		return false;
+	}
+
+	bool emit(decode &dec)
+	{
+	}
+
+	bool trace(addr_t pc, decode dec, inst_t inst)
+	{
+		dec.pc = pc;
+		dec.inst = inst;
+
 	reparse:
 		switch(state) {
 			case match_state_none:
@@ -693,8 +705,6 @@ struct fusion_tracer : public ErrorHandler
 				state = match_state_none;
 				break;
 		}
-#endif
-
 		return emit(dec);
 	}
 };
@@ -820,7 +830,7 @@ struct processor_runloop : processor_fault, P
 	{
 		CodeHolder code;
 		code.init(rt.getCodeInfo());
-		fusion_tracer<P> tracer(*this, code);
+		fusion_emitter<P> tracer(*this, code);
 		typename P::ux trace_pc = P::pc;
 		typename P::ux trace_instret = P::instret;
 
