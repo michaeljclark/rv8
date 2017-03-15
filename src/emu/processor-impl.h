@@ -99,7 +99,7 @@ namespace riscv {
 			else hi->second++;
 		}
 
-		void histogram_add_regs(decode &dec)
+		void histogram_add_regs(decode_type &dec)
 		{
 			const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
 			while (operand_data->type != rv_type_none) {
