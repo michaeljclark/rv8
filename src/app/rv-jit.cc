@@ -592,21 +592,21 @@ struct fusion_tracer
 
 	bool emit_li()
 	{
-		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
+		//log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		clear_trace();
 		return false;
 	}
 
 	bool emit_la()
 	{
-		log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
+		//log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
 		clear_trace();
 		return false;
 	}
 
 	bool emit_call()
 	{
-		log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
+		//log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
 		clear_trace();
 		return false;
 	}
