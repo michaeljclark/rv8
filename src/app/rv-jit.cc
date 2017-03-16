@@ -378,6 +378,124 @@ struct fusion_emitter : public ErrorHandler
 		return true;
 	}
 
+	bool emit_sub(decode_type &dec)
+	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		}
+		else if (dec.rs1 == rv_ireg_zero) {
+			// mov rd, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs2x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs2));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs2x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else if (dec.rs2 == rv_ireg_zero) {
+			// mov rd, rs1
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else if (dec.rd == dec.rs1) {
+			// sub rd, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.sub(x86::gpq(rdx), x86::gpq(rs2x));
+					log_trace("\t\tsub %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.sub(x86::gpq(rdx), frame_reg(dec.rs2));
+					log_trace("\t\tsub %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.sub(frame_reg(dec.rd), x86::gpq(rs2x));
+					log_trace("\t\tsub %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.sub(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tsub %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		else {
+			// mov rd, rs1
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tsub %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+			// sub rs, rs2
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.sub(x86::gpq(rdx), x86::gpq(rs2x));
+					log_trace("\t\tsub %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.sub(x86::gpq(rdx), frame_reg(dec.rs2));
+					log_trace("\t\tsub %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.sub(frame_reg(dec.rd), x86::gpq(rs2x));
+					log_trace("\t\tsub %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.sub(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tsub %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+		return true;
+	}
+
 	bool emit_addi(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
@@ -603,6 +721,7 @@ struct fusion_emitter : public ErrorHandler
 		switch(dec.op) {
 			case rv_op_auipc: return emit_auipc(dec);
 			case rv_op_add: return emit_add(dec);
+			case rv_op_sub: return emit_sub(dec);
 			case rv_op_addi: return emit_addi(dec);
 			case rv_op_bne: return emit_bne(dec);
 			case rv_op_ld: return emit_ld(dec);
