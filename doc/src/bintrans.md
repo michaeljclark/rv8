@@ -36,7 +36,7 @@ ABI (Application Binary Interface) to bond an application to a custom
 randomised version of the ABI, thus preventing all exploits that are based
 on static analysis of binaries and the target system ABI. Addresses, System
 call numbers, register assignments and code layout are randomised into a
-state-space whereby bonding each application is bonded to the target operating
+state-space whereby each application is bonded to the target operating
 system making the target system immune to traditional exploit payloads.
 If the state-space of possible ABI combinations is of a high enough order e.g.
 2^n where n > 112 bits, then it becomes a quantum cryptographic problem
