@@ -681,6 +681,49 @@ struct fusion_emitter : public ErrorHandler
 		return true;
 	}
 
+	bool emit_sd(decode_type &dec)
+	{
+		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+		int rs2x = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+		if (dec.rs2 == rv_ireg_zero) {
+			if (rs1x > 0) {
+				as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
+				log_trace("\t\tmov qword ptr [%s + %lld], 0", x86_reg_str(rs1x), dec.imm);
+			} else {
+				as.mov(x86::rax, frame_reg(dec.rs1));
+				as.mov(x86::qword_ptr(x86::rax, dec.imm), Imm(0));
+				log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+				log_trace("\t\tmov qword ptr [rax + %lld], 0", dec.imm);
+			}
+		}
+		else {
+			if (rs2x > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), x86::gpq(rs2x));
+					log_trace("\t\tmov qword ptr [%s + %lld], %s", x86_reg_str(rs1x), dec.imm, x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(x86::qword_ptr(x86::rax, dec.imm), x86::gpq(rs2x));
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov qword ptr [rax + %lld], %s", dec.imm, x86_reg_str(rs2x));
+				}
+			} else {
+				as.mov(x86::rdx, frame_reg(dec.rs2));
+				log_trace("\t\tmov rdx, %s", frame_reg_str(dec.rs2));
+				if (rs1x > 0) {
+					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), x86::rdx);
+					printf("\t\tmov qword ptr [%s + %lld], rdx", x86_reg_str(rs1x), dec.imm);
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(x86::qword_ptr(x86::rax, dec.imm), x86::rdx);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov qword ptr [rax + %lld], rdx", dec.imm);
+				}
+			}
+		}
+		return true;
+	}
+
 	bool emit_li(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
@@ -725,6 +768,7 @@ struct fusion_emitter : public ErrorHandler
 			case rv_op_addi: return emit_addi(dec);
 			case rv_op_bne: return emit_bne(dec);
 			case rv_op_ld: return emit_ld(dec);
+			case rv_op_sd: return emit_sd(dec);
 			case rv_op_lui: return emit_li(dec);
 			case fusion_op_li: return emit_li(dec);
 			case fusion_op_la: return emit_la(dec);
