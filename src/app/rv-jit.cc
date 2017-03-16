@@ -160,7 +160,7 @@ struct fusion_emitter : public ErrorHandler
 	{
 		switch (rd) {
 			case rv_ireg_zero: return 0;
-			case rv_ireg_ra: return 1;  /* rcx */
+			case rv_ireg_ra: return 2;  /* rdx */
 			case rv_ireg_sp: return 3;  /* rbx */
 			case rv_ireg_t0: return 6;  /* rsi */
 			case rv_ireg_t1: return 7;  /* rdi */
@@ -190,7 +190,7 @@ struct fusion_emitter : public ErrorHandler
 		as.push(x86::r14);
 		as.push(x86::r15);
 		as.mov(x86::rbp, x86::rdi);
-		as.mov(x86::rcx, frame_reg(rv_ireg_ra));
+		as.mov(x86::rdx, frame_reg(rv_ireg_ra));
 		as.mov(x86::rbx, frame_reg(rv_ireg_sp));
 		as.mov(x86::rsi, frame_reg(rv_ireg_t0));
 		as.mov(x86::rdi, frame_reg(rv_ireg_t1));
@@ -209,7 +209,7 @@ struct fusion_emitter : public ErrorHandler
 	{
 		log_trace("\t\tterm:");
 		as.bind(term);
-		as.mov(frame_reg(rv_ireg_ra), x86::rcx);
+		as.mov(frame_reg(rv_ireg_ra), x86::rdx);
 		as.mov(frame_reg(rv_ireg_sp), x86::rbx);
 		as.mov(frame_reg(rv_ireg_t0), x86::rsi);
 		as.mov(frame_reg(rv_ireg_t1), x86::rdi);
@@ -708,16 +708,16 @@ struct fusion_emitter : public ErrorHandler
 					log_trace("\t\tmov qword ptr [rax + %lld], %s", dec.imm, x86_reg_str(rs2x));
 				}
 			} else {
-				as.mov(x86::rdx, frame_reg(dec.rs2));
-				log_trace("\t\tmov rdx, %s", frame_reg_str(dec.rs2));
+				as.mov(x86::rcx, frame_reg(dec.rs2));
+				log_trace("\t\tmov rcx, %s", frame_reg_str(dec.rs2));
 				if (rs1x > 0) {
-					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), x86::rdx);
-					printf("\t\tmov qword ptr [%s + %lld], rdx", x86_reg_str(rs1x), dec.imm);
+					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), x86::rcx);
+					printf("\t\tmov qword ptr [%s + %lld], rcx", x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
-					as.mov(x86::qword_ptr(x86::rax, dec.imm), x86::rdx);
+					as.mov(x86::qword_ptr(x86::rax, dec.imm), x86::rcx);
 					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-					log_trace("\t\tmov qword ptr [rax + %lld], rdx", dec.imm);
+					log_trace("\t\tmov qword ptr [rax + %lld], rcx", dec.imm);
 				}
 			}
 		}
