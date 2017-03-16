@@ -75,16 +75,40 @@
 using namespace riscv;
 using namespace asmjit;
 
+struct fusion_decode
+{
+	addr_t pc;         /* program counter */
+	s64    imm;        /* decoded immediate */
+	inst_t inst;       /* source instruction */
+	u8     rd;         /* (5 bits) byte aligned for performance */
+	u8     rs1;        /* (5 bits) byte aligned for performance */
+	u8     rs2;        /* (5 bits) byte aligned for performance */
+	u8     rs3;        /* (5 bits) byte aligned for performance */
+	u32    op    : 11; /* (>256 entries) nearly full */
+	u32    codec : 8;  /* (>32 entries) can grow */
+	u32    rm    : 3;  /* round mode for some FPU ops */
+	u32    aq    : 1;  /* acquire for atomic ops */
+	u32    rl    : 1;  /* release for atomic ops */
+	u32    pred  : 4;  /* pred for fence */
+	u32    succ  : 4;  /* succ for fence */
+
+	fusion_decode()
+		: pc(0), imm(0), inst(0), rd(0), rs1(0), rs2(0), rs3(0), op(0), codec(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
+
+	fusion_decode(addr_t pc, uint16_t op, uint8_t rd, int64_t imm)
+		: pc(pc), imm(imm), inst(0), rd(rd), rs1(0), rs2(0), rs3(0), op(op), codec(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
+};
+
+enum fusion_op {
+	fusion_op_li = 1024,
+	fusion_op_la = 1025,
+	fusion_op_call = 1026
+};
+
 template <typename P>
 struct fusion_emitter : public ErrorHandler
 {
-	struct decode : P::decode_type
-	{
-		addr_t pc;
-		inst_t inst;
-
-		decode(typename P::decode_type decode) : P::decode_type(decode) {}
-	};
+	typedef typename P::decode_type decode_type;
 
 	P &proc;
 	X86Assembler as;
@@ -218,7 +242,25 @@ struct fusion_emitter : public ErrorHandler
 		}
 	}
 
-	bool emit_add(decode &dec)
+	bool emit_auipc(decode_type &dec)
+	{
+		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+		int rdx = x86_reg(dec.rd);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		} else {
+			if (rdx > 0) {
+				as.mov(x86::gpq(rdx), Imm(dec.imm));
+				log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.pc + dec.imm);
+			} else {
+				as.mov(frame_reg(dec.rd), Imm(dec.imm));
+				log_trace("\t\tmov %s, %lld", frame_reg_str(dec.rd), dec.pc + dec.imm);
+			}
+		}
+		return true;
+	}
+
+	bool emit_add(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
@@ -336,7 +378,7 @@ struct fusion_emitter : public ErrorHandler
 		return true;
 	}
 
-	bool emit_addi(decode &dec)
+	bool emit_addi(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
@@ -346,20 +388,20 @@ struct fusion_emitter : public ErrorHandler
 		else if (dec.rs1 == rv_ireg_zero) {
 			// mov rd, imm
 			if (rdx > 0) {
-				as.mov(x86::gpq(rdx), dec.imm);
+				as.mov(x86::gpq(rdx), Imm(dec.imm));
 				log_trace("\t\tmov %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
-				as.mov(frame_reg(dec.rd), dec.imm);
+				as.mov(frame_reg(dec.rd), Imm(dec.imm));
 				log_trace("\t\tmov %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
 		else if (dec.rd == dec.rs1) {
 			// add rd, imm
 			if (rdx > 0) {
-				as.add(x86::gpq(rdx), dec.imm);
+				as.add(x86::gpq(rdx), Imm(dec.imm));
 				log_trace("\t\tadd %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
-				as.add(frame_reg(dec.rd), dec.imm);
+				as.add(frame_reg(dec.rd), Imm(dec.imm));
 				log_trace("\t\tadd %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
@@ -386,17 +428,17 @@ struct fusion_emitter : public ErrorHandler
 			}
 			// add rd, imm
 			if (rdx > 0) {
-				as.add(x86::gpq(rdx), dec.imm);
+				as.add(x86::gpq(rdx), Imm(dec.imm));
 				log_trace("\t\tadd %s, %d", x86_reg_str(rdx), dec.imm);
 			} else {
-				as.add(frame_reg(dec.rd), dec.imm);
+				as.add(frame_reg(dec.rd), Imm(dec.imm));
 				log_trace("\t\tadd %s, %d", frame_reg_str(dec.rd), dec.imm);
 			}
 		}
 		return true;
 	}
 
-	bool emit_bne(decode &dec)
+	bool emit_bne(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
@@ -486,7 +528,7 @@ struct fusion_emitter : public ErrorHandler
 		return true;
 	}
 
-	bool emit_ld(decode &dec)
+	bool emit_ld(decode_type &dec)
 	{
 		log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 		int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
@@ -497,22 +539,22 @@ struct fusion_emitter : public ErrorHandler
 			if (rdx > 0) {
 				if (rs1x > 0) {
 					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::gpq(rs1x), dec.imm));
-					log_trace("\t\tmov %s, qword ptr [%s + %d]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
+					log_trace("\t\tmov %s, qword ptr [%s + %lld]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(x86::gpq(rdx), x86::qword_ptr(x86::rax, dec.imm));
 					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-					log_trace("\t\tmov %s, qword ptr [rax + %d]", x86_reg_str(rdx), dec.imm);
+					log_trace("\t\tmov %s, qword ptr [rax + %lld]", x86_reg_str(rdx), dec.imm);
 				}
 			} else {
 				if (rs1x > 0) {
 					as.mov(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
-					printf("\t\tmov rax, qword ptr [%s + %d]", x86_reg_str(rs1x), dec.imm);
+					printf("\t\tmov rax, qword ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(x86::rax, x86::qword_ptr(x86::rax, dec.imm));
 					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-					log_trace("\t\tmov rax, qword ptr [rax + %d]", dec.imm);
+					log_trace("\t\tmov rax, qword ptr [rax + %lld]", dec.imm);
 				}
 				as.mov(frame_reg(dec.rd), x86::rax);
 				log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
@@ -521,42 +563,62 @@ struct fusion_emitter : public ErrorHandler
 		return true;
 	}
 
-	bool emit(decode &dec)
+	bool emit_li(decode_type &dec)
 	{
-		switch(dec.op) {
-			case rv_op_add: return emit_add(dec);
-			case rv_op_addi: return emit_addi(dec);
-			case rv_op_bne: return emit_bne(dec);
-			case rv_op_ld: return emit_ld(dec);
+		log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+		int rdx = x86_reg(dec.rd);
+		if (dec.rd == rv_ireg_zero) {
+			// nop
+		} else {
+			if (rdx > 0) {
+				as.mov(x86::gpq(rdx), Imm(dec.imm));
+				log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.imm);
+			} else {
+				as.mov(frame_reg(dec.rd), Imm(dec.imm));
+				log_trace("\t\tmov %s, %lld", frame_reg_str(dec.rd), dec.imm);
+			}
 		}
+		return true;
+	}
+
+	bool emit_la(decode_type &dec)
+	{
 		return false;
 	}
 
-	bool trace(addr_t pc, decode dec, inst_t inst)
+	bool emit_call(decode_type &dec)
 	{
-		dec.pc = pc;
-		dec.inst = inst;
-		auto li = labels.find(pc);
+		return false;
+	}
+
+	bool emit(decode_type &dec)
+	{
+		auto li = labels.find(dec.pc);
 		if (li != labels.end()) {
 			return false; /* trace complete */
 		}
 		Label l = as.newLabel();
-		labels[pc] = l;
+		labels[dec.pc] = l;
 		as.bind(l);
-		return emit(dec);
+		switch(dec.op) {
+			case rv_op_auipc: return emit_auipc(dec);
+			case rv_op_add: return emit_add(dec);
+			case rv_op_addi: return emit_addi(dec);
+			case rv_op_bne: return emit_bne(dec);
+			case rv_op_ld: return emit_ld(dec);
+			case rv_op_lui: return emit_li(dec);
+			case fusion_op_li: return emit_li(dec);
+			case fusion_op_la: return emit_la(dec);
+			case fusion_op_call: return emit_call(dec);
+		}
+		return false;
 	}
 };
 
 template <typename P>
-struct fusion_tracer
+struct fusion_tracer : fusion_emitter<P>
 {
-	struct decode : P::decode_type
-	{
-		addr_t pc;
-		inst_t inst;
-
-		decode(typename P::decode_type decode) : P::decode_type(decode) {}
-	};
+	typedef typename P::decode_type decode_type;
 
 	enum match_state {
 		match_state_none,
@@ -567,55 +629,31 @@ struct fusion_tracer
 		match_state_lui,
 	};
 
-	P &proc;
 	u64 imm;
 	int rd;
 	addr_t pseudo_pc;
 	match_state state;
-	std::vector<decode> decode_trace;
+	std::vector<decode_type> queue;
 
-	fusion_tracer(P &proc)
-		: proc(proc), imm(0), rd(0), state(match_state_none) {}
+	fusion_tracer(P &proc, CodeHolder &code)
+		: fusion_emitter<P>(proc, code), imm(0), rd(0), state(match_state_none) {}
 
-	void emit_trace()
+	void emit_queue()
 	{
 		state = match_state_none;
-		for (auto &dec : decode_trace) emit(dec);
-		decode_trace.clear();
+		for (auto &dec : queue) {
+			fusion_emitter<P>::emit(dec);
+		}
+		queue.clear();
 	}
 
-	void clear_trace()
+	void clear_queue()
 	{
 		state = match_state_none;
-		decode_trace.clear();
+		queue.clear();
 	}
 
-	bool emit_li()
-	{
-		//log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
-		clear_trace();
-		return false;
-	}
-
-	bool emit_la()
-	{
-		//log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", pseudo_pc, rv_ireg_name_sym[rd], imm);
-		clear_trace();
-		return false;
-	}
-
-	bool emit_call()
-	{
-		//log_trace("\t# 0x%016llx\tcall\t0x%llx", pseudo_pc, imm);
-		clear_trace();
-		return false;
-	}
-
-	bool emit(decode &dec)
-	{
-	}
-
-	bool trace(addr_t pc, decode dec, inst_t inst)
+	bool trace(addr_t pc, decode_type &dec, inst_t inst)
 	{
 		dec.pc = pc;
 		dec.inst = inst;
@@ -630,7 +668,7 @@ struct fusion_tracer
 							imm = dec.imm;
 							pseudo_pc = dec.pc;
 							state = match_state_li;
-							decode_trace.push_back(dec);
+							queue.push_back(dec);
 							return true;
 						}
 						break;
@@ -639,14 +677,14 @@ struct fusion_tracer
 						imm = dec.imm;
 						pseudo_pc = dec.pc;
 						state = match_state_auipc;
-						decode_trace.push_back(dec);
+						queue.push_back(dec);
 						return true;
 					case rv_op_lui:
 						rd = dec.rd;
 						imm = dec.imm;
 						pseudo_pc = dec.pc;
 						state = match_state_lui;
-						decode_trace.push_back(dec);
+						queue.push_back(dec);
 						return true;
 					default:
 						break;
@@ -657,7 +695,7 @@ struct fusion_tracer
 					case rv_op_addi: state = match_state_la; goto reparse;
 					case rv_op_jalr: state = match_state_call; goto reparse;
 					default:
-						emit_trace();
+						emit_queue();
 						break;
 				}
 				break;
@@ -666,7 +704,7 @@ struct fusion_tracer
 					case rv_op_slli: state = match_state_li; goto reparse;
 					case rv_op_addi: state = match_state_li; goto reparse;
 					default:
-						emit_trace();
+						emit_queue();
 						break;
 				}
 				break;
@@ -687,25 +725,35 @@ struct fusion_tracer
 					default:
 						break;
 				}
-				emit_li();
+				/* fall through and emit ending instruction */
+				{
+					fusion_decode dec(pseudo_pc, fusion_op_li, rd, imm);
+					fusion_emitter<P>::emit(dec);
+					clear_queue();
+				}
 				break;
 			case match_state_la:
 				if (rd == dec.rd && rd == dec.rs1) {
-					imm += dec.imm;
-					return emit_la();
+					fusion_decode dec(pseudo_pc, fusion_op_la, rd, imm);
+					fusion_emitter<P>::emit(dec);
+					clear_queue();
+					return true;
 				}
-				emit_trace();
+				emit_queue();
 				break;
 			case match_state_call:
 				if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
 					imm += dec.imm;
-					return emit_call();
+					fusion_decode dec(pseudo_pc, fusion_op_call, rd, imm);
+					fusion_emitter<P>::emit(dec);
+					clear_queue();
+					return true;
 				}
-				emit_trace();
+				emit_queue();
 				state = match_state_none;
 				break;
 		}
-		return emit(dec);
+		return fusion_emitter<P>::emit(dec);
 	}
 };
 
@@ -830,7 +878,7 @@ struct processor_runloop : processor_fault, P
 	{
 		CodeHolder code;
 		code.init(rt.getCodeInfo());
-		fusion_emitter<P> tracer(*this, code);
+		fusion_tracer<P> tracer(*this, code);
 		typename P::ux trace_pc = P::pc;
 		typename P::ux trace_instret = P::instret;
 
@@ -957,7 +1005,7 @@ struct processor_runloop : processor_fault, P
 	}
 };
 
-using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy<processor_rv64imafdc_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
 
 /* environment variables */
