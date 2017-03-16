@@ -1,5 +1,5 @@
 //
-//  test-asmjit.cc
+//  rv-jit.cc
 //
 
 #include <cstdio>
