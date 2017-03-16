@@ -667,7 +667,7 @@ struct fusion_emitter : public ErrorHandler
 			} else {
 				if (rs1x > 0) {
 					as.mov(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
-					printf("\t\tmov rax, qword ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
+					log_trace("\t\tmov rax, qword ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(x86::rax, x86::qword_ptr(x86::rax, dec.imm));
