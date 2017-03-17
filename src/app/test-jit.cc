@@ -67,21 +67,28 @@
 #include "unknown-abi.h"
 #include "processor-proxy.h"
 #include "debug-cli.h"
-#include "processor-runloop.h"
+
+#include "asmjit.h"
+
+#include "fusion-decode.h"
+#include "fusion-emitter.h"
+#include "fusion-tracer.h"
+#include "fusion-runloop.h"
+
 #include "assembler.h"
 #include "jit.h"
 
 using namespace riscv;
 
-using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy
-	<processor_rv64imafdc_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy
+	<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
 struct rv_test_jit
 {
-	void run()
+	void test_1()
 	{
 		assembler as;
-		proxy_emulator_rv64imafdc emulator;
+		proxy_jit_rv64imafdc emulator;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
 		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
@@ -105,5 +112,5 @@ struct rv_test_jit
 int main(int argc, char *argv[])
 {
 	rv_test_jit test;
-	test.run();
+	test.test_1();
 }
