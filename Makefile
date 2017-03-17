@@ -50,7 +50,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/asmjit/src/asmjit
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
-WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations
+WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations -Wno-strict-aliasing
 CPPFLAGS =
 CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y -fno-rtti $(CFLAGS)
