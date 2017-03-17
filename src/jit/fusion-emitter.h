@@ -164,10 +164,34 @@ namespace riscv {
 			return true;
 		}
 
+		void emit_mv_rd_rs1(decode_type &dec)
+		{
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			if (rdx > 0) {
+				if (rs1x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
+				}
+			} else {
+				if (rs1x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs1));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+
 		bool emit_add(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -195,25 +219,7 @@ namespace riscv {
 			}
 			else if (dec.rs2 == rv_ireg_zero) {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				// add rd, rs2
@@ -239,25 +245,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// add rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
@@ -285,7 +274,7 @@ namespace riscv {
 		bool emit_sub(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -313,25 +302,7 @@ namespace riscv {
 			}
 			else if (dec.rs2 == rv_ireg_zero) {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				// sub rd, rs2
@@ -357,25 +328,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tsub %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// sub rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
@@ -403,7 +357,7 @@ namespace riscv {
 		bool emit_sll(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -419,25 +373,7 @@ namespace riscv {
 			}
 			else if (dec.rs2 == 0) {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				// add rd, rs2
@@ -469,25 +405,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// shl rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
@@ -521,7 +440,7 @@ namespace riscv {
 		bool emit_srl(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -537,25 +456,7 @@ namespace riscv {
 			}
 			else if (dec.rs2 == 0) {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				// add rd, rs2
@@ -587,25 +488,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// shr rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
@@ -639,7 +523,7 @@ namespace riscv {
 		bool emit_sra(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -655,25 +539,7 @@ namespace riscv {
 			}
 			else if (dec.rs2 == 0) {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				// add rd, rs2
@@ -705,25 +571,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// sar rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
@@ -757,7 +606,7 @@ namespace riscv {
 		bool emit_addi(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -783,25 +632,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// add rd, imm
 				if (rdx > 0) {
 					as.add(x86::gpq(rdx), Imm(dec.imm));
@@ -817,7 +649,7 @@ namespace riscv {
 		bool emit_slli(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -843,25 +675,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// shl rd, imm
 				if (rdx > 0) {
 					as.shl(x86::gpq(rdx), Imm(dec.imm));
@@ -877,7 +692,7 @@ namespace riscv {
 		bool emit_srli(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -903,25 +718,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// shr rd, imm
 				if (rdx > 0) {
 					as.shr(x86::gpq(rdx), Imm(dec.imm));
@@ -937,7 +735,7 @@ namespace riscv {
 		bool emit_srai(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -963,25 +761,8 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs1));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs1));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs1x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs1x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
-				}
+				emit_mv_rd_rs1(dec);
+
 				// sar rd, imm
 				if (rdx > 0) {
 					as.sar(x86::gpq(rdx), Imm(dec.imm));
