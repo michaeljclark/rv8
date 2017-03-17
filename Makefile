@@ -42,6 +42,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/expr \
                 -I$(TOP_DIR)/src/fmt \
                 -I$(TOP_DIR)/src/gen \
+                -I$(TOP_DIR)/src/jit \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
