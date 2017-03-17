@@ -154,6 +154,7 @@ namespace riscv {
 				P::instret++;
 			}
 
+			tracer.emit_queue();
 			tracer.emit_epilog();
 
 			P::log |= proc_log_hotspot_trap;
