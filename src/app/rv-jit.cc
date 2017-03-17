@@ -895,7 +895,7 @@ struct fusion_emitter : public ErrorHandler
 					as.mov(x86::rax, frame_reg(dec.rs1));
 					as.mov(frame_reg(dec.rd), x86::rax);
 					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
-					log_trace("\t\tadd %s, rax", frame_reg_str(dec.rd));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
 				}
 			}
 			// add rd, imm
