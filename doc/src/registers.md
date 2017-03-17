@@ -19,14 +19,14 @@ The register mapping may eventually be randomised by the translator.
 The following is a sketch of a static register mapping for x86:
 
  - rax, translator temporary
- - rdx, translator temporary
+ - rcx, translator temporary (cl used as shift argument)
  - rbp, translator static spill slots ([rbp + 0] holds the program counter)
  - rsp, translator call stack
 
 Reg | Reg  | x86 | Spill Slot
 :-- | :--  | :-- | :--
 x0  | zero |     |
-x1  | ra   | rcx | [rbp + 16]
+x1  | ra   | rdx | [rbp + 16]
 x2  | sp   | rbx | [rbp + 26]
 x3  | gp   |     | [rbp + 32]
 x4  | tp   |     | [rbp + 40]
