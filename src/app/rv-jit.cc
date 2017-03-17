@@ -79,8 +79,8 @@
 
 using namespace riscv;
 
-using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
-
+using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy
+	<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
 /* environment variables */
 
@@ -121,7 +121,6 @@ struct rv_jit
 		if (v & PF_R) prot |= PROT_READ;
 		return prot;
 	}
-
 
 	/* Map a single stack segment into user address space */
 	template <typename P>
