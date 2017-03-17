@@ -98,15 +98,46 @@ struct rv_test_jit
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xbe);
 		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
+		asm_ebreak(as);
 
 		as.link(); /* required for unresolved labels */
 		std::vector<u8> &buf = as.get_section(".text")->buf;
 
-		emulator.pc = (uintptr_t)buf.data();
+		/* step the interpreter */
+		emulator.pc = (addr_t)buf.data();
 		emulator.step(7);
 
-		u64 result = emulator.ireg[rv_ireg_a0];
-		assert(result = 0xdeadbeef);
+		assert(emulator.ireg[rv_ireg_a0] == 0xdeadbeef);
+	}
+
+	void test_2()
+	{
+		assembler as;
+		proxy_jit_rv64imafdc emulator;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xad);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xbe);
+		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
+		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
+		asm_ebreak(as);
+
+		as.link(); /* required for unresolved labels */
+		std::vector<u8> &buf = as.get_section(".text")->buf;
+
+		/* compile the program buffer trace */
+		emulator.log = proc_log_jit_trace;
+		emulator.pc = (addr_t)buf.data();
+		emulator.start_trace();
+
+		/* reset registers and run compiled trace */
+		memset(&emulator.ireg[0], 0, sizeof(emulator.ireg));
+		auto fn = emulator.trace_cache[(addr_t)buf.data()];
+		fn(static_cast<processor_rv64imafd*>(&emulator));
+
+		assert(emulator.ireg[rv_ireg_a0] == 0xdeadbeef);
 	}
 };
 
@@ -114,4 +145,5 @@ int main(int argc, char *argv[])
 {
 	rv_test_jit test;
 	test.test_1();
+	test.test_2();
 }
