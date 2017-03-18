@@ -517,6 +517,122 @@ struct rv_test_jit
 		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
+	void test_srli_1()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_a2, rv_ireg_a1, 56);
+		asm_srli(as, rv_ireg_a3, rv_ireg_a2, 56);
+		asm_srli(as, rv_ireg_a2, rv_ireg_a2, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srli_2()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_s0, rv_ireg_a1, 56);
+		asm_srli(as, rv_ireg_a3, rv_ireg_s0, 56);
+		asm_srli(as, rv_ireg_s0, rv_ireg_s0, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srli_3()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_s2, rv_ireg_s1, 56);
+		asm_srli(as, rv_ireg_s3, rv_ireg_s2, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+	}
+
+	void test_srli_4()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_a0, rv_ireg_s1, 56);
+		asm_srli(as, rv_ireg_s3, rv_ireg_a0, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+	}
+
+	void test_srai_1()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_a2, rv_ireg_a1, 56);
+		asm_srai(as, rv_ireg_a3, rv_ireg_a2, 56);
+		asm_srai(as, rv_ireg_a2, rv_ireg_a2, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srai_2()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_s0, rv_ireg_a1, 56);
+		asm_srai(as, rv_ireg_a3, rv_ireg_s0, 56);
+		asm_srai(as, rv_ireg_s0, rv_ireg_s0, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srai_3()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_s2, rv_ireg_s1, 56);
+		asm_srai(as, rv_ireg_s3, rv_ireg_s2, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+	}
+
+	void test_srai_4()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
+		asm_slli(as, rv_ireg_a0, rv_ireg_s1, 56);
+		asm_srai(as, rv_ireg_s3, rv_ireg_a0, 56);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+	}
+
 	void test_sll_1()
 	{
 		P emulator;
@@ -714,6 +830,14 @@ int main(int argc, char *argv[])
 	test.test_slli_4();
 	test.test_slli_5();
 	test.test_slli_6();
+	test.test_srli_1();
+	test.test_srli_2();
+	test.test_srli_3();
+	test.test_srli_4();
+	test.test_srai_1();
+	test.test_srai_2();
+	test.test_srai_3();
+	test.test_srai_4();
 	test.test_sll_1();
 	test.test_sll_2();
 	test.test_sll_3();
