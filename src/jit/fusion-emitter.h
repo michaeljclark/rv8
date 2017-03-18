@@ -1024,7 +1024,8 @@ namespace riscv {
 					as.mov(x86::gpq(rdx), Imm(dec.imm));
 					log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.imm);
 				} else {
-					as.mov(frame_reg(dec.rd), Imm(dec.imm));
+					as.mov(x86::rax, Imm(dec.imm));
+					as.mov(frame_reg(dec.rd), x86::rax);
 					log_trace("\t\tmov %s, %lld", frame_reg_str(dec.rd), dec.imm);
 				}
 			}
