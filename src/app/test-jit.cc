@@ -92,7 +92,7 @@ struct rv_test_jit
 
 	rv_test_jit() : total_tests(0), tests_passed(0) {}
 
-	void run_test(const char* test_name, P &emulator, addr_t pc, size_t step)
+	void run_test(const char* test_name, P &proc, addr_t pc, size_t step)
 	{
 		printf("\n=========================================================\n");
 		printf("TEST: %s\n", test_name);
@@ -100,40 +100,40 @@ struct rv_test_jit
 		size_t regfile_size = sizeof(typename P::ireg_t) * P::ireg_count;
 
 		/* clear registers */
-		memset(&emulator.ireg[0], 0, regfile_size);
+		memset(&proc.ireg[0], 0, regfile_size);
 
 		/* step the interpreter */
 		printf("\n--[ interp ]---------------\n");
-		emulator.log = proc_log_inst;
-		emulator.pc = pc;
-		emulator.step(step);
+		proc.log = proc_log_inst;
+		proc.pc = pc;
+		proc.step(step);
 
 		/* save and reset registers */
-		memcpy(&save_regs[0], &emulator.ireg[0], regfile_size);
-		memset(&emulator.ireg[0], 0, regfile_size);
+		memcpy(&save_regs[0], &proc.ireg[0], regfile_size);
+		memset(&proc.ireg[0], 0, regfile_size);
 
 		/* compile the program buffer trace */
 		printf("\n--[ jit ]------------------\n");
-		emulator.log = proc_log_jit_trace;
-		emulator.pc = pc;
-		emulator.start_trace();
+		proc.log = proc_log_jit_trace;
+		proc.pc = pc;
+		proc.start_trace();
 
 		/* reset registers */
-		memset(&emulator.ireg[0], 0, regfile_size);
+		memset(&proc.ireg[0], 0, regfile_size);
 
 		/* run compiled trace */
-		auto fn = emulator.trace_cache[pc];
-		fn(static_cast<processor_rv64imafd*>(&emulator));
+		auto fn = proc.trace_cache[pc];
+		fn(static_cast<processor_rv64imafd*>(&proc));
 
 		/* print result */
 		printf("\n--[ result ]---------------\n");
 		bool pass = true;
 		for (size_t i = 0; i < P::ireg_count; i++) {
-			if (save_regs[i].r.xu.val != emulator.ireg[i].r.xu.val) {
+			if (save_regs[i].r.xu.val != proc.ireg[i].r.xu.val) {
 				pass = false;
 				printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
 					rv_ireg_name_sym[i], save_regs[i].r.xu.val,
-					rv_ireg_name_sym[i], emulator.ireg[i].r.xu.val);
+					rv_ireg_name_sym[i], proc.ireg[i].r.xu.val);
 			}
 		}
 		printf("%s\n", pass ? "PASS" : "FAIL");
@@ -143,43 +143,43 @@ struct rv_test_jit
 
 	void test_addi_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xde);
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 1);
 	}
 
 	void test_addi_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_zero, rv_ireg_a0, 0xde);
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 1);
 	}
 
 	void test_addi_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_zero, rv_ireg_zero, 0xde);
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 1);
 	}
 
 	void test_addi_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0xde);
@@ -190,12 +190,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
 	void test_add_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -203,12 +203,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_add_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -216,12 +216,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_add_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -230,12 +230,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_add_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -243,12 +243,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_add_5()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -256,12 +256,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_add_6()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
@@ -270,12 +270,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_add_7()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
@@ -284,12 +284,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_add_8()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -298,12 +298,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_sub_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -311,12 +311,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_sub_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -324,12 +324,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_sub_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7ff);
@@ -338,12 +338,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_sub_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -351,12 +351,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_sub_5()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -364,12 +364,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_sub_6()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
@@ -378,12 +378,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_sub_7()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
@@ -392,12 +392,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_sub_8()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
@@ -406,12 +406,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_slli_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
@@ -424,12 +424,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_slli_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_s0, 0xde);
@@ -442,12 +442,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_slli_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_a0, 0xde);
@@ -460,12 +460,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_slli_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xde);
@@ -478,12 +478,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_slli_5()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0xde);
@@ -496,12 +496,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_slli_6()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0xde);
@@ -514,12 +514,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 
 	void test_srli_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
@@ -529,12 +529,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srli_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
@@ -544,12 +544,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srli_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
@@ -558,12 +558,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_srli_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
@@ -572,12 +572,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_srai_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
@@ -587,12 +587,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srai_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x80);
@@ -602,12 +602,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srai_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
@@ -616,12 +616,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_srai_4()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s1, rv_ireg_zero, 0x80);
@@ -630,12 +630,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 3);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
 	void test_sll_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
@@ -645,12 +645,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_sll_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
@@ -660,12 +660,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_sll_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
@@ -676,12 +676,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
 	void test_srl_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
@@ -691,12 +691,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srl_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
@@ -706,12 +706,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_srl_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
@@ -722,12 +722,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
 	void test_sra_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
@@ -737,12 +737,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_sra_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
@@ -752,12 +752,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 4);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
 	}
 
 	void test_sra_3()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
@@ -768,12 +768,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
 	void test_lui_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_lui(as, rv_ireg_a0, 0x7fffffff);
@@ -781,12 +781,12 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_lui_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		asm_lui(as, rv_ireg_s0, 0x7fffffff);
@@ -794,31 +794,31 @@ struct rv_test_jit
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
 	}
 
 	void test_load_imm_1()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		as.load_imm(rv_ireg_a0, 0xfeedcafebabe);
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
 	}
 
 	void test_load_imm_2()
 	{
-		P emulator;
+		P proc;
 		assembler as;
 
 		as.load_imm(rv_ireg_s0, 0xfeedcafebabe);
 		asm_ebreak(as);
 		as.link();
 
-		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
 	}
 
 	void print_summary()
