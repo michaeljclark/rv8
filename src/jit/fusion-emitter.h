@@ -993,7 +993,7 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			term_pc = dec.pc + inst_length(dec.inst);
-			int rs2x = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
+			int rs2x = x86_reg(dec.rs2), rs1x = x86_reg(dec.rs1);
 			if (dec.rs2 == rv_ireg_zero) {
 				if (rs1x > 0) {
 					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
