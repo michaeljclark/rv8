@@ -238,7 +238,7 @@ struct rv_test_jit
 
 		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
 		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7ff);
-		asm_add(as, rv_ireg_s10, rv_ireg_zero, rv_ireg_s11);
+		asm_add(as, rv_ireg_s11, rv_ireg_zero, rv_ireg_s10);
 		asm_sll(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
 		asm_ebreak(as);
 		as.link();
