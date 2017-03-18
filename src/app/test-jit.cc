@@ -100,6 +100,7 @@ struct rv_test_jit
 		size_t regfile_size = sizeof(typename P::ireg_t) * P::ireg_count;
 
 		/* create 256MB RAM at 256MB */
+		proc.log = proc_log_memory;
 		proc.mmu.mem->brk = proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = 0x10000000;
 		proc.ireg[rv_ireg_a0] = 0x20000000;
 		abi_sys_brk(proc);
@@ -826,6 +827,21 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
 	}
 
+	void test_ld_sd_1()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sd(as, rv_ireg_a0, rv_ireg_a1, 0);
+		asm_ld(as, rv_ireg_a2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void print_summary()
 	{
 		printf("\n%d/%d tests successful\n", tests_passed, total_tests);
@@ -882,5 +898,6 @@ int main(int argc, char *argv[])
 	test.test_lui_2();
 	test.test_load_imm_1();
 	test.test_load_imm_2();
+	test.test_ld_sd_1();
 	test.print_summary();
 }
