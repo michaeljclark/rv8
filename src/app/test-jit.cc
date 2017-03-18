@@ -126,8 +126,9 @@ struct rv_test_jit
 		for (size_t i = 0; i < P::ireg_count; i++) {
 			if (save_regs[i].r.xu.val != emulator.ireg[i].r.xu.val) {
 				pass = false;
-				printf("ERROR interp-x%zu=0x%016llx jit-x%zu=0x%016llx\n",
-					i, save_regs[i].r.xu.val, i, emulator.ireg[i].r.xu.val);
+				printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
+					rv_ireg_name_sym[i], save_regs[i].r.xu.val,
+					rv_ireg_name_sym[i], emulator.ireg[i].r.xu.val);
 			}
 		}
 		printf("%s\n", pass ? "PASS" : "FAIL");
