@@ -140,6 +140,9 @@ namespace riscv {
 		typedef s32  int_t;
 		typedef u32  uint_t;
 
+		typedef IREG ireg_t;
+		typedef FREG freg_t;
+
 		/* processor dimensions */
 
 		enum  {

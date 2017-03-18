@@ -84,36 +84,80 @@ using namespace riscv;
 using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy
 	<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
 
+template <typename P>
 struct rv_test_jit
 {
-	void test_1()
+	void run_test(const char* test_name, P &emulator, addr_t pc, size_t step)
 	{
-		assembler as;
-		proxy_jit_rv64imafdc emulator;
-
-		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
-		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
-		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xad);
-		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
-		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xbe);
-		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
-		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
-		asm_ebreak(as);
-
-		as.link(); /* required for unresolved labels */
-		std::vector<u8> &buf = as.get_section(".text")->buf;
+		printf("\n=========================================================\n");
+		printf("TEST: %s\n", test_name);
+		typename P::ireg_t save_regs[P::ireg_count];
+		size_t regfile_size = sizeof(typename P::ireg_t) * P::ireg_count;
 
 		/* step the interpreter */
-		emulator.pc = (addr_t)buf.data();
-		emulator.step(7);
+		printf("\n--[ interp ]---------------\n");
+		emulator.log = proc_log_inst;
+		emulator.pc = pc;
+		emulator.step(step);
 
-		assert(emulator.ireg[rv_ireg_a0] == 0xdeadbeef);
+		/* save and reset registers */
+		memcpy(&save_regs[0], &emulator.ireg[0], regfile_size);
+		memset(&emulator.ireg[0], 0, regfile_size);
+
+		/* compile the program buffer trace */
+		printf("\n--[ jit ]------------------\n");
+		emulator.log = proc_log_jit_trace;
+		emulator.pc = pc;
+		emulator.start_trace();
+
+		/* reset registers */
+		memset(&emulator.ireg[0], 0, regfile_size);
+
+		/* run compiled trace */
+		auto fn = emulator.trace_cache[pc];
+		fn(static_cast<processor_rv64imafd*>(&emulator));
+
+		/* print result */
+		printf("\n--[ result ]---------------\n");
+		bool pass = true;
+		for (size_t i = 0; i < P::ireg_count; i++) {
+			if (save_regs[i].r.xu.val != emulator.ireg[i].r.xu.val) {
+				pass = false;
+				printf("ERROR interp-x%zu=0x%016llx jit-x%zu=0x%016llx\n",
+					i, save_regs[i].r.xu.val, i, emulator.ireg[i].r.xu.val);
+			}
+		}
+		printf("%s\n", pass ? "PASS" : "FAIL");
+	}
+
+	void test_1()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xde);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
 	}
 
 	void test_2()
 	{
+		P emulator;
 		assembler as;
-		proxy_jit_rv64imafdc emulator;
+
+		as.load_imm(rv_ireg_a0, 0xfeedcafebabe);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
+	}
+
+	void test_3()
+	{
+		P emulator;
+		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xde);
 		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
@@ -123,27 +167,16 @@ struct rv_test_jit
 		asm_slli(as, rv_ireg_a0, rv_ireg_a0, 8);
 		asm_addi(as, rv_ireg_a0, rv_ireg_a0, 0xef);
 		asm_ebreak(as);
+		as.link();
 
-		as.link(); /* required for unresolved labels */
-		std::vector<u8> &buf = as.get_section(".text")->buf;
-
-		/* compile the program buffer trace */
-		emulator.log = proc_log_jit_trace;
-		emulator.pc = (addr_t)buf.data();
-		emulator.start_trace();
-
-		/* reset registers and run compiled trace */
-		memset(&emulator.ireg[0], 0, sizeof(emulator.ireg));
-		auto fn = emulator.trace_cache[(addr_t)buf.data()];
-		fn(static_cast<processor_rv64imafd*>(&emulator));
-
-		assert(emulator.ireg[rv_ireg_a0] == 0xdeadbeef);
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 7);
 	}
 };
 
 int main(int argc, char *argv[])
 {
-	rv_test_jit test;
+	rv_test_jit<proxy_jit_rv64imafdc> test;
 	test.test_1();
 	test.test_2();
+	test.test_3();
 }
