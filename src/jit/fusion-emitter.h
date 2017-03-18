@@ -18,9 +18,10 @@ namespace riscv {
 		X86Assembler as;
 		Label term;
 		std::map<addr_t,Label> labels;
+		addr_t term_pc;
 
 		fusion_emitter(P &proc, CodeHolder &code)
-			: proc(proc), as(&code)
+			: proc(proc), as(&code), term_pc(0)
 		{
 			code.setErrorHandler(this);
 		}
@@ -111,6 +112,10 @@ namespace riscv {
 
 		void emit_epilog()
 		{
+			if (term_pc) {
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(term_pc));
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), term_pc);
+			}
 			log_trace("\t\tterm:");
 			as.bind(term);
 			as.mov(frame_reg(rv_ireg_ra), x86::rdx);
@@ -149,6 +154,7 @@ namespace riscv {
 		bool emit_auipc(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -215,6 +221,7 @@ namespace riscv {
 		bool emit_add(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -298,6 +305,7 @@ namespace riscv {
 		bool emit_sub(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -373,6 +381,7 @@ namespace riscv {
 		bool emit_sll(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -456,6 +465,7 @@ namespace riscv {
 		bool emit_srl(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -539,6 +549,7 @@ namespace riscv {
 		bool emit_sra(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -622,6 +633,7 @@ namespace riscv {
 		bool emit_addi(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -665,6 +677,7 @@ namespace riscv {
 		bool emit_slli(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -708,6 +721,7 @@ namespace riscv {
 		bool emit_srli(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -751,6 +765,7 @@ namespace riscv {
 		bool emit_srai(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -793,7 +808,6 @@ namespace riscv {
 
 		void emit_cmp(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 			if (dec.rs1 == rv_ireg_zero) {
 				if (rs2x > 0) {
@@ -843,7 +857,9 @@ namespace riscv {
 			auto branch_i = labels.find(branch_pc);
 			auto cont_i = labels.find(cont_pc);
 
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			emit_cmp(dec);
+			term_pc = 0;
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
 				as.jne(branch_i->second);
@@ -853,7 +869,7 @@ namespace riscv {
 			}
 			else if (cond && branch_i != labels.end()) {
 				as.jne(branch_i->second);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(cont_pc));
 				as.jmp(term);
 				log_trace("\t\tjne 0x%016llx", branch_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
@@ -861,7 +877,7 @@ namespace riscv {
 			}
 			else if (!cond && cont_i != labels.end()) {
 				as.je(cont_i->second);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(branch_pc));
 				as.jmp(term);
 				log_trace("\t\tje 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
@@ -869,10 +885,10 @@ namespace riscv {
 			} else {
 				Label l = as.newLabel();
 				as.jne(l);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(cont_pc));
 				as.jmp(term);
 				as.bind(l);
-				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(branch_pc));
 				as.jmp(term);
 				log_trace("\t\tjne 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
@@ -893,7 +909,9 @@ namespace riscv {
 			auto branch_i = labels.find(branch_pc);
 			auto cont_i = labels.find(cont_pc);
 
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			emit_cmp(dec);
+			term_pc = 0;
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
 				as.je(branch_i->second);
@@ -938,6 +956,7 @@ namespace riscv {
 		bool emit_ld(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -973,6 +992,7 @@ namespace riscv {
 		bool emit_sd(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rs2x = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rs2 == rv_ireg_zero) {
 				if (rs1x > 0) {
@@ -1016,6 +1036,7 @@ namespace riscv {
 		bool emit_li(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -1035,6 +1056,7 @@ namespace riscv {
 		bool emit_lui(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + inst_length(dec.inst);
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
