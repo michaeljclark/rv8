@@ -161,7 +161,10 @@ namespace riscv {
 
 			tracer.log_trace("jit-trace-end   pc=0x%016llx", P::pc);
 
-			if (P::instret == trace_instret) return;
+			if (P::instret == trace_instret) {
+				P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
+				return;
+			}
 
 			TraceFunc fn;
 			Error err = rt.add(&fn, &code);
