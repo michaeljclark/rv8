@@ -1032,6 +1032,24 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_lui(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			int rdx = x86_reg(dec.rd);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			} else {
+				if (rdx > 0) {
+					as.mov(x86::gpq(rdx), (int)dec.imm);
+					log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.imm);
+				} else {
+					as.mov(frame_reg(dec.rd), (int)dec.imm);
+					log_trace("\t\tmov %s, %lld", frame_reg_str(dec.rd), dec.imm);
+				}
+			}
+			return true;
+		}
+
 		bool emit_la(decode_type &dec)
 		{
 			return false;
@@ -1066,7 +1084,7 @@ namespace riscv {
 				case rv_op_beq: return emit_beq(dec);
 				case rv_op_ld: return emit_ld(dec);
 				case rv_op_sd: return emit_sd(dec);
-				case rv_op_lui: return emit_li(dec);
+				case rv_op_lui: return emit_lui(dec);
 				case fusion_op_li: return emit_li(dec);
 				case fusion_op_la: return emit_la(dec);
 				case fusion_op_call: return emit_call(dec);
