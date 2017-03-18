@@ -771,6 +771,32 @@ struct rv_test_jit
 		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
+	void test_lui_1()
+	{
+		P emulator;
+		assembler as;
+
+		asm_lui(as, rv_ireg_a0, 0x7fffffff);
+		asm_lui(as, rv_ireg_a1, -1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
+	void test_lui_2()
+	{
+		P emulator;
+		assembler as;
+
+		asm_lui(as, rv_ireg_s0, 0x7fffffff);
+		asm_lui(as, rv_ireg_s1, -1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
 	void test_load_imm_1()
 	{
 		P emulator;
@@ -847,6 +873,8 @@ int main(int argc, char *argv[])
 	test.test_sra_1();
 	test.test_sra_2();
 	test.test_sra_3();
+	test.test_lui_1();
+	test.test_lui_2();
 	test.test_load_imm_1();
 	test.test_load_imm_2();
 	test.print_summary();
