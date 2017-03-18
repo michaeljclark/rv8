@@ -153,6 +153,46 @@ struct rv_test_jit
 		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
 	}
 
+	void test_addi_2()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_zero, rv_ireg_a0, 0xde);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
+	}
+
+	void test_addi_3()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_zero, rv_ireg_zero, 0xde);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 1);
+	}
+
+	void test_addi_4()
+	{
+		P emulator;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0xde);
+		asm_addi(as, rv_ireg_s10, rv_ireg_s11, 0xde);
+		asm_addi(as, rv_ireg_s10, rv_ireg_s10, 0xde);
+		asm_addi(as, rv_ireg_a0, rv_ireg_s10, 0xde);
+		asm_addi(as, rv_ireg_s9, rv_ireg_a0, 0xde);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_add_1()
 	{
 		P emulator;
@@ -424,6 +464,9 @@ int main(int argc, char *argv[])
 {
 	rv_test_jit<proxy_jit_rv64imafdc> test;
 	test.test_addi_1();
+	test.test_addi_2();
+	test.test_addi_3();
+	test.test_addi_4();
 	test.test_add_1();
 	test.test_add_2();
 	test.test_add_3();
