@@ -188,6 +188,30 @@ namespace riscv {
 			}
 		}
 
+		void emit_mv_rd_rs2(decode_type &dec)
+		{
+			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
+			if (rdx > 0) {
+				if (rs2x > 0) {
+					as.mov(x86::gpq(rdx), x86::gpq(rs2x));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::gpq(rdx), frame_reg(dec.rs2));
+					log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
+				}
+			} else {
+				if (rs2x > 0) {
+					as.mov(frame_reg(dec.rd), x86::gpq(rs2x));
+					log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
+				} else {
+					as.mov(x86::rax, frame_reg(dec.rs2));
+					as.mov(frame_reg(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
+					log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
+				}
+			}
+		}
+
 		bool emit_add(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
@@ -279,25 +303,17 @@ namespace riscv {
 				// nop
 			}
 			else if (dec.rs1 == rv_ireg_zero) {
-				// mov rd, rs2
+				if (dec.rd != dec.rs2) {
+					// mov rd, rs2
+					emit_mv_rd_rs2(dec);
+				}
+				// neg rd
 				if (rdx > 0) {
-					if (rs2x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs2x));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
-					} else {
-						as.mov(x86::gpq(rdx), frame_reg(dec.rs2));
-						log_trace("\t\tmov %s, %s", x86_reg_str(rdx), frame_reg_str(dec.rs2));
-					}
+					as.neg(x86::gpq(rdx));
+					log_trace("\t\tneg %s", x86_reg_str(rdx));
 				} else {
-					if (rs2x > 0) {
-						as.mov(frame_reg(dec.rd), x86::gpq(rs2x));
-						log_trace("\t\tmov %s, %s", frame_reg_str(dec.rd), x86_reg_str(rs2x));
-					} else {
-						as.mov(x86::rax, frame_reg(dec.rs2));
-						as.mov(frame_reg(dec.rd), x86::rax);
-						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs2));
-						log_trace("\t\tmov %s, rax", frame_reg_str(dec.rd));
-					}
+					as.neg(frame_reg(dec.rd));
+					log_trace("\t\tneg %s", frame_reg_str(dec.rd));
 				}
 			}
 			else if (dec.rs2 == rv_ireg_zero) {
