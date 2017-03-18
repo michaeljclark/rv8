@@ -99,6 +99,11 @@ struct rv_test_jit
 		typename P::ireg_t save_regs[P::ireg_count];
 		size_t regfile_size = sizeof(typename P::ireg_t) * P::ireg_count;
 
+		/* create 256MB RAM at 256MB */
+		proc.mmu.mem->brk = proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = 0x10000000;
+		proc.ireg[rv_ireg_a0] = 0x20000000;
+		abi_sys_brk(proc);
+
 		/* clear registers */
 		memset(&proc.ireg[0], 0, regfile_size);
 
