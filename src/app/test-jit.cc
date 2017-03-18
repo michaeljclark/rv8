@@ -667,6 +667,18 @@ struct rv_test_jit
 		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
 	}
 
+	void test_load_imm_2()
+	{
+		P emulator;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0xfeedcafebabe);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
+	}
+
 	void print_summary()
 	{
 		printf("\n%d/%d tests successful\n", tests_passed, total_tests);
@@ -712,5 +724,6 @@ int main(int argc, char *argv[])
 	test.test_sra_2();
 	test.test_sra_3();
 	test.test_load_imm_1();
+	test.test_load_imm_2();
 	test.print_summary();
 }
