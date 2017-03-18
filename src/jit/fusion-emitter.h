@@ -82,7 +82,7 @@ namespace riscv {
 
 		const X86Mem frame_reg(int reg)
 		{
-			return x86::ptr(x86::rbp, offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
+			return x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
 		}
 
 		void emit_prolog()
