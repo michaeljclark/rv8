@@ -87,6 +87,11 @@ using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy
 template <typename P>
 struct rv_test_jit
 {
+	int total_tests = 0;
+	int tests_passed = 0;
+
+	rv_test_jit() : total_tests(0), tests_passed(0) {}
+
 	void run_test(const char* test_name, P &emulator, addr_t pc, size_t step)
 	{
 		printf("\n=========================================================\n");
@@ -132,6 +137,8 @@ struct rv_test_jit
 			}
 		}
 		printf("%s\n", pass ? "PASS" : "FAIL");
+		if (pass) tests_passed++;
+		total_tests++;
 	}
 
 	void test_addi_1()
@@ -257,6 +264,11 @@ struct rv_test_jit
 
 		run_test(__func__, emulator, (addr_t)as.get_section(".text")->buf.data(), 6);
 	}
+
+	void print_summary()
+	{
+		printf("\n%d/%d tests successful\n", tests_passed, total_tests);
+	}
 };
 
 int main(int argc, char *argv[])
@@ -271,4 +283,5 @@ int main(int argc, char *argv[])
 	test.test_slli_1();
 	test.test_sll_1();
 	test.test_load_imm_1();
+	test.print_summary();
 }
