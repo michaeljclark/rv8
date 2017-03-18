@@ -34,8 +34,8 @@ namespace riscv {
 
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 
-		fusion_runloop() : cli(std::make_shared<debug_cli<P>>()) {}
-		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli) {}
+		fusion_runloop() : cli(std::make_shared<debug_cli<P>>()), inst_cache() {}
+		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache() {}
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
