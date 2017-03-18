@@ -114,6 +114,7 @@ namespace riscv {
 		{
 			if (term_pc) {
 				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), Imm(term_pc));
+				log_trace("\t# 0x%016llx", term_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), term_pc);
 			}
 			log_trace("\t\tterm:");
