@@ -57,7 +57,7 @@ namespace riscv {
 		const char* frame_reg_str(int reg)
 		{
 			static char buf[32];
-			snprintf(buf, sizeof(buf), "[rbp + %lu]", offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
+			snprintf(buf, sizeof(buf), "qword ptr [rbp + %lu]", offsetof(processor_rv64imafd, ireg) + reg * (P::xlen >> 3));
 			return buf;
 		}
 
