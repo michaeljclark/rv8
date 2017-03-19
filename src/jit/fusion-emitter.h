@@ -1037,21 +1037,21 @@ namespace riscv {
 			else {
 				if (rdx > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::dword_ptr(x86::gpq(rs1x), dec.imm));
+						as.mov(x86::gpd(rdx), x86::dword_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov %s, dword ptr [%s + %lld]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::gpq(rdx), x86::dword_ptr(x86::rax, dec.imm));
+						as.mov(x86::gpd(rdx), x86::dword_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov %s, dword ptr [rax + %lld]", x86_reg_str(rdx), dec.imm);
 					}
 				} else {
 					if (rs1x > 0) {
-						as.mov(x86::rax, x86::dword_ptr(x86::gpq(rs1x), dec.imm));
+						as.mov(x86::eax, x86::dword_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov rax, dword ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::rax, x86::dword_ptr(x86::rax, dec.imm));
+						as.mov(x86::eax, x86::dword_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov rax, dword ptr [rax + %lld]", dec.imm);
 					}
