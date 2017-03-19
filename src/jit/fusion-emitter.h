@@ -1475,6 +1475,214 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_blt(decode_type &dec)
+		{
+			bool cond = proc.ireg[dec.rs1].r.x.val < proc.ireg[dec.rs2].r.x.val;
+			addr_t branch_pc = dec.pc + dec.imm;
+			addr_t cont_pc = dec.pc + inst_length(dec.inst);
+			auto branch_i = labels.find(branch_pc);
+			auto cont_i = labels.find(cont_pc);
+
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			emit_cmp(dec);
+			term_pc = 0;
+
+			if (branch_i != labels.end() && cont_i != labels.end()) {
+				as.jl(branch_i->second);
+				as.jmp(cont_i->second);
+				log_trace("\t\tjl 0x%016llx", branch_pc);
+				log_trace("\t\tjmp 0x%016llx", cont_pc);
+			}
+			else if (cond && branch_i != labels.end()) {
+				as.jl(branch_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				log_trace("\t\tjl 0x%016llx", branch_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+			}
+			else if (!cond && cont_i != labels.end()) {
+				as.jge(cont_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjge 0x%016llx", cont_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			} else {
+				Label l = as.newLabel();
+				as.jl(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				as.bind(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjl 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			}
+
+			return true;
+		}
+
+		bool emit_bge(decode_type &dec)
+		{
+			bool cond = proc.ireg[dec.rs1].r.x.val >= proc.ireg[dec.rs2].r.x.val;
+			addr_t branch_pc = dec.pc + dec.imm;
+			addr_t cont_pc = dec.pc + inst_length(dec.inst);
+			auto branch_i = labels.find(branch_pc);
+			auto cont_i = labels.find(cont_pc);
+
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			emit_cmp(dec);
+			term_pc = 0;
+
+			if (branch_i != labels.end() && cont_i != labels.end()) {
+				as.jge(branch_i->second);
+				as.jmp(cont_i->second);
+				log_trace("\t\tjge 0x%016llx", branch_pc);
+				log_trace("\t\tjmp 0x%016llx", cont_pc);
+			}
+			else if (cond && branch_i != labels.end()) {
+				as.jge(branch_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				log_trace("\t\tjge 0x%016llx", branch_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+			}
+			else if (!cond && cont_i != labels.end()) {
+				as.jl(cont_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjl 0x%016llx", cont_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			} else {
+				Label l = as.newLabel();
+				as.jge(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				as.bind(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjge 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			}
+
+			return true;
+		}
+
+		bool emit_bltu(decode_type &dec)
+		{
+			bool cond = proc.ireg[dec.rs1].r.xu.val < proc.ireg[dec.rs2].r.xu.val;
+			addr_t branch_pc = dec.pc + dec.imm;
+			addr_t cont_pc = dec.pc + inst_length(dec.inst);
+			auto branch_i = labels.find(branch_pc);
+			auto cont_i = labels.find(cont_pc);
+
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			emit_cmp(dec);
+			term_pc = 0;
+
+			if (branch_i != labels.end() && cont_i != labels.end()) {
+				as.jb(branch_i->second);
+				as.jmp(cont_i->second);
+				log_trace("\t\tjb 0x%016llx", branch_pc);
+				log_trace("\t\tjmp 0x%016llx", cont_pc);
+			}
+			else if (cond && branch_i != labels.end()) {
+				as.jb(branch_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				log_trace("\t\tjb 0x%016llx", branch_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+			}
+			else if (!cond && cont_i != labels.end()) {
+				as.jae(cont_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjae 0x%016llx", cont_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			} else {
+				Label l = as.newLabel();
+				as.jb(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				as.bind(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjb 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			}
+
+			return true;
+		}
+
+		bool emit_bgeu(decode_type &dec)
+		{
+			bool cond = proc.ireg[dec.rs1].r.xu.val >= proc.ireg[dec.rs2].r.xu.val;
+			addr_t branch_pc = dec.pc + dec.imm;
+			addr_t cont_pc = dec.pc + inst_length(dec.inst);
+			auto branch_i = labels.find(branch_pc);
+			auto cont_i = labels.find(cont_pc);
+
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			emit_cmp(dec);
+			term_pc = 0;
+
+			if (branch_i != labels.end() && cont_i != labels.end()) {
+				as.jae(branch_i->second);
+				as.jmp(cont_i->second);
+				log_trace("\t\tjae 0x%016llx", branch_pc);
+				log_trace("\t\tjmp 0x%016llx", cont_pc);
+			}
+			else if (cond && branch_i != labels.end()) {
+				as.jae(branch_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				log_trace("\t\tjae 0x%016llx", branch_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+			}
+			else if (!cond && cont_i != labels.end()) {
+				as.jb(cont_i->second);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjb 0x%016llx", cont_pc);
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			} else {
+				Label l = as.newLabel();
+				as.jae(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)cont_pc);
+				as.jmp(term);
+				as.bind(l);
+				as.mov(x86::qword_ptr(x86::rbp, offsetof(processor_rv64imafd, pc)), (unsigned)branch_pc);
+				as.jmp(term);
+				log_trace("\t\tjae 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), cont_pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", offsetof(processor_rv64imafd, pc), branch_pc);
+				log_trace("\t\tjmp term");
+			}
+
+			return true;
+		}
+
 		bool emit_ld(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
@@ -1985,6 +2193,10 @@ namespace riscv {
 				case rv_op_sraiw: return emit_sraiw(dec);
 				case rv_op_bne: return emit_bne(dec);
 				case rv_op_beq: return emit_beq(dec);
+				case rv_op_blt: return emit_blt(dec);
+				case rv_op_bge: return emit_bge(dec);
+				case rv_op_bltu: return emit_bltu(dec);
+				case rv_op_bgeu: return emit_bgeu(dec);
 				case rv_op_ld: return emit_ld(dec);
 				case rv_op_lw: return emit_lw(dec);
 				case rv_op_lwu: return emit_lwu(dec);
