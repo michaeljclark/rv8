@@ -1914,10 +1914,14 @@ namespace riscv {
 				if (rdx > 0) {
 					as.mov(x86::gpq(rdx), Imm(dec.imm));
 					log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.imm);
+				} else if (dec.imm >= std::numeric_limits<int>::min() && dec.imm <= std::numeric_limits<int>::max()) {
+					as.mov(frame_reg_64(dec.rd), Imm(dec.imm));
+					log_trace("\t\tmov %s, %lld", frame_reg_64_str(dec.rd), dec.imm);
 				} else {
 					as.mov(x86::rax, Imm(dec.imm));
 					as.mov(frame_reg_64(dec.rd), x86::rax);
-					log_trace("\t\tmov %s, %lld", frame_reg_64_str(dec.rd), dec.imm);
+					log_trace("\t\tmov rax, %lld",  dec.imm);
+					log_trace("\t\tmov %s, rax", frame_reg_64_str(dec.rd));
 				}
 			}
 			return true;
