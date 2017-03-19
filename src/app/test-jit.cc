@@ -690,7 +690,7 @@ struct rv_test_jit
 		assembler as;
 
 		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
-		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7fffffffffffULL);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
 		asm_srl(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_a0);
 		asm_srl(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_a0);
 		asm_ebreak(as);
@@ -705,7 +705,7 @@ struct rv_test_jit
 		assembler as;
 
 		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
-		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x7fffffffffffULL);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
 		asm_srl(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_s0);
 		asm_srl(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_s0);
 		asm_ebreak(as);
@@ -720,7 +720,7 @@ struct rv_test_jit
 		assembler as;
 
 		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
-		asm_addi(as, rv_ireg_s10, rv_ireg_zero, 0x7fffffffffffULL);
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
 		asm_srl(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
 		asm_srl(as, rv_ireg_a0, rv_ireg_s11, rv_ireg_s9);
 		asm_srl(as, rv_ireg_s10, rv_ireg_a0, rv_ireg_s9);
