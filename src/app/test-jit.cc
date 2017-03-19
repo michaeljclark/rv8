@@ -644,7 +644,7 @@ struct rv_test_jit
 		P proc;
 		assembler as;
 
-		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -2);
 		asm_addiw(as, rv_ireg_a0, rv_ireg_a0, 1);
 		asm_ebreak(as);
 		as.link();
@@ -657,7 +657,7 @@ struct rv_test_jit
 		P proc;
 		assembler as;
 
-		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -2);
 		asm_addiw(as, rv_ireg_s0, rv_ireg_s0, 1);
 		asm_ebreak(as);
 		as.link();
@@ -670,7 +670,7 @@ struct rv_test_jit
 		P proc;
 		assembler as;
 
-		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -2);
 		asm_addiw(as, rv_ireg_s0, rv_ireg_a0, 1);
 		asm_ebreak(as);
 		as.link();
@@ -683,7 +683,7 @@ struct rv_test_jit
 		P proc;
 		assembler as;
 
-		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -2);
 		asm_addiw(as, rv_ireg_a0, rv_ireg_s0, 1);
 		asm_ebreak(as);
 		as.link();
