@@ -841,6 +841,51 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
+	void test_sd_ld_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sd(as, rv_ireg_a0, rv_ireg_a1, 0);
+		asm_ld(as, rv_ireg_a2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sd_ld_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sd(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_ld(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sd_ld_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sd(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_ld(as, rv_ireg_a2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_sw_lw_1()
 	{
 		P proc;
@@ -850,6 +895,51 @@ struct rv_test_jit
 		as.load_imm(rv_ireg_a1, -1);
 		asm_sw(as, rv_ireg_a0, rv_ireg_a1, 0);
 		asm_lw(as, rv_ireg_a2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sw_lw_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sw(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lw(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sw_lw_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sw(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lw(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sw_lw_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sw(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lw(as, rv_ireg_a2, rv_ireg_s0, 0);
 		asm_ebreak(as);
 		as.link();
 
@@ -871,6 +961,51 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
+	void test_sw_lwu_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sw(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lwu(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sw_lwu_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sw(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lwu(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sw_lwu_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sw(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lwu(as, rv_ireg_a2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_sh_lh_1()
 	{
 		P proc;
@@ -880,6 +1015,51 @@ struct rv_test_jit
 		as.load_imm(rv_ireg_a1, -1);
 		asm_sh(as, rv_ireg_a0, rv_ireg_a1, 0);
 		asm_lh(as, rv_ireg_a2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sh_lh_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sh(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lh(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sh_lh_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sh(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lh(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sh_lh_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sh(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lh(as, rv_ireg_a2, rv_ireg_s0, 0);
 		asm_ebreak(as);
 		as.link();
 
@@ -901,6 +1081,51 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
+	void test_sh_lhu_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sh(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lhu(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sh_lhu_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sh(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lhu(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sh_lhu_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sh(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lhu(as, rv_ireg_a2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_sb_lb_1()
 	{
 		P proc;
@@ -916,6 +1141,51 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
 	}
 
+	void test_sb_lb_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sb(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lb(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sb_lb_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sb(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lb(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sb_lb_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sb(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lb(as, rv_ireg_a2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_sb_lbu_1()
 	{
 		P proc;
@@ -925,6 +1195,51 @@ struct rv_test_jit
 		as.load_imm(rv_ireg_a1, -1);
 		asm_sb(as, rv_ireg_a0, rv_ireg_a1, 0);
 		asm_lbu(as, rv_ireg_a2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sb_lbu_2()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sb(as, rv_ireg_s0, rv_ireg_s1, 0);
+		asm_lbu(as, rv_ireg_s2, rv_ireg_s0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sb_lbu_3()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_a0, 0x10000000);
+		as.load_imm(rv_ireg_s1, -1);
+		asm_sb(as, rv_ireg_a0, rv_ireg_s1, 0);
+		asm_lbu(as, rv_ireg_s2, rv_ireg_a0, 0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sb_lbu_4()
+	{
+		P proc;
+		assembler as;
+
+		as.load_imm(rv_ireg_s0, 0x10000000);
+		as.load_imm(rv_ireg_a1, -1);
+		asm_sb(as, rv_ireg_s0, rv_ireg_a1, 0);
+		asm_lbu(as, rv_ireg_a2, rv_ireg_s0, 0);
 		asm_ebreak(as);
 		as.link();
 
@@ -988,11 +1303,32 @@ int main(int argc, char *argv[])
 	test.test_load_imm_1();
 	test.test_load_imm_2();
 	test.test_sd_ld_1();
+	test.test_sd_ld_2();
+	test.test_sd_ld_3();
+	test.test_sd_ld_4();
 	test.test_sw_lw_1();
+	test.test_sw_lw_2();
+	test.test_sw_lw_3();
+	test.test_sw_lw_4();
 	test.test_sw_lwu_1();
+	test.test_sw_lwu_2();
+	test.test_sw_lwu_3();
+	test.test_sw_lwu_4();
 	test.test_sh_lh_1();
+	test.test_sh_lh_2();
+	test.test_sh_lh_3();
+	test.test_sh_lh_4();
 	test.test_sh_lhu_1();
+	test.test_sh_lhu_2();
+	test.test_sh_lhu_3();
+	test.test_sh_lhu_4();
 	test.test_sb_lb_1();
+	test.test_sb_lb_2();
+	test.test_sb_lb_3();
+	test.test_sb_lb_4();
 	test.test_sb_lbu_1();
+	test.test_sb_lbu_2();
+	test.test_sb_lbu_3();
+	test.test_sb_lbu_4();
 	test.print_summary();
 }
