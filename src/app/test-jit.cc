@@ -638,6 +638,146 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
+
+	void test_addiw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_a0, rv_ireg_a0, 1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
+	void test_addiw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_s0, rv_ireg_s0, 1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
+	void test_addiw_3()
+	{
+		P proc;
+		assembler as;
+
+		asm_addiw(as, rv_ireg_s0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_s0, rv_ireg_a0, 1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
+	void test_addiw_4()
+	{
+		P proc;
+		assembler as;
+
+		asm_addiw(as, rv_ireg_a0, rv_ireg_zero, -1);
+		asm_addiw(as, rv_ireg_a0, rv_ireg_s0, 1);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 2);
+	}
+
+	void test_slliw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_slliw(as, rv_ireg_a1, rv_ireg_a1, 12);
+		asm_slliw(as, rv_ireg_a2, rv_ireg_a1, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_slliw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_slliw(as, rv_ireg_s11, rv_ireg_s11, 12);
+		asm_slliw(as, rv_ireg_a0, rv_ireg_s11, 12);
+		asm_slliw(as, rv_ireg_s10, rv_ireg_a0, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_srliw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_srliw(as, rv_ireg_a1, rv_ireg_a1, 12);
+		asm_srliw(as, rv_ireg_a2, rv_ireg_a1, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srliw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_srliw(as, rv_ireg_s11, rv_ireg_s11, 12);
+		asm_srliw(as, rv_ireg_a0, rv_ireg_s11, 12);
+		asm_srliw(as, rv_ireg_s10, rv_ireg_a0, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sraiw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_sraiw(as, rv_ireg_a1, rv_ireg_a1, 12);
+		asm_sraiw(as, rv_ireg_a2, rv_ireg_a1, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_sraiw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_sraiw(as, rv_ireg_s11, rv_ireg_s11, 12);
+		asm_sraiw(as, rv_ireg_a0, rv_ireg_s11, 12);
+		asm_sraiw(as, rv_ireg_s10, rv_ireg_a0, 12);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
 	void test_sll_1()
 	{
 		P proc;
@@ -770,6 +910,144 @@ struct rv_test_jit
 		asm_sra(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
 		asm_sra(as, rv_ireg_a0, rv_ireg_s11, rv_ireg_s9);
 		asm_sra(as, rv_ireg_s10, rv_ireg_a0, rv_ireg_s9);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sllw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_sllw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_a0);
+		asm_sllw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_sllw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_sllw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_s0);
+		asm_sllw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_s0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_sllw_3()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_sllw(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
+		asm_sllw(as, rv_ireg_a0, rv_ireg_s11, rv_ireg_s9);
+		asm_sllw(as, rv_ireg_s10, rv_ireg_a0, rv_ireg_s9);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_srlw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_srlw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_a0);
+		asm_srlw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srlw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_srlw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_s0);
+		asm_srlw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_s0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_srlw_3()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_srlw(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
+		asm_srlw(as, rv_ireg_a0, rv_ireg_s11, rv_ireg_s9);
+		asm_srlw(as, rv_ireg_s10, rv_ireg_a0, rv_ireg_s9);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_sraw_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_sraw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_a0);
+		asm_sraw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_sraw_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, -1);
+		asm_sraw(as, rv_ireg_a1, rv_ireg_a1, rv_ireg_s0);
+		asm_sraw(as, rv_ireg_a2, rv_ireg_a1, rv_ireg_s0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 4);
+	}
+
+	void test_sraw_3()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s9, rv_ireg_zero, 12);
+		asm_addi(as, rv_ireg_s10, rv_ireg_zero, -1);
+		asm_sraw(as, rv_ireg_s11, rv_ireg_s11, rv_ireg_s9);
+		asm_sraw(as, rv_ireg_a0, rv_ireg_s11, rv_ireg_s9);
+		asm_sraw(as, rv_ireg_s10, rv_ireg_a0, rv_ireg_s9);
 		asm_ebreak(as);
 		as.link();
 
@@ -1289,6 +1567,16 @@ int main(int argc, char *argv[])
 	test.test_srai_2();
 	test.test_srai_3();
 	test.test_srai_4();
+	test.test_addiw_1();
+	test.test_addiw_2();
+	test.test_addiw_3();
+	test.test_addiw_4();
+	test.test_slliw_1();
+	test.test_slliw_2();
+	test.test_srliw_1();
+	test.test_srliw_2();
+	test.test_sraiw_1();
+	test.test_sraiw_2();
 	test.test_sll_1();
 	test.test_sll_2();
 	test.test_sll_3();
@@ -1298,6 +1586,15 @@ int main(int argc, char *argv[])
 	test.test_sra_1();
 	test.test_sra_2();
 	test.test_sra_3();
+	test.test_sllw_1();
+	test.test_sllw_2();
+	test.test_sllw_3();
+	test.test_srlw_1();
+	test.test_srlw_2();
+	test.test_srlw_3();
+	test.test_sraw_1();
+	test.test_sraw_2();
+	test.test_sraw_3();
 	test.test_lui_1();
 	test.test_lui_2();
 	test.test_load_imm_1();
