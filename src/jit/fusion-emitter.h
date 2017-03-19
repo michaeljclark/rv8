@@ -1109,21 +1109,21 @@ namespace riscv {
 			else {
 				if (rdx > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::word_ptr(x86::gpq(rs1x), dec.imm));
+						as.movzx(x86::gpq(rdx), x86::word_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov %s, word ptr [%s + %lld]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::gpq(rdx), x86::word_ptr(x86::rax, dec.imm));
+						as.movzx(x86::gpq(rdx), x86::word_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov %s, word ptr [rax + %lld]", x86_reg_str(rdx), dec.imm);
 					}
 				} else {
 					if (rs1x > 0) {
-						as.mov(x86::rax, x86::word_ptr(x86::gpq(rs1x), dec.imm));
+						as.movzx(x86::rax, x86::word_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov rax, word ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::rax, x86::word_ptr(x86::rax, dec.imm));
+						as.movzx(x86::rax, x86::word_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov rax, word ptr [rax + %lld]", dec.imm);
 					}
@@ -1181,21 +1181,21 @@ namespace riscv {
 			else {
 				if (rdx > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::gpq(rdx), x86::byte_ptr(x86::gpq(rs1x), dec.imm));
+						as.movzx(x86::gpq(rdx), x86::byte_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov %s, byte ptr [%s + %lld]", x86_reg_str(rdx), x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::gpq(rdx), x86::byte_ptr(x86::rax, dec.imm));
+						as.movzx(x86::gpq(rdx), x86::byte_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov %s, byte ptr [rax + %lld]", x86_reg_str(rdx), dec.imm);
 					}
 				} else {
 					if (rs1x > 0) {
-						as.mov(x86::rax, x86::byte_ptr(x86::gpq(rs1x), dec.imm));
+						as.movzx(x86::rax, x86::byte_ptr(x86::gpq(rs1x), dec.imm));
 						log_trace("\t\tmov rax, byte ptr [%s + %lld]", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg(dec.rs1));
-						as.mov(x86::rax, x86::byte_ptr(x86::rax, dec.imm));
+						as.movzx(x86::rax, x86::byte_ptr(x86::rax, dec.imm));
 						log_trace("\t\tmov rax, %s", frame_reg_str(dec.rs1));
 						log_trace("\t\tmov rax, byte ptr [rax + %lld]", dec.imm);
 					}
