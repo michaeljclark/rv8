@@ -414,6 +414,210 @@ struct rv_test_jit
 		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 3);
 	}
 
+	void test_andi_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_andi(as, rv_ireg_a0, rv_ireg_a0, 0x3ff);
+		asm_andi(as, rv_ireg_a1, rv_ireg_a0, 0x3ff);
+		asm_andi(as, rv_ireg_a2, rv_ireg_zero, 0x3ff);
+		asm_andi(as, rv_ireg_zero, rv_ireg_a2, 0x3ff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_andi_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_andi(as, rv_ireg_s0, rv_ireg_s0, 0x3ff);
+		asm_andi(as, rv_ireg_s1, rv_ireg_s0, 0x3ff);
+		asm_andi(as, rv_ireg_s1, rv_ireg_a0, 0x1ff);
+		asm_andi(as, rv_ireg_a0, rv_ireg_s1, 0xff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_ori_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_ori(as, rv_ireg_a0, rv_ireg_a0, 0x3ff);
+		asm_ori(as, rv_ireg_a1, rv_ireg_a0, 0x3ff);
+		asm_ori(as, rv_ireg_a2, rv_ireg_zero, 0x3ff);
+		asm_ori(as, rv_ireg_zero, rv_ireg_a2, 0x3ff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_ori_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_ori(as, rv_ireg_s0, rv_ireg_s0, 0x3ff);
+		asm_ori(as, rv_ireg_s1, rv_ireg_s0, 0x3ff);
+		asm_ori(as, rv_ireg_s1, rv_ireg_a0, 0x1ff);
+		asm_ori(as, rv_ireg_a0, rv_ireg_s1, 0xff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_xori_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_xori(as, rv_ireg_a0, rv_ireg_a0, 0x3ff);
+		asm_xori(as, rv_ireg_a1, rv_ireg_a0, 0x3ff);
+		asm_xori(as, rv_ireg_a2, rv_ireg_zero, 0x3ff);
+		asm_xori(as, rv_ireg_zero, rv_ireg_a2, 0x3ff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_xori_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_xori(as, rv_ireg_s0, rv_ireg_s0, 0x3ff);
+		asm_xori(as, rv_ireg_s1, rv_ireg_s0, 0x3ff);
+		asm_xori(as, rv_ireg_s1, rv_ireg_a0, 0x1ff);
+		asm_xori(as, rv_ireg_a0, rv_ireg_s1, 0xff);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 5);
+	}
+
+	void test_and_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_a3, rv_ireg_zero, 0x3ff);
+		asm_and(as, rv_ireg_a0, rv_ireg_a0, rv_ireg_a3);
+		asm_and(as, rv_ireg_a1, rv_ireg_a0, rv_ireg_a3);
+		asm_and(as, rv_ireg_a2, rv_ireg_zero, rv_ireg_a3);
+		asm_and(as, rv_ireg_zero, rv_ireg_a2, rv_ireg_a3);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
+	}
+
+	void test_and_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_s3, rv_ireg_zero, 0x3ff);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x1ff);
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xff);
+		asm_and(as, rv_ireg_s0, rv_ireg_s0, rv_ireg_s3);
+		asm_and(as, rv_ireg_s1, rv_ireg_s0, rv_ireg_s3);
+		asm_and(as, rv_ireg_s1, rv_ireg_a0, rv_ireg_a1);
+		asm_and(as, rv_ireg_a0, rv_ireg_s1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 8);
+	}
+
+	void test_or_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_a3, rv_ireg_zero, 0x3ff);
+		asm_or(as, rv_ireg_a0, rv_ireg_a0, rv_ireg_a3);
+		asm_or(as, rv_ireg_a1, rv_ireg_a0, rv_ireg_a3);
+		asm_or(as, rv_ireg_a2, rv_ireg_zero, rv_ireg_a3);
+		asm_or(as, rv_ireg_zero, rv_ireg_a2, rv_ireg_a3);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
+	}
+
+	void test_or_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_s3, rv_ireg_zero, 0x3ff);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x1ff);
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xff);
+		asm_or(as, rv_ireg_s0, rv_ireg_s0, rv_ireg_s3);
+		asm_or(as, rv_ireg_s1, rv_ireg_s0, rv_ireg_s3);
+		asm_or(as, rv_ireg_s1, rv_ireg_a0, rv_ireg_a1);
+		asm_or(as, rv_ireg_a0, rv_ireg_s1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 8);
+	}
+
+	void test_xor_1()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_a3, rv_ireg_zero, 0x3ff);
+		asm_xor(as, rv_ireg_a0, rv_ireg_a0, rv_ireg_a3);
+		asm_xor(as, rv_ireg_a1, rv_ireg_a0, rv_ireg_a3);
+		asm_xor(as, rv_ireg_a2, rv_ireg_zero, rv_ireg_a3);
+		asm_xor(as, rv_ireg_zero, rv_ireg_a2, rv_ireg_a3);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 6);
+	}
+
+	void test_xor_2()
+	{
+		P proc;
+		assembler as;
+
+		asm_addi(as, rv_ireg_s0, rv_ireg_zero, 0x7ff);
+		asm_addi(as, rv_ireg_s3, rv_ireg_zero, 0x3ff);
+		asm_addi(as, rv_ireg_a1, rv_ireg_zero, 0x1ff);
+		asm_addi(as, rv_ireg_a0, rv_ireg_zero, 0xff);
+		asm_xor(as, rv_ireg_s0, rv_ireg_s0, rv_ireg_s3);
+		asm_xor(as, rv_ireg_s1, rv_ireg_s0, rv_ireg_s3);
+		asm_xor(as, rv_ireg_s1, rv_ireg_a0, rv_ireg_a1);
+		asm_xor(as, rv_ireg_a0, rv_ireg_s1, rv_ireg_a0);
+		asm_ebreak(as);
+		as.link();
+
+		run_test(__func__, proc, (addr_t)as.get_section(".text")->buf.data(), 8);
+	}
+
 	void test_slli_1()
 	{
 		P proc;
@@ -1553,6 +1757,18 @@ int main(int argc, char *argv[])
 	test.test_sub_6();
 	test.test_sub_7();
 	test.test_sub_8();
+	test.test_andi_1();
+	test.test_andi_2();
+	test.test_ori_1();
+	test.test_ori_2();
+	test.test_xori_1();
+	test.test_xori_2();
+	test.test_and_1();
+	test.test_and_2();
+	test.test_or_1();
+	test.test_or_2();
+	test.test_xor_1();
+	test.test_xor_2();
 	test.test_slli_1();
 	test.test_slli_2();
 	test.test_slli_3();
