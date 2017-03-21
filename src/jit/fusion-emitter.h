@@ -1919,20 +1919,22 @@ namespace riscv {
 		{
 			int rs1x = x86_reg(dec.rs1), rs2x = x86_reg(dec.rs2);
 			if (dec.rs1 == rv_ireg_zero) {
+				as.xor_(x86::eax, x86::eax);
+				log_trace("\t\txor eax, eax");
 				if (rs2x > 0) {
-					as.cmp(x86::gpq(rs2x), 0);
-					log_trace("\t\tcmp %s, 0", x86_reg_str(rs2x));
+					as.cmp(x86::rax, x86::gpq(rs2x));
+					log_trace("\t\tcmp rax, %s", x86_reg_str(rs2x));
 				} else {
-					as.cmp(frame_reg_64(dec.rs2), 0);
-					log_trace("\t\tcmp %s, 0", frame_reg_64_str(dec.rs2));
+					as.cmp(x86::rax, frame_reg_64(dec.rs2));
+					log_trace("\t\tcmp rax, %s", frame_reg_64_str(dec.rs2));
 				}
 			}
 			else if (dec.rs2 == rv_ireg_zero) {
 				if (rs1x > 0) {
-					as.cmp(x86::gpq(rs1x), 0);
+					as.cmp(x86::gpq(rs1x), Imm(0));
 					log_trace("\t\tcmp %s, 0", x86_reg_str(rs1x));
 				} else {
-					as.cmp(frame_reg_64(dec.rs1), 0);
+					as.cmp(frame_reg_64(dec.rs1), Imm(0));
 					log_trace("\t\tcmp %s, 0", frame_reg_64_str(dec.rs1));
 				}
 			}
