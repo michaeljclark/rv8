@@ -186,7 +186,7 @@ int main()
 
     memset(buf, 0, SHA512_OUTPUT_BYTES);
     sha512_init(&sha512);
-    for (size_t i = 0; i < 10; i++) {
+    for (size_t i = 0; i < 10000; i++) {
         sha512_update(&sha512, buf, SHA512_OUTPUT_BYTES);
     }
     sha512_final(&sha512, output);
