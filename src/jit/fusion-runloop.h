@@ -180,6 +180,65 @@ namespace riscv {
 			fn(static_cast<processor_rv64imafd*>(this));
 		}
 
+		void audit_jit(typename P::decode_type &dec, inst_t inst, addr_t pc_offset)
+		{
+			CodeHolder code;
+			code.init(rt.getCodeInfo());
+			fusion_emitter<P> emitter(*this, code);
+
+			/* jit the instruction */
+			bool audited = false;
+			processor_rv64imafd pre_jit, post_jit;
+			emitter.emit_prolog();
+			addr_t save_pc = dec.pc = P::pc;
+			dec.inst = inst;
+			if (emitter.emit(dec)) {
+				emitter.emit_epilog();
+				TraceFunc fn;
+				Error err = rt.add(&fn, &code);
+				if (!err) {
+					memcpy(&pre_jit, static_cast<processor_rv64imafd*>(this), sizeof(processor_rv64imafd));
+					fn(static_cast<processor_rv64imafd*>(this));
+					memcpy(&post_jit, static_cast<processor_rv64imafd*>(this), sizeof(processor_rv64imafd));
+					memcpy(static_cast<processor_rv64imafd*>(this), &pre_jit, sizeof(processor_rv64imafd));
+					audited = true;
+					rt.release(fn);
+				}
+			}
+
+			/* interpret the instruction */
+			addr_t new_offset;
+			if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
+				(new_offset = P::inst_priv(dec, pc_offset)) != -1)
+			{
+				if (P::log) P::print_log(dec, inst);
+				P::pc += new_offset;
+				P::cycle++;
+				P::instret++;
+				if (audited) {
+					bool pass = true;
+					for (size_t i = 0; i < P::ireg_count; i++) {
+						if (post_jit.ireg[i].r.xu.val != P::ireg[i].r.xu.val) {
+							pass = false;
+							printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
+								rv_ireg_name_sym[i], P::ireg[i].r.xu.val,
+								rv_ireg_name_sym[i], post_jit.ireg[i].r.xu.val);
+						}
+					}
+					if (post_jit.pc != P::pc) {
+						printf("ERROR interp-pc=0x%016llx jit-pc=0x%016llx\n",
+								P::pc, post_jit.pc);
+						pass = false;
+					}
+					if (!pass) {
+						printf("\t# 0x%016llx\t%s\n", save_pc, disasm_inst_simple(dec).c_str());
+					}
+				}
+			} else {
+				P::raise(rv_cause_illegal_instruction, P::pc);
+			}
+		}
+
 		exit_cause step(size_t count)
 		{
 			typename P::decode_type dec;
@@ -244,7 +303,10 @@ namespace riscv {
 					inst_cache[inst_cache_key].inst = inst;
 					inst_cache[inst_cache_key].dec = dec;
 				}
-				if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
+				if (P::log & proc_log_jit_audit) {
+					audit_jit(dec, inst, pc_offset);
+				}
+				else if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
 					(new_offset = P::inst_priv(dec, pc_offset)) != -1)
 				{
 					if (P::log) P::print_log(dec, inst);
