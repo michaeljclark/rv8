@@ -459,6 +459,7 @@ ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_EXPR_SRCS) \
+           $(TEST_JIT_SRCS) \
            $(TEST_MMU_SRCS) \
            $(TEST_MUL_SRCS) \
            $(TEST_OPERATORS_SRCS) \
