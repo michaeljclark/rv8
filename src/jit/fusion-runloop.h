@@ -124,13 +124,19 @@ namespace riscv {
 			}
 		}
 
+#define ENABLE_FUSION_TRACER 0
+
 		void start_trace()
 		{
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
-			fusion_tracer<P> tracer(*this, code);
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
+#if ENABLE_FUSION_TRACER
+			fusion_tracer<P> tracer(*this, code);
+#else
+			fusion_emitter<P> tracer(*this, code);
+#endif
 
 			tracer.log_trace("jit-trace-begin pc=0x%016llx", P::pc);
 
@@ -143,18 +149,22 @@ namespace riscv {
 				addr_t pc_offset, new_offset;
 				inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				P::inst_decode(dec, inst);
-				if (tracer.trace(P::pc, dec, inst) == false) {
-					break;
-				}
-				if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) {
-					break;
-				}
+#if ENABLE_FUSION_TRACER
+				if (tracer.trace(P::pc, dec, inst) == false) break;
+#else
+				dec.pc = P::pc;
+				dec.inst = inst;
+				if (tracer.emit(dec) == false) break;
+#endif
+				if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 			}
 
+#if ENABLE_FUSION_TRACER
 			tracer.emit_queue();
+#endif
 			tracer.emit_epilog();
 
 			P::log |= proc_log_hotspot_trap;

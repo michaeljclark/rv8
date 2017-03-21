@@ -2809,10 +2809,12 @@ namespace riscv {
 				case rv_op_lhu: return emit_lhu(dec);
 				case rv_op_lb: return emit_lb(dec);
 				case rv_op_lbu: return emit_lbu(dec);
+				/*
 				case rv_op_sd: return emit_sd(dec);
 				case rv_op_sw: return emit_sw(dec);
 				case rv_op_sh: return emit_sh(dec);
 				case rv_op_sb: return emit_sb(dec);
+				*/
 				case rv_op_lui: return emit_lui(dec);
 				case fusion_op_li: return emit_li(dec);
 				case fusion_op_la: return emit_la(dec);
