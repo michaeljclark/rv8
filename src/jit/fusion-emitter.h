@@ -773,40 +773,27 @@ namespace riscv {
 				}
 			}
 			else {
-				// mov rax, rs1
-				if (rs1x > 0) {
-					as.mov(x86::rax, x86::gpq(rs1x));
-					log_trace("\t\tmov rax, %s", x86_reg_str(rs1x));
-				} else {
-					as.mov(x86::rax, frame_reg_64(dec.rs1));
-					log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
-				}
+				// mov rd, rs1
+				emit_mv_rd_rs1(dec);
 
-				// or rax, rs2
-				// mov rs, rax
+				// or rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
-						as.or_(x86::rax, x86::gpq(rs2x));
-						as.mov(x86::gpq(rdx), x86::rax);
-						log_trace("\t\tor rax, %s", x86_reg_str(rs2x));
-						log_trace("\t\tmov %s, rax", x86_reg_str(rdx));
+						as.or_(x86::gpq(rdx), x86::gpq(rs2x));
+						log_trace("\t\tor %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
 					} else {
-						as.or_(x86::rax, frame_reg_64(dec.rs2));
-						as.mov(x86::gpq(rdx), x86::rax);
-						log_trace("\t\tor rax, %s", frame_reg_64_str(dec.rs2));
-						log_trace("\t\tmov %s, rax", x86_reg_str(rdx));
+						as.or_(x86::gpq(rdx), frame_reg_64(dec.rs2));
+						log_trace("\t\tor %s, %s", x86_reg_str(rdx), frame_reg_64_str(dec.rs2));
 					}
 				} else {
 					if (rs2x > 0) {
-						as.or_(x86::rax, x86::gpq(rs2x));
-						as.mov(frame_reg_64(dec.rd), x86::rax);
-						log_trace("\t\tor rax, %s", x86_reg_str(rs2x));
-						log_trace("\t\tmov %s, rax", frame_reg_64_str(dec.rd));
+						as.or_(frame_reg_64(dec.rd), x86::gpq(rs2x));
+						log_trace("\t\tor %s, %s", frame_reg_64_str(dec.rd), x86_reg_str(rs2x));
 					} else {
-						as.or_(x86::rax, frame_reg_64(dec.rs2));
-						as.mov(frame_reg_64(dec.rd), x86::rax);
-						log_trace("\t\tor rax, %s", frame_reg_64_str(dec.rs2));
-						log_trace("\t\tmov %s, rax", frame_reg_64_str(dec.rd));
+						as.mov(x86::rax, frame_reg_64(dec.rs2));
+						as.or_(frame_reg_64(dec.rd), x86::rax);
+						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs2));
+						log_trace("\t\tor %s, rax", frame_reg_64_str(dec.rd));
 					}
 				}
 			}
@@ -877,40 +864,27 @@ namespace riscv {
 				}
 			}
 			else {
-				// mov rax, rs1
-				if (rs1x > 0) {
-					as.mov(x86::rax, x86::gpq(rs1x));
-					log_trace("\t\tmov rax, %s", x86_reg_str(rs1x));
-				} else {
-					as.mov(x86::rax, frame_reg_64(dec.rs1));
-					log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
-				}
+				// mov rd, rs1
+				emit_mv_rd_rs1(dec);
 
-				// xor rax, rs2
-				// mov rs, rax
+				// xor rs, rs2
 				if (rdx > 0) {
 					if (rs2x > 0) {
-						as.xor_(x86::rax, x86::gpq(rs2x));
-						as.mov(x86::gpq(rdx), x86::rax);
-						log_trace("\t\txor rax, %s", x86_reg_str(rs2x));
-						log_trace("\t\tmov %s, rax", x86_reg_str(rdx));
+						as.xor_(x86::gpq(rdx), x86::gpq(rs2x));
+						log_trace("\t\txor %s, %s", x86_reg_str(rdx), x86_reg_str(rs2x));
 					} else {
-						as.xor_(x86::rax, frame_reg_64(dec.rs2));
-						as.mov(x86::gpq(rdx), x86::rax);
-						log_trace("\t\txor rax, %s", frame_reg_64_str(dec.rs2));
-						log_trace("\t\tmov %s, rax", x86_reg_str(rdx));
+						as.xor_(x86::gpq(rdx), frame_reg_64(dec.rs2));
+						log_trace("\t\txor %s, %s", x86_reg_str(rdx), frame_reg_64_str(dec.rs2));
 					}
 				} else {
 					if (rs2x > 0) {
-						as.xor_(x86::rax, x86::gpq(rs2x));
-						as.mov(frame_reg_64(dec.rd), x86::rax);
-						log_trace("\t\txor rax, %s", x86_reg_str(rs2x));
-						log_trace("\t\tmov %s, rax", frame_reg_64_str(dec.rd));
+						as.xor_(frame_reg_64(dec.rd), x86::gpq(rs2x));
+						log_trace("\t\txor %s, %s", frame_reg_64_str(dec.rd), x86_reg_str(rs2x));
 					} else {
-						as.xor_(x86::rax, frame_reg_64(dec.rs2));
-						as.mov(frame_reg_64(dec.rd), x86::rax);
-						log_trace("\t\txor rax, %s", frame_reg_64_str(dec.rs2));
-						log_trace("\t\tmov %s, rax", frame_reg_64_str(dec.rd));
+						as.mov(x86::rax, frame_reg_64(dec.rs2));
+						as.xor_(frame_reg_64(dec.rd), x86::rax);
+						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs2));
+						log_trace("\t\txor %s, rax", frame_reg_64_str(dec.rd));
 					}
 				}
 			}
