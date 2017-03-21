@@ -2593,11 +2593,11 @@ namespace riscv {
 			else {
 				if (rs2x > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::dword_ptr(x86::gpq(rs1x), dec.imm), x86::gpq(rs2x));
+						as.mov(x86::dword_ptr(x86::gpq(rs1x), dec.imm), x86::gpd(rs2x));
 						log_trace("\t\tmov dword ptr [%s + %lld], %s", x86_reg_str(rs1x), dec.imm, x86_reg_str(rs2x));
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::dword_ptr(x86::rax, dec.imm), x86::gpq(rs2x));
+						as.mov(x86::dword_ptr(x86::rax, dec.imm), x86::gpd(rs2x));
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov dword ptr [rax + %lld], %s", dec.imm, x86_reg_str(rs2x));
 					}
@@ -2605,11 +2605,11 @@ namespace riscv {
 					as.mov(x86::rcx, frame_reg_64(dec.rs2));
 					log_trace("\t\tmov rcx, %s", frame_reg_64_str(dec.rs2));
 					if (rs1x > 0) {
-						as.mov(x86::dword_ptr(x86::gpq(rs1x), dec.imm), x86::rcx);
+						as.mov(x86::dword_ptr(x86::gpq(rs1x), dec.imm), x86::ecx);
 						log_trace("\t\tmov dword ptr [%s + %lld], rcx", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::dword_ptr(x86::rax, dec.imm), x86::rcx);
+						as.mov(x86::dword_ptr(x86::rax, dec.imm), x86::ecx);
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov dword ptr [rax + %lld], rcx", dec.imm);
 					}
@@ -2637,11 +2637,11 @@ namespace riscv {
 			else {
 				if (rs2x > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::word_ptr(x86::gpq(rs1x), dec.imm), x86::gpq(rs2x));
+						as.mov(x86::word_ptr(x86::gpq(rs1x), dec.imm), x86::gpw(rs2x));
 						log_trace("\t\tmov word ptr [%s + %lld], %s", x86_reg_str(rs1x), dec.imm, x86_reg_str(rs2x));
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::word_ptr(x86::rax, dec.imm), x86::gpq(rs2x));
+						as.mov(x86::word_ptr(x86::rax, dec.imm), x86::gpw(rs2x));
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov word ptr [rax + %lld], %s", dec.imm, x86_reg_str(rs2x));
 					}
@@ -2649,11 +2649,11 @@ namespace riscv {
 					as.mov(x86::rcx, frame_reg_64(dec.rs2));
 					log_trace("\t\tmov rcx, %s", frame_reg_64_str(dec.rs2));
 					if (rs1x > 0) {
-						as.mov(x86::word_ptr(x86::gpq(rs1x), dec.imm), x86::rcx);
+						as.mov(x86::word_ptr(x86::gpq(rs1x), dec.imm), x86::cx);
 						log_trace("\t\tmov word ptr [%s + %lld], rcx", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::word_ptr(x86::rax, dec.imm), x86::rcx);
+						as.mov(x86::word_ptr(x86::rax, dec.imm), x86::cx);
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov word ptr [rax + %lld], rcx", dec.imm);
 					}
@@ -2681,11 +2681,11 @@ namespace riscv {
 			else {
 				if (rs2x > 0) {
 					if (rs1x > 0) {
-						as.mov(x86::byte_ptr(x86::gpq(rs1x), dec.imm), x86::gpq(rs2x));
+						as.mov(x86::byte_ptr(x86::gpq(rs1x), dec.imm), x86::gpb_lo(rs2x));
 						log_trace("\t\tmov byte ptr [%s + %lld], %s", x86_reg_str(rs1x), dec.imm, x86_reg_str(rs2x));
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::byte_ptr(x86::rax, dec.imm), x86::gpq(rs2x));
+						as.mov(x86::byte_ptr(x86::rax, dec.imm), x86::gpb_lo(rs2x));
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov byte ptr [rax + %lld], %s", dec.imm, x86_reg_str(rs2x));
 					}
@@ -2693,11 +2693,11 @@ namespace riscv {
 					as.mov(x86::rcx, frame_reg_64(dec.rs2));
 					log_trace("\t\tmov rcx, %s", frame_reg_64_str(dec.rs2));
 					if (rs1x > 0) {
-						as.mov(x86::byte_ptr(x86::gpq(rs1x), dec.imm), x86::rcx);
+						as.mov(x86::byte_ptr(x86::gpq(rs1x), dec.imm), x86::cl);
 						log_trace("\t\tmov byte ptr [%s + %lld], rcx", x86_reg_str(rs1x), dec.imm);
 					} else {
 						as.mov(x86::rax, frame_reg_64(dec.rs1));
-						as.mov(x86::byte_ptr(x86::rax, dec.imm), x86::rcx);
+						as.mov(x86::byte_ptr(x86::rax, dec.imm), x86::cl);
 						log_trace("\t\tmov rax, %s", frame_reg_64_str(dec.rs1));
 						log_trace("\t\tmov byte ptr [rax + %lld], rcx", dec.imm);
 					}
@@ -2809,12 +2809,10 @@ namespace riscv {
 				case rv_op_lhu: return emit_lhu(dec);
 				case rv_op_lb: return emit_lb(dec);
 				case rv_op_lbu: return emit_lbu(dec);
-				/*
 				case rv_op_sd: return emit_sd(dec);
 				case rv_op_sw: return emit_sw(dec);
 				case rv_op_sh: return emit_sh(dec);
 				case rv_op_sb: return emit_sb(dec);
-				*/
 				case rv_op_lui: return emit_lui(dec);
 				case fusion_op_li: return emit_li(dec);
 				case fusion_op_la: return emit_la(dec);
