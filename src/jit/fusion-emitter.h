@@ -299,10 +299,10 @@ namespace riscv {
 				// nop
 			} else {
 				if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(dec.imm));
+					as.mov(x86::gpq(rdx), Imm(dec.pc + dec.imm));
 					log_trace("\t\tmov %s, %lld", x86_reg_str(rdx), dec.pc + dec.imm);
 				} else {
-					as.mov(frame_reg_64(dec.rd), Imm(dec.imm));
+					as.mov(frame_reg_64(dec.rd), Imm(dec.pc + dec.imm));
 					log_trace("\t\tmov %s, %lld", frame_reg_64_str(dec.rd), dec.pc + dec.imm);
 				}
 			}
