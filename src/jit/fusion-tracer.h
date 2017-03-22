@@ -45,11 +45,19 @@ namespace riscv {
 			queue.clear();
 		}
 
-		bool trace(addr_t pc, decode_type &dec, inst_t inst)
+		void emit_prolog()
 		{
-			dec.pc = pc;
-			dec.inst = inst;
+			fusion_emitter<P>::emit_prolog();
+		}
 
+		void emit_epilog()
+		{
+			emit_queue();
+			fusion_emitter<P>::emit_epilog();
+		}
+
+		bool emit(decode_type &dec)
+		{
 		reparse:
 			switch(state) {
 				case match_state_none:
@@ -117,11 +125,11 @@ namespace riscv {
 						default:
 							break;
 					}
-					/* fall through and emit ending instruction */
 					{
 						fusion_decode dec(pseudo_pc, fusion_op_li, rd, imm);
 						fusion_emitter<P>::emit(dec);
 						clear_queue();
+						goto reparse;
 					}
 					break;
 				case match_state_la:

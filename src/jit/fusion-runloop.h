@@ -143,28 +143,19 @@ namespace riscv {
 			P::log &= ~proc_log_hotspot_trap;
 
 			tracer.emit_prolog();
-
 			for(;;) {
 				typename P::decode_type dec;
 				addr_t pc_offset, new_offset;
 				inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				P::inst_decode(dec, inst);
-#if ENABLE_FUSION_TRACER
-				if (tracer.trace(P::pc, dec, inst) == false) break;
-#else
 				dec.pc = P::pc;
 				dec.inst = inst;
 				if (tracer.emit(dec) == false) break;
-#endif
 				if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 			}
-
-#if ENABLE_FUSION_TRACER
-			tracer.emit_queue();
-#endif
 			tracer.emit_epilog();
 
 			P::log |= proc_log_hotspot_trap;
