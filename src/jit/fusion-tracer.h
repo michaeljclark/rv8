@@ -134,6 +134,7 @@ namespace riscv {
 					break;
 				case match_state_la:
 					if (rd == dec.rd && rd == dec.rs1) {
+						imm += dec.imm;
 						fusion_decode dec(pseudo_pc, fusion_op_la, rd, imm);
 						fusion_emitter<P>::emit(dec);
 						clear_queue();
@@ -144,7 +145,7 @@ namespace riscv {
 				case match_state_call:
 					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
 						imm += dec.imm;
-						fusion_decode dec(pseudo_pc, fusion_op_call, rd, imm);
+						fusion_decode dec(pseudo_pc, fusion_op_call, rv_ireg_ra, imm);
 						fusion_emitter<P>::emit(dec);
 						clear_queue();
 						return true;
