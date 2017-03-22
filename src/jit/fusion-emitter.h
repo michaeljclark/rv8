@@ -1393,6 +1393,10 @@ namespace riscv {
 					log_trace("\t\tadd %s, %d", frame_reg_64_str(dec.rd), dec.imm);
 				}
 			}
+			else if (dec.imm == 0) {
+				// mov rd, rs1
+				emit_mv_rd_rs1(dec);
+			}
 			else {
 				// mov rd, rs1
 				emit_mv_rd_rs1(dec);
