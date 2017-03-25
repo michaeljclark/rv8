@@ -25,10 +25,9 @@ namespace riscv {
 		proc_log_no_pseudo =       1<<12,      /* Don't decode pseudoinstructions */
 		proc_log_hist_reg =        1<<13,      /* Populate register histogram */
 		proc_log_hist_pc =         1<<14,      /* Populate program counter histogram */
-		proc_log_hotspot_trap =    1<<15,      /* Trap on interpreted program counter iterations */
+		proc_log_jit_trap =        1<<15,      /* Trap on interpreted program counter iterations */
 		proc_log_jit_trace =       1<<16,      /* Log JIT trace */
-		proc_log_jit_exec =        1<<17,      /* Log JIT execution */
-		proc_log_jit_audit =       1<<18,      /* Audit JIT */
+		proc_log_jit_audit =       1<<17,      /* Audit JIT */
 	};
 
 }

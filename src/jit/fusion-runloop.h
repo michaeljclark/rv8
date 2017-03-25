@@ -140,7 +140,7 @@ namespace riscv {
 
 			tracer.log_trace("jit-trace-begin pc=0x%016llx", P::pc);
 
-			P::log &= ~proc_log_hotspot_trap;
+			P::log &= ~proc_log_jit_trap;
 
 			tracer.emit_prolog();
 			for(;;) {
@@ -158,7 +158,7 @@ namespace riscv {
 			}
 			tracer.emit_epilog();
 
-			P::log |= proc_log_hotspot_trap;
+			P::log |= proc_log_jit_trap;
 
 			tracer.log_trace("jit-trace-end   pc=0x%016llx", P::pc);
 
@@ -280,18 +280,10 @@ namespace riscv {
 				if (P::pc == P::breakpoint && P::breakpoint != 0) {
 					return exit_cause_cli;
 				}
-				if (P::log & proc_log_hotspot_trap) {
+				if (P::log & proc_log_jit_trap) {
 					auto ti = trace_cache.find(P::pc);
 					if (ti != trace_cache.end()) {
-						if (P::log & proc_log_jit_exec) {
-							printf("jit-exec-begin  pc=0x%016llx fn=%p\n", P::pc, ti->second);
-							if (P::log & proc_log_int_reg) P::print_int_registers();
-						}
 						ti->second(static_cast<processor_rv64imafd*>(this));
-						if (P::log & proc_log_jit_exec) {
-							printf("jit-exec-end    pc=0x%016llx\n", P::pc);
-							if (P::log & proc_log_int_reg) P::print_int_registers();
-						}
 						continue;
 					}
 				}
@@ -310,7 +302,7 @@ namespace riscv {
 				else if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
 					(new_offset = P::inst_priv(dec, pc_offset)) != -1)
 				{
-					if (P::log) P::print_log(dec, inst);
+					if (P::log & ~(proc_log_hist_pc | proc_log_jit_trap)) P::print_log(dec, inst);
 					P::pc += new_offset;
 					P::cycle++;
 					P::instret++;

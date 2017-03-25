@@ -50,7 +50,7 @@ namespace riscv {
 			/* record pc histogram using machine physical address */
 			if (proc.log & proc_log_hist_pc) {
 				size_t iters = proc.histogram_add_pc(pc);
-				if (proc.log & proc_log_hotspot_trap) {
+				if (proc.log & proc_log_jit_trap) {
 					switch (iters) {
 						case P::hostspot_trace_cached:
 							proc.raise(P::internal_cause_traced, pc);
