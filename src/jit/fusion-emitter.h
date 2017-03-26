@@ -171,11 +171,9 @@ namespace riscv {
 				as.movsxd(x86::gpq(rdx), x86::gpd(rdx));
 				log_trace("\t\tmovsxd %s, %s", x86_reg_str(dec.rd), x86_reg_str(dec.rd));
 			} else {
-				as.mov(x86::ecx, frame_reg_32(dec.rd));
-				as.movsxd(x86::rcx, x86::ecx);
+				as.movsxd(x86::rcx, frame_reg_32(dec.rd));
 				as.mov(frame_reg_64(dec.rd), x86::rcx);
-				log_trace("\t\tmov ecx, %s", frame_reg_32_str(dec.rd));
-				log_trace("\t\tmovsxd rcx, ecx");
+				log_trace("\t\tmovsxd rcx, %s", frame_reg_32_str(dec.rd));
 				log_trace("\t\tmov %s, rcx", frame_reg_64_str(dec.rd));
 			}
 		}
