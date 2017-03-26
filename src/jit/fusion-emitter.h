@@ -26,8 +26,20 @@ namespace riscv {
 			code.setErrorHandler(this);
 		}
 
+		void log_trace(const char* fmt, ...)
+		{
+			if (proc.log & proc_log_jit_trace) {
+				char buf[128];
+				va_list arg;
+				va_start(arg, fmt);
+				vsnprintf(buf, sizeof(buf), fmt, arg);
+				va_end(arg);
+				printf("%s\n", buf);
+			}
+		}
+
 		virtual bool handleError(Error err, const char* message, CodeEmitter* origin) {
-			printf("%s\n", message);
+			log_trace("%s", message);
 			return false;
 		}
 
@@ -219,18 +231,6 @@ namespace riscv {
 			as.pop(x86::rbx);
 			as.pop(x86::rbp);
 			as.ret();
-		}
-
-		void log_trace(const char* fmt, ...)
-		{
-			if (proc.log & proc_log_jit_trace) {
-				char buf[128];
-				va_list arg;
-				va_start(arg, fmt);
-				vsnprintf(buf, sizeof(buf), fmt, arg);
-				va_end(arg);
-				printf("%s\n", buf);
-			}
 		}
 
 		void emit_sign_extend_32(decode_type &dec)

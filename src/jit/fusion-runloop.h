@@ -138,7 +138,9 @@ namespace riscv {
 			fusion_emitter<P> tracer(*this, code);
 #endif
 
-			tracer.log_trace("jit-trace-begin pc=0x%016llx", P::pc);
+			if (P::log & proc_log_jit_trace) {
+				printf("jit-trace-begin pc=0x%016llx", P::pc);
+			}
 
 			P::log &= ~proc_log_jit_trap;
 
@@ -160,7 +162,9 @@ namespace riscv {
 
 			P::log |= proc_log_jit_trap;
 
-			tracer.log_trace("jit-trace-end   pc=0x%016llx", P::pc);
+			if (P::log & proc_log_jit_trace) {
+				printf("jit-trace-end   pc=0x%016llx", P::pc);
+			}
 
 			if (P::instret == trace_instret) {
 				P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
