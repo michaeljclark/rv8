@@ -2906,16 +2906,16 @@ namespace riscv {
 		bool emit_call(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tcall\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst);
+			term_pc = dec.pc + dec.imm;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			} else {
 				if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(term_pc));
+					as.mov(x86::gpq(rdx), Imm(dec.pc + inst_length(dec.inst)));
 					log_trace("\t\tmov %s, %lld", x86_reg_str_q(rdx), dec.imm);
 				} else {
-					as.mov(x86::rax, Imm(term_pc));
+					as.mov(x86::rax, Imm(dec.pc + inst_length(dec.inst)));
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 					log_trace("\t\tmov %s, %lld", rbp_reg_str_q(dec.rd), dec.imm);
 				}
