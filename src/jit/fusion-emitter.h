@@ -184,8 +184,8 @@ namespace riscv {
 		{
 			int rdx = x86_reg(dec.rd);
 			if (rdx > 0) {
-				as.xor_(x86::gpq(rdx), x86::gpq(rdx));
-				log_trace("\t\tmov %s, 0", x86_reg_str(rdx));
+				as.xor_(x86::gpd(rdx), x86::gpd(rdx));
+				log_trace("\t\txor %s, %s", x86_reg_str(rdx), x86_reg_str(rdx));
 			} else {
 				as.mov(frame_reg_64(dec.rd), Imm(0));
 				log_trace("\t\tmov %s, 0", frame_reg_64_str(dec.rd));
