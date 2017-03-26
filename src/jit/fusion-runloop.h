@@ -139,7 +139,7 @@ namespace riscv {
 #endif
 
 			if (P::log & proc_log_jit_trace) {
-				printf("jit-trace-begin pc=0x%016llx", P::pc);
+				printf("jit-trace-begin pc=0x%016llx\n", P::pc);
 			}
 
 			P::log &= ~proc_log_jit_trap;
@@ -163,7 +163,7 @@ namespace riscv {
 			P::log |= proc_log_jit_trap;
 
 			if (P::log & proc_log_jit_trace) {
-				printf("jit-trace-end   pc=0x%016llx", P::pc);
+				printf("jit-trace-end   pc=0x%016llx\n", P::pc);
 			}
 
 			if (P::instret == trace_instret) {
