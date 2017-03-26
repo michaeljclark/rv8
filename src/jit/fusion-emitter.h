@@ -2854,7 +2854,8 @@ namespace riscv {
 				} else {
 					as.mov(x86::rax, Imm(dec.pc + inst_length(dec.inst)));
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
-					log_trace("\t\tmov %s, %lld", rbp_reg_str_q(dec.rd), dec.imm);
+					log_trace("\t\tmov rax, %lld",  dec.imm);
+					log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rd));
 				}
 			}
 			return true;
@@ -2917,7 +2918,8 @@ namespace riscv {
 				} else {
 					as.mov(x86::rax, Imm(dec.pc + inst_length(dec.inst)));
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
-					log_trace("\t\tmov %s, %lld", rbp_reg_str_q(dec.rd), dec.imm);
+					log_trace("\t\tmov rax, %lld",  dec.imm);
+					log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rd));
 				}
 			}
 			return true;
