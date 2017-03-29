@@ -73,6 +73,7 @@
 #include "asmjit.h"
 
 #include "fusion-decode.h"
+#include "fusion-base.h"
 #include "fusion-emitter.h"
 #include "fusion-tracer.h"
 #include "fusion-runloop.h"

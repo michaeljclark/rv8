@@ -52,9 +52,6 @@ namespace riscv {
 				size_t iters = proc.histogram_add_pc(pc);
 				if (proc.log & proc_log_jit_trap) {
 					switch (iters) {
-						case P::hostspot_trace_cached:
-							proc.raise(P::internal_cause_traced, pc);
-							break;
 						case P::hostspot_trace_skip:
 							break;
 						default:

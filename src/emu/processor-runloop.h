@@ -127,7 +127,7 @@ namespace riscv {
 			typename P::decode_type dec;
 			typename P::ux inststop = P::instret + count;
 			addr_t pc_offset, new_offset;
-			inst_t inst = 0;
+			inst_t inst = 0, inst_cache_key;
 
 			/* interrupt service routine */
 			P::time = cpu_cycle_clock();
@@ -157,7 +157,7 @@ namespace riscv {
 					return exit_cause_cli;
 				}
 				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
-				inst_t inst_cache_key = inst % inst_cache_size;
+				inst_cache_key = inst % inst_cache_size;
 				if (inst_cache[inst_cache_key].inst == inst) {
 					dec = inst_cache[inst_cache_key].dec;
 				} else {

@@ -72,6 +72,7 @@
 #include "asmjit.h"
 
 #include "fusion-decode.h"
+#include "fusion-base.h"
 #include "fusion-emitter.h"
 #include "fusion-tracer.h"
 #include "fusion-runloop.h"
@@ -121,14 +122,13 @@ struct rv_test_jit
 		printf("\n--[ jit ]------------------\n");
 		proc.log = proc_log_jit_trace;
 		proc.pc = pc;
-		proc.start_trace();
+		proc.jit_trace();
 
 		/* reset registers */
 		memset(&proc.ireg[0], 0, regfile_size);
 
 		/* run compiled trace */
-		auto fn = proc.trace_cache[pc];
-		fn(static_cast<processor_rv64imafd*>(&proc));
+		proc.jit_exec(proc, pc);
 
 		/* print result */
 		printf("\n--[ result ]---------------\n");

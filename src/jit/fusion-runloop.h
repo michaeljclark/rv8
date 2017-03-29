@@ -15,16 +15,10 @@ namespace riscv {
 	fusion_fault* fusion_fault::current = nullptr;
 
 	template <typename P>
-	struct fusion_runloop : fusion_fault, P
+	struct fusion_runloop : fusion_fault, ErrorHandler, P
 	{
 		static const size_t inst_cache_size = 8191;
 		static const int inst_step = 100000;
-
-		typedef int (*TraceFunc)(processor_rv64imafd *proc);
-
-		std::shared_ptr<debug_cli<P>> cli;
-		std::map<addr_t,TraceFunc> trace_cache;
-		JitRuntime rt;
 
 		struct rv_inst_cache_ent
 		{
@@ -32,10 +26,21 @@ namespace riscv {
 			typename P::decode_type dec;
 		};
 
+		typedef void (*TraceFunc)(typename P::processor_type *);
+
+		JitRuntime rt;
+		std::map<addr_t,TraceFunc> trace_cache;
+		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 
 		fusion_runloop() : cli(std::make_shared<debug_cli<P>>()), inst_cache() {}
 		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache() {}
+
+		virtual bool handleError(Error err, const char* message, CodeEmitter* origin)
+		{
+			printf("%s", message);
+			return false;
+		}
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
@@ -124,19 +129,32 @@ namespace riscv {
 			}
 		}
 
-#define ENABLE_FUSION_TRACER 0
+		void jit_cache(CodeHolder &code, addr_t pc)
+		{
+			TraceFunc fn = nullptr;
+			Error err = rt.add(&fn, &code);
+			if (!err) trace_cache[pc] = fn;
+		}
 
-		void start_trace()
+		bool jit_exec(P &proc, addr_t pc)
+		{
+			auto ti = trace_cache.find(pc);
+			if (ti != trace_cache.end()) {
+				ti->second(static_cast<typename P::processor_type *>(&proc));
+				return true;
+			}
+			return false;
+		}
+
+		void jit_trace()
 		{
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
+			code.setErrorHandler(this);
+			fusion_emitter<P> emitter(*this, code);
+
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
-#if ENABLE_FUSION_TRACER
-			fusion_tracer<P> tracer(*this, code);
-#else
-			fusion_emitter<P> tracer(*this, code);
-#endif
 
 			if (P::log & proc_log_jit_trace) {
 				printf("jit-trace-begin pc=0x%016llx\n", P::pc);
@@ -144,7 +162,8 @@ namespace riscv {
 
 			P::log &= ~proc_log_jit_trap;
 
-			tracer.emit_prolog();
+			emitter.emit_prolog();
+			emitter.begin();
 			for(;;) {
 				typename P::decode_type dec;
 				addr_t pc_offset, new_offset;
@@ -152,13 +171,14 @@ namespace riscv {
 				P::inst_decode(dec, inst);
 				dec.pc = P::pc;
 				dec.inst = inst;
-				if (tracer.emit(dec) == false) break;
+				if (emitter.emit(dec) == false) break;
 				if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
 			}
-			tracer.emit_epilog();
+			emitter.end();
+			emitter.emit_epilog();
 
 			P::log |= proc_log_jit_trap;
 
@@ -168,36 +188,28 @@ namespace riscv {
 
 			if (P::instret == trace_instret) {
 				P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
-				return;
 			}
-
-			TraceFunc fn;
-			Error err = rt.add(&fn, &code);
-			if (!err) {
-				trace_cache[trace_pc] = fn;
-				P::histogram_set_pc(trace_pc, P::hostspot_trace_cached);
+			else {
+				jit_cache(code, trace_pc);
 			}
 		}
 
-		void exec_trace()
-		{
-			TraceFunc fn = trace_cache[P::pc];
-			fn(static_cast<processor_rv64imafd*>(this));
-		}
-
-		void audit_jit(typename P::decode_type &dec, inst_t inst, addr_t pc_offset)
+		void jit_audit(typename P::decode_type &dec, inst_t inst, addr_t pc_offset)
 		{
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
+			code.setErrorHandler(this);
 			fusion_emitter<P> emitter(*this, code);
-
-			/* jit the instruction */
-			bool audited = false;
 			processor_rv64imafd pre_jit, post_jit;
+			bool audited = false;
+
+			/* jit instruction */
 			emitter.emit_prolog();
+			emitter.begin();
 			addr_t save_pc = dec.pc = P::pc;
 			dec.inst = inst;
 			if (emitter.emit(dec)) {
+				emitter.end();
 				emitter.emit_epilog();
 				TraceFunc fn;
 				Error err = rt.add(&fn, &code);
@@ -211,7 +223,7 @@ namespace riscv {
 				}
 			}
 
-			/* interpret the instruction */
+			/* interpret instruction */
 			addr_t new_offset;
 			if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
 				(new_offset = P::inst_priv(dec, pc_offset)) != -1)
@@ -220,27 +232,29 @@ namespace riscv {
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
-				if (audited) {
-					bool pass = true;
-					for (size_t i = 0; i < P::ireg_count; i++) {
-						if (post_jit.ireg[i].r.xu.val != P::ireg[i].r.xu.val) {
-							pass = false;
-							printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
-								rv_ireg_name_sym[i], P::ireg[i].r.xu.val,
-								rv_ireg_name_sym[i], post_jit.ireg[i].r.xu.val);
-						}
-					}
-					if (post_jit.pc != P::pc) {
-						printf("ERROR interp-pc=0x%016llx jit-pc=0x%016llx\n",
-								P::pc, post_jit.pc);
-						pass = false;
-					}
-					if (!pass) {
-						printf("\t# 0x%016llx\t%s\n", save_pc, disasm_inst_simple(dec).c_str());
-					}
-				}
 			} else {
 				P::raise(rv_cause_illegal_instruction, P::pc);
+			}
+
+			/* compare processor state */
+			if (audited) {
+				bool pass = true;
+				for (size_t i = 0; i < P::ireg_count; i++) {
+					if (post_jit.ireg[i].r.xu.val != P::ireg[i].r.xu.val) {
+						pass = false;
+						printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
+							rv_ireg_name_sym[i], P::ireg[i].r.xu.val,
+							rv_ireg_name_sym[i], post_jit.ireg[i].r.xu.val);
+					}
+				}
+				if (post_jit.pc != P::pc) {
+					printf("ERROR interp-pc=0x%016llx jit-pc=0x%016llx\n",
+							P::pc, post_jit.pc);
+					pass = false;
+				}
+				if (!pass) {
+					printf("\t# 0x%016llx\t%s\n", save_pc, disasm_inst_simple(dec).c_str());
+				}
 			}
 		}
 
@@ -249,7 +263,7 @@ namespace riscv {
 			typename P::decode_type dec;
 			typename P::ux inststop = P::instret + count;
 			addr_t pc_offset, new_offset;
-			inst_t inst = 0;
+			inst_t inst = 0, inst_cache_key;
 
 			/* interrupt service routine */
 			P::time = cpu_cycle_clock();
@@ -269,10 +283,7 @@ namespace riscv {
 					case P::internal_cause_poweroff:
 						return exit_cause_poweroff;
 					case P::internal_cause_hotspot:
-						start_trace();
-						return exit_cause_continue;
-					case P::internal_cause_traced:
-						exec_trace();
+						jit_trace();
 						return exit_cause_continue;
 				}
 				P::trap(dec, cause);
@@ -281,18 +292,14 @@ namespace riscv {
 
 			/* step the processor */
 			while (P::instret < inststop) {
+				if ((P::log & proc_log_jit_trap) && jit_exec(*this, P::pc)) {
+					continue;
+				}
 				if (P::pc == P::breakpoint && P::breakpoint != 0) {
 					return exit_cause_cli;
 				}
-				if (P::log & proc_log_jit_trap) {
-					auto ti = trace_cache.find(P::pc);
-					if (ti != trace_cache.end()) {
-						ti->second(static_cast<processor_rv64imafd*>(this));
-						continue;
-					}
-				}
 				inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
-				inst_t inst_cache_key = inst % inst_cache_size;
+				inst_cache_key = inst % inst_cache_size;
 				if (inst_cache[inst_cache_key].inst == inst) {
 					dec = inst_cache[inst_cache_key].dec;
 				} else {
@@ -301,7 +308,7 @@ namespace riscv {
 					inst_cache[inst_cache_key].dec = dec;
 				}
 				if (P::log & proc_log_jit_audit) {
-					audit_jit(dec, inst, pc_offset);
+					jit_audit(dec, inst, pc_offset);
 				}
 				else if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
 					(new_offset = P::inst_priv(dec, pc_offset)) != -1)

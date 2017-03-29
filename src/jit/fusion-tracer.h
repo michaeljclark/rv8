@@ -45,12 +45,12 @@ namespace riscv {
 			queue.clear();
 		}
 
-		void emit_prolog()
+		void begin()
 		{
 			fusion_emitter<P>::emit_prolog();
 		}
 
-		void emit_epilog()
+		void end()
 		{
 			emit_queue();
 			fusion_emitter<P>::emit_epilog();

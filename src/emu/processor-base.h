@@ -191,14 +191,12 @@ namespace riscv {
 			internal_cause_cli      = 0x1001,
 			internal_cause_poweroff = 0x1002,
 			internal_cause_fatal    = 0x1003,
-			internal_cause_hotspot  = 0x1004,
-			internal_cause_traced   = 0x1005
+			internal_cause_hotspot  = 0x1004
 		};
 
 		/* program counter histogram sentinels */
 		enum : size_t {
-			hostspot_trace_limit = std::numeric_limits<size_t>::max() - 2,
-			hostspot_trace_cached = std::numeric_limits<size_t>::max() - 1,
+			hostspot_trace_limit = std::numeric_limits<size_t>::max() - 1,
 			hostspot_trace_skip = std::numeric_limits<size_t>::max()
 		};
 
