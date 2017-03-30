@@ -1960,20 +1960,28 @@ namespace riscv {
 				log_trace("\t\tje 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.jne(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(cont_pc));
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(branch_pc));
-				rv::as.jmp(term);
 				log_trace("\t\tjne 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.je(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(branch_pc));
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tje 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
@@ -2012,20 +2020,28 @@ namespace riscv {
 				log_trace("\t\tjne 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.je(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
 				log_trace("\t\tje 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.jne(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tjne 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
@@ -2064,20 +2080,28 @@ namespace riscv {
 				log_trace("\t\tjge 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.jl(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
 				log_trace("\t\tjl 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.jge(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tjge 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
@@ -2116,20 +2140,28 @@ namespace riscv {
 				log_trace("\t\tjl 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.jge(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
 				log_trace("\t\tjge 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.jl(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tjl 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
@@ -2168,20 +2200,28 @@ namespace riscv {
 				log_trace("\t\tjae 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.jb(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
 				log_trace("\t\tjb 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.jae(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tjae 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
@@ -2220,20 +2260,28 @@ namespace riscv {
 				log_trace("\t\tjb 0x%016llx", cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
-			} else {
+			} else if (cond) {
 				Label l = rv::as.newLabel();
 				rv::as.jae(l);
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
 				log_trace("\t\tjae 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
+				term_pc = branch_pc;
+			} else {
+				Label l = rv::as.newLabel();
+				rv::as.jb(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				log_trace("\t\tjb 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
+				term_pc = cont_pc;
 			}
 
 			return true;
