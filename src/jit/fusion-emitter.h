@@ -1927,9 +1927,11 @@ namespace riscv {
 			}
 		}
 
-		bool emit_bne(decode_type &dec)
+		template <typename T>
+		bool emit_branch(decode_type &dec, bool cond,
+			Error(T::*bf)(const Label&), const char* bfname,
+			Error(T::*ibf)(const Label&), const char* ibfname)
 		{
-			bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
 			addr_t branch_pc = dec.pc + dec.imm;
 			addr_t cont_pc = dec.pc + inst_length(dec.inst);
 			auto branch_i = labels.find(branch_pc);
@@ -1940,351 +1942,86 @@ namespace riscv {
 			term_pc = 0;
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.jne(branch_i->second);
+				(rv::as.*bf)(branch_i->second);
 				rv::as.jmp(cont_i->second);
-				log_trace("\t\tjne 0x%016llx", branch_pc);
+				log_trace("\t\t%s 0x%016llx", bfname, branch_pc);
 				log_trace("\t\tjmp 0x%016llx", cont_pc);
 			}
 			else if (cond && branch_i != labels.end()) {
-				rv::as.jne(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(cont_pc));
+				(rv::as.*bf)(branch_i->second);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
-				log_trace("\t\tjne 0x%016llx", branch_pc);
+				log_trace("\t\t%s 0x%016llx", bfname, branch_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 			}
 			else if (!cond && cont_i != labels.end()) {
-				rv::as.je(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(branch_pc));
+				(rv::as.*ibf)(cont_i->second);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
 				rv::as.jmp(term);
-				log_trace("\t\tje 0x%016llx", cont_pc);
+				log_trace("\t\t%s 0x%016llx", ibfname, cont_pc);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
 			} else if (cond) {
 				Label l = rv::as.newLabel();
-				rv::as.jne(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(cont_pc));
+				(rv::as.*bf)(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				log_trace("\t\tjne 1f");
+				log_trace("\t\t%s 1f", bfname);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
 				term_pc = branch_pc;
 			} else {
 				Label l = rv::as.newLabel();
-				rv::as.je(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(branch_pc));
+				(rv::as.*ibf)(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
 				rv::as.jmp(term);
 				rv::as.bind(l);
-				log_trace("\t\tje 1f");
+				log_trace("\t\t%s 1f", ibfname);
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
 				term_pc = cont_pc;
 			}
-
 			return true;
+		}
+
+		bool emit_bne(decode_type &dec)
+		{
+			bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
+			return emit_branch(dec, cond, &X86Assembler::jne, "jne", &X86Assembler::je, "je");
 		}
 
 		bool emit_beq(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val == proc.ireg[dec.rs2].r.x.val;
-			addr_t branch_pc = dec.pc + dec.imm;
-			addr_t cont_pc = dec.pc + inst_length(dec.inst);
-			auto branch_i = labels.find(branch_pc);
-			auto cont_i = labels.find(cont_pc);
-
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			emit_cmp(dec);
-			term_pc = 0;
-
-			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.je(branch_i->second);
-				rv::as.jmp(cont_i->second);
-				log_trace("\t\tje 0x%016llx", branch_pc);
-				log_trace("\t\tjmp 0x%016llx", cont_pc);
-			}
-			else if (cond && branch_i != labels.end()) {
-				rv::as.je(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tje 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
-			else if (!cond && cont_i != labels.end()) {
-				rv::as.jne(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjne 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-			} else if (cond) {
-				Label l = rv::as.newLabel();
-				rv::as.je(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tje 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = branch_pc;
-			} else {
-				Label l = rv::as.newLabel();
-				rv::as.jne(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjne 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = cont_pc;
-			}
-
-			return true;
+			return emit_branch(dec, cond, &X86Assembler::je, "je", &X86Assembler::jne, "jne");
 		}
 
 		bool emit_blt(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val < proc.ireg[dec.rs2].r.x.val;
-			addr_t branch_pc = dec.pc + dec.imm;
-			addr_t cont_pc = dec.pc + inst_length(dec.inst);
-			auto branch_i = labels.find(branch_pc);
-			auto cont_i = labels.find(cont_pc);
-
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			emit_cmp(dec);
-			term_pc = 0;
-
-			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.jl(branch_i->second);
-				rv::as.jmp(cont_i->second);
-				log_trace("\t\tjl 0x%016llx", branch_pc);
-				log_trace("\t\tjmp 0x%016llx", cont_pc);
-			}
-			else if (cond && branch_i != labels.end()) {
-				rv::as.jl(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjl 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
-			else if (!cond && cont_i != labels.end()) {
-				rv::as.jge(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjge 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-			} else if (cond) {
-				Label l = rv::as.newLabel();
-				rv::as.jl(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjl 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = branch_pc;
-			} else {
-				Label l = rv::as.newLabel();
-				rv::as.jge(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjge 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = cont_pc;
-			}
-
-			return true;
+			return emit_branch(dec, cond, &X86Assembler::jl, "jl", &X86Assembler::jge, "jge");
 		}
 
 		bool emit_bge(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val >= proc.ireg[dec.rs2].r.x.val;
-			addr_t branch_pc = dec.pc + dec.imm;
-			addr_t cont_pc = dec.pc + inst_length(dec.inst);
-			auto branch_i = labels.find(branch_pc);
-			auto cont_i = labels.find(cont_pc);
-
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			emit_cmp(dec);
-			term_pc = 0;
-
-			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.jge(branch_i->second);
-				rv::as.jmp(cont_i->second);
-				log_trace("\t\tjge 0x%016llx", branch_pc);
-				log_trace("\t\tjmp 0x%016llx", cont_pc);
-			}
-			else if (cond && branch_i != labels.end()) {
-				rv::as.jge(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjge 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
-			else if (!cond && cont_i != labels.end()) {
-				rv::as.jl(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjl 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-			} else if (cond) {
-				Label l = rv::as.newLabel();
-				rv::as.jge(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjge 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = branch_pc;
-			} else {
-				Label l = rv::as.newLabel();
-				rv::as.jl(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjl 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = cont_pc;
-			}
-
-			return true;
+			return emit_branch(dec, cond, &X86Assembler::jge, "jge", &X86Assembler::jl, "jl");
 		}
 
 		bool emit_bltu(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.xu.val < proc.ireg[dec.rs2].r.xu.val;
-			addr_t branch_pc = dec.pc + dec.imm;
-			addr_t cont_pc = dec.pc + inst_length(dec.inst);
-			auto branch_i = labels.find(branch_pc);
-			auto cont_i = labels.find(cont_pc);
-
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			emit_cmp(dec);
-			term_pc = 0;
-
-			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.jb(branch_i->second);
-				rv::as.jmp(cont_i->second);
-				log_trace("\t\tjb 0x%016llx", branch_pc);
-				log_trace("\t\tjmp 0x%016llx", cont_pc);
-			}
-			else if (cond && branch_i != labels.end()) {
-				rv::as.jb(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjb 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
-			else if (!cond && cont_i != labels.end()) {
-				rv::as.jae(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjae 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-			} else if (cond) {
-				Label l = rv::as.newLabel();
-				rv::as.jb(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjb 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = branch_pc;
-			} else {
-				Label l = rv::as.newLabel();
-				rv::as.jae(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjae 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = cont_pc;
-			}
-
-			return true;
+			return emit_branch(dec, cond, &X86Assembler::jb, "jb", &X86Assembler::jae, "jae");
 		}
 
 		bool emit_bgeu(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.xu.val >= proc.ireg[dec.rs2].r.xu.val;
-			addr_t branch_pc = dec.pc + dec.imm;
-			addr_t cont_pc = dec.pc + inst_length(dec.inst);
-			auto branch_i = labels.find(branch_pc);
-			auto cont_i = labels.find(cont_pc);
-
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			emit_cmp(dec);
-			term_pc = 0;
-
-			if (branch_i != labels.end() && cont_i != labels.end()) {
-				rv::as.jae(branch_i->second);
-				rv::as.jmp(cont_i->second);
-				log_trace("\t\tjae 0x%016llx", branch_pc);
-				log_trace("\t\tjmp 0x%016llx", cont_pc);
-			}
-			else if (cond && branch_i != labels.end()) {
-				rv::as.jae(branch_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjae 0x%016llx", branch_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-			}
-			else if (!cond && cont_i != labels.end()) {
-				rv::as.jb(cont_i->second);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				log_trace("\t\tjb 0x%016llx", cont_pc);
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-			} else if (cond) {
-				Label l = rv::as.newLabel();
-				rv::as.jae(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)cont_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjae 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), cont_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = branch_pc;
-			} else {
-				Label l = rv::as.newLabel();
-				rv::as.jb(l);
-				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), (unsigned)branch_pc);
-				rv::as.jmp(term);
-				rv::as.bind(l);
-				log_trace("\t\tjb 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), branch_pc);
-				log_trace("\t\tjmp term");
-				log_trace("\t\t1:");
-				term_pc = cont_pc;
-			}
-
-			return true;
+			return emit_branch(dec, cond, &X86Assembler::jae, "jae", &X86Assembler::jb, "jb");
 		}
 
 		bool emit_ld(decode_type &dec)
