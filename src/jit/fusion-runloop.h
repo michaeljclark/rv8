@@ -29,12 +29,16 @@ namespace riscv {
 		typedef void (*TraceFunc)(typename P::processor_type *);
 
 		JitRuntime rt;
-		std::map<addr_t,TraceFunc> trace_cache;
+		google::dense_hash_map<addr_t,TraceFunc> trace_cache;
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 
-		fusion_runloop() : cli(std::make_shared<debug_cli<P>>()), inst_cache() {}
-		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache() {}
+		fusion_runloop() : fusion_runloop(std::make_shared<debug_cli<P>>()) {}
+		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache()
+		{
+			trace_cache.set_empty_key(0);
+			trace_cache.set_deleted_key(-1);
+		}
 
 		virtual bool handleError(Error err, const char* message, CodeEmitter* origin)
 		{

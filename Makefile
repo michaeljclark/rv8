@@ -47,6 +47,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
                 -I$(TOP_DIR)/src/util \
+                -I$(TOP_DIR)/sparsehash/src \
                 -I$(TOP_DIR)/asmjit/src/asmjit
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
@@ -205,6 +206,9 @@ RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
 RV_CRYPTO_SRCS = $(SRC_DIR)/crypto/sha512.cc
 RV_CRYPTO_OBJS = $(call cxx_src_objs, $(RV_CRYPTO_SRCS))
 RV_CRYPTO_LIB =  $(LIB_DIR)/libriscv_crypto.a
+
+# sparsehash
+SPARSEHASH_SRC = sparsehash/src/sparsehash/internal/sparseconfig.h
 
 # libedit
 LIBEDIT_SRCS =   $(SRC_DIR)/edit/chared.c \
@@ -491,7 +495,7 @@ ASSEMBLY = $(TEST_CC_ASM)
 
 # build rules
 
-all: $(RV_META_BIN) meta $(BINARIES) $(ASSEMBLY)
+all: $(SPARSEHASH_SRC) $(RV_META_BIN) meta $(BINARIES) $(ASSEMBLY)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
@@ -527,6 +531,10 @@ TEST_RV64 =     ARCH=rv64imafd TARGET=riscv64-unknown-elf
 TEST_RV64C =    ARCH=rv64imafdc RVC=1 TARGET=riscv64-unknown-elf
 TEST_RV32 =     ARCH=rv32imafd TARGET=riscv32-unknown-elf
 TEST_RV32C =    ARCH=rv32imafdc RVC=1 TARGET=riscv32-unknown-elf
+
+# sparsehash
+$(SPARSEHASH_SRC):
+	( cd sparsehash && ./configure && make src/sparsehash/internal/sparseconfig.h )
 
 qemu-tests:
 	( cd riscv-qemu-tests && make )

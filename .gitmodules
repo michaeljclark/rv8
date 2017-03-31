@@ -4,3 +4,6 @@
 [submodule "asmjit"]
 	path = asmjit
 	url = https://github.com/michaeljclark/asmjit.git
+[submodule "sparsehash"]
+	path = sparsehash
+	url = https://github.com/michaeljclark/sparsehash.git
