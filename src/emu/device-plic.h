@@ -21,13 +21,6 @@ namespace riscv {
 		u32 pending;
 		u32 served;
 
-		/* PLIC data access */
-
-		constexpr u8* as_u8() { return (u8*)&pending; }
-		constexpr u16* as_u16() { return (u16*)&pending; }
-		constexpr u32* as_u32() { return (u32*)&pending; }
-		constexpr u64* as_u64() { return (u64*)&pending; }
-
 		/* PLIC constructor */
 
 		plic_mmio_device(P &proc, UX mpa) :
