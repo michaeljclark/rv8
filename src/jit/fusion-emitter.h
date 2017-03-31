@@ -2807,13 +2807,14 @@ namespace riscv {
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			} else {
+				addr_t link_addr = dec.pc + inst_length(dec.inst);
 				if (rdx > 0) {
-					rv::as.mov(x86::gpq(rdx), Imm(dec.pc + inst_length(dec.inst)));
-					log_trace("\t\tmov %s, %lld", rv::x86_reg_str_q(rdx), dec.imm);
+					rv::as.mov(x86::gpq(rdx), Imm(link_addr));
+					log_trace("\t\tmov %s, 0x%llx", rv::x86_reg_str_q(rdx), link_addr);
 				} else {
-					rv::as.mov(x86::rax, Imm(dec.pc + inst_length(dec.inst)));
+					rv::as.mov(x86::rax, Imm(link_addr));
 					rv::as.mov(rv::rbp_reg_q(dec.rd), x86::rax);
-					log_trace("\t\tmov rax, %lld",  dec.imm);
+					log_trace("\t\tmov rax, 0x%llx",  link_addr);
 					log_trace("\t\tmov %s, rax", rv::rbp_reg_str_q(dec.rd));
 				}
 			}
