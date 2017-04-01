@@ -29,15 +29,15 @@ rl         25                           arg     rl        green   none     # Rel
 pred       27:24                        arg     pred      green   none     # Predecessor
 succ       23:20                        arg     succ      green   none     # Successor
 rm         14:12                        arg     rm        green   none     # Rounding Mode
-imm20      31:12[31:12]                 simm    imm       green   none
-oimm20     31:12[31:12]                 offset  imm       green   none
-jimm20     31:12[20|10:1|11|19:12]      offset  imm       green   none     # PC relative jump
-imm12      31:20[11:0]                  simm    imm       green   none
-oimm12     31:20[11:0]                  offset  imm       green   none
+imm20      31:12[31:12]                 simm    simm      green   none
+oimm20     31:12[31:12]                 offset  simm      green   none
+jimm20     31:12[20|10:1|11|19:12]      offset  simm      green   none     # PC relative jump
+imm12      31:20[11:0]                  simm    simm      green   none
+oimm12     31:20[11:0]                  offset  simm      green   none
 csr12      31:20[11:0]                  uimm    csr       green   none
-simm12     31:25[11:5],11:7[4:0]        offset  imm       green   none
-sbimm12    31:25[12|10:5],11:7[4:1|11]  offset  imm       green   none     # PC relative branch
-zimm       19:15[4:0]                   uimm    zimm      green   none
+simm12     31:25[11:5],11:7[4:0]        offset  simm      green   none
+sbimm12    31:25[12|10:5],11:7[4:1|11]  offset  simm      green   none     # PC relative branch
+zimm       19:15[4:0]                   uimm    uimm      green   none
 shamt5     24:20[4:0]                   uimm    shamt     green   none     # 32-bit shift amount
 shamt6     25:20[5:0]                   uimm    shamt     green   none     # 64-bit shift amount
 shamt7     26:20[6:0]                   uimm    shamt     green   none     # 128-bit shift amount
@@ -54,21 +54,21 @@ cfrdq      4:2                          creg    frd'      white   magenta
 cfrs2q     4:2                          creg    frs2'     white   green
 cfrs2      6:2                          freg    frs2      white   green
 cfrd       11:7                         freg    frd       white   magenta
-cimmsh5    6:2[4:0]                     uimm    nzimm     green   none
-cimmsh6    12[5],6:2[4:0]               uimm    nzimm     green   none
-cimmi      12[5],6:2[4:0]               simm    imm       green   none
-cnzimmi    12[5],6:2[4:0]               simm    nzimm     green   none
-cimmui     12[17],6:2[16:12]            simm    nzimm     green   none
-cimmlwsp   12[5],6:2[4:2|7:6]           uimm    imm       green   none
-cimmldsp   12[5],6:2[4:3|8:6]           uimm    imm       green   none
-cimmlqsp   12[5],6:2[4|9:6]             uimm    imm       green   none
-cimm16sp   12[9],6:2[4|6|8:7|5]         simm    nzimm     green   none
-cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  simm    imm       green   none     # PC relative jump
-cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  simm    imm       green   none     # PC relative branch
-cimmswsp   12:7[5:2|7:6]                uimm    imm       green   none
-cimmsdsp   12:7[5:3|8:6]                uimm    imm       green   none
-cimmsqsp   12:7[5:4|9:6]                uimm    imm       green   none
-cimm4spn   12:5[5:4|9:6|2|3]            uimm    nzimm     green   none
-cimmw      12:10[5:3],6:5[2|6]          uimm    imm       green   none
-cimmd      12:10[5:3],6:5[7:6]          uimm    imm       green   none
-cimmq      12:10[5:4|8],6:5[7:6]        uimm    imm       green   none
+cimmsh5    6:2[4:0]                     uimm    nzuimm    green   none
+cimmsh6    12[5],6:2[4:0]               uimm    nzuimm    green   none
+cimmi      12[5],6:2[4:0]               simm    simm      green   none
+cnzimmi    12[5],6:2[4:0]               simm    nzsimm    green   none
+cimmui     12[17],6:2[16:12]            simm    nzsimm    green   none
+cimmlwsp   12[5],6:2[4:2|7:6]           uimm    uimm      green   none
+cimmldsp   12[5],6:2[4:3|8:6]           uimm    uimm      green   none
+cimmlqsp   12[5],6:2[4|9:6]             uimm    uimm      green   none
+cimm16sp   12[9],6:2[4|6|8:7|5]         simm    nzsimm    green   none
+cimmj      12:2[11|4|9:8|10|6|7|3:1|5]  simm    simm      green   none     # PC relative jump
+cimmb      12:10[8|4:3],6:2[7:6|2:1|5]  simm    simm      green   none     # PC relative branch
+cimmswsp   12:7[5:2|7:6]                uimm    uimm      green   none
+cimmsdsp   12:7[5:3|8:6]                uimm    uimm      green   none
+cimmsqsp   12:7[5:4|9:6]                uimm    uimm      green   none
+cimm4spn   12:5[5:4|9:6|2|3]            uimm    nzuimm    green   none
+cimmw      12:10[5:3],6:5[2|6]          uimm    uimm      green   none
+cimmd      12:10[5:3],6:5[7:6]          uimm    uimm      green   none
+cimmq      12:10[5:4|8],6:5[7:6]        uimm    uimm      green   none
