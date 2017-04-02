@@ -2497,7 +2497,6 @@ namespace riscv {
 
 		bool emit_jalr(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			term_pc = dec.pc + dec.imm;
 			if (dec.rd == rv_ireg_zero && dec.rs1 == rv_ireg_ra && callstack.size() > 0) {
 				addr_t link_addr = callstack.back();
@@ -2508,6 +2507,12 @@ namespace riscv {
 				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(dec.pc));
 				rv::as.jmp(term);
 				rv::as.bind(l);
+				log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+				log_trace("\t\tcmp %s, 0x%llx", rv::x86_reg_str_q(rv_ireg_ra), link_addr);
+				log_trace("\t\tje 1f");
+				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), dec.pc);
+				log_trace("\t\tjmp term");
+				log_trace("\t\t1:");
 				return true;
 			}
 			return false;
