@@ -18,6 +18,7 @@ namespace riscv {
 		P &proc;
 		Label term;
 		std::map<addr_t,Label> labels;
+		std::vector<addr_t> callstack;
 		addr_t term_pc;
 
 		fusion_emitter(P &proc, CodeHolder &code)
@@ -2480,6 +2481,7 @@ namespace riscv {
 				// nop
 			} else {
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
+				callstack.push_back(link_addr);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), Imm(link_addr));
 					log_trace("\t\tmov %s, 0x%llx", rv::x86_reg_str_q(rdx), link_addr);
@@ -2491,6 +2493,24 @@ namespace riscv {
 				}
 			}
 			return true;
+		}
+
+		bool emit_jalr(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + dec.imm;
+			if (dec.rd == rv_ireg_zero && dec.rs1 == rv_ireg_ra && callstack.size() > 0) {
+				addr_t link_addr = callstack.back();
+				callstack.pop_back();
+				rv::as.cmp(x86::gpq(rv::x86_reg(rv_ireg_ra)), Imm(link_addr));
+				Label l = rv::as.newLabel();
+				rv::as.je(l);
+				rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(dec.pc));
+				rv::as.jmp(term);
+				rv::as.bind(l);
+				return true;
+			}
+			return false;
 		}
 
 		bool emit_li(decode_type &dec)
@@ -2614,6 +2634,7 @@ namespace riscv {
 				case rv_op_sb: return emit_sb(dec);
 				case rv_op_lui: return emit_lui(dec);
 				case rv_op_jal: return emit_jal(dec);
+				case rv_op_jalr: return emit_jalr(dec);
 				case fusion_op_li: return emit_li(dec);
 				case fusion_op_la: return emit_la(dec);
 				case fusion_op_call: return emit_call(dec);
