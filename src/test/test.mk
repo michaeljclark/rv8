@@ -80,6 +80,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-loop-1 \
 	$(BIN_DIR)/test-loop-2 \
 	$(BIN_DIR)/test-open \
+	$(BIN_DIR)/test-malloc \
 	$(BIN_DIR)/test-nbody \
 	$(BIN_DIR)/test-sha512 \
 	$(BIN_DIR)/test-fpu-gen \
@@ -166,6 +167,9 @@ $(BIN_DIR)/test-loop-2: $(OBJ_DIR)/test-loop-2.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-open.o: $(SRC_DIR)/test-open.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-open: $(OBJ_DIR)/test-open.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-malloc.o: $(SRC_DIR)/test-malloc.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-malloc: $(OBJ_DIR)/test-malloc.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-nbody.o: $(SRC_DIR)/test-nbody.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-nbody: $(OBJ_DIR)/test-nbody.o ; $(CC) $(CFLAGS) $^ -lm -o $@
