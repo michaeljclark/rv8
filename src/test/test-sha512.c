@@ -15,12 +15,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#ifdef __riscv
-#define bswap64 __bswap64
-extern uint64_t __bswap64(uint64_t val);
-#else
 #define bswap64 __builtin_bswap64
-#endif
 
 static const int SHA512_OUTPUT_BYTES = 64;
 

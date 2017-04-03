@@ -175,7 +175,7 @@ $(OBJ_DIR)/test-nbody.o: $(SRC_DIR)/test-nbody.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-nbody: $(OBJ_DIR)/test-nbody.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-sha512.o: $(SRC_DIR)/test-sha512.c ; $(CC) $(CFLAGS) -c $^ -o $@
-$(BIN_DIR)/test-sha512: $(OBJ_DIR)/test-sha512.o $(OBJ_DIR)/bswap64.o ; $(CC) $(CFLAGS) $^ -o $@
+$(BIN_DIR)/test-sha512: $(OBJ_DIR)/test-sha512.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-fpu-gen.o: $(SRC_DIR)/test-fpu-gen.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-fpu-gen: $(OBJ_DIR)/test-fpu-gen.o ; $(CC) $(CFLAGS) $^ -o $@
