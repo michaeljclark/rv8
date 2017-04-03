@@ -10,9 +10,10 @@ __bswap32:
 	srli    a4, a4, 8
 	and     a0, a0, a4
 	or      a5, a5, a0
-	slliw	a0, a5, 16
-	srliw	a5, a5, 16
-	or	    a0, a5, a0
+	slliw   a0, a5, 16
+	srliw   a5, a5, 16
+	or      a0, a5, a0
+	sext.w	a0,a0
 	ret
 
 .section .rodata
