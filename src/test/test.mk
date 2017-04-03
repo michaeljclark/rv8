@@ -76,6 +76,7 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-args \
+	$(BIN_DIR)/test-bswap \
 	$(BIN_DIR)/test-loop-1 \
 	$(BIN_DIR)/test-loop-2 \
 	$(BIN_DIR)/test-open \
@@ -151,6 +152,12 @@ $(BIN_DIR)/hello-world-pcrel-pico: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --nmag
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
 
+$(OBJ_DIR)/bswap32.o: $(SRC_DIR)/bswap32.s ; $(CC) $(CFLAGS) -c $^ -o $@
+$(OBJ_DIR)/bswap64.o: $(SRC_DIR)/bswap64.s ; $(CC) $(CFLAGS) -c $^ -o $@
+
+$(OBJ_DIR)/test-bswap.o: $(SRC_DIR)/test-bswap.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-bswap: $(OBJ_DIR)/test-bswap.o $(OBJ_DIR)/bswap32.o $(OBJ_DIR)/bswap64.o ; $(CC) $(CFLAGS) $^ -o $@
+
 $(OBJ_DIR)/test-loop-1.o: $(SRC_DIR)/test-loop-1.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-loop-1: $(OBJ_DIR)/test-loop-1.o ; $(CC) $(CFLAGS) $^ -o $@
 
@@ -164,7 +171,7 @@ $(OBJ_DIR)/test-nbody.o: $(SRC_DIR)/test-nbody.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-nbody: $(OBJ_DIR)/test-nbody.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-sha512.o: $(SRC_DIR)/test-sha512.c ; $(CC) $(CFLAGS) -c $^ -o $@
-$(BIN_DIR)/test-sha512: $(OBJ_DIR)/test-sha512.o ; $(CC) $(CFLAGS) $^ -o $@
+$(BIN_DIR)/test-sha512: $(OBJ_DIR)/test-sha512.o $(OBJ_DIR)/bswap64.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-fpu-gen.o: $(SRC_DIR)/test-fpu-gen.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-fpu-gen: $(OBJ_DIR)/test-fpu-gen.o ; $(CC) $(CFLAGS) $^ -o $@

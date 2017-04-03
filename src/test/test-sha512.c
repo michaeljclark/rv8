@@ -15,6 +15,13 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef __riscv
+#define bswap64 __bswap64
+extern uint64_t __bswap64(uint64_t val);
+#else
+#define bswap64 __builtin_bswap64
+#endif
+
 static const int SHA512_OUTPUT_BYTES = 64;
 
 struct sha512_ctx_t
@@ -93,7 +100,7 @@ static void sha512_process_block(struct sha512_ctx_t *ctx)
     /* Clang doesn't unswitch this automatically */
     for (i=0; i<16; i++) {
         /* load up the input word for this round */
-        tmp = w[i] = __builtin_bswap64(w[i]);
+        tmp = w[i] = bswap64(w[i]);
         tmp = tmp + h7 + S1(h4) + ch(h4,h5,h6) + sha512_k[i];
   
         /* shift register */
@@ -167,12 +174,12 @@ void sha512_final(struct sha512_ctx_t *ctx, uint8_t result[64])
     }
     memset(ctx->block + fill, 0, 112-fill);
     
-    uint64_t highCount = 0, lowCount = __builtin_bswap64((ctx->nbytes * 8));
+    uint64_t highCount = 0, lowCount = bswap64((ctx->nbytes * 8));
     memcpy(&ctx->block[112],&highCount,8);
     memcpy(&ctx->block[120],&lowCount,8);
     sha512_process_block(ctx);
     for (i=0; i<8; i++) {
-        ctx->chain[i] = __builtin_bswap64(ctx->chain[i]);
+        ctx->chain[i] = bswap64(ctx->chain[i]);
     }
     memcpy(result, ctx->chain, sizeof(ctx->chain));
     sha512_init(ctx);
