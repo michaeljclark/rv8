@@ -114,6 +114,7 @@ test-sim: all
 	$(EMULATOR) $(BIN_DIR)/hello-world-pcrel
 	$(EMULATOR) $(BIN_DIR)/hello-world-libc
 	$(EMULATOR) $(BIN_DIR)/test-args Hello World
+	$(EMULATOR) $(BIN_DIR)/test-malloc
 	$(EMULATOR) $(BIN_DIR)/test-open src/test/spike.rv
 	$(EMULATOR) $(BIN_DIR)/test-int-fib
 	$(EMULATOR) $(BIN_DIR)/test-int-mul
