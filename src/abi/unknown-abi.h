@@ -184,7 +184,7 @@ namespace riscv {
 
 		if (proc.log & proc_log_memory) {
 			debug("sys_brk: brk: %llx begin: %llx end: %llx",
-				new_brk, proc.mmu.mem->heap_begin, proc.mmu.mem->heap_end);
+				proc.mmu.mem->brk, proc.mmu.mem->heap_begin, proc.mmu.mem->heap_end);
 		}
 
 		/* return current brk */
@@ -214,8 +214,7 @@ namespace riscv {
 					proc.mmu.mem->heap_end, new_heap_end);
 			}
 			proc.mmu.mem->heap_end = new_heap_end;
-			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk;
-			proc.mmu.mem->brk = new_brk;
+			proc.ireg[rv_ireg_a0] = proc.mmu.mem->brk = new_brk;
 		}
 	}
 
