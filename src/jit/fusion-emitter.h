@@ -2497,8 +2497,8 @@ namespace riscv {
 
 		bool emit_jalr(decode_type &dec)
 		{
-			term_pc = dec.pc + dec.imm;
 			if (dec.rd == rv_ireg_zero && dec.rs1 == rv_ireg_ra && callstack.size() > 0) {
+				term_pc = dec.pc + dec.imm;
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
 				rv::as.cmp(x86::gpq(rv::x86_reg(rv_ireg_ra)), Imm(link_addr));
