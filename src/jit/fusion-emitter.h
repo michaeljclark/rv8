@@ -63,7 +63,7 @@ namespace riscv {
 			int rdx = rv::x86_reg(dec.rd);
 			if (rdx > 0) {
 				rv::as.movsxd(x86::gpq(rdx), x86::gpd(rdx));
-				log_trace("\t\tmovsxd %s, %s", rv::x86_reg_str_q(dec.rd), rv::x86_reg_str_d(dec.rd));
+				log_trace("\t\tmovsxd %s, %s", rv::x86_reg_str_q(rdx), rv::x86_reg_str_d(rdx));
 			} else {
 				rv::as.movsxd(x86::rcx, rv::rbp_reg_d(dec.rd));
 				rv::as.mov(rv::rbp_reg_q(dec.rd), x86::rcx);
