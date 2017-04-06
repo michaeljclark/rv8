@@ -450,6 +450,76 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_mul(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
+			int rdx = rv::x86_reg(dec.rd), rs1x = rv::x86_reg(dec.rs1), rs2x = rv::x86_reg(dec.rs2);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else if (dec.rs1 == rv_ireg_zero || dec.rs2 == rv_ireg_zero) {
+				emit_zero_rd(dec);
+			}
+			else if (dec.rd == dec.rs1 && rdx > 0) {
+				// imul rd, rs2
+				if (rs2x > 0) {
+					rv::as.imul(x86::gpq(rdx), x86::gpq(rs2x));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::x86_reg_str_q(rs2x));
+				} else {
+					rv::as.imul(x86::gpq(rdx), rv::rbp_reg_q(dec.rs2));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::rbp_reg_str_q(dec.rs2));
+				}
+			}
+			else if (dec.rd == dec.rs2 && rdx > 0) {
+				// imul rd, rs1
+				if (rs1x > 0) {
+					rv::as.imul(x86::gpq(rdx), x86::gpq(rs1x));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::x86_reg_str_q(rs1x));
+				} else {
+					rv::as.imul(x86::gpq(rdx), rv::rbp_reg_q(dec.rs1));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::rbp_reg_str_q(dec.rs1));
+				}
+			}
+			else if (rdx < 0) {
+				// mov rax, rs1
+				// imul rax, rs2
+				// mov rd, rax
+				if (rs1x > 0) {
+					rv::as.mov(x86::rax, x86::gpq(rs1x));
+					log_trace("\t\tmov rax, %s", rv::x86_reg_str_q(rs1x));
+				} else {
+					rv::as.mov(x86::rax, rv::rbp_reg_q(dec.rs1));
+					log_trace("\t\tmov rax, %s", rv::rbp_reg_str_q(dec.rs1));
+				}
+				if (rs2x > 0) {
+					rv::as.imul(x86::rax, x86::gpq(rs2x));
+					log_trace("\t\timul rax, %s", rv::x86_reg_str_q(rs2x));
+				} else {
+					rv::as.imul(x86::rax, rv::rbp_reg_q(dec.rs2));
+					log_trace("\t\timul rax, %s", rv::rbp_reg_str_q(dec.rs2));
+				}
+				rv::as.mov(rv::rbp_reg_q(dec.rd), x86::rax);
+				log_trace("\t\tmov %s, rax", rv::rbp_reg_str_q(dec.rd));
+			}
+			else {
+				// mov rd, rs1
+				emit_mv_rd_rs1(dec);
+
+				// imul rs, rs2
+				if (rdx > 0) {
+					if (rs2x > 0) {
+						rv::as.imul(x86::gpq(rdx), x86::gpq(rs2x));
+						log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::x86_reg_str_q(rs2x));
+					} else {
+						rv::as.imul(x86::gpq(rdx), rv::rbp_reg_q(dec.rs2));
+						log_trace("\t\timul %s, %s", rv::x86_reg_str_q(rdx), rv::rbp_reg_str_q(dec.rs2));
+					}
+				}
+			}
+			return true;
+		}
+
 		bool emit_slt(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
@@ -1402,6 +1472,80 @@ namespace riscv {
 					if (rs2x > 0) {
 						rv::as.sub(rv::rbp_reg_d(dec.rd), x86::gpd(rs2x));
 						log_trace("\t\tsub %s, %s", rv::rbp_reg_str_d(dec.rd), rv::x86_reg_str_d(rs2x));
+					}
+				}
+				emit_sign_extend_32(dec);
+			}
+			return true;
+		}
+
+		bool emit_mulw(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = dec.pc + inst_length(dec.inst);
+			int rdx = rv::x86_reg(dec.rd), rs1x = rv::x86_reg(dec.rs1), rs2x = rv::x86_reg(dec.rs2);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else if (dec.rs1 == rv_ireg_zero || dec.rs2 == rv_ireg_zero) {
+				emit_zero_rd(dec);
+			}
+			else if (dec.rd == dec.rs1 && rdx > 0) {
+				// imul rd, rs2
+				if (rs2x > 0) {
+					rv::as.imul(x86::gpd(rdx), x86::gpd(rs2x));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::x86_reg_str_d(rs2x));
+				} else {
+					rv::as.imul(x86::gpd(rdx), rv::rbp_reg_d(dec.rs2));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::rbp_reg_str_d(dec.rs2));
+				}
+				emit_sign_extend_32(dec);
+			}
+			else if (dec.rd == dec.rs2 && rdx > 0) {
+				// imul rd, rs1
+				if (rs1x > 0) {
+					rv::as.imul(x86::gpd(rdx), x86::gpd(rs1x));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::x86_reg_str_d(rs1x));
+				} else {
+					rv::as.imul(x86::gpd(rdx), rv::rbp_reg_d(dec.rs1));
+					log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::rbp_reg_str_d(dec.rs1));
+				}
+				emit_sign_extend_32(dec);
+			}
+			else if (rdx < 0) {
+				// mov eax, rs1
+				// imul eax, rs2
+				// mov rd, eax
+				if (rs1x > 0) {
+					rv::as.mov(x86::eax, x86::gpd(rs1x));
+					log_trace("\t\tmov eax, %s", rv::x86_reg_str_d(rs1x));
+				} else {
+					rv::as.mov(x86::eax, rv::rbp_reg_d(dec.rs1));
+					log_trace("\t\tmov eax, %s", rv::rbp_reg_str_d(dec.rs1));
+				}
+				if (rs2x > 0) {
+					rv::as.imul(x86::eax, x86::gpd(rs2x));
+					log_trace("\t\timul eax, %s", rv::x86_reg_str_d(rs2x));
+				} else {
+					rv::as.imul(x86::eax, rv::rbp_reg_d(dec.rs2));
+					log_trace("\t\timul eax, %s", rv::rbp_reg_str_d(dec.rs2));
+				}
+				rv::as.mov(rv::rbp_reg_d(dec.rd), x86::eax);
+				log_trace("\t\tmov %s, eax", rv::rbp_reg_str_d(dec.rd));
+				emit_sign_extend_32(dec);
+			}
+			else {
+				// mov rd, rs1
+				emit_mv_rd_rs1(dec);
+
+				// imul rs, rs2
+				if (rdx > 0) {
+					if (rs2x > 0) {
+						rv::as.imul(x86::gpd(rdx), x86::gpd(rs2x));
+						log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::x86_reg_str_d(rs2x));
+					} else {
+						rv::as.imul(x86::gpd(rdx), rv::rbp_reg_d(dec.rs2));
+						log_trace("\t\timul %s, %s", rv::x86_reg_str_d(rdx), rv::rbp_reg_str_d(dec.rs2));
 					}
 				}
 				emit_sign_extend_32(dec);
@@ -2902,6 +3046,7 @@ namespace riscv {
 				case rv_op_auipc: return emit_auipc(dec);
 				case rv_op_add: return emit_add(dec);
 				case rv_op_sub: return emit_sub(dec);
+				case rv_op_mul: return emit_mul(dec);
 				case rv_op_slt: return emit_slt(dec);
 				case rv_op_sltu: return emit_sltu(dec);
 				case rv_op_and: return emit_and(dec);
@@ -2912,6 +3057,7 @@ namespace riscv {
 				case rv_op_sra: return emit_sra(dec);
 				case rv_op_addw: return emit_addw(dec);
 				case rv_op_subw: return emit_subw(dec);
+				case rv_op_mulw: return emit_mulw(dec);
 				case rv_op_sllw: return emit_sllw(dec);
 				case rv_op_srlw: return emit_srlw(dec);
 				case rv_op_sraw: return emit_sraw(dec);
