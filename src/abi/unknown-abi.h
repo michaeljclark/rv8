@@ -9,6 +9,7 @@ namespace riscv {
 
 	enum abi_syscall
 	{
+		abi_syscall_openat = 56,
 		abi_syscall_close = 57,
 		abi_syscall_lseek = 62,
 		abi_syscall_read = 63,
@@ -17,10 +18,13 @@ namespace riscv {
 		abi_syscall_pwrite = 68,
 		abi_syscall_fstat = 80,
 		abi_syscall_exit = 93,
+		abi_syscall_uname = 160,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
 		abi_syscall_open = 1024,
+		abi_syscall_unlink = 1026,
 		abi_syscall_stat = 1038,
+		abi_syscall_chown = 1039,
 	};
 
 	template <typename P> struct abi_timeval {
@@ -57,6 +61,17 @@ namespace riscv {
 		typename P::uint_t  __unused5;
 	};
 
+	const int NEW_UTS_LEN = 64;
+
+	struct abi_new_utsname {
+		char sysname[NEW_UTS_LEN + 1];
+		char nodename[NEW_UTS_LEN + 1];
+		char release[NEW_UTS_LEN + 1];
+		char version[NEW_UTS_LEN + 1];
+		char machine[NEW_UTS_LEN + 1];
+		char domainname[NEW_UTS_LEN + 1];
+	};
+
 	template <typename P>
 	void cvt_abi_stat(abi_stat<P> *guest_stat, struct stat *host_stat)
 	{
@@ -87,57 +102,78 @@ namespace riscv {
 	#endif
 	}
 
+	template <typename P> void abi_sys_openat(P &proc)
+	{
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		int ret = openat(proc.ireg[rv_ireg_a0], pathname, proc.ireg[rv_ireg_a2], proc.ireg[rv_ireg_a3]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
 	template <typename P> void abi_sys_close(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = close(proc.ireg[rv_ireg_a0]);
+		int ret = close(proc.ireg[rv_ireg_a0]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_lseek(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = lseek(proc.ireg[rv_ireg_a0],
+		int ret = lseek(proc.ireg[rv_ireg_a0],
 			proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_read(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = read(proc.ireg[rv_ireg_a0],
+		int ret = read(proc.ireg[rv_ireg_a0],
 			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_write(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = write(proc.ireg[rv_ireg_a0],
+		int ret = write(proc.ireg[rv_ireg_a0],
 			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_pread(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = pread(proc.ireg[rv_ireg_a0],
+		int ret = pread(proc.ireg[rv_ireg_a0],
 			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2],
 			proc.ireg[rv_ireg_a3]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_pwrite(P &proc)
 	{
-		proc.ireg[rv_ireg_a0] = pwrite(proc.ireg[rv_ireg_a0],
+		int ret = pwrite(proc.ireg[rv_ireg_a0],
 			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2],
 			proc.ireg[rv_ireg_a3]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_fstat(P &proc)
 	{
 		struct stat host_stat;
 		memset(&host_stat, 0, sizeof(host_stat));
-		if ((proc.ireg[rv_ireg_a0] = fstat(proc.ireg[rv_ireg_a0], &host_stat)) == 0) {
-			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-			cvt_abi_stat(guest_stat, &host_stat);
-		}
+		int ret = fstat(proc.ireg[rv_ireg_a0], &host_stat);
+		abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		cvt_abi_stat(guest_stat, &host_stat);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_open(P &proc)
 	{
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
-		proc.ireg[rv_ireg_a0] = open(pathname, proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		int ret = open(pathname, proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_unlink(P &proc)
+	{
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		int ret = unlink(pathname);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_stat(P &proc)
@@ -145,15 +181,35 @@ namespace riscv {
 		struct stat host_stat;
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
 		memset(&host_stat, 0, sizeof(host_stat));
-		if ((proc.ireg[rv_ireg_a0] = stat(pathname, &host_stat)) == 0) {
-			abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-			cvt_abi_stat(guest_stat, &host_stat);
-		}
+		int ret = stat(pathname, &host_stat);
+		abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		cvt_abi_stat(guest_stat, &host_stat);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_chown(P &proc)
+	{
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		int ret = chown(pathname, (uid_t)proc.ireg[rv_ireg_a1].r.xu.val, (gid_t)proc.ireg[rv_ireg_a2].r.xu.val);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_exit(P &proc)
 	{
 		exit(proc.ireg[rv_ireg_a0]);
+	}
+
+	template <typename P> void abi_sys_uname(P &proc)
+	{
+		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		struct utsname host_utsname;
+		int ret = uname(&host_utsname);
+		strncpy(ustname->sysname, host_utsname.sysname, NEW_UTS_LEN);
+		strncpy(ustname->nodename, host_utsname.nodename, NEW_UTS_LEN);
+		strncpy(ustname->release, host_utsname.release, NEW_UTS_LEN);
+		strncpy(ustname->version, host_utsname.version, NEW_UTS_LEN);
+		strncpy(ustname->machine, host_utsname.machine, NEW_UTS_LEN);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_gettimeofday(P &proc)
@@ -162,18 +218,18 @@ namespace riscv {
 		struct timezone host_tzp;
 		memset(&host_tp, 0, sizeof(host_tp));
 		memset(&host_tzp, 0, sizeof(host_tzp));
-		if ((proc.ireg[rv_ireg_a0] = gettimeofday(&host_tp, &host_tzp)) == 0) {
-			if (proc.ireg[rv_ireg_a0].r.xu.val != 0) {
-				abi_timeval<P> *guest_tp = (abi_timeval<P>*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
-				guest_tp->tv_sec = host_tp.tv_sec;
-				guest_tp->tv_usec = host_tp.tv_usec;
-			}
-			if (proc.ireg[rv_ireg_a1].r.xu.val != 0) {
-				abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-				guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
-				guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
-			}
+		int ret =  gettimeofday(&host_tp, &host_tzp);
+		if (proc.ireg[rv_ireg_a0].r.xu.val != 0) {
+			abi_timeval<P> *guest_tp = (abi_timeval<P>*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+			guest_tp->tv_sec = host_tp.tv_sec;
+			guest_tp->tv_usec = host_tp.tv_usec;
 		}
+		if (proc.ireg[rv_ireg_a1].r.xu.val != 0) {
+			abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+			guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
+			guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
+		}
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_brk(P &proc)
@@ -221,6 +277,7 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
+			case abi_syscall_openat:        abi_sys_openat(proc); break;
 			case abi_syscall_close:         abi_sys_close(proc); break;
 			case abi_syscall_lseek:         abi_sys_lseek(proc); break;
 			case abi_syscall_read:          abi_sys_read(proc);  break;
@@ -229,10 +286,13 @@ namespace riscv {
 			case abi_syscall_pwrite:        abi_sys_pwrite(proc); break;
 			case abi_syscall_fstat:         abi_sys_fstat(proc); break;
 			case abi_syscall_exit:          abi_sys_exit(proc); break;
+			case abi_syscall_uname:         abi_sys_uname(proc); break;
 			case abi_syscall_gettimeofday:  abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:           abi_sys_brk(proc); break;
 			case abi_syscall_open:          abi_sys_open(proc); break;
+			case abi_syscall_unlink:        abi_sys_unlink(proc); break;
 			case abi_syscall_stat:          abi_sys_stat(proc); break;
+			case abi_syscall_chown:         abi_sys_chown(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7]);
 		}
 	}
