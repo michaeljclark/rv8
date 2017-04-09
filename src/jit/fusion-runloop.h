@@ -180,6 +180,7 @@ namespace riscv {
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
+				if (P::trace_length != 0 && (P::instret - trace_instret) >= P::trace_length) break;
 			}
 			emitter.end();
 			emitter.emit_epilog();

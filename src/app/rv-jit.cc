@@ -39,6 +39,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/utsname.h>
 
 #include "histedit.h"
 
@@ -108,6 +109,7 @@ struct rv_jit
 	host_cpu &cpu;
 	int proc_logs = 0;
 	int trace_iters = 100;
+	int trace_length = 0;
 	bool help_or_error = false;
 	std::string elf_filename;
 
@@ -289,9 +291,12 @@ struct rv_jit
 			{ "-a", "--audit", cmdline_arg_type_none,
 				"Enable JIT audit",
 				[&](std::string s) { proc_logs |= proc_log_jit_audit; return true; } },
-			{ "-l", "--trace-iters", cmdline_arg_type_string,
-				"Hotspot trace iterations",
+			{ "-I", "--trace-iters", cmdline_arg_type_string,
+				"Trace iterations",
 				[&](std::string s) { trace_iters = strtoull(s.c_str(), nullptr, 10); return true; } },
+			{ "-L", "--trace-length", cmdline_arg_type_string,
+				"Trace length",
+				[&](std::string s) { trace_length = strtoull(s.c_str(), nullptr, 10); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -342,7 +347,8 @@ struct rv_jit
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
-		proc.hotspot_iters = trace_iters;
+		proc.trace_iters = trace_iters;
+		proc.trace_length = trace_length;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {

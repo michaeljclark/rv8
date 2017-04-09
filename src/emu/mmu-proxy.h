@@ -55,7 +55,7 @@ namespace riscv {
 						case P::hostspot_trace_skip:
 							break;
 						default:
-							if (iters >= proc.hotspot_iters) {
+							if (iters >= proc.trace_iters) {
 								proc.raise(P::internal_cause_hotspot, pc);
 							}
 							break;
