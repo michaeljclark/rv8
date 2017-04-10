@@ -332,7 +332,7 @@ struct rv_jit
 		}
 
 		/* load ELF (headers only) */
-		elf.load(elf_filename);
+		elf.load(elf_filename, true);
 	}
 
 	/* Start the execuatable with the given proxy processor template */
