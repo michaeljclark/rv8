@@ -14,6 +14,8 @@
 
 #if defined(__APPLE__)
 #include <mach/mach_time.h>
+#else
+#include <time.h>
 #endif
 
 using namespace riscv;
@@ -150,11 +152,11 @@ host_cpu::host_cpu()
 {
 	/* set timebase */
 #if defined(__APPLE__)
-    mach_timebase_info_data_t timebaseInfo;
-    mach_timebase_info(&timebaseInfo);
-    timebase = timebaseInfo.numer / timebaseInfo.denom;
+	mach_timebase_info_data_t timebaseInfo;
+	mach_timebase_info(&timebaseInfo);
+	timebase = timebaseInfo.numer / timebaseInfo.denom;
 #else
-    timebase = 1;
+	timebase = 1;
 #endif
 
 #if HAS_X86_CPUID
