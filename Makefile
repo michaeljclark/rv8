@@ -251,6 +251,7 @@ X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/base/cpuinfo.cpp \
                 asmjit/src/asmjit/base/func.cpp \
                 asmjit/src/asmjit/base/globals.cpp \
+		asmjit/src/asmjit/base/inst.cpp \
                 asmjit/src/asmjit/base/logging.cpp \
                 asmjit/src/asmjit/base/operand.cpp \
                 asmjit/src/asmjit/base/osutils.cpp \
@@ -264,12 +265,12 @@ X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/x86/x86builder.cpp \
                 asmjit/src/asmjit/x86/x86compiler.cpp \
                 asmjit/src/asmjit/x86/x86inst.cpp \
+		asmjit/src/asmjit/x86/x86instimpl.cpp \
                 asmjit/src/asmjit/x86/x86internal.cpp \
                 asmjit/src/asmjit/x86/x86logging.cpp \
                 asmjit/src/asmjit/x86/x86operand.cpp \
                 asmjit/src/asmjit/x86/x86operand_regs.cpp \
-                asmjit/src/asmjit/x86/x86regalloc.cpp \
-                asmjit/src/asmjit/x86/x86ssetoavxpass.cpp
+                asmjit/src/asmjit/x86/x86regalloc.cpp
 X86_OBJS =      $(call asmjit_src_objs, $(X86_SRCS))
 X86_LIB =       $(LIB_DIR)/libasmjit_x86.a
 
