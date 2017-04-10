@@ -58,7 +58,7 @@ CXXFLAGS =      -std=c++1y -fno-rtti $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000 -lncurses
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -static -lncurses -ltermcap
+LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -lncurses -ltermcap
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
