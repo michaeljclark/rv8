@@ -82,6 +82,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-open \
 	$(BIN_DIR)/test-malloc \
 	$(BIN_DIR)/test-nbody \
+	$(BIN_DIR)/test-primes \
 	$(BIN_DIR)/test-sha512 \
 	$(BIN_DIR)/test-fpu-gen \
 	$(BIN_DIR)/test-fpu-printf \
@@ -174,6 +175,9 @@ $(BIN_DIR)/test-malloc: $(OBJ_DIR)/test-malloc.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-nbody.o: $(SRC_DIR)/test-nbody.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-nbody: $(OBJ_DIR)/test-nbody.o ; $(CC) $(CFLAGS) $^ -lm -o $@
+
+$(OBJ_DIR)/test-primes.o: $(SRC_DIR)/test-primes.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-primes: $(OBJ_DIR)/test-primes.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-sha512.o: $(SRC_DIR)/test-sha512.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-sha512: $(OBJ_DIR)/test-sha512.o ; $(CC) $(CFLAGS) $^ -o $@
