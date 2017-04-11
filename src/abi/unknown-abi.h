@@ -164,8 +164,17 @@ namespace riscv {
 
 	template <typename P> void abi_sys_open(P &proc)
 	{
+		int lxflags = proc.ireg[rv_ireg_a1], hostflags = 0;
+		if (lxflags & 01) hostflags |= O_WRONLY;
+		if (lxflags & 02) hostflags |= O_RDWR;
+		if (lxflags & 0100) hostflags |= O_CREAT;
+		if (lxflags & 0200) hostflags |= O_EXCL;
+		if (lxflags & 01000) hostflags |= O_TRUNC;
+		if (lxflags & 02000) hostflags |= O_APPEND;
+		if (lxflags & 04000) hostflags |= O_NONBLOCK;
+		if (lxflags & 04010000) hostflags |= O_SYNC;
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
-		int ret = open(pathname, proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		int ret = open(pathname, hostflags, proc.ireg[rv_ireg_a2].r.xu.val);
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
