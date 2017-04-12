@@ -809,6 +809,7 @@ namespace riscv {
 				rv::as.je(out);
 				log_trace("\t\tje out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs2x > 0) {
 					rv::as.cmp(x86::gpq(rs2x), Imm(0));
@@ -824,6 +825,7 @@ namespace riscv {
 				log_trace("\t\tmov rax, -1");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv2:");
 				rv::as.bind(div2);
 				if (rs1x > 0) {
 					rv::as.mov(x86::rax, x86::gpq(rs1x));
@@ -847,6 +849,7 @@ namespace riscv {
 				rv::as.mov(x86::rdx, x86::rcx);
 				log_trace("\t\tmov rdx, rcx");
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), x86::rax);
@@ -912,6 +915,7 @@ namespace riscv {
 				rv::as.je(out);
 				log_trace("\t\tje out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs1x > 0) {
 					rv::as.mov(x86::rax, x86::gpq(rs1x));
@@ -935,6 +939,7 @@ namespace riscv {
 				log_trace("\t\tmov rdx, rax");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv2:");
 				rv::as.bind(div2);
 				rv::as.cqo();
 				log_trace("\t\tcqo");
@@ -946,6 +951,7 @@ namespace riscv {
 					log_trace("\t\tidiv %s", rv::rbp_reg_str_q(dec.rs2));
 				}
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), x86::rdx);
@@ -996,10 +1002,11 @@ namespace riscv {
 				rv::as.jne(div1);
 				rv::as.mov(x86::rax, Imm(-1));
 				rv::as.jmp(out);
-				log_trace("\t\tjne div2");
+				log_trace("\t\tjne div1");
 				log_trace("\t\tmov rax, -1");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs1x > 0) {
 					rv::as.mov(x86::rax, x86::gpq(rs1x));
@@ -1023,6 +1030,7 @@ namespace riscv {
 				rv::as.mov(x86::rdx, x86::rcx);
 				log_trace("\t\tmov rdx, rcx");
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), x86::rax);
@@ -1081,10 +1089,11 @@ namespace riscv {
 				rv::as.jne(div1);
 				rv::as.mov(x86::rdx, x86::rax);
 				rv::as.jmp(out);
-				log_trace("\t\tjne div2");
+				log_trace("\t\tjne div1");
 				log_trace("\t\tmov rdx, rax");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				rv::as.xor_(x86::rdx, x86::rdx);
 				log_trace("\t\txor rdx, rdx");
@@ -1096,6 +1105,7 @@ namespace riscv {
 					log_trace("\t\tdiv %s", rv::rbp_reg_str_q(dec.rs2));
 				}
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), x86::rdx);
@@ -2192,6 +2202,7 @@ namespace riscv {
 				rv::as.je(out);
 				log_trace("\t\tje out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs2x > 0) {
 					rv::as.cmp(x86::gpd(rs2x), Imm(0));
@@ -2207,6 +2218,7 @@ namespace riscv {
 				log_trace("\t\tmov eax, -1");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv2:");
 				rv::as.bind(div2);
 				if (rs1x > 0) {
 					rv::as.mov(x86::eax, x86::gpd(rs1x));
@@ -2230,6 +2242,7 @@ namespace riscv {
 				rv::as.mov(x86::rdx, x86::rcx);
 				log_trace("\t\tmov rdx, rcx");
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.movsxd(x86::gpq(rdx), x86::eax);
@@ -2297,6 +2310,7 @@ namespace riscv {
 				rv::as.je(out);
 				log_trace("\t\tje out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs1x > 0) {
 					rv::as.mov(x86::eax, x86::gpd(rs1x));
@@ -2320,6 +2334,7 @@ namespace riscv {
 				log_trace("\t\tmov rdx, eax");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv2:");
 				rv::as.bind(div2);
 				rv::as.cdq();
 				log_trace("\t\tcdq");
@@ -2331,6 +2346,7 @@ namespace riscv {
 					log_trace("\t\tidiv %s", rv::rbp_reg_str_d(dec.rs2));
 				}
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.movsxd(x86::gpq(rdx), x86::edx);
@@ -2383,10 +2399,11 @@ namespace riscv {
 				rv::as.jne(div1);
 				rv::as.mov(x86::eax, Imm(-1));
 				rv::as.jmp(out);
-				log_trace("\t\tjne div2");
+				log_trace("\t\tjne div1");
 				log_trace("\t\tmov eax, -1");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs1x > 0) {
 					rv::as.mov(x86::eax, x86::gpd(rs1x));
@@ -2410,6 +2427,7 @@ namespace riscv {
 				rv::as.mov(x86::rdx, x86::rcx);
 				log_trace("\t\tmov rdx, rcx");
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.movsxd(x86::gpq(rdx), x86::eax);
@@ -2470,10 +2488,11 @@ namespace riscv {
 				rv::as.jne(div1);
 				rv::as.mov(x86::edx, x86::eax);
 				rv::as.jmp(out);
-				log_trace("\t\tjne div2");
+				log_trace("\t\tjne div1");
 				log_trace("\t\tmov rdx, eax");
 				log_trace("\t\tjmp out");
 
+				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				rv::as.xor_(x86::edx, x86::edx);
 				log_trace("\t\txor edx, edx");
@@ -2485,6 +2504,7 @@ namespace riscv {
 					log_trace("\t\tdiv %s", rv::rbp_reg_str_d(dec.rs2));
 				}
 
+				log_trace("\t\tout:");
 				rv::as.bind(out);
 				if (rdx > 0) {
 					rv::as.movsxd(x86::gpq(rdx), x86::edx);
