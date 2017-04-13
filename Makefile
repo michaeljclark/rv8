@@ -1,3 +1,6 @@
+# install directory
+DEST_DIR =	/usr/local/bin
+
 # architecture detection
 OS :=           $(shell uname -s | sed 's/ /_/' | tr A-Z a-z)
 CPU :=          $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
@@ -580,12 +583,12 @@ danger: ; @echo Please do not make danger
 # install
 
 install:
-	install $(RV_META_BIN) /usr/local/bin/rv-meta
-	install $(RV_BIN_BIN) /usr/local/bin/rv-bin
-	install $(RV_SIM_BIN) /usr/local/bin/rv-sim
-	install $(RV_SYS_BIN) /usr/local/bin/rv-sys
-	install $(RV_JIT_BIN) /usr/local/bin/rv-jit
-	install $(RV_ASSEMBLER_BIN) /usr/local/bin/rv-asm
+	install $(RV_META_BIN) $(DEST_DIR)/rv-meta
+	install $(RV_BIN_BIN) $(DEST_DIR)/rv-bin
+	install $(RV_SIM_BIN) $(DEST_DIR)/rv-sim
+	install $(RV_SYS_BIN) $(DEST_DIR)/rv-sys
+	install $(RV_JIT_BIN) $(DEST_DIR)/rv-jit
+	install $(RV_ASSEMBLER_BIN) $(DEST_DIR)/rv-asm
 
 # metadata targets
 
