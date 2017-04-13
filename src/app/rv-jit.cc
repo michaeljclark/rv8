@@ -105,6 +105,13 @@ static bool allow_env_var(const char *var)
 
 struct rv_jit
 {
+	enum jit_mode {
+		jit_mode_none,
+		jit_mode_trace,
+		jit_mode_audit,
+	};
+
+	jit_mode mode = jit_mode_trace;
 	elf_file elf;
 	host_cpu &cpu;
 	int proc_logs = 0;
@@ -279,18 +286,24 @@ struct rv_jit
 			{ "-T", "--log-jit-trace", cmdline_arg_type_none,
 				"Log JIT trace",
 				[&](std::string s) { return (proc_logs |= proc_log_jit_trace); } },
+			{ "-H", "--register-usage-histogram", cmdline_arg_type_none,
+				"Record register usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
+			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
+				"Record program counter usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger CLI",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
-			{ "-t", "--trace", cmdline_arg_type_none,
-				"Enable hotspot tracer",
-				[&](std::string s) { proc_logs |= proc_log_hist_pc | proc_log_jit_trap; return true; } },
+			{ "-t", "--no-trace", cmdline_arg_type_none,
+				"Disable JIT tracer",
+				[&](std::string s) { mode = jit_mode_none; return true; } },
 			{ "-a", "--audit", cmdline_arg_type_none,
 				"Enable JIT audit",
-				[&](std::string s) { proc_logs |= proc_log_jit_audit; return true; } },
+				[&](std::string s) { mode = jit_mode_audit; return true; } },
 			{ "-I", "--trace-iters", cmdline_arg_type_string,
 				"Trace iterations",
 				[&](std::string s) { trace_iters = strtoull(s.c_str(), nullptr, 10); return true; } },
@@ -341,6 +354,18 @@ struct rv_jit
 	{
 		/* setup floating point exception mask */
 		fenv_init();
+
+		/* JIT mode */
+		switch (mode) {
+			case jit_mode_none:
+				break;
+			case jit_mode_trace:
+				proc_logs |= proc_log_hist_pc | proc_log_jit_trap;
+				break;
+			case jit_mode_audit:
+				proc_logs |= proc_log_jit_audit;
+				break;
+		}
 
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
