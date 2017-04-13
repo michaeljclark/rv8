@@ -584,6 +584,7 @@ install:
 	install $(RV_BIN_BIN) /usr/local/bin/rv-bin
 	install $(RV_SIM_BIN) /usr/local/bin/rv-sim
 	install $(RV_SYS_BIN) /usr/local/bin/rv-sys
+	install $(RV_JIT_BIN) /usr/local/bin/rv-jit
 	install $(RV_ASSEMBLER_BIN) /usr/local/bin/rv-asm
 
 # metadata targets
