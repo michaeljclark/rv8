@@ -115,7 +115,7 @@ namespace riscv {
 		{
 			switch (rd) {
 				case rv_ireg_zero: return 0;
-				case rv_ireg_ra: return 2;  /* rdx */
+				case rv_ireg_ra: return 1;  /* rcx */
 				case rv_ireg_sp: return 3;  /* rbx */
 				case rv_ireg_t0: return 6;  /* rsi */
 				case rv_ireg_t1: return 7;  /* rdi */
@@ -164,7 +164,7 @@ namespace riscv {
 			as.push(x86::r14);
 			as.push(x86::r15);
 			as.mov(x86::rbp, x86::rdi);
-			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
+			as.mov(x86::rcx, rbp_reg_q(rv_ireg_ra));
 			as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
 			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
 			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
@@ -180,7 +180,7 @@ namespace riscv {
 
 		void emit_epilog()
 		{
-			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
+			as.mov(rbp_reg_q(rv_ireg_ra), x86::rcx);
 			as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
 			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
 			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
