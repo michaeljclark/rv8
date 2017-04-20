@@ -21,8 +21,8 @@ using namespace riscv;
 typedef signed long        sx;
 typedef unsigned long      ux;
 
-static int fcsr = 0;
-static int rm = 0;
+static u32 fcsr = 0;
+static s32 rm = 0;
 
 extern "C" f32 fmadd_s(f32 s1, f32 s2, f32 s3)
 {

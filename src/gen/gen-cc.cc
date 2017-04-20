@@ -129,8 +129,8 @@ using namespace riscv;
 typedef signed long        sx;
 typedef unsigned long      ux;
 
-static int fcsr = 0;
-static int rm = 0;
+static u32 fcsr = 0;
+static s32 rm = 0;
 
 )C";
 

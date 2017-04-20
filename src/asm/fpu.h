@@ -127,8 +127,7 @@ namespace riscv {
 
 	/* get accrued exception flags (C11) */
 
-	template <typename T>
-	inline void fenv_getflags(T &fcsr)
+	inline void fenv_getflags(u32 &fcsr)
 	{
 #if defined USE_SSE_MATH
 		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
@@ -149,8 +148,7 @@ namespace riscv {
 
 	/* clear accrued exception flags (C11) */
 
-	template <typename T>
-	inline void fenv_clearflags(T &fcsr)
+	inline void fenv_clearflags(u32 &fcsr)
 	{
 #if defined USE_SSE_MATH
 		int x86_mxcsr_val = __builtin_ia32_stmxcsr();
@@ -201,8 +199,8 @@ namespace riscv {
 
 	/* convert single or double to signed word (32-bit) */
 
-	template <typename T, typename F>
-	inline s32 fcvt_w(T &fcsr, F f)
+	template <typename F>
+	inline s32 fcvt_w(u32 &fcsr, F f)
 	{
 		return (((f > std::numeric_limits<s32>::max()) & (s32(f) < 0)) | std::isnan(f))
 			? std::numeric_limits<s32>::max()
@@ -211,8 +209,8 @@ namespace riscv {
 
 	/* convert single or double to unsigned word (32-bit) */
 
-	template <typename T, typename F>
-	inline s32 fcvt_wu(T &fcsr, F f)
+	template <typename F>
+	inline s32 fcvt_wu(u32 &fcsr, F f)
 	{
 		return (std::isnan(f) | ((f >= 0) & std::isinf(f)))
 			? std::numeric_limits<u32>::max()
@@ -225,8 +223,8 @@ namespace riscv {
 
 	/* convert single or double to signed long (64-bit) */
 
-	template <typename T, typename F>
-	inline s64 fcvt_l(T &fcsr, F f)
+	template <typename F>
+	inline s64 fcvt_l(u32 &fcsr, F f)
 	{
 		return (((f > std::numeric_limits<s64>::max()) & (s64(f) < 0)) | std::isnan(f))
 			? std::numeric_limits<s64>::max()
@@ -235,8 +233,8 @@ namespace riscv {
 
 	/* convert single or double to unsigned long (64-bit) */
 
-	template <typename T, typename F>
-	inline s64 fcvt_lu(T &fcsr, F f)
+	template <typename F>
+	inline s64 fcvt_lu(u32 &fcsr, F f)
 	{
 		return (std::isnan(f) | ((f >= 0) & std::isinf(f)))
 			? std::numeric_limits<u64>::max()
@@ -246,6 +244,66 @@ namespace riscv {
 			? (fcsr |= rv_fcsr_NX, s64(0))
 			: (fcsr |= rv_fcsr_NV, s64(0));
 	}
+
+#if defined __GNUC__ && defined __x86_64__
+
+	template <>
+	inline s64 fcvt_lu(u32 &fcsr, float f)
+	{
+		s64 res;
+		static const union { f32 f; u32 u; } val = { .u = 0x5f000000 };
+		if (std::isnan(f) | ((f >= 0) & std::isinf(f))) return std::numeric_limits<u64>::max();
+		if (f <= -1) { fcsr |= rv_fcsr_NV; return 0; }
+		if (f < 0) { fcsr |= rv_fcsr_NX; return 0; }
+		if (f > val.f) {
+			__asm__(
+				"subss      %[sub], %[input]\n	"
+				"movabsq    $0x8000000000000000, %%rdx\n	"
+				"cvttss2siq %[input], %[result]\n	"
+				"xorq       %%rdx, %[result]"
+			 : [result] "=r"(res)
+			 : [sub] "m"(val.f), [input] "x"(f)
+			 : "rdx"
+			);
+		} else {
+			__asm__(
+				"cvttss2siq %[input], %[result]"
+			 : [result] "=r"(res)
+			 : [input] "x"(f)
+			);
+		}
+		return res;
+	}
+
+	template <>
+	inline s64 fcvt_lu(u32 &fcsr, double f)
+	{
+		s64 res;
+		static const union f64_bits { f64 f; u64 u; } val = { .u = 0x43E0000000000000ULL };
+		if (std::isnan(f) | ((f >= 0) & std::isinf(f))) return std::numeric_limits<u64>::max();
+		if (f <= -1) { fcsr |= rv_fcsr_NV; return 0; }
+		if (f < 0) { fcsr |= rv_fcsr_NX; return 0; }
+		if (f > val.f) {
+			__asm__(
+				"subsd      %[sub], %[input]\n	"
+				"movabsq    $0x8000000000000000, %%rdx\n	"
+				"cvttsd2siq %[input], %[result]\n	"
+				"xorq       %%rdx, %[result]"
+			 : [result] "=r"(res)
+			 : [sub] "m"(val.f), [input] "x"(f)
+			 : "rdx"
+			);
+		} else {
+			__asm__(
+				"cvttsd2siq %[input], %[result]"
+			 : [result] "=r"(res)
+			 : [input] "x"(f)
+			);
+		}
+		return res;
+	}
+
+#endif
 
 	/* floating point square root */
 

@@ -18,9 +18,9 @@ namespace riscv {
 
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 		{
-			const typename P::ux fflags_mask   = 0x1f;
-			const typename P::ux frm_mask      = 0x3;
-			const typename P::ux fcsr_mask     = 0xff;
+			u32 fflags_mask   = 0x1f;
+			u32 frm_mask      = 0x3;
+			u32 fcsr_mask     = 0xff;
 
 			switch (csr) {
 				case rv_csr_fflags:   fenv_getflags(P::fcsr);

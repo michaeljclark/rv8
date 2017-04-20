@@ -508,9 +508,9 @@ core {
 			/*
 			 * fcsr
 			 */
-			const typename P::ux fflags_mask   = 0x1f;
-			const typename P::ux frm_mask      = 0x3;
-			const typename P::ux fcsr_mask     = 0xff;
+			u32 fflags_mask   = 0x1f;
+			u32 frm_mask      = 0x3;
+			u32 fcsr_mask     = 0xff;
 
 			/*
 			 * misa

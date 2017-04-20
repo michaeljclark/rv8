@@ -177,7 +177,7 @@ namespace riscv {
 		u64 time;                     /* User Time Register */
 		u64 cycle;                    /* User Number of Cycles */
 		u64 instret;                  /* User Number of Instructions Retired  */
-		UX fcsr;                      /* Floating-Point Control and Status Register */
+		u32 fcsr;                     /* Floating-Point Control and Status Register */
 
 		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
