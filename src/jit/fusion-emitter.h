@@ -909,8 +909,8 @@ namespace riscv {
 				rv::as.jne(div1);
 				log_trace("\t\tjne div1");
 
-				rv::as.mov(x86::rdx, 0);
-				log_trace("\t\tmov rdx, 0");
+				rv::as.xor_(x86::edx, x86::edx);
+				log_trace("\t\txor edx, edx");
 				if (rs2x > 0) {
 					rv::as.cmp(x86::gpq(rs2x), Imm(-1));
 					log_trace("\t\tcmp %s, -1", rv::x86_reg_str_q(rs2x));
@@ -2324,8 +2324,8 @@ namespace riscv {
 				rv::as.jne(div1);
 				log_trace("\t\tjne div1");
 
-				rv::as.mov(x86::edx, 0);
-				log_trace("\t\tmov rdx, 0");
+				rv::as.xor_(x86::edx, x86::edx);
+				log_trace("\t\txor edx, edx");
 				if (rs2x > 0) {
 					rv::as.cmp(x86::gpd(rs2x), Imm(-1));
 					log_trace("\t\tcmp %s, -1", rv::x86_reg_str_d(rs2x));
