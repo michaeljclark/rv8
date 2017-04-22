@@ -4015,6 +4015,7 @@ namespace riscv {
 				// nop
 			} else {
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
+				callstack.push_back(link_addr);
 				if (rdx > 0) {
 					rv::as.mov(x86::gpq(rdx), Imm(link_addr));
 					log_trace("\t\tmov %s, 0x%llx", rv::x86_reg_str_q(rdx), link_addr);
