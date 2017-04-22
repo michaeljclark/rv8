@@ -666,11 +666,11 @@ namespace riscv {
 				/* if rs1 is positive branch to umul */
 				Label umul = rv::as.newLabel();
 				Label out = rv::as.newLabel();
-				rv::as.cmp(x86::rax, Imm(0));
-				rv::as.jge(umul);
+				rv::as.test(x86::rax, x86::rax);
+				rv::as.jns(umul);
 				rv::as.neg(x86::rax);
-				log_trace("\t\tcmp rax, 0");
-				log_trace("\t\tjge umul");
+				log_trace("\t\ttest rax, rax");
+				log_trace("\t\tjns umul");
 				log_trace("\t\tneg rax");
 
 				/* if necessary stash rdx input operand */
@@ -812,8 +812,8 @@ namespace riscv {
 				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpq(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_q(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_q(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_q(dec.rs2));
@@ -932,8 +932,8 @@ namespace riscv {
 				}
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpq(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_q(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_q(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_q(dec.rs2));
@@ -1003,8 +1003,8 @@ namespace riscv {
 				Label div1 = rv::as.newLabel();
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpq(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_q(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_q(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_q(dec.rs2));
@@ -1096,8 +1096,8 @@ namespace riscv {
 				}
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpq(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_q(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_q(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_q(dec.rs2));
@@ -2225,8 +2225,8 @@ namespace riscv {
 				log_trace("\t\tdiv1:");
 				rv::as.bind(div1);
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpd(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_d(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_d(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_d(dec.rs2));
@@ -2347,8 +2347,8 @@ namespace riscv {
 				}
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpd(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_d(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_d(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_d(dec.rs2));
@@ -2418,8 +2418,8 @@ namespace riscv {
 				Label div1 = rv::as.newLabel();
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpd(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_d(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_d(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_d(dec.rs2));
@@ -2513,8 +2513,8 @@ namespace riscv {
 				}
 
 				if (rs2x > 0) {
-					rv::as.cmp(x86::gpd(rs2x), Imm(0));
-					log_trace("\t\tcmp %s, 0", rv::x86_reg_str_d(rs2x));
+					rv::as.test(x86::gpq(rs2x), x86::gpq(rs2x));
+					log_trace("\t\ttest %s, %s", rv::x86_reg_str_q(rs2x), rv::x86_reg_str_q(rs2x));
 				} else {
 					rv::as.cmp(rv::rbp_reg_d(dec.rs2), Imm(0));
 					log_trace("\t\tcmp %s, 0", rv::rbp_reg_str_d(dec.rs2));
