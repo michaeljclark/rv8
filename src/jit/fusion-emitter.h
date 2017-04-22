@@ -532,15 +532,13 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				// push rdx
 				// mov rax, rs1
 				// imul rs2
 				// mov rd, rdx
-				// pop rdx
 
 				if (rdx != 2 /* x86::rdx */) {
-					rv::as.push(x86::rdx);
-					log_trace("\t\tpush rdx");
+					rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
+					log_trace("\t\tmov %s, rdx", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 
 				if (rs1x > 0) {
@@ -572,8 +570,8 @@ namespace riscv {
 				}
 
 				if (rdx != 2 /* x86::rdx */) {
-					rv::as.pop(x86::rdx);
-					log_trace("\t\tpop rdx");
+					rv::as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
+					log_trace("\t\tmov rdx, %s", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 			}
 			return true;
@@ -591,15 +589,13 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				// push rdx
 				// mov rax, rs1
 				// mul rs2
 				// mov rd, rdx
-				// pop rdx
 
 				if (rdx != 2 /* x86::rdx */) {
-					rv::as.push(x86::rdx);
-					log_trace("\t\tpush rdx");
+					rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
+					log_trace("\t\tmov %s, rdx", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 
 				if (rs1x > 0) {
@@ -631,8 +627,8 @@ namespace riscv {
 				}
 
 				if (rdx != 2 /* x86::rdx */) {
-					rv::as.pop(x86::rdx);
-					log_trace("\t\tpop rdx");
+					rv::as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
+					log_trace("\t\tmov rdx, %s", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 			}
 			return true;
@@ -650,9 +646,9 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (rdx != 2 /* x86::rdx */) {
-					rv::as.push(x86::rdx);
-					log_trace("\t\tpush rdx");
+				if (rdx != 2 /* x86::rdx */ || (rs1x == 2 /* x86::rdx */ || rs2x == 2 /* x86::rdx */)) {
+					rv::as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
+					log_trace("\t\tmov %s, rdx", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 
 				if (rs1x > 0) {
@@ -673,12 +669,6 @@ namespace riscv {
 				log_trace("\t\tjns umul");
 				log_trace("\t\tneg rax");
 
-				/* if necessary stash rdx input operand */
-				if (rs1x == 2 || rs2x == 2 /* x86::rdx */) {
-					rv::as.push(x86::rdx);
-					log_trace("\t\tpush rdx");
-				}
-
 				/* multiply, negate and stash result in rcx */
 				if (rs2x > 0) {
 					rv::as.mul(x86::gpq(rs2x));
@@ -696,8 +686,8 @@ namespace riscv {
 
 				/* if necessary restore rdx input operand */
 				if (rs1x == 2 || rs2x == 2 /* x86::rdx */) {
-					rv::as.pop(x86::rdx);
-					log_trace("\t\tpop rdx");
+					rv::as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
+					log_trace("\t\tmov rdx, %s", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 
 				/* second multiply */
@@ -754,8 +744,8 @@ namespace riscv {
 				}
 
 				if (rdx != 2 /* x86::rdx */) {
-					rv::as.pop(x86::rdx);
-					log_trace("\t\tpop rdx");
+					rv::as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
+					log_trace("\t\tmov rdx, %s", rv::rbp_reg_str_q(rv_ireg_ra));
 				}
 			}
 			return true;
