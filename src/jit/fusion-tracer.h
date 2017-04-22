@@ -47,13 +47,13 @@ namespace riscv {
 
 		void begin()
 		{
-			fusion_emitter<P>::emit_prolog();
+			fusion_emitter<P>::begin();
 		}
 
 		void end()
 		{
 			emit_queue();
-			fusion_emitter<P>::emit_epilog();
+			fusion_emitter<P>::end();
 		}
 
 		bool emit(decode_type &dec)
@@ -62,6 +62,7 @@ namespace riscv {
 			switch(state) {
 				case match_state_none:
 					switch (dec.op) {
+						/*
 						case rv_op_addi:
 							if (dec.rs1 == rv_ireg_zero) {
 								rd = dec.rd;
@@ -72,6 +73,7 @@ namespace riscv {
 								return true;
 							}
 							break;
+						*/
 						case rv_op_auipc:
 							rd = dec.rd;
 							imm = dec.imm;
@@ -96,6 +98,7 @@ namespace riscv {
 						case rv_op_jalr: state = match_state_call; goto reparse;
 						default:
 							emit_queue();
+							state = match_state_none;
 							break;
 					}
 					break;
@@ -105,6 +108,7 @@ namespace riscv {
 						case rv_op_addi: state = match_state_li; goto reparse;
 						default:
 							emit_queue();
+							state = match_state_none;
 							break;
 					}
 					break;
@@ -141,6 +145,7 @@ namespace riscv {
 						return true;
 					}
 					emit_queue();
+					state = match_state_none;
 					break;
 				case match_state_call:
 					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
