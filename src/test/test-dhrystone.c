@@ -396,7 +396,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define LOOPS 5000000
+#define LOOPS 10000000
 
 char Version[] = "1.1-mc";
 
