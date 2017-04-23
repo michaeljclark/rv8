@@ -75,6 +75,7 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-giga \
 	$(BIN_DIR)/hello-world-pcrel-nano \
 	$(BIN_DIR)/hello-world-pcrel-pico \
+	$(BIN_DIR)/test-aes \
 	$(BIN_DIR)/test-args \
 	$(BIN_DIR)/test-bswap \
 	$(BIN_DIR)/test-loop-1 \
@@ -152,6 +153,9 @@ $(BIN_DIR)/hello-world-pcrel: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-giga: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-nano: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-pico: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --nmagic --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
+
+$(OBJ_DIR)/test-aes.o: $(SRC_DIR)/test-aes.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-aes: $(OBJ_DIR)/test-aes.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
