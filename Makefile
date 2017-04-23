@@ -531,10 +531,8 @@ sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
 # tests
 
 TEST_MK =       src/test/test.mk
-TEST_RV64 =     ARCH=rv64imafd TARGET=riscv64-unknown-elf
-TEST_RV64C =    ARCH=rv64imafdc RVC=1 TARGET=riscv64-unknown-elf
-TEST_RV32 =     ARCH=rv32imafd TARGET=riscv32-unknown-elf
-TEST_RV32C =    ARCH=rv32imafdc RVC=1 TARGET=riscv32-unknown-elf
+TEST_RV64 =    ARCH=rv64imafdc RVC=1 TARGET=riscv64-unknown-elf
+TEST_RV32 =    ARCH=rv32imafdc RVC=1 TARGET=riscv32-unknown-elf
 
 # sparsehash
 $(SPARSEHASH_SRC):
@@ -553,28 +551,18 @@ test-spike: test-spike-rv64
 test-sim: test-sim-rv64
 test-sys: test-sys-rv64
 
-test-spike-all: ; $(MAKE) -j1 test-spike-rv64 test-spike-rvc64 test-spike-rv32 test-spike-rvc32
-test-sim-all: ; $(MAKE) -j1 test-sim-rv64 test-sim-rvc64 test-sim-rv32 test-sim-rvc32
+test-spike-all: ; $(MAKE) -j1 test-spike-rv64 test-spike-rv32
+test-sim-all: ; $(MAKE) -j1 test-sim-rv64 test-sim-rv32
 
 test-build-rv64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64)
 test-spike-rv64: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64)
 test-sim-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64) EMULATOR=$(RV_SIM_BIN)
 test-sys-rv64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV64) EMULATOR=$(RV_SYS_BIN)
 
-test-build-rvc64: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV64C)
-test-spike-rvc64: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64C)
-test-sim-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV64C) EMULATOR=$(RV_SIM_BIN)
-test-sys-rvc64: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV64C) EMULATOR=$(RV_SYS_BIN)
-
 test-build-rv32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32)
 test-spike-rv32: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32)
 test-sim-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32) EMULATOR=$(RV_SIM_BIN)
 test-sys-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV32) EMULATOR=$(RV_SYS_BIN)
-
-test-build-rvc32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32C)
-test-spike-rvc32: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32C)
-test-sim-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32C) EMULATOR=$(RV_SIM_BIN)
-test-sys-rvc32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV32C) EMULATOR=$(RV_SYS_BIN)
 
 test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 

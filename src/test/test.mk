@@ -18,6 +18,8 @@ LD = ${RISCV}/bin/${TARGET}-ld
 STRIP = ${RISCV}/bin/${TARGET}-strip
 PK = ${RISCV}/${TARGET}/bin/pk
 
+TARGET_DIR = $(TARGET)
+
 SRC_DIR = src/test
 ASM_DIR = build/$(TARGET_DIR)/asm
 OBJ_DIR = build/$(TARGET_DIR)/obj
@@ -48,9 +50,6 @@ ifeq ($(call check_opt,$(CC),cc,$(LEGACY_RVC_FLAGS)), 0)
 CFLAGS += $(LEGACY_RVC_FLAGS)
 CXXFLAGS += $(LEGACY_RVC_FLAGS)
 endif
-TARGET_DIR = $(TARGET)-rvc
-else
-TARGET_DIR = $(TARGET)
 endif
 
 ifeq ($(call check_opt,$(CC),cc,-march=$(ARCH)), 0)
