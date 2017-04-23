@@ -78,6 +78,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-aes \
 	$(BIN_DIR)/test-args \
 	$(BIN_DIR)/test-bswap \
+	$(BIN_DIR)/test-dhrystone \
 	$(BIN_DIR)/test-loop-1 \
 	$(BIN_DIR)/test-loop-2 \
 	$(BIN_DIR)/test-open \
@@ -154,17 +155,20 @@ $(BIN_DIR)/hello-world-pcrel-giga: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) -T $(S
 $(BIN_DIR)/hello-world-pcrel-nano: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 $(BIN_DIR)/hello-world-pcrel-pico: $(OBJ_DIR)/hello-world-pcrel.o ; $(LD) --nmagic --strip-all -T $(SRC_DIR)/ld.$(TARGET).script $^ -o $@
 
+$(OBJ_DIR)/bswap32.o: $(SRC_DIR)/bswap32.s ; $(CC) $(CFLAGS) -c $^ -o $@
+$(OBJ_DIR)/bswap64.o: $(SRC_DIR)/bswap64.s ; $(CC) $(CFLAGS) -c $^ -o $@
+
 $(OBJ_DIR)/test-aes.o: $(SRC_DIR)/test-aes.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-aes: $(OBJ_DIR)/test-aes.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-args.o: $(SRC_DIR)/test-args.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-args: $(OBJ_DIR)/test-args.o ; $(CC) $(CFLAGS) $^ -o $@
 
-$(OBJ_DIR)/bswap32.o: $(SRC_DIR)/bswap32.s ; $(CC) $(CFLAGS) -c $^ -o $@
-$(OBJ_DIR)/bswap64.o: $(SRC_DIR)/bswap64.s ; $(CC) $(CFLAGS) -c $^ -o $@
-
 $(OBJ_DIR)/test-bswap.o: $(SRC_DIR)/test-bswap.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-bswap: $(OBJ_DIR)/test-bswap.o $(OBJ_DIR)/bswap32.o $(OBJ_DIR)/bswap64.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-dhrystone.o: $(SRC_DIR)/test-dhrystone.c ; $(CC) $(CFLAGS) -DTIME -c $^ -o $@
+$(BIN_DIR)/test-dhrystone: $(OBJ_DIR)/test-dhrystone.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-loop-1.o: $(SRC_DIR)/test-loop-1.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-loop-1: $(OBJ_DIR)/test-loop-1.o ; $(CC) $(CFLAGS) $^ -o $@
