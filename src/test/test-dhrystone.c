@@ -517,9 +517,9 @@ void Proc0()
 	gettimeofday(&endtime, NULL);
 	benchtime = (endtime.tv_sec * 1000000 + endtime.tv_usec) -
 		(starttime.tv_sec * 1000000 + starttime.tv_usec);
-	printf("Dhrystone(%s), %ld passes, %ld microseconds, %ld DMIPS\n",
-		Version, (long) LOOPS, benchtime,
-		((long) LOOPS * 1000000) / (benchtime * 1757));
+	printf("Dhrystone(%s), %ld passes, %ld microseconds, %lld DMIPS\n",
+		Version, (unsigned long) LOOPS, benchtime,
+		((unsigned long long) LOOPS * 1000000) / (benchtime * 1757));
 }
 
 void Proc1(RecordPtr PtrParIn)
