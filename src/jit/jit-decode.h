@@ -9,8 +9,8 @@ namespace riscv {
 
 	struct jit_decode
 	{
-		addr_t pc;         /* program counter */
-		inst_t inst;       /* source instruction */
+		u64    pc;         /* program counter */
+		u64    inst;       /* source instruction */
 		s32    imm;        /* decoded immediate */
 		u16    op;         /* (>256 entries) nearly full */
 		u8     codec;      /* (>32 entries) can grow */
