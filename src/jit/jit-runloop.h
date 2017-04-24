@@ -213,8 +213,8 @@ namespace riscv {
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
 			J emitter(*this, code);
-			processor_rv64imafd pre_jit, post_jit;
 			bool audited = false;
+			typename P::processor_type pre_jit, post_jit;
 
 			/* jit instruction */
 			emitter.emit_prolog();
