@@ -46,5 +46,5 @@ int main(int argc, char **argv)
 		exit(9);
 	}
 
-	printf("read %lu bytes\n", bytes_read);
+	printf("read %zu bytes\n", bytes_read);
 }
