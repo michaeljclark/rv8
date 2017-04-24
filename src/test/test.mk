@@ -73,7 +73,6 @@ PROGRAMS = \
 	$(BIN_DIR)/hello-world-pcrel-pico \
 	$(BIN_DIR)/test-aes \
 	$(BIN_DIR)/test-args \
-	$(BIN_DIR)/test-bswap \
 	$(BIN_DIR)/test-dhrystone \
 	$(BIN_DIR)/test-loop-1 \
 	$(BIN_DIR)/test-loop-2 \
@@ -93,6 +92,12 @@ PROGRAMS = \
 	$(BIN_DIR)/test-jump-tables-no \
 	$(BIN_DIR)/test-large-imm \
 	$(BIN_DIR)/test-reloc-imm \
+	$(BIN_DIR)/test-sbi-info \
+	$(BIN_DIR)/test-sbi-timer
+
+ifeq ($(TARGET),riscv64-unknown-elf)
+PROGRAMS += \
+	$(BIN_DIR)/test-bswap \
 	$(BIN_DIR)/test-m-ecall-trap \
 	$(BIN_DIR)/test-m-hartid \
 	$(BIN_DIR)/test-m-mret-user \
@@ -100,9 +105,8 @@ PROGRAMS = \
 	$(BIN_DIR)/test-m-mmio-timer \
 	$(BIN_DIR)/test-m-mmio-uart \
 	$(BIN_DIR)/test-m-poll-uart \
-	$(BIN_DIR)/test-m-sv39 \
-	$(BIN_DIR)/test-sbi-info \
-	$(BIN_DIR)/test-sbi-timer
+	$(BIN_DIR)/test-m-sv39
+endif
 
 all: dirs $(ASSEMBLY) $(PROGRAMS)
 
