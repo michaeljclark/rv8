@@ -75,16 +75,17 @@
 
 #include "asmjit.h"
 
-#include "fusion-decode.h"
-#include "fusion-base.h"
-#include "fusion-emitter.h"
-#include "fusion-tracer.h"
-#include "fusion-runloop.h"
+#include "jit-decode.h"
+#include "jit-emitter-rv64.h"
+#include "jit-runloop.h"
 
 using namespace riscv;
 
-using proxy_jit_rv64imafdc = fusion_runloop<processor_proxy
-	<processor_rv64imafdc_model<fusion_decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_model_rv64imafdc = processor_rv64imafdc_model<
+	jit_decode, processor_rv64imafd, mmu_proxy_rv64>;
+using proxy_jit_rv64imafdc = jit_runloop<
+	processor_proxy<proxy_model_rv64imafdc>,
+	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
 /* environment variables */
 

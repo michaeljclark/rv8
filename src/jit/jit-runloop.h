@@ -1,21 +1,21 @@
 //
-//  fusion-runloop.h
+//  jit-runloop.h
 //
 
-#ifndef rv_fusion_runloop_h
-#define rv_fusion_runloop_h
+#ifndef rv_jit_runloop_h
+#define rv_jit_runloop_h
 
 namespace riscv {
 
-	struct fusion_fault
+	struct jit_fault
 	{
-		static fusion_fault *current;
+		static jit_fault *current;
 	};
 
-	fusion_fault* fusion_fault::current = nullptr;
+	jit_fault* jit_fault::current = nullptr;
 
-	template <typename P>
-	struct fusion_runloop : fusion_fault, ErrorHandler, P
+	template <typename P, typename J>
+	struct jit_runloop : jit_fault, ErrorHandler, P
 	{
 		static const size_t inst_cache_size = 8191;
 		static const int inst_step = 100000;
@@ -33,8 +33,8 @@ namespace riscv {
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 
-		fusion_runloop() : fusion_runloop(std::make_shared<debug_cli<P>>()) {}
-		fusion_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache()
+		jit_runloop() : jit_runloop(std::make_shared<debug_cli<P>>()) {}
+		jit_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache()
 		{
 			trace_cache.set_empty_key(0);
 			trace_cache.set_deleted_key(-1);
@@ -48,8 +48,8 @@ namespace riscv {
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
-			static_cast<fusion_runloop<P>*>
-				(fusion_fault::current)->signal_dispatch(signum, info);
+			static_cast<jit_runloop<P,J>*>
+				(jit_fault::current)->signal_dispatch(signum, info);
 		}
 
 		void signal_dispatch(int signum, siginfo_t *info)
@@ -85,7 +85,7 @@ namespace riscv {
 			// install signal handler
 			struct sigaction sigaction_handler;
 			memset(&sigaction_handler, 0, sizeof(sigaction_handler));
-			sigaction_handler.sa_sigaction = &fusion_runloop<P>::signal_handler;
+			sigaction_handler.sa_sigaction = &jit_runloop<P,J>::signal_handler;
 			sigaction_handler.sa_flags = SA_SIGINFO;
 			sigaction(SIGSEGV, &sigaction_handler, nullptr);
 			sigaction(SIGTERM, &sigaction_handler, nullptr);
@@ -93,7 +93,7 @@ namespace riscv {
 			sigaction(SIGINT, &sigaction_handler, nullptr);
 			sigaction(SIGHUP, &sigaction_handler, nullptr);
 			sigaction(SIGUSR1, &sigaction_handler, nullptr);
-			fusion_fault::current = this;
+			jit_fault::current = this;
 
 			/* unblock signals */
 			if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
@@ -155,7 +155,7 @@ namespace riscv {
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			fusion_emitter<P> emitter(*this, code);
+			J emitter(*this, code);
 
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
@@ -204,7 +204,7 @@ namespace riscv {
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			fusion_emitter<P> emitter(*this, code);
+			J emitter(*this, code);
 			processor_rv64imafd pre_jit, post_jit;
 			bool audited = false;
 
