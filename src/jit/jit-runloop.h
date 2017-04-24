@@ -161,7 +161,11 @@ namespace riscv {
 			typename P::ux trace_instret = P::instret;
 
 			if (P::log & proc_log_jit_trace) {
-				printf("jit-trace-begin pc=0x%016llx\n", P::pc);
+				if (P::xlen == 32) {
+					printf("jit-trace-begin pc=0x%08x\n", (u32)P::pc);
+				} else if (P::xlen == 64) {
+					printf("jit-trace-begin pc=0x%016llx\n", (u64)P::pc);
+				}
 			}
 
 			P::log &= ~proc_log_jit_trap;
@@ -188,7 +192,11 @@ namespace riscv {
 			P::log |= proc_log_jit_trap;
 
 			if (P::log & proc_log_jit_trace) {
-				printf("jit-trace-end   pc=0x%016llx\n", P::pc);
+				if (P::xlen == 32) {
+					printf("jit-trace-end   pc=0x%08x\n", (u32)P::pc);
+				} else if (P::xlen == 64) {
+					printf("jit-trace-end   pc=0x%016llx\n", (u64)P::pc);
+				}
 			}
 
 			if (P::instret == trace_instret) {
@@ -219,10 +227,10 @@ namespace riscv {
 				TraceFunc fn;
 				Error err = rt.add(&fn, &code);
 				if (!err) {
-					memcpy(&pre_jit, static_cast<processor_rv64imafd*>(this), sizeof(processor_rv64imafd));
-					fn(static_cast<processor_rv64imafd*>(this));
-					memcpy(&post_jit, static_cast<processor_rv64imafd*>(this), sizeof(processor_rv64imafd));
-					memcpy(static_cast<processor_rv64imafd*>(this), &pre_jit, sizeof(processor_rv64imafd));
+					memcpy(&pre_jit, static_cast<typename P::processor_type*>(this), sizeof(typename P::processor_type));
+					fn(static_cast<typename P::processor_type*>(this));
+					memcpy(&post_jit, static_cast<typename P::processor_type*>(this), sizeof(typename P::processor_type));
+					memcpy(static_cast<typename P::processor_type*>(this), &pre_jit, sizeof(typename P::processor_type));
 					audited = true;
 					rt.release(fn);
 				}
@@ -247,14 +255,25 @@ namespace riscv {
 				for (size_t i = 0; i < P::ireg_count; i++) {
 					if (post_jit.ireg[i].r.xu.val != P::ireg[i].r.xu.val) {
 						pass = false;
-						printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
-							rv_ireg_name_sym[i], P::ireg[i].r.xu.val,
-							rv_ireg_name_sym[i], post_jit.ireg[i].r.xu.val);
+						if (P::xlen == 32) {
+							printf("ERROR interp-%s=0x%08x jit-%s=0x%08x\n",
+								rv_ireg_name_sym[i], (u32)P::ireg[i].r.xu.val,
+								rv_ireg_name_sym[i], (u32)post_jit.ireg[i].r.xu.val);
+						} else if (P::xlen == 64) {
+							printf("ERROR interp-%s=0x%016llx jit-%s=0x%016llx\n",
+								rv_ireg_name_sym[i], (u64)P::ireg[i].r.xu.val,
+								rv_ireg_name_sym[i], (u64)post_jit.ireg[i].r.xu.val);
+						}
 					}
 				}
 				if (post_jit.pc != P::pc) {
-					printf("ERROR interp-pc=0x%016llx jit-pc=0x%016llx\n",
-							P::pc, post_jit.pc);
+					if (P::xlen == 32) {
+						printf("ERROR interp-pc=0x%08x jit-pc=0x%08x\n",
+								(u32)P::pc, (u32)post_jit.pc);
+					} else if (P::xlen == 64) {
+						printf("ERROR interp-pc=0x%016llx jit-pc=0x%016llx\n",
+								(u64)P::pc, (u64)post_jit.pc);
+					}
 					pass = false;
 				}
 				if (!pass) {

@@ -76,10 +76,17 @@
 #include "asmjit.h"
 
 #include "jit-decode.h"
+#include "jit-emitter-rv32.h"
 #include "jit-emitter-rv64.h"
 #include "jit-runloop.h"
 
 using namespace riscv;
+
+using proxy_model_rv32imafdc = processor_rv32imafdc_model<
+	jit_decode, processor_rv32imafd, mmu_proxy_rv32>;
+using proxy_jit_rv32imafdc = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_emitter_rv32<proxy_model_rv32imafdc>>;
 
 using proxy_model_rv64imafdc = processor_rv64imafdc_model<
 	jit_decode, processor_rv64imafd, mmu_proxy_rv64>;
@@ -407,7 +414,7 @@ struct rv_jit
 		/* execute */
 		switch (elf.ei_class) {
 			case ELFCLASS32:
-				panic("rv32 not implemented"); break;
+				start_jit<proxy_jit_rv32imafdc>(); break;
 				break;
 			case ELFCLASS64:
 				start_jit<proxy_jit_rv64imafdc>(); break;

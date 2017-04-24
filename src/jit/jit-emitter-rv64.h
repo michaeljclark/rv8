@@ -21,7 +21,7 @@ namespace riscv {
 		Label term;
 		std::map<addr_t,Label> labels;
 		std::vector<addr_t> callstack;
-		addr_t term_pc;
+		u64 term_pc;
 
 		jit_emitter_rv64(P &proc, CodeHolder &code)
 			:proc(proc),  as(&code), term_pc(0)
