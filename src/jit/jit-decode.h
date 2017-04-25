@@ -32,9 +32,8 @@ namespace riscv {
 	};
 
 	enum jit_op {
-		jit_op_li = 1024,
-		jit_op_la = 1025,
-		jit_op_call = 1026
+		jit_op_la = 1024,
+		jit_op_call = 1025
 	};
 
 }

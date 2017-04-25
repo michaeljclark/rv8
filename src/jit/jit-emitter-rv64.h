@@ -12,6 +12,7 @@ namespace riscv {
 	template <typename P>
 	struct jit_emitter_rv64
 	{
+		typedef P processor_type;
 		typedef typename P::decode_type decode_type;
 
 		#define proc_offset(member) offsetof(typename P::processor_type, member)
@@ -4168,30 +4169,6 @@ namespace riscv {
 			return false;
 		}
 
-		bool emit_li(decode_type &dec)
-		{
-			log_trace("\t# 0x%016llx\tli\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst);
-			int rdx = x86_reg(dec.rd);
-			if (dec.rd == rv_ireg_zero) {
-				// nop
-			} else {
-				if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(dec.imm));
-					log_trace("\t\tmov %s, %lld", x86_reg_str_q(rdx), dec.imm);
-				} else if (dec.imm >= std::numeric_limits<int>::min() && dec.imm <= std::numeric_limits<int>::max()) {
-					as.mov(rbp_reg_q(dec.rd), Imm(dec.imm));
-					log_trace("\t\tmov %s, %lld", rbp_reg_str_q(dec.rd), dec.imm);
-				} else {
-					as.mov(x86::rax, Imm(dec.imm));
-					as.mov(rbp_reg_q(dec.rd), x86::rax);
-					log_trace("\t\tmov rax, %lld",  dec.imm);
-					log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rd));
-				}
-			}
-			return true;
-		}
-
 		bool emit_la(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
@@ -4306,7 +4283,6 @@ namespace riscv {
 				case rv_op_lui: return emit_lui(dec);
 				case rv_op_jal: return emit_jal(dec);
 				case rv_op_jalr: return emit_jalr(dec);
-				case jit_op_li: return emit_li(dec);
 				case jit_op_la: return emit_la(dec);
 				case jit_op_call: return emit_call(dec);
 			}
