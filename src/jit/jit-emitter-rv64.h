@@ -4163,7 +4163,7 @@ namespace riscv {
 				as.bind(l);
 				log_trace("\t\tcmp %s, 0x%llx", x86_reg_str_q(rv_ireg_ra), link_addr);
 				log_trace("\t\tje 1f");
-				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), dec.pc);
+				log_trace("\t\tmov qword ptr [rbp + %lu], 0x%llx", proc_offset(pc), dec.pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
 				return true;
@@ -4191,16 +4191,16 @@ namespace riscv {
 					as.xor_(x86::eax, x86::eax);
 					log_trace("\t\txor eax, eax");
 				} else if (rs1x > 0) {
-					as.mov(x86::rax, x86::gpq(rs1x));
-					log_trace("\t\tmov rax, %s", x86_reg_str_q(rs1x));
+					as.lea(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
+					log_trace("\t\tlea rax, qword ptr [%s + %d]", x86_reg_str_q(rs1x), dec.imm);
 				} else {
 					as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					as.add(x86::rax, dec.imm);
 					log_trace("\t\tmov rax, %s", rbp_reg_str_q(dec.rs1));
+					log_trace("\t\tadd rax, %d", dec.imm);
 				}
-				as.add(x86::rax, dec.imm);
 				as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
-				log_trace("\t\tadd rax, %d", dec.imm);
-				log_trace("\t\tmov [rbp + %lu], rax", proc_offset(pc));
+				log_trace("\t\tmov qword ptr [rbp + %lu], rax", proc_offset(pc));
 				return false;
 			}
 		}
