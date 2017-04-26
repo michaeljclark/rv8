@@ -19,13 +19,14 @@ namespace riscv {
 
 		P &proc;
 		X86Assembler as;
-		Label term;
 		std::map<addr_t,Label> labels;
 		std::vector<addr_t> callstack;
 		u64 term_pc;
+		Label term;
 
 		jit_emitter_rv64(P &proc, CodeHolder &code)
-			:proc(proc),  as(&code), term_pc(0)
+			:proc(proc), as(&code),
+			term_pc(0)
 		{}
 
 		void log_trace(const char* fmt, ...)
@@ -4148,8 +4149,10 @@ namespace riscv {
 
 		bool emit_jalr(decode_type &dec)
 		{
+			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero && dec.rs1 == rv_ireg_ra && callstack.size() > 0) {
-				term_pc = dec.pc + dec.imm;
+				term_pc = 0;
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
 				as.cmp(x86::gpq(x86_reg(rv_ireg_ra)), Imm(link_addr));
@@ -4158,15 +4161,48 @@ namespace riscv {
 				as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), Imm(dec.pc));
 				as.jmp(term);
 				as.bind(l);
-				log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 				log_trace("\t\tcmp %s, 0x%llx", x86_reg_str_q(rv_ireg_ra), link_addr);
 				log_trace("\t\tje 1f");
 				log_trace("\t\tmov [rbp + %lu], 0x%llx", proc_offset(pc), dec.pc);
 				log_trace("\t\tjmp term");
 				log_trace("\t\t1:");
 				return true;
+			} else {
+				term_pc = 0;
+				addr_t link_addr = dec.pc + inst_length(dec.inst);
+
+				// mov rd, pc + inst_length
+				if (dec.rd == rv_ireg_zero) {
+					// ret
+				}
+				else if (rdx > 0) {
+					as.mov(x86::gpq(rdx), Imm(link_addr));
+					log_trace("\t\tmov %s, 0x%llx", x86_reg_str_q(rdx), link_addr);
+				} else {
+					as.mov(x86::rax, Imm(link_addr));
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+					log_trace("\t\tmov rax, 0x%llx", link_addr);
+					log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rd));
+				}
+
+				// mov rax, rs1
+				// add rax, imm
+				if (dec.rs1 == rv_ireg_zero) {
+					as.xor_(x86::eax, x86::eax);
+					log_trace("\t\txor eax, eax");
+				} else if (rs1x > 0) {
+					as.mov(x86::rax, x86::gpq(rs1x));
+					log_trace("\t\tmov rax, %s", x86_reg_str_q(rs1x));
+				} else {
+					as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					log_trace("\t\tmov rax, %s", rbp_reg_str_q(dec.rs1));
+				}
+				as.add(x86::rax, dec.imm);
+				as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
+				log_trace("\t\tadd rax, %d", dec.imm);
+				log_trace("\t\tmov [rbp + %lu], rax", proc_offset(pc));
+				return false;
 			}
-			return false;
 		}
 
 		bool emit_la(decode_type &dec)

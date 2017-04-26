@@ -9,15 +9,15 @@ namespace riscv {
 
 	/* Simple processor stepper with instruction cache */
 
-	struct processor_fault
+	struct processor_singleton
 	{
-		static processor_fault *current;
+		static processor_singleton *current;
 	};
 
-	processor_fault* processor_fault::current = nullptr;
+	processor_singleton* processor_singleton::current = nullptr;
 
 	template <typename P>
-	struct processor_runloop : processor_fault, P
+	struct processor_runloop : processor_singleton, P
 	{
 		static const size_t inst_cache_size = 8191;
 		static const int inst_step = 100000;
@@ -38,7 +38,7 @@ namespace riscv {
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
 			static_cast<processor_runloop<P>*>
-				(processor_fault::current)->signal_dispatch(signum, info);
+				(processor_singleton::current)->signal_dispatch(signum, info);
 		}
 
 		void signal_dispatch(int signum, siginfo_t *info)
@@ -82,7 +82,7 @@ namespace riscv {
 			sigaction(SIGINT, &sigaction_handler, nullptr);
 			sigaction(SIGHUP, &sigaction_handler, nullptr);
 			sigaction(SIGUSR1, &sigaction_handler, nullptr);
-			processor_fault::current = this;
+			processor_singleton::current = this;
 
 			/* unblock signals */
 			if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {

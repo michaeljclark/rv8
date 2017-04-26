@@ -36,6 +36,7 @@ namespace riscv {
 		jit_op_call = 1025
 	};
 
+	typedef void (*TraceFunc)(void*);
 }
 
 #endif

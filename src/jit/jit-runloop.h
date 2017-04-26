@@ -7,16 +7,18 @@
 
 namespace riscv {
 
-	struct jit_fault
+	struct jit_singleton
 	{
-		static jit_fault *current;
+		static jit_singleton *current;
 	};
 
-	jit_fault* jit_fault::current = nullptr;
+	jit_singleton* jit_singleton::current = nullptr;
 
 	template <typename P, typename J>
-	struct jit_runloop : jit_fault, ErrorHandler, P
+	struct jit_runloop : jit_singleton, ErrorHandler, P
 	{
+		typedef J jit_emitter;
+
 		static const size_t inst_cache_size = 8191;
 		static const int inst_step = 100000;
 
@@ -25,8 +27,6 @@ namespace riscv {
 			inst_t inst;
 			typename P::decode_type dec;
 		};
-
-		typedef void (*TraceFunc)(typename P::processor_type *);
 
 		JitRuntime rt;
 		google::dense_hash_map<addr_t,TraceFunc> trace_cache;
@@ -49,7 +49,7 @@ namespace riscv {
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
 			static_cast<jit_runloop<P,J>*>
-				(jit_fault::current)->signal_dispatch(signum, info);
+				(jit_singleton::current)->signal_dispatch(signum, info);
 		}
 
 		void signal_dispatch(int signum, siginfo_t *info)
@@ -93,7 +93,7 @@ namespace riscv {
 			sigaction(SIGINT, &sigaction_handler, nullptr);
 			sigaction(SIGHUP, &sigaction_handler, nullptr);
 			sigaction(SIGUSR1, &sigaction_handler, nullptr);
-			jit_fault::current = this;
+			jit_singleton::current = this;
 
 			/* unblock signals */
 			if (pthread_sigmask(SIG_UNBLOCK, &set, NULL) != 0) {
@@ -155,7 +155,7 @@ namespace riscv {
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			J emitter(*this, code);
+			jit_emitter emitter(*this, code);
 
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
@@ -212,7 +212,7 @@ namespace riscv {
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			J emitter(*this, code);
+			jit_emitter emitter(*this, code);
 			bool audited = false;
 			typename P::processor_type pre_jit, post_jit;
 
