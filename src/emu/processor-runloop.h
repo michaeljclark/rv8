@@ -126,7 +126,7 @@ namespace riscv {
 		{
 			typename P::decode_type dec;
 			typename P::ux inststop = P::instret + count;
-			addr_t pc_offset, new_offset;
+			typename P::ux pc_offset, new_offset;
 			inst_t inst = 0, inst_cache_key;
 
 			/* interrupt service routine */
@@ -165,8 +165,8 @@ namespace riscv {
 					inst_cache[inst_cache_key].inst = inst;
 					inst_cache[inst_cache_key].dec = dec;
 				}
-				if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
-					(new_offset = P::inst_priv(dec, pc_offset)) != -1)
+				if ((new_offset = P::inst_exec(dec, pc_offset)) != typename P::ux(-1)  ||
+					(new_offset = P::inst_priv(dec, pc_offset)) != typename P::ux(-1))
 				{
 					if (P::log) P::print_log(dec, inst);
 					P::pc += new_offset;

@@ -6,7 +6,7 @@
 lui        "rd = imm"
 auipc      "rd = pc + imm"
 jal        "rd = pc + length(inst); pc_offset = imm"
-jalr       "rd = pc + length(inst); pc_offset = (rs1 + imm - pc) & ~1"
+jalr       "ux new_offset = (rs1 + imm - pc) & ~1; rd = pc + length(inst); pc_offset = new_offset"
 beq        "if (sx(rs1) == sx(rs2)) pc_offset = imm"
 bne        "if (sx(rs1) != sx(rs2)) pc_offset = imm"
 blt        "if (sx(rs1) < sx(rs2)) pc_offset = imm"

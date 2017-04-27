@@ -153,7 +153,8 @@ namespace riscv
 
 	/* Fetch Instruction */
 
-	inline inst_t inst_fetch(addr_t addr, addr_t &pc_offset)
+	template <typename UX>
+	inline inst_t inst_fetch(addr_t addr, UX &pc_offset)
 	{
 		/* NOTE: supports maximum instruction size of 64-bits */
 

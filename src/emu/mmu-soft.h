@@ -102,7 +102,7 @@ namespace riscv {
 
 		/* instruction fetch */
 		template <typename P, const mmu_op op = op_fetch>
-		inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
+		inst_t inst_fetch(P &proc, UX pc, typename P::ux &pc_offset)
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 			memory_segment<UX> *segment = nullptr;

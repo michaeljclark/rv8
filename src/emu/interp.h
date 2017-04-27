@@ -10,7 +10,7 @@
 /* Execute Instruction RV32 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
-riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
+typename P::ux exec_inst_rv32(T &dec, P &proc, typename P::ux pc_offset)
 {
 	using namespace riscv;
 	enum { xlen = 32 };
@@ -35,7 +35,7 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case rv_op_jalr:
 			if (rvi) {
-				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1;
+				ux new_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1; proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = new_offset;
 			};
 			break;
 		case rv_op_beq:
@@ -566,7 +566,7 @@ riscv::addr_t exec_inst_rv32(T &dec, P &proc, riscv::addr_t pc_offset)
 /* Execute Instruction RV64 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
-riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
+typename P::ux exec_inst_rv64(T &dec, P &proc, typename P::ux pc_offset)
 {
 	using namespace riscv;
 	enum { xlen = 64 };
@@ -591,7 +591,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case rv_op_jalr:
 			if (rvi) {
-				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1;
+				ux new_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1; proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = new_offset;
 			};
 			break;
 		case rv_op_beq:
@@ -1312,7 +1312,7 @@ riscv::addr_t exec_inst_rv64(T &dec, P &proc, riscv::addr_t pc_offset)
 /* Execute Instruction RV128 */
 
 template <bool rvi, bool rvm, bool rva, bool rvs, bool rvf, bool rvd, bool rvq, bool rvc, typename T, typename P>
-riscv::addr_t exec_inst_rv128(T &dec, P &proc, riscv::addr_t pc_offset)
+typename P::ux exec_inst_rv128(T &dec, P &proc, typename P::ux pc_offset)
 {
 	using namespace riscv;
 	enum { xlen = 128 };
@@ -1337,7 +1337,7 @@ riscv::addr_t exec_inst_rv128(T &dec, P &proc, riscv::addr_t pc_offset)
 			break;
 		case rv_op_jalr:
 			if (rvi) {
-				proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1;
+				ux new_offset = (proc.ireg[dec.rs1] + dec.imm - proc.pc) & ~1; proc.ireg[dec.rd] = (dec.rd == 0) ? 0 : proc.pc + pc_offset; pc_offset = new_offset;
 			};
 			break;
 		case rv_op_beq:

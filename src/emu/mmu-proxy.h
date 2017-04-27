@@ -45,7 +45,7 @@ namespace riscv {
 		mmu_proxy() : mem(std::make_shared<MEMORY>()) {}
 		mmu_proxy(memory_type mem) : mem(mem) {}
 
-		template <typename P> inst_t inst_fetch(P &proc, UX pc, addr_t &pc_offset)
+		template <typename P> inst_t inst_fetch(P &proc, UX pc, typename P::ux &pc_offset)
 		{
 			/* record pc histogram using machine physical address */
 			if (proc.log & proc_log_hist_pc) {

@@ -174,13 +174,13 @@ namespace riscv {
 			emitter.begin();
 			for(;;) {
 				typename P::decode_type dec;
-				addr_t pc_offset, new_offset;
+				typename P::ux pc_offset, new_offset;
 				inst_t inst = P::mmu.inst_fetch(*this, P::pc, pc_offset);
 				P::inst_decode(dec, inst);
 				dec.pc = P::pc;
 				dec.inst = inst;
 				if (emitter.emit(dec) == false) break;
-				if ((new_offset = P::inst_exec(dec, pc_offset)) == -1) break;
+				if ((new_offset = P::inst_exec(dec, pc_offset)) == typename P::ux(-1)) break;
 				P::pc += new_offset;
 				P::cycle++;
 				P::instret++;
@@ -207,7 +207,7 @@ namespace riscv {
 			}
 		}
 
-		void jit_audit(typename P::decode_type &dec, inst_t inst, addr_t pc_offset)
+		void jit_audit(typename P::decode_type &dec, inst_t inst, typename P::ux pc_offset)
 		{
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
@@ -237,9 +237,9 @@ namespace riscv {
 			}
 
 			/* interpret instruction */
-			addr_t new_offset;
-			if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
-				(new_offset = P::inst_priv(dec, pc_offset)) != -1)
+			typename P::ux new_offset;
+			if ((new_offset = P::inst_exec(dec, pc_offset)) != typename P::ux(-1) ||
+				(new_offset = P::inst_priv(dec, pc_offset)) != typename P::ux(-1))
 			{
 				if (P::log) P::print_log(dec, inst);
 				P::pc += new_offset;
@@ -286,7 +286,7 @@ namespace riscv {
 		{
 			typename P::decode_type dec;
 			typename P::ux inststop = P::instret + count;
-			addr_t pc_offset, new_offset;
+			typename P::ux pc_offset, new_offset;
 			inst_t inst = 0, inst_cache_key;
 
 			/* interrupt service routine */
@@ -334,8 +334,8 @@ namespace riscv {
 				if (P::log & proc_log_jit_audit) {
 					jit_audit(dec, inst, pc_offset);
 				}
-				else if ((new_offset = P::inst_exec(dec, pc_offset)) != -1  ||
-					(new_offset = P::inst_priv(dec, pc_offset)) != -1)
+				else if ((new_offset = P::inst_exec(dec, pc_offset)) != typename P::ux(-1) ||
+						 (new_offset = P::inst_priv(dec, pc_offset)) != typename P::ux(-1))
 				{
 					if (P::log & ~(proc_log_hist_pc | proc_log_jit_trap)) P::print_log(dec, inst);
 					P::pc += new_offset;

@@ -41,7 +41,7 @@ static void print_interp_h(rv_gen *gen)
 			printf("bool %s, ", mi->c_str());
 		}
 		printf("typename T, typename P>\n");
-		printf("riscv::addr_t exec_inst_%s(T &dec, P &proc, riscv::addr_t pc_offset)\n",
+		printf("typename P::ux exec_inst_%s(T &dec, P &proc, typename P::ux pc_offset)\n",
 			isa_width.second.c_str());
 		printf("{\n");
 		printf("\tusing namespace riscv;\n");

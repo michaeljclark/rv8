@@ -151,7 +151,7 @@ namespace riscv {
 			}
 			size_t i = 0;
 			while (i++ < 20) {
-				addr_t pc_offset;
+				typename P::ux pc_offset;
 				typename P::decode_type dec;
 				inst_t inst = st.proc->mmu.inst_fetch(*st.proc,
 					typename P::ux(addr), pc_offset);
