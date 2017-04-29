@@ -538,9 +538,15 @@ TEST_RV32 =    ARCH=rv32imafdc RVC=1 TARGET=riscv32-unknown-elf
 $(SPARSEHASH_SRC):
 	( cd sparsehash && ./configure && make src/sparsehash/internal/sparseconfig.h )
 
-qemu-tests:
-	( cd riscv-qemu-tests && make )
-	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run )
+qemu-tests: qemu-tests-rv64
+
+qemu-tests-rv64:
+	( cd riscv-qemu-tests && make all64 )
+	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run64 )
+
+qemu-tests-rv32:
+	( cd riscv-qemu-tests && make all32 )
+	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run32 )
 
 linux: ; ./scripts/bootstrap-linux.sh
 
