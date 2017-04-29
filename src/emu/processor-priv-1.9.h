@@ -627,7 +627,8 @@ core {
 			return pc_offset;
 		}
 
-		addr_t inst_priv(typename P::decode_type &dec, addr_t pc_offset) {
+		typename P::ux inst_priv(typename P::decode_type &dec, typename P::ux pc_offset)
+		{
 			switch (dec.op) {
 				case rv_op_csrrw:     return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
 				case rv_op_csrrs:     return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);
