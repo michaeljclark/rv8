@@ -37,25 +37,11 @@ ifeq ($(TARGET),riscv64-unknown-elf)
 SPIKE = ${RISCV}/bin/spike --isa=$(ARCH) ${PK}
 endif
 
-CFLAGS = -Os -g -Wall -fpie -ffunction-sections -fdata-sections
+CFLAGS = -Os -g -march=$(ARCH) -Wall -fpie -ffunction-sections -fdata-sections
 CXXFLAGS = -std=c++1y $(CFLAGS)
 
 ifeq ($(EMULATOR),)
 EMULATOR = $(SPIKE)
-endif
-
-ifeq ($(RVC),1)
-LEGACY_RVC_FLAGS = -mrvc
-ifeq ($(call check_opt,$(CC),cc,$(LEGACY_RVC_FLAGS)), 0)
-CFLAGS += $(LEGACY_RVC_FLAGS)
-CXXFLAGS += $(LEGACY_RVC_FLAGS)
-endif
-endif
-
-ifeq ($(call check_opt,$(CC),cc,-march=$(ARCH)), 0)
-CFLAGS += -march=$(ARCH)
-else
-CFLAGS += -march=$(shell echo $(ARCH) | tr 'a-z' 'A-Z')
 endif
 
 ASSEMBLY = \
