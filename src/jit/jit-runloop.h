@@ -133,6 +133,17 @@ namespace riscv {
 			}
 		}
 
+		typename P::ux inst_fence_i(typename P::decode_type &dec, typename P::ux pc_offset)
+		{
+			switch(dec.op) {
+				case rv_op_fence_i:
+					trace_cache.clear_no_resize();
+					return pc_offset;
+				default: break;
+			}
+			return -1; /* illegal instruction */
+		}
+
 		void jit_cache(CodeHolder &code, addr_t pc)
 		{
 			TraceFunc fn = nullptr;
@@ -335,6 +346,7 @@ namespace riscv {
 					jit_audit(dec, inst, pc_offset);
 				}
 				else if ((new_offset = P::inst_exec(dec, pc_offset)) != typename P::ux(-1) ||
+						 (new_offset = inst_fence_i(dec, pc_offset)) != typename P::ux(-1) ||
 						 (new_offset = P::inst_priv(dec, pc_offset)) != typename P::ux(-1))
 				{
 					if (P::log & ~(proc_log_hist_pc | proc_log_jit_trap)) P::print_log(dec, inst);
