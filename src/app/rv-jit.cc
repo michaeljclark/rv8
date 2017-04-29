@@ -30,6 +30,10 @@
 #include <atomic>
 #include <type_traits>
 
+#if defined(__APPLE__)
+#include "libc_override_osx.h"
+#endif
+
 #include <sparsehash/dense_hash_map>
 
 #include <poll.h>
@@ -427,6 +431,9 @@ struct rv_jit
 
 int main(int argc, const char *argv[], const char* envp[])
 {
+#if defined(__APPLE__)
+	ReplaceSystemAlloc();
+#endif
 	rv_jit jit;
 	jit.parse_commandline(argc, argv, envp);
 	jit.exec();

@@ -126,7 +126,7 @@ extern "C" void *malloc(size_t size)
   return dlmalloc(size);
 }
 
-extern "C" void *realoc(void *ptr, size_t size)
+extern "C" void *realloc(void *ptr, size_t size)
 {
   return dlrealloc(ptr, size);
 }

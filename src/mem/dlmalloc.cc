@@ -871,6 +871,11 @@ DLMALLOC_EXPORT void* dlmalloc(size_t);
 DLMALLOC_EXPORT void  dlfree(void*);
 
 /*
+  size(void* p)
+*/
+DLMALLOC_EXPORT size_t dlsize(void*);
+
+/*
   calloc(size_t n_elements, size_t element_size);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
@@ -4789,6 +4794,35 @@ void dlfree(void* mem) {
 #if !FOOTERS
 #undef fm
 #endif /* FOOTERS */
+}
+
+size_t dlsize(void* mem) {
+  /*
+     Consolidate freed chunks with preceeding or succeeding bordering
+     free chunks, if they exist, and then place in a bin.  Intermixed
+     with special cases for top, dv, mmapped chunks, and usage errors.
+  */
+  size_t alloc_size = 0;
+  if (mem != 0) {
+    mchunkptr p  = mem2chunk(mem);
+#if FOOTERS
+    mstate fm = get_mstate_for(p);
+    if (!ok_magic(fm)) {
+      USAGE_ERROR_ACTION(fm, p);
+      return alloc_size;
+    }
+#else /* FOOTERS */
+#define fm gm
+#endif /* FOOTERS */
+    if (!PREACTION(fm)) {
+      check_inuse_chunk(fm, p);
+      if (RTCHECK(ok_address(fm, p) && ok_inuse(p))) {
+        alloc_size = chunksize(p);
+      }
+      POSTACTION(gm);
+    }
+  }
+  return alloc_size;
 }
 
 void* dlcalloc(size_t n_elements, size_t elem_size) {
