@@ -315,7 +315,7 @@ namespace riscv {
 			}
 
 			/* step the processor */
-			while (P::instret < inststop) {
+			while (P::instret != inststop) {
 				if ((P::log & proc_log_jit_trap) && jit_exec(*this, P::pc)) {
 					continue;
 				}

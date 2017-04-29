@@ -152,7 +152,7 @@ namespace riscv {
 			}
 
 			/* step the processor */
-			while (P::instret < inststop) {
+			while (P::instret != inststop) {
 				if (P::pc == P::breakpoint && P::breakpoint != 0) {
 					return exit_cause_cli;
 				}
