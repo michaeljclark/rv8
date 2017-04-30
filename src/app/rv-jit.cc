@@ -429,11 +429,19 @@ struct rv_jit
 	}
 };
 
+
+/* program main */
+
+#if defined(__APPLE__)
+static void __attribute__ ((constructor)) premain()
+{
+	ReplaceSystemAlloc();
+	printf("rv-jit v0.0-alpha\n");
+}
+#endif
+
 int main(int argc, const char *argv[], const char* envp[])
 {
-#if defined(__APPLE__)
-	ReplaceSystemAlloc();
-#endif
 	rv_jit jit;
 	jit.parse_commandline(argc, argv, envp);
 	jit.exec();

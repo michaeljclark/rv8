@@ -467,11 +467,16 @@ struct rv_emulator
 
 /* program main */
 
+#if defined(__APPLE__)
+static void __attribute__ ((constructor)) premain()
+{
+	ReplaceSystemAlloc();
+	printf("rv-sim v0.0-alpha\n");
+}
+#endif
+
 int main(int argc, const char* argv[], const char* envp[])
 {
-#if defined(__APPLE__)
-	ReplaceSystemAlloc();
-#endif
 	rv_emulator emulator;
 	emulator.parse_commandline(argc, argv, envp);
 	emulator.exec();
