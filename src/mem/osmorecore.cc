@@ -6,9 +6,9 @@
 
 #include <sys/mman.h>
 
-static const uintptr_t morecore_page_size    = 0x10000;     /* 64KiB */
-static const uintptr_t morecore_heap_offset  = 0x80000000;  /* 2GiB */
-static const uintptr_t morecore_heap_size    = 0x40000000;  /* 1GiB */
+static const uintptr_t morecore_page_size    = 0x10000;        /* 64KiB */
+static const uintptr_t morecore_heap_offset  = 0x10100000000;  /* 1TiB + 4GiB */
+static const uintptr_t morecore_heap_size    = 0x40000000;     /* 1GiB */
 static const int       morecore_pool_entries = 512;
 static int             morecore_pool_count = 0;
 static void*           morecore_pool_mem[morecore_pool_entries] = { 0 };
