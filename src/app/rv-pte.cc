@@ -74,6 +74,7 @@ static u64 decode_pte(std::string ptemode, u64 pa, u32 flags)
 	} else {
 		panic("invalid pte mode: %s", ptemode.c_str());
 	}
+	__builtin_unreachable();
 }
 
 /* main */
