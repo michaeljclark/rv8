@@ -61,7 +61,7 @@ CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y -fno-rtti $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x40000000 -lncurses
+MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x10000000000 -lncurses
 LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000 -lncurses -ltermcap
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
