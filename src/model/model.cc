@@ -246,7 +246,7 @@ rv_opcode_mask rv_meta_model::decode_mask(std::string bit_spec)
 		panic("bit range %s must be in form n..m=v\n", bit_spec.c_str());
 	}
 	std::vector<std::string> rpart = split(spart[0], "..");
-	ssize_t msb, lsb, val;
+	ssize_t msb = 0, lsb = 0, val = 0;
 	if (rpart.size() == 1) {
 		msb = lsb = strtoul(rpart[0].c_str(), nullptr, 10);
 	} else if (rpart.size() == 2) {
