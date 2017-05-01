@@ -2,8 +2,8 @@
 //  jit-fusion.h
 //
 
-#ifndef rv_jit_jit_h
-#define rv_jit_jit_h
+#ifndef rv_jit_fusion_h
+#define rv_jit_fusion_h
 
 namespace riscv {
 
@@ -14,9 +14,7 @@ namespace riscv {
 
 		enum match_state {
 			match_state_none,
-			match_state_auipc,
-			match_state_call,
-			match_state_la,
+			match_state_auipc
 		};
 
 		u64 imm;
@@ -56,7 +54,6 @@ namespace riscv {
 
 		bool emit(decode_type &dec)
 		{
-		reparse:
 			switch(state) {
 				case match_state_none:
 					switch (dec.op) {
@@ -73,35 +70,32 @@ namespace riscv {
 					break;
 				case match_state_auipc:
 					switch (dec.op) {
-						case rv_op_addi: state = match_state_la; goto reparse;
-						case rv_op_jalr: state = match_state_call; goto reparse;
+						case rv_op_addi:
+							if (rd == dec.rd && rd == dec.rs1) {
+								imm += dec.imm;
+								jit_decode dec(pseudo_pc, jit_op_la, rd, imm);
+								E::emit(dec);
+								clear_queue();
+								return true;
+							} else {
+								emit_queue();
+								break;
+							}
+						case rv_op_jalr:
+							if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
+								imm += dec.imm;
+								jit_decode dec(pseudo_pc, jit_op_call, rd, imm);
+								E::emit(dec);
+								clear_queue();
+								return true;
+							} else {
+								emit_queue();
+								break;
+							}
 						default:
 							emit_queue();
-							state = match_state_none;
 							break;
 					}
-					break;
-				case match_state_la:
-					if (rd == dec.rd && rd == dec.rs1) {
-						imm += dec.imm;
-						jit_decode dec(pseudo_pc, jit_op_la, rd, imm);
-						E::emit(dec);
-						clear_queue();
-						return true;
-					}
-					emit_queue();
-					state = match_state_none;
-					break;
-				case match_state_call:
-					if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
-						imm += dec.imm;
-						jit_decode dec(pseudo_pc, jit_op_call, rv_ireg_ra, imm);
-						E::emit(dec);
-						clear_queue();
-						return true;
-					}
-					emit_queue();
-					state = match_state_none;
 					break;
 			}
 			return E::emit(dec);
