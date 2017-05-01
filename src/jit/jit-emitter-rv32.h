@@ -2917,16 +2917,17 @@ namespace riscv {
 		bool emit_la(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst);
+			term_pc = dec.pc + inst_length(dec.inst) + 4;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			} else {
+				int32_t addr = dec.pc + dec.imm;
 				if (rdx > 0) {
-					as.mov(x86::gpd(rdx), Imm(dec.pc + dec.imm));
+					as.mov(x86::gpd(rdx), Imm(addr));
 					log_trace("\t\tmov %s, %lld", x86_reg_str_d(rdx), dec.pc + dec.imm);
 				} else {
-					as.mov(rbp_reg_d(dec.rd), Imm(dec.pc + dec.imm));
+					as.mov(rbp_reg_d(dec.rd), Imm(addr));
 					log_trace("\t\tmov %s, %lld", rbp_reg_str_d(dec.rd), dec.pc + dec.imm);
 				}
 			}
@@ -2937,22 +2938,26 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\tcall\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.imm;
-			int rdx = x86_reg(dec.rd);
-			if (dec.rd == rv_ireg_zero) {
-				// nop
+			int rdx = x86_reg(rv_ireg_ra), rs1x = x86_reg(dec.rd);
+			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4;
+			callstack.push_back(link_addr);
+
+			if (rdx > 0) {
+				as.mov(x86::gpd(rdx), Imm(link_addr));
+				log_trace("\t\tmov %s, 0x%llx", x86_reg_str_d(rdx), link_addr);
 			} else {
-				addr_t link_addr = dec.pc + inst_length(dec.inst);
-				callstack.push_back(link_addr);
-				if (rdx > 0) {
-					as.mov(x86::gpd(rdx), Imm(link_addr));
-					log_trace("\t\tmov %s, 0x%llx", x86_reg_str_d(rdx), link_addr);
-				} else {
-					as.mov(x86::eax, Imm(link_addr));
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-					log_trace("\t\tmov eax, 0x%llx",  link_addr);
-					log_trace("\t\tmov %s, eax", rbp_reg_str_d(dec.rd));
-				}
+				as.mov(rbp_reg_d(dec.rd), Imm(link_addr));
+				log_trace("\t\tmov %s, 0x%llx", rbp_reg_str_d(rv_ireg_ra), link_addr);
 			}
+
+			if (rs1x > 0) {
+				as.mov(x86::gpd(rs1x), Imm(term_pc));
+				log_trace("\t\tmov %s, 0x%llx", x86_reg_str_d(rs1x), link_addr);
+			} else {
+				as.mov(rbp_reg_d(dec.rs1), Imm(term_pc));
+				log_trace("\t\tmov %s, 0x%llx", rbp_reg_str_d(dec.rs1), term_pc);
+			}
+
 			return true;
 		}
 

@@ -4208,7 +4208,7 @@ namespace riscv {
 		bool emit_la(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst);
+			term_pc = dec.pc + inst_length(dec.inst) + 4;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -4231,22 +4231,30 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\tcall\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.imm;
-			int rdx = x86_reg(dec.rd);
-			if (dec.rd == rv_ireg_zero) {
-				// nop
+			int rdx = x86_reg(rv_ireg_ra), rs1x = x86_reg(dec.rd);
+			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4;
+			callstack.push_back(link_addr);
+
+			if (rdx > 0) {
+				as.mov(x86::gpq(rdx), Imm(link_addr));
+				log_trace("\t\tmov %s, 0x%llx", x86_reg_str_q(rdx), link_addr);
 			} else {
-				addr_t link_addr = dec.pc + inst_length(dec.inst);
-				callstack.push_back(link_addr);
-				if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(link_addr));
-					log_trace("\t\tmov %s, 0x%llx", x86_reg_str_q(rdx), link_addr);
-				} else {
-					as.mov(x86::rax, Imm(link_addr));
-					as.mov(rbp_reg_q(dec.rd), x86::rax);
-					log_trace("\t\tmov rax, 0x%llx", link_addr);
-					log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rd));
-				}
+				as.mov(x86::rax, Imm(link_addr));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
+				log_trace("\t\tmov rax, 0x%llx", link_addr);
+				log_trace("\t\tmov %s, rax", rbp_reg_str_q(rv_ireg_ra));
 			}
+
+			if (rs1x > 0) {
+				as.mov(x86::gpq(rs1x), Imm(term_pc));
+				log_trace("\t\tmov %s, 0x%llx", x86_reg_str_q(rdx), link_addr);
+			} else {
+				as.mov(x86::rax, Imm(term_pc));
+				as.mov(rbp_reg_q(dec.rs1), x86::rax);
+				log_trace("\t\tmov rax, 0x%llx", term_pc);
+				log_trace("\t\tmov %s, rax", rbp_reg_str_q(dec.rs1));
+			}
+
 			return true;
 		}
 

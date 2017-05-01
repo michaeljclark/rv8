@@ -27,8 +27,8 @@ namespace riscv {
 		jit_decode()
 			: pc(0), inst(0), imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
 
-		jit_decode(addr_t pc, uint16_t op, uint8_t rd, int64_t imm)
-			: pc(pc), inst(0), imm(imm), op(op), codec(0), rd(rd), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
+		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, s32 imm)
+			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(0), rs2(0), rs3(0), rm(0), aq(0), rl(0), pred(0), succ(0) {}
 	};
 
 	enum jit_op {
