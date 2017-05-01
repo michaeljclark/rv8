@@ -38,12 +38,10 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 TOP_DIR =       $(shell pwd)
 INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
-                -I$(TOP_DIR)/src/crypto \
                 -I$(TOP_DIR)/src/edit \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
                 -I$(TOP_DIR)/src/expr \
-                -I$(TOP_DIR)/src/fmt \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/jit \
                 -I$(TOP_DIR)/src/meta \
@@ -205,14 +203,10 @@ RV_UTIL_SRCS =  $(SRC_DIR)/util/base64.cc \
                 $(SRC_DIR)/util/itoa.cc \
                 $(SRC_DIR)/util/fmt.cc \
                 $(SRC_DIR)/util/host.cc \
+                $(SRC_DIR)/util/sha512.cc \
                 $(SRC_DIR)/util/util.cc
 RV_UTIL_OBJS =  $(call cxx_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
-
-# libriscv_crypto
-RV_CRYPTO_SRCS = $(SRC_DIR)/crypto/sha512.cc
-RV_CRYPTO_OBJS = $(call cxx_src_objs, $(RV_CRYPTO_SRCS))
-RV_CRYPTO_LIB =  $(LIB_DIR)/libriscv_crypto.a
 
 # sparsehash
 SPARSEHASH_SRC = sparsehash/src/sparsehash/internal/sparseconfig.h
