@@ -468,13 +468,13 @@ core {
 			                     format_reg("mimpid",    P::mimpid).c_str());
 			printf("%s %s %s\n", format_reg("misa",      P::misa).c_str(),
 			                     format_reg("mhartid",   P::mhartid).c_str(),
-			                     format_reg("mstatus",   P::mstatus).c_str());
+			                     format_reg("mstatus",   P::mstatus.xu.val).c_str());
 			printf("%s %s %s\n", format_reg("medeleg",   P::medeleg).c_str(),
 			                     format_reg("mideleg",   P::mideleg).c_str(),
-			                     format_reg("mip",       P::mip).c_str());
+			                     format_reg("mip",       P::mip.xu.val).c_str());
 			printf("%s %s %s\n", format_reg("mtvec",     P::mtvec).c_str(),
 			                     format_reg("mscratch",  P::mscratch).c_str(),
-			                     format_reg("mie",       P::mie).c_str());
+			                     format_reg("mie",       P::mie.xu.val).c_str());
 			printf("%s %s %s\n", format_reg("mepc",      P::mepc).c_str(),
 			                     format_reg("mcause",    P::mcause).c_str(),
 			                     format_reg("mbadaddr",  P::mbadaddr).c_str());

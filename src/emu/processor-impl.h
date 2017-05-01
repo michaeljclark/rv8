@@ -18,12 +18,12 @@ namespace riscv {
 	/* Register formatter */
 
 	template <typename T>
-	std::string format_reg(std::string name, T &reg)
+	std::string format_reg(std::string name, T &&reg)
 	{
 		return
 			sizeof(T) == 4 ? format_string("%-9s:%08x", name.c_str(), reg) :
 			sizeof(T) == 8 ? format_string("%-9s:%016llx", name.c_str(), reg) :
-			format_string("%-8s:<INVALID>", name.c_str(), reg);
+			format_string("%-8s:<INVALID>", name.c_str());
 	}
 
 	/* Processor base template */
