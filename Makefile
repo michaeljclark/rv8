@@ -199,8 +199,6 @@ DLMALLOC_LIB =  $(LIB_DIR)/libdlmalloc.a
 RV_UTIL_SRCS =  $(SRC_DIR)/util/base64.cc \
                 $(SRC_DIR)/util/cmdline.cc \
                 $(SRC_DIR)/util/color.cc \
-                $(SRC_DIR)/util/config-string.cc \
-                $(SRC_DIR)/util/config-parser.cc \
                 $(SRC_DIR)/util/host.cc \
                 $(SRC_DIR)/util/util.cc
 RV_UTIL_OBJS =  $(call cxx_src_objs, $(RV_UTIL_SRCS))
@@ -398,11 +396,6 @@ TEST_BITS_SRCS = $(SRC_DIR)/app/test-bits.cc
 TEST_BITS_OBJS = $(call cxx_src_objs, $(TEST_BITS_SRCS))
 TEST_BITS_BIN =  $(BIN_DIR)/test-bits
 
-# test-config
-TEST_CONFIG_SRCS = $(SRC_DIR)/app/test-config.cc
-TEST_CONFIG_OBJS = $(call cxx_src_objs, $(TEST_CONFIG_SRCS))
-TEST_CONFIG_BIN =  $(BIN_DIR)/test-config
-
 # test-encoder
 TEST_ENCODER_SRCS = $(SRC_DIR)/app/test-encoder.cc
 TEST_ENCODER_OBJS = $(call cxx_src_objs, $(TEST_ENCODER_SRCS))
@@ -464,7 +457,6 @@ ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
            $(RV_SIM_SRCS) \
            $(RV_SYS_SRCS) \
            $(TEST_BITS_SRCS) \
-           $(TEST_CONFIG_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_EXPR_SRCS) \
@@ -485,7 +477,6 @@ BINARIES = $(RV_ASSEMBLER_BIN) \
            $(RV_SYS_BIN) \
            $(TEST_ASMJIT_BIN) \
            $(TEST_BITS_BIN) \
-           $(TEST_CONFIG_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
            $(TEST_EXPR_BIN) \
@@ -570,8 +561,6 @@ test-build-rv32: ; $(MAKE) -f $(TEST_MK) all $(TEST_RV32)
 test-spike-rv32: ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32)
 test-sim-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sim $(TEST_RV32) EMULATOR=$(RV_SIM_BIN)
 test-sys-rv32: $(SIM_BIN) ; $(MAKE) -f $(TEST_MK) test-sys $(TEST_RV32) EMULATOR=$(RV_SYS_BIN)
-
-test-config: $(TEST_CONFIG_BIN) ; $(TEST_CONFIG_BIN) src/test/spike.rv
 
 danger: ; @echo Please do not make danger
 
@@ -717,10 +706,6 @@ $(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LI
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(TEST_CONFIG_BIN): $(TEST_CONFIG_OBJS) $(RV_UTIL_LIB) $(RV_FMT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
