@@ -82,9 +82,7 @@ The following table shows the RISC-V Meta libraries:
 | Name                | Description                             | Scale
 | :------------------ | :-------------------------------------- | :----
 | `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
-| `libriscv_crypto.a` | Cryptographic functions                 | micro
 | `libriscv_elf.a`    | ELF parser                              | micro
-| `libriscv_fmt.a`    | String formatting                       | micro
 | `libriscv_gen.a`    | Source and documentation generators     | macro
 | `libriscv_model.a`  | Instruction set metamodel               | macro
 | `libriscv_util.a`   | Utility functions for tools             | mini
