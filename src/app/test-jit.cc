@@ -53,8 +53,6 @@
 #include "util.h"
 #include "host.h"
 #include "cmdline.h"
-#include "config-parser.h"
-#include "config-string.h"
 #include "codec.h"
 #include "strings.h"
 #include "disasm.h"
