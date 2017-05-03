@@ -3461,14 +3461,23 @@ namespace riscv {
 				// mov rax, rs1
 				// add rax, imm
 				if (dec.rs1 == rv_ireg_zero) {
-					as.xor_(x86::eax, x86::eax);
+					if (dec.imm == 0) {
+						as.xor_(x86::eax, x86::eax);
+					} else {
+						as.mov(x86::eax, Imm(dec.imm));
+					}
 				} else if (rs1x > 0) {
-					as.lea(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
+					if (dec.imm == 0) {
+						as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::gpq(rs1x));
+					} else {
+						as.lea(x86::rax, x86::qword_ptr(x86::gpq(rs1x), dec.imm));
+						as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
+					}
 				} else {
 					as.mov(x86::rax, rbp_reg_q(dec.rs1));
 					as.add(x86::rax, dec.imm);
+					as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
 				}
-				as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
 				return false;
 			}
 		}
