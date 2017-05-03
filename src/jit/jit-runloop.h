@@ -39,14 +39,18 @@ namespace riscv {
 
 		JitRuntime rt;
 		google::dense_hash_map<addr_t,TraceFunc> trace_cache;
+		google::dense_hash_map<addr_t,TraceFunc> trace_cache_skip_prolog;
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
+		TraceLookup lookup_trace_fast;
 
 		jit_runloop() : jit_runloop(std::make_shared<debug_cli<P>>()) {}
 		jit_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache()
 		{
 			trace_cache.set_empty_key(0);
 			trace_cache.set_deleted_key(-1);
+			trace_cache_skip_prolog.set_empty_key(0);
+			trace_cache_skip_prolog.set_deleted_key(-1);
 		}
 
 		virtual bool handleError(Error err, const char* message, CodeEmitter* origin)
@@ -111,6 +115,20 @@ namespace riscv {
 
 			/* processor initialization */
 			P::init();
+
+			/* create trace lookup function */
+			create_lookup();
+		}
+
+		void create_lookup()
+		{
+			CodeHolder code;
+			code.init(rt.getCodeInfo());
+			code.setErrorHandler(this);
+			jit_emitter emitter(*this, code, lookup_trace, nullptr);
+			emitter.create_lookup();
+			Error err = rt.add(&lookup_trace_fast, &code);
+			if (err) panic("failed to create trace lookup function");
 		}
 
 		void run(exit_cause ex = exit_cause_continue)
@@ -153,11 +171,24 @@ namespace riscv {
 			return -1; /* illegal instruction */
 		}
 
-		void jit_cache(CodeHolder &code, addr_t pc)
+		static uintptr_t lookup_trace(uintptr_t pc)
+		{
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto ti = proc->trace_cache_skip_prolog.find(pc);
+			uintptr_t fn = trace_address(ti != proc->trace_cache_skip_prolog.end() ? ti->second : nullptr);
+			return fn;
+		}
+
+		void jit_cache(jit_emitter &emitter, CodeHolder &code, addr_t pc)
 		{
 			TraceFunc fn = nullptr;
 			Error err = rt.add(&fn, &code);
-			if (!err) trace_cache[pc] = fn;
+			if (!err) {
+				union { intptr_t u; TraceFunc fn; } r = { .fn = fn };
+				r.u += code.getLabelOffset(emitter.start);
+				trace_cache[pc] = fn;
+				trace_cache_skip_prolog[pc] = r.fn;
+			}
 		}
 
 		bool jit_exec(P &proc, addr_t pc)
@@ -174,10 +205,10 @@ namespace riscv {
 		{
 			CodeHolder code;
 			jit_logger logger;
-			logger.addOptions(Logger::kOptionBinaryForm);
+			logger.addOptions(Logger::kOptionBinaryForm | Logger::kOptionHexDisplacement | Logger::kOptionHexImmediate);
  			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			jit_emitter emitter(*this, code);
+			jit_emitter emitter(*this, code, lookup_trace, lookup_trace_fast);
 
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
@@ -226,7 +257,7 @@ namespace riscv {
 				P::histogram_set_pc(trace_pc, P::hostspot_trace_skip);
 			}
 			else {
-				jit_cache(code, trace_pc);
+				jit_cache(emitter, code, trace_pc);
 			}
 		}
 
@@ -234,12 +265,16 @@ namespace riscv {
 		{
 			CodeHolder code;
 			FileLogger logger(stdout);
- 			code.setLogger(&logger);
+			logger.addOptions(Logger::kOptionBinaryForm | Logger::kOptionHexDisplacement | Logger::kOptionHexImmediate);
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			jit_emitter emitter(*this, code);
+			jit_emitter emitter(*this, code, lookup_trace, lookup_trace_fast);
 			bool audited = false;
 			typename P::processor_type pre_jit, post_jit;
+
+			if (P::log & proc_log_jit_trace) {
+	 			code.setLogger(&logger);
+			}
 
 			/* jit instruction */
 			emitter.emit_prolog();

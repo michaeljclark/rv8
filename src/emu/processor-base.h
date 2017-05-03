@@ -148,7 +148,8 @@ namespace riscv {
 		enum  {
 			xlen = sizeof(ux) << 3,   /* Size of integer register in bits */
 			ireg_count = IREG_COUNT,  /* Number of integer registers  */
-			freg_count = FREG_COUNT   /* Number of floating point registers */
+			freg_count = FREG_COUNT,  /* Number of floating point registers */
+			trace_l1_size = 1024
 		};
 
 		/* Registers */
@@ -172,6 +173,9 @@ namespace riscv {
 		UX trace_iters;               /* Trace iterations */
 		UX trace_length;              /* Trace length */
 
+		u64 trace_pc[trace_l1_size];
+		u64 trace_fn[trace_l1_size];
+
 		/* Base ISA Control and Status Registers */
 
 		u64 time;                     /* User Time Register */
@@ -182,6 +186,7 @@ namespace riscv {
 		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
 			running(true), debugging(false), breakpoint(0), trace_iters(0), trace_length(0),
+			trace_pc(), trace_fn(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 
 		/* Internal setjmp/longjump causes */

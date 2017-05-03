@@ -37,6 +37,17 @@ namespace riscv {
 	};
 
 	typedef void (*TraceFunc)(void*);
+	typedef uintptr_t (*TraceLookup)(uintptr_t);
+
+	inline intptr_t trace_address(TraceFunc fn) {
+		union { intptr_t u; TraceFunc fn; } r = { .fn = fn };
+		return r.u;
+	}
+
+	inline intptr_t trace_lookup_address(TraceLookup fn) {
+		union { intptr_t u; TraceLookup fn; } r = { .fn = fn };
+		return r.u;
+	}
 }
 
 #endif
