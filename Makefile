@@ -252,7 +252,7 @@ X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/base/cpuinfo.cpp \
                 asmjit/src/asmjit/base/func.cpp \
                 asmjit/src/asmjit/base/globals.cpp \
-		asmjit/src/asmjit/base/inst.cpp \
+                asmjit/src/asmjit/base/inst.cpp \
                 asmjit/src/asmjit/base/logging.cpp \
                 asmjit/src/asmjit/base/operand.cpp \
                 asmjit/src/asmjit/base/osutils.cpp \
@@ -266,7 +266,7 @@ X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/x86/x86builder.cpp \
                 asmjit/src/asmjit/x86/x86compiler.cpp \
                 asmjit/src/asmjit/x86/x86inst.cpp \
-		asmjit/src/asmjit/x86/x86instimpl.cpp \
+                asmjit/src/asmjit/x86/x86instimpl.cpp \
                 asmjit/src/asmjit/x86/x86internal.cpp \
                 asmjit/src/asmjit/x86/x86logging.cpp \
                 asmjit/src/asmjit/x86/x86operand.cpp \
@@ -341,6 +341,11 @@ RV_ASM_SRCS =   $(SRC_DIR)/asm/assembler.cc \
                 $(SRC_DIR)/asm/strings.cc
 RV_ASM_OBJS =   $(call cxx_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
+
+# fix-macho-zeropage
+FIX_MACHO_SRCS = $(SRC_DIR)/tool/fix-macho-zeropage.c
+FIX_MACHO_OBJS = $(call cc_src_objs, $(FIX_MACHO_SRCS))
+FIX_MACHO_BIN =  $(BIN_DIR)/fix-macho-zeropage
 
 # rv-asm
 RV_ASSEMBLER_SRCS = $(SRC_DIR)/app/rv-asm.cc
@@ -477,6 +482,12 @@ BINARIES = $(RV_ASSEMBLER_BIN) \
            $(TEST_RAND_BIN)
 
 ASSEMBLY = $(TEST_CC_ASM)
+
+ifeq ($(ARCH),darwin_x86_64)
+ALL_CC_SRCS += $(FIX_MACHO_SRCS)
+BINARIES += $(FIX_MACHO_BIN)
+endif
+
 
 # build rules
 
@@ -661,6 +672,12 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 # binary targets
+
+ifeq ($(ARCH),darwin_x86_64)
+$(FIX_MACHO_BIN): $(FIX_MACHO_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+endif
 
 $(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(LIBEXPR_LIB)
 	@mkdir -p $(shell dirname $@) ;
