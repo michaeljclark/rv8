@@ -9,7 +9,22 @@
 #include <mach-o/fat.h>
 
 
-/* fixes x86-64 mach-o files with invalid zeropage virtual addresses */
+/*
+ * fix-macho-zeropage
+ *
+ * fixes x86-64 mach-o executables with invalid zeropage virtual addresses
+ *
+ * statically linked programs that have their image_base altered and are
+ * linked with an incorrect zero page address. e.g. compile and link the
+ * following program:
+ *
+ * https://gist.github.com/michaeljclark/274c6a64f98d9e5e0bc2b320b1225dfd
+ *
+ * with these linker options:
+ *
+ * ld -static -macosx_version_min 10.12 -pagezero_size 0x1000 \
+ *    -image_base 0x3ffff000 macos-syscall.o -o macos-syscall
+ */
 
 #define PAGEZERO_SEGMENT_NAME "__PAGEZERO"
 
