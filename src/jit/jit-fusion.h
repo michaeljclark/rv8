@@ -73,8 +73,8 @@ namespace riscv {
 						case rv_op_addi:
 							if (rd == dec.rd && rd == dec.rs1) {
 								imm += dec.imm;
-								jit_decode dec(pseudo_pc, dec.inst, jit_op_la, rd, imm);
-								E::emit(dec);
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_la, rd, imm);
+								E::emit(pseudo);
 								clear_queue();
 								return true;
 							} else {
@@ -84,8 +84,8 @@ namespace riscv {
 						case rv_op_jalr:
 							if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
 								imm += dec.imm;
-								jit_decode dec(pseudo_pc, dec.inst, jit_op_call, rd, imm);
-								E::emit(dec);
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_call, rd, imm);
+								E::emit(pseudo);
 								clear_queue();
 								return true;
 							} else {
