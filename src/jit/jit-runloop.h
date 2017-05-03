@@ -14,6 +14,15 @@ namespace riscv {
 
 	jit_singleton* jit_singleton::current = nullptr;
 
+	struct jit_logger : Logger
+	{
+		virtual Error _log(const char* str, size_t len) noexcept
+		{
+			printf("\t\t%s", str);
+			return kErrorOk;
+		}
+	};
+
 	template <typename P, typename J>
 	struct jit_runloop : jit_singleton, ErrorHandler, P
 	{
@@ -164,7 +173,9 @@ namespace riscv {
 		void jit_trace()
 		{
 			CodeHolder code;
-			code.init(rt.getCodeInfo());
+			jit_logger logger;
+			logger.addOptions(Logger::kOptionBinaryForm);
+ 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
 			jit_emitter emitter(*this, code);
 
@@ -177,6 +188,7 @@ namespace riscv {
 				} else if (P::xlen == 64) {
 					printf("jit-trace-begin pc=0x%016llx\n", (u64)P::pc);
 				}
+	 			code.setLogger(&logger);
 			}
 
 			P::log &= ~proc_log_jit_trap;
@@ -221,6 +233,8 @@ namespace riscv {
 		void jit_audit(typename P::decode_type &dec, inst_t inst, typename P::ux pc_offset)
 		{
 			CodeHolder code;
+			FileLogger logger(stdout);
+ 			code.setLogger(&logger);
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
 			jit_emitter emitter(*this, code);
