@@ -96,10 +96,8 @@ Project Structure
 | `src/abi`    | Application binary interface
 | `src/app`    | Test programs and utilities
 | `src/asm`    | Assembler metadata library
-| `src/crypto` | Cryptographic function library
 | `src/elf`    | ELF parser library
 | `src/emu`    | ISA simulator and emulator headers
-| `src/fmt`    | String formatting library
 | `src/mem`    | Memory allocator library
 | `src/model`  | ISA metamodel library
 | `src/rom`    | Boot ROM generator
