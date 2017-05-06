@@ -210,8 +210,7 @@ namespace riscv {
 			as.and_(x86::ecx, Imm(mask));
 			as.cmp(x86::rax, x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_pc)));
 			as.jne(lookup_slow);
-			as.mov(x86::rax, x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_fn)));
-			as.jmp(x86::rax);
+			as.jmp(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_fn)));
 
 			/* slow path lookup cache pc -> trace fn */
 			as.bind(lookup_slow);
