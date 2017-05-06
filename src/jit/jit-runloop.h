@@ -164,6 +164,9 @@ namespace riscv {
 		{
 			switch(dec.op) {
 				case rv_op_fence_i:
+					for (auto ent : trace_cache) {
+						rt.release(ent.second);
+					}
 					trace_cache.clear_no_resize();
 					return pc_offset;
 				default: break;
