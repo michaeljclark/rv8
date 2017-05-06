@@ -332,6 +332,7 @@ namespace riscv {
 				}
 
 				hist_pc_map_t hist_pc_reduce;
+				hist_pc_reduce.set_empty_key(0);
 				for (auto ent : st.proc->hist_pc) {
 					addr_t key = ent.first >> addr_shift;
 					auto hi = hist_pc_reduce.find(key);
