@@ -306,45 +306,6 @@ namespace riscv {
 			}
 		}
 
-		void emit_mv_rd_rs1_32(decode_type &dec)
-		{
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
-			if (rdx > 0) {
-				if (rs1x > 0) {
-					as.mov(x86::gpd(rdx), x86::gpd(rs1x));
-				} else {
-					as.mov(x86::gpd(rdx), rbp_reg_d(dec.rs1));
-				}
-			} else {
-				if (rs1x > 0) {
-					as.mov(rbp_reg_d(dec.rd), x86::gpd(rs1x));
-				} else {
-					as.mov(x86::eax, rbp_reg_d(dec.rs1));
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-				}
-			}
-		}
-
-		void emit_mv_rd_rs1_sx_32(decode_type &dec)
-		{
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
-			if (rdx > 0) {
-				if (rs1x > 0) {
-					as.movsxd(x86::gpd(rdx), x86::gpd(rs1x));
-				} else {
-					as.movsxd(x86::gpd(rdx), rbp_reg_d(dec.rs1));
-				}
-			} else {
-				if (rs1x > 0) {
-					as.movsxd(x86::eax, x86::gpd(rs1x));
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-				} else {
-					as.movsxd(x86::eax, rbp_reg_d(dec.rs1));
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-				}
-			}
-		}
-
 		void emit_mv_rd_rs2(decode_type &dec)
 		{
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
