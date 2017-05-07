@@ -2893,7 +2893,7 @@ namespace riscv {
 			}
 			else {
 				// mov rd, rs1
-				emit_mv_rd_rs1_sx_32(dec);
+				emit_mv_rd_rs1_32(dec);
 
 				// add rd, imm
 				if (rdx > 0) {
