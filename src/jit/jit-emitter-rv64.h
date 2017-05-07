@@ -1815,7 +1815,7 @@ namespace riscv {
 				as.lea(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), x86::gpd(rs2x)));
 				emit_sx_32_rd(dec);
 			}
-			else if (rdx < 0 && (rs1x < 0 || rs2x < 0)) {
+			else if (rdx < 0) {
 				// mov eax, rs1
 				// add eax, rs2
 				// movsxd rax, eax
@@ -1922,7 +1922,7 @@ namespace riscv {
 				}
 				emit_sx_32_rd(dec);
 			}
-			else if (rdx < 0 && (rs1x < 0 || rs2x < 0)) {
+			else if (rdx < 0) {
 				// mov eax, rs1
 				// sub eax, rs2
 				// movsxd rax, eax
