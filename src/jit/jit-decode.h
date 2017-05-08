@@ -39,15 +39,39 @@ namespace riscv {
 	typedef void (*TraceFunc)(void*);
 	typedef uintptr_t (*TraceLookup)(uintptr_t);
 
-	inline intptr_t trace_address(TraceFunc fn) {
-		union { intptr_t u; TraceFunc fn; } r = { .fn = fn };
+	template <typename func_type>
+	inline intptr_t func_address(func_type fn) {
+		union { intptr_t u; func_type fn; } r = { .fn = fn };
 		return r.u;
 	}
 
-	inline intptr_t trace_lookup_address(TraceLookup fn) {
-		union { intptr_t u; TraceLookup fn; } r = { .fn = fn };
-		return r.u;
+	template <typename ret_type, typename func_type>
+	inline ret_type func_address_offset(func_type fn, uintptr_t offset) {
+		union { intptr_t u; func_type fn; ret_type ret; } r = { .fn = fn };
+		r.u += offset;
+		return r.ret;
 	}
+
+	typedef u8   (*lb_fn)(uintptr_t);
+	typedef u16  (*lh_fn)(uintptr_t);
+	typedef u32  (*lw_fn)(uintptr_t);
+	typedef u64  (*ld_fn)(uintptr_t);
+	typedef void (*sb_fn)(uintptr_t, u8);
+	typedef void (*sh_fn)(uintptr_t, u16);
+	typedef void (*sw_fn)(uintptr_t, u32);
+	typedef void (*sd_fn)(uintptr_t, u64);
+
+	struct mmu_ops
+	{
+		lb_fn lb;
+		lh_fn lh;
+		lw_fn lw;
+		ld_fn ld;
+		sb_fn sb;
+		sh_fn sh;
+		sw_fn sw;
+		sd_fn sd;
+	};
 }
 
 #endif

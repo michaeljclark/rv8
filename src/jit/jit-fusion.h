@@ -23,8 +23,8 @@ namespace riscv {
 		match_state state;
 		std::vector<decode_type> queue;
 
-		jit_fusion(typename E::processor_type &proc, CodeHolder &code, TraceLookup lookup_trace_slow, TraceLookup lookup_trace_fast)
-			: E(proc, code, lookup_trace_slow, lookup_trace_fast), imm(0), rd(0), state(match_state_none) {}
+		jit_fusion(typename E::processor_type &proc, CodeHolder &code, mmu_ops &ops, TraceLookup lookup_trace_slow, TraceLookup lookup_trace_fast)
+			: E(proc, code, ops, lookup_trace_slow, lookup_trace_fast), imm(0), rd(0), state(match_state_none) {}
 
 		void emit_queue()
 		{

@@ -43,9 +43,13 @@ namespace riscv {
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 		TraceLookup lookup_trace_fast;
+		mmu_ops ops;
 
 		jit_runloop() : jit_runloop(std::make_shared<debug_cli<P>>()) {}
-		jit_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache()
+		jit_runloop(std::shared_ptr<debug_cli<P>> cli) : cli(cli), inst_cache(), ops{
+			.lb = mmu_lb, .lh = mmu_lh, .lw = mmu_lw, .ld = mmu_ld,
+			.sb = mmu_sb, .sh = mmu_sh, .sw = mmu_sw, .sd = mmu_sd
+		}
 		{
 			trace_cache.set_empty_key(0);
 			trace_cache.set_deleted_key(-1);
@@ -116,19 +120,27 @@ namespace riscv {
 			/* processor initialization */
 			P::init();
 
-			/* create trace lookup function */
-			create_lookup();
+			/* create trace lookup and load store functions */
+			create_trace_lookup();
+			create_load_store();
 		}
 
-		void create_lookup()
+		void create_trace_lookup()
 		{
 			CodeHolder code;
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			jit_emitter emitter(*this, code, lookup_trace, nullptr);
-			emitter.create_lookup();
-			Error err = rt.add(&lookup_trace_fast, &code);
-			if (err) panic("failed to create trace lookup function");
+			jit_emitter emitter(*this, code, ops, lookup_trace, nullptr);
+			lookup_trace_fast = emitter.create_trace_lookup(rt);
+		}
+
+		void create_load_store()
+		{
+			CodeHolder code;
+			code.init(rt.getCodeInfo());
+			code.setErrorHandler(this);
+			jit_emitter emitter(*this, code, ops, lookup_trace, nullptr);
+			ops = emitter.create_load_store(rt);
 		}
 
 		void run(exit_cause ex = exit_cause_continue)
@@ -178,8 +190,64 @@ namespace riscv {
 		{
 			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
 			auto ti = proc->trace_cache_skip_prolog.find(pc);
-			uintptr_t fn = trace_address(ti != proc->trace_cache_skip_prolog.end() ? ti->second : nullptr);
+			uintptr_t fn = func_address(ti != proc->trace_cache_skip_prolog.end() ? ti->second : nullptr);
 			return fn;
+		}
+
+		static u8 mmu_lb(uintptr_t addr)
+		{
+			u8 val;
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template load<P,u8>(*proc, addr, val);
+			return val;
+		}
+
+		static u16 mmu_lh(uintptr_t addr)
+		{
+			u16 val;
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template load<P,u16>(*proc, addr, val);
+			return val;
+		}
+
+		static u32 mmu_lw(uintptr_t addr)
+		{
+			u32 val;
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template load<P,u32>(*proc, addr, val);
+			return val;
+		}
+
+		static u64 mmu_ld(uintptr_t addr)
+		{
+			u64 val;
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template load<P,u64>(*proc, addr, val);
+			return val;
+		}
+
+		static void mmu_sb(uintptr_t addr, u8 val)
+		{
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template store<P,u8>(*proc, addr, val);
+		}
+
+		static void mmu_sh(uintptr_t addr, u16 val)
+		{
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template store<P,u16>(*proc, addr, val);
+		}
+
+		static void mmu_sw(uintptr_t addr, u32 val)
+		{
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template store<P,u32>(*proc, addr, val);
+		}
+
+		static void mmu_sd(uintptr_t addr, u64 val)
+		{
+			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			proc->mmu.template store<P,u64>(*proc, addr, val);
 		}
 
 		void jit_cache(jit_emitter &emitter, CodeHolder &code, addr_t pc)
@@ -211,7 +279,7 @@ namespace riscv {
 			logger.addOptions(Logger::kOptionBinaryForm | Logger::kOptionHexDisplacement | Logger::kOptionHexImmediate);
  			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			jit_emitter emitter(*this, code, lookup_trace, lookup_trace_fast);
+			jit_emitter emitter(*this, code, ops, lookup_trace, lookup_trace_fast);
 
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
@@ -271,7 +339,7 @@ namespace riscv {
 			logger.addOptions(Logger::kOptionBinaryForm | Logger::kOptionHexDisplacement | Logger::kOptionHexImmediate);
 			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
-			jit_emitter emitter(*this, code, lookup_trace, lookup_trace_fast);
+			jit_emitter emitter(*this, code, ops, lookup_trace, lookup_trace_fast);
 			bool audited = false;
 			typename P::processor_type pre_jit, post_jit;
 

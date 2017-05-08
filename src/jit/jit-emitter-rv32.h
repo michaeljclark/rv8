@@ -19,18 +19,21 @@ namespace riscv {
 
 		P &proc;
 		X86Assembler as;
+		CodeHolder &code;
+		mmu_ops ops, ops_wrap;
 		TraceLookup lookup_trace_slow;
 		TraceLookup lookup_trace_fast;
 		std::map<addr_t,Label> labels;
 		std::vector<addr_t> callstack;
 		u32 term_pc;
+		bool use_mmu;
 		Label start, term;
 
-		jit_emitter_rv32(P &proc, CodeHolder &code, TraceLookup lookup_trace_slow, TraceLookup lookup_trace_fast)
-			: proc(proc), as(&code),
+		jit_emitter_rv32(P &proc, CodeHolder &code, mmu_ops &ops, TraceLookup lookup_trace_slow, TraceLookup lookup_trace_fast)
+			: proc(proc), as(&code), code(code), ops(ops),
 			  lookup_trace_slow(lookup_trace_slow),
 			  lookup_trace_fast(lookup_trace_fast),
-			  term_pc(0)
+			  term_pc(0), use_mmu(false)
 		{}
 
 		void log_trace(const char* fmt, ...)
@@ -197,7 +200,7 @@ namespace riscv {
 			as.ret();
 		}
 
-		void create_lookup()
+		TraceLookup create_trace_lookup(JitRuntime &rt)
 		{
 			auto lookup_slow = as.newLabel();
 			auto match_slow = as.newLabel();
@@ -223,7 +226,7 @@ namespace riscv {
 			as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
 			as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
 			as.mov(x86::rdi, x86::rax);
-			as.call(Imm(trace_lookup_address(lookup_trace_slow)));
+			as.call(Imm(func_address(lookup_trace_slow)));
 			as.test(x86::rax, x86::rax);
 			as.jnz(match_slow);
 			as.mov(rbp_reg_d(rv_ireg_a4), x86::r12d);
@@ -254,6 +257,103 @@ namespace riscv {
 			as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
 			as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
 			as.jmp(x86::rax);
+
+			Error err = rt.add(&lookup_trace_fast, &code);
+			if (err) panic("failed to create trace lookup function");
+			return lookup_trace_fast;
+		}
+
+		void save_volatile()
+		{
+			as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
+			as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
+			as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
+			as.mov(rbp_reg_d(rv_ireg_a0), x86::r8d);
+			as.mov(rbp_reg_d(rv_ireg_a1), x86::r9d);
+			as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
+			as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
+		}
+
+		void restore_volatile()
+		{
+			as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
+			as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
+			as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));
+			as.mov(x86::r8d, rbp_reg_d(rv_ireg_a0));
+			as.mov(x86::r9d, rbp_reg_d(rv_ireg_a1));
+			as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
+			as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
+		}
+
+		mmu_ops create_load_store(JitRuntime &rt)
+		{
+			Label lb = as.newLabel();
+			as.bind(lb);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.call(Imm(func_address(ops.lb)));
+			restore_volatile();
+			as.ret();
+
+			Label lh = as.newLabel();
+			as.bind(lh);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.call(Imm(func_address(ops.lh)));
+			restore_volatile();
+			as.ret();
+
+			Label lw = as.newLabel();
+			as.bind(lw);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.call(Imm(func_address(ops.lw)));
+			restore_volatile();
+			as.ret();
+
+			Label sb = as.newLabel();
+			as.bind(sb);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.mov(x86::rsi, x86::rcx);
+			as.call(Imm(func_address(ops.sb)));
+			restore_volatile();
+			as.ret();
+
+			Label sh = as.newLabel();
+			as.bind(sh);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.mov(x86::rsi, x86::rcx);
+			as.call(Imm(func_address(ops.sh)));
+			restore_volatile();
+			as.ret();
+
+			Label sw = as.newLabel();
+			as.bind(sw);
+			save_volatile();
+			as.mov(x86::rdi, x86::rax);
+			as.mov(x86::rsi, x86::rcx);
+			as.call(Imm(func_address(ops.sw)));
+			restore_volatile();
+			as.ret();
+
+			TraceFunc fn;
+			Error err = rt.add(&fn, &code);
+			if (err) panic("failed to load store functions");
+
+			mmu_ops ops = {
+				.lb = func_address_offset<lb_fn>(fn, code.getLabelOffset(lb)),
+				.lh = func_address_offset<lh_fn>(fn, code.getLabelOffset(lh)),
+				.lw = func_address_offset<lw_fn>(fn, code.getLabelOffset(lw)),
+				.ld = nullptr,
+				.sb = func_address_offset<sb_fn>(fn, code.getLabelOffset(sb)),
+				.sh = func_address_offset<sh_fn>(fn, code.getLabelOffset(sh)),
+				.sw = func_address_offset<sw_fn>(fn, code.getLabelOffset(sw)),
+				.sd = nullptr
+			};
+
+			return ops;
 		}
 
 		void begin()
@@ -2033,7 +2133,7 @@ namespace riscv {
 					as.jmp(Imm(cont_addr));
 				} else {
 					emit_pc(cont_pc);
-					as.jmp(Imm(trace_lookup_address(lookup_trace_fast)));
+					as.jmp(Imm(func_address(lookup_trace_fast)));
 				}
 			}
 			else if (!cond && cont_i != labels.end()) {
@@ -2043,7 +2143,7 @@ namespace riscv {
 					as.jmp(Imm(branch_addr));
 				} else {
 					emit_pc(branch_pc);
-					as.jmp(Imm(trace_lookup_address(lookup_trace_fast)));
+					as.jmp(Imm(func_address(lookup_trace_fast)));
 				}
 			} else if (cond) {
 				Label l = as.newLabel();
@@ -2053,7 +2153,7 @@ namespace riscv {
 					as.jmp(Imm(cont_addr));
 				} else {
 					emit_pc(cont_pc);
-					as.jmp(Imm(trace_lookup_address(lookup_trace_fast)));
+					as.jmp(Imm(func_address(lookup_trace_fast)));
 				}
 				as.bind(l);
 				term_pc = branch_pc;
@@ -2065,7 +2165,7 @@ namespace riscv {
 					as.jmp(Imm(branch_addr));
 				} else {
 					emit_pc(branch_pc);
-					as.jmp(Imm(trace_lookup_address(lookup_trace_fast)));
+					as.jmp(Imm(func_address(lookup_trace_fast)));
 				}
 				as.bind(l);
 				term_pc = cont_pc;
@@ -2118,7 +2218,25 @@ namespace riscv {
 				// nop
 			}
 			else {
-				if (rdx > 0) {
+				if (use_mmu) {
+					if (dec.rs1 == rv_ireg_zero) {
+						as.mov(x86::rax, Imm(dec.imm));
+					}
+					else if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					}
+					else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					as.call(Imm(func_address(ops.lw)));
+					if (rdx > 0) {
+						as.mov(x86::gpd(rdx), x86::eax);
+					} else {
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else if (rdx > 0) {
 					if (rs1x > 0) {
 						as.movsxd(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), dec.imm));
 					} else {
@@ -2138,35 +2256,6 @@ namespace riscv {
 			return true;
 		}
 
-		bool emit_lwu(decode_type &dec)
-		{
-			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
-			term_pc = dec.pc + inst_length(dec.inst);
-			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
-			if (dec.rd == rv_ireg_zero) {
-				// nop
-			}
-			else {
-				if (rdx > 0) {
-					if (rs1x > 0) {
-						as.mov(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), dec.imm));
-					} else {
-						as.mov(x86::eax, rbp_reg_d(dec.rs1));
-						as.mov(x86::gpd(rdx), x86::dword_ptr(x86::eax, dec.imm));
-					}
-				} else {
-					if (rs1x > 0) {
-						as.mov(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
-					} else {
-						as.mov(x86::eax, rbp_reg_d(dec.rs1));
-						as.mov(x86::eax, x86::dword_ptr(x86::eax, dec.imm));
-					}
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-				}
-			}
-			return true;
-		}
-
 		bool emit_lh(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
@@ -2176,7 +2265,26 @@ namespace riscv {
 				// nop
 			}
 			else {
-				if (rdx > 0) {
+				if (use_mmu) {
+					if (dec.rs1 == rv_ireg_zero) {
+						as.mov(x86::rax, Imm(dec.imm));
+					}
+					else if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					}
+					else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					as.call(Imm(func_address(ops.lh)));
+					if (rdx > 0) {
+						as.movsx(x86::gpd(rdx), x86::ax);
+					} else {
+						as.movsx(x86::eax, x86::ax);
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else if (rdx > 0) {
 					if (rs1x > 0) {
 						as.movsx(x86::gpd(rdx), x86::word_ptr(x86::gpd(rs1x), dec.imm));
 					} else {
@@ -2205,7 +2313,26 @@ namespace riscv {
 				// nop
 			}
 			else {
-				if (rdx > 0) {
+				if (use_mmu) {
+					if (dec.rs1 == rv_ireg_zero) {
+						as.mov(x86::rax, Imm(dec.imm));
+					}
+					else if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					}
+					else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					as.call(Imm(func_address(ops.lh)));
+					if (rdx > 0) {
+						as.movzx(x86::gpd(rdx), x86::ax);
+					} else {
+						as.movzx(x86::eax, x86::ax);
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else if (rdx > 0) {
 					if (rs1x > 0) {
 						as.movzx(x86::gpd(rdx), x86::word_ptr(x86::gpd(rs1x), dec.imm));
 					} else {
@@ -2234,7 +2361,26 @@ namespace riscv {
 				// nop
 			}
 			else {
-				if (rdx > 0) {
+				if (use_mmu) {
+					if (dec.rs1 == rv_ireg_zero) {
+						as.mov(x86::rax, Imm(dec.imm));
+					}
+					else if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					}
+					else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					as.call(Imm(func_address(ops.lb)));
+					if (rdx > 0) {
+						as.movsx(x86::gpd(rdx), x86::al);
+					} else {
+						as.movsx(x86::eax, x86::al);
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else if (rdx > 0) {
 					if (rs1x > 0) {
 						as.movsx(x86::gpd(rdx), x86::byte_ptr(x86::gpd(rs1x), dec.imm));
 					} else {
@@ -2263,7 +2409,26 @@ namespace riscv {
 				// nop
 			}
 			else {
-				if (rdx > 0) {
+				if (use_mmu) {
+					if (dec.rs1 == rv_ireg_zero) {
+						as.mov(x86::rax, Imm(dec.imm));
+					}
+					else if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					}
+					else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					as.call(Imm(func_address(ops.lb)));
+					if (rdx > 0) {
+						as.movzx(x86::gpd(rdx), x86::al);
+					} else {
+						as.movzx(x86::eax, x86::al);
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else if (rdx > 0) {
 					if (rs1x > 0) {
 						as.movzx(x86::gpd(rdx), x86::byte_ptr(x86::gpd(rs1x), dec.imm));
 					} else {
@@ -2289,22 +2454,48 @@ namespace riscv {
 			term_pc = dec.pc + inst_length(dec.inst);
 			int rs2x = x86_reg(dec.rs2), rs1x = x86_reg(dec.rs1);
 			if (dec.rs2 == rv_ireg_zero) {
-				if (rs1x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::ecx, dec.imm));
+					}
+					as.xor_(x86::ecx, x86::ecx);
+					as.call(Imm(func_address(ops.sw)));
+				}
+				else if (rs1x > 0) {
 					as.mov(x86::dword_ptr(x86::gpd(rs1x), dec.imm), Imm(0));
-				} else {
+				}
+				else {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					as.mov(x86::dword_ptr(x86::eax, dec.imm), Imm(0));
 				}
 			}
 			else {
-				if (rs2x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpq(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					if (rs2x > 0) {
+						as.mov(x86::ecx, x86::gpd(rs2x));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
+					}
+					as.call(Imm(func_address(ops.sw)));
+				}
+				else if (rs2x > 0) {
 					if (rs1x > 0) {
 						as.mov(x86::dword_ptr(x86::gpd(rs1x), dec.imm), x86::gpd(rs2x));
 					} else {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 						as.mov(x86::dword_ptr(x86::eax, dec.imm), x86::gpd(rs2x));
 					}
-				} else {
+				}
+				else {
 					as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					if (rs1x > 0) {
 						as.mov(x86::dword_ptr(x86::gpd(rs1x), dec.imm), x86::ecx);
@@ -2323,22 +2514,48 @@ namespace riscv {
 			term_pc = dec.pc + inst_length(dec.inst);
 			int rs2x = x86_reg(dec.rs2), rs1x = x86_reg(dec.rs1);
 			if (dec.rs2 == rv_ireg_zero) {
-				if (rs1x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::ecx, dec.imm));
+					}
+					as.xor_(x86::ecx, x86::ecx);
+					as.call(Imm(func_address(ops.sh)));
+				}
+				else if (rs1x > 0) {
 					as.mov(x86::word_ptr(x86::gpd(rs1x), dec.imm), Imm(0));
-				} else {
+				}
+				else {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					as.mov(x86::word_ptr(x86::eax, dec.imm), Imm(0));
 				}
 			}
 			else {
-				if (rs2x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpq(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					if (rs2x > 0) {
+						as.mov(x86::ecx, x86::gpd(rs2x));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
+					}
+					as.call(Imm(func_address(ops.sh)));
+				}
+				else if (rs2x > 0) {
 					if (rs1x > 0) {
 						as.mov(x86::word_ptr(x86::gpd(rs1x), dec.imm), x86::gpw(rs2x));
 					} else {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 						as.mov(x86::word_ptr(x86::eax, dec.imm), x86::gpw(rs2x));
 					}
-				} else {
+				}
+				else {
 					as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					if (rs1x > 0) {
 						as.mov(x86::word_ptr(x86::gpd(rs1x), dec.imm), x86::cx);
@@ -2357,7 +2574,17 @@ namespace riscv {
 			term_pc = dec.pc + inst_length(dec.inst);
 			int rs2x = x86_reg(dec.rs2), rs1x = x86_reg(dec.rs1);
 			if (dec.rs2 == rv_ireg_zero) {
-				if (rs1x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpd(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::ecx, dec.imm));
+					}
+					as.xor_(x86::ecx, x86::ecx);
+					as.call(Imm(func_address(ops.sb)));
+				}
+				else if (rs1x > 0) {
 					as.mov(x86::byte_ptr(x86::gpd(rs1x), dec.imm), Imm(0));
 				} else {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
@@ -2365,14 +2592,29 @@ namespace riscv {
 				}
 			}
 			else {
-				if (rs2x > 0) {
+				if (use_mmu) {
+					if (rs1x > 0) {
+						as.lea(x86::eax, x86::dword_ptr(x86::gpq(rs1x), dec.imm));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+						as.lea(x86::eax, x86::dword_ptr(x86::rcx, dec.imm));
+					}
+					if (rs2x > 0) {
+						as.mov(x86::ecx, x86::gpd(rs2x));
+					} else {
+						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
+					}
+					as.call(Imm(func_address(ops.sb)));
+				}
+				else if (rs2x > 0) {
 					if (rs1x > 0) {
 						as.mov(x86::byte_ptr(x86::gpd(rs1x), dec.imm), x86::gpb_lo(rs2x));
 					} else {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 						as.mov(x86::byte_ptr(x86::eax, dec.imm), x86::gpb_lo(rs2x));
 					}
-				} else {
+				}
+				else {
 					as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					if (rs1x > 0) {
 						as.mov(x86::byte_ptr(x86::gpd(rs1x), dec.imm), x86::cl);
@@ -2473,7 +2715,7 @@ namespace riscv {
 					as.mov(x86::dword_ptr(x86::rbp, proc_offset(pc)), x86::eax);
 				}
 
-				as.jmp(Imm(trace_lookup_address(lookup_trace_fast)));
+				as.jmp(Imm(func_address(lookup_trace_fast)));
 
 				return false;
 			}
@@ -2565,7 +2807,6 @@ namespace riscv {
 				case rv_op_bltu: return emit_bltu(dec);
 				case rv_op_bgeu: return emit_bgeu(dec);
 				case rv_op_lw: return emit_lw(dec);
-				case rv_op_lwu: return emit_lwu(dec);
 				case rv_op_lh: return emit_lh(dec);
 				case rv_op_lhu: return emit_lhu(dec);
 				case rv_op_lb: return emit_lb(dec);
