@@ -111,10 +111,12 @@ namespace riscv {
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<u16>(pc))) {
 				proc.raise(rv_cause_misaligned_fetch, pc);
+				return 0;
 			}
 
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
+			if (!mpa) return 0;
 
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
@@ -124,7 +126,9 @@ namespace riscv {
 				fetch_access_fault(proc, proc.mode, uva, tlb_ent)))
 			{
 				proc.raise(rv_cause_fault_fetch, pc);
-			} else {
+				return 0;
+			}
+			else {
 
 				/* record pc histogram using machine physical address */
 				if (proc.log & proc_log_hist_pc) {
@@ -151,6 +155,7 @@ namespace riscv {
 					pc_offset = 8;
 				} else {
 					proc.raise(rv_cause_fault_fetch, pc);
+					return 0;
 				}
 			}
 			return inst;
@@ -166,10 +171,12 @@ namespace riscv {
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
 				proc.raise(rv_cause_misaligned_load, va);
+				return;
 			}
 
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
+			if (!mpa) return;
 
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
@@ -198,10 +205,12 @@ namespace riscv {
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
 				proc.raise(rv_cause_misaligned_load, va);
+				return;
 			}
 
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
+			if (!mpa) return;
 
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
@@ -226,10 +235,12 @@ namespace riscv {
 			/* raise exception if address is misalligned */
 			if (unlikely(misaligned<T>(va))) {
 				proc.raise(rv_cause_misaligned_store, va);
+				return;
 			}
 
 			/* translate to machine physical (raises exception on fault) */
 			addr_t mpa = translate_addr<P,op>(proc, va, tlb_ent);
+			if (!mpa) return;
 
 			/* translate to user virtual (null segment indicates no mapping) */
 			addr_t uva = mem->mpa_to_uva(segment, mpa);
@@ -333,6 +344,7 @@ namespace riscv {
 			 * (access fault is raised if leaf PTE is not found) */
 			addr_t pa = walk_page_table<P,PTM>(proc, va, op, tlb, tlb_ent,
 				pte, pte_uva, level);
+			if (!pa) return 0;
 
 			/* Insert the virtual to physical mapping into the TLB */
 			tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
@@ -425,7 +437,7 @@ namespace riscv {
 				case op_store: proc.raise(rv_cause_fault_store, va);
 			}
 
-			return 0; /* not reached */
+			return 0;
 		}
 	};
 

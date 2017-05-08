@@ -3263,6 +3263,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.ld)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.mov(x86::gpq(rdx), x86::rax);
 					} else {
@@ -3311,6 +3317,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.movsxd(x86::gpq(rdx), x86::eax);
 					} else {
@@ -3360,6 +3372,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.mov(x86::gpd(rdx), x86::eax);
 					} else {
@@ -3408,6 +3426,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lh)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.movsx(x86::gpq(rdx), x86::ax);
 					} else {
@@ -3457,6 +3481,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lh)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.mov(x86::gpd(rdx), x86::eax);
 					} else {
@@ -3505,6 +3535,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lb)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.movsx(x86::gpq(rdx), x86::al);
 					} else {
@@ -3554,6 +3590,12 @@ namespace riscv {
 						as.lea(x86::rax, x86::qword_ptr(x86::rcx, dec.imm));
 					}
 					as.call(Imm(func_address(ops.lb)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 					if (rdx > 0) {
 						as.mov(x86::gpd(rdx), x86::eax);
 					} else {
@@ -3596,6 +3638,12 @@ namespace riscv {
 					}
 					as.xor_(x86::ecx, x86::ecx);
 					as.call(Imm(func_address(ops.sd)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs1x > 0) {
 					as.mov(x86::qword_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
@@ -3618,6 +3666,12 @@ namespace riscv {
 						as.mov(x86::rcx, rbp_reg_q(dec.rs2));
 					}
 					as.call(Imm(func_address(ops.sd)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs2x > 0) {
 					if (rs1x > 0) {
@@ -3656,6 +3710,12 @@ namespace riscv {
 					}
 					as.xor_(x86::ecx, x86::ecx);
 					as.call(Imm(func_address(ops.sw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs1x > 0) {
 					as.mov(x86::dword_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
@@ -3678,6 +3738,12 @@ namespace riscv {
 						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					}
 					as.call(Imm(func_address(ops.sw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs2x > 0) {
 					if (rs1x > 0) {
@@ -3715,6 +3781,12 @@ namespace riscv {
 					}
 					as.xor_(x86::ecx, x86::ecx);
 					as.call(Imm(func_address(ops.sh)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs1x > 0) {
 					as.mov(x86::word_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
@@ -3738,6 +3810,12 @@ namespace riscv {
 						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					}
 					as.call(Imm(func_address(ops.sh)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs2x > 0) {
 					if (rs1x > 0) {
@@ -3775,6 +3853,12 @@ namespace riscv {
 					}
 					as.xor_(x86::ecx, x86::ecx);
 					as.call(Imm(func_address(ops.sb)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs1x > 0) {
 					as.mov(x86::byte_ptr(x86::gpq(rs1x), dec.imm), Imm(0));
@@ -3798,6 +3882,12 @@ namespace riscv {
 						as.mov(x86::ecx, rbp_reg_d(dec.rs2));
 					}
 					as.call(Imm(func_address(ops.sb)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
 				}
 				else if (rs2x > 0) {
 					if (rs1x > 0) {

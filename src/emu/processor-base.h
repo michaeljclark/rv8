@@ -164,11 +164,13 @@ namespace riscv {
 		u16 hart_id;                  /* Hardware Thread Identifier */
 		u32 log;                      /* Log flags */
 		SX lr;                        /* Load Reservation (TODO - global) */
+		SX cause;                     /* Fault cause */
 		SX badaddr;                   /* Fault address */
 		jmp_buf env;                  /* Fault handler */
 
 		bool running;                 /* Run Loop control */
 		bool debugging;               /* Debug Step control */
+		bool exceptions;              /* Trap on exceptions */
 		UX breakpoint;                /* Breakpoint */
 		UX trace_iters;               /* Trace iterations */
 		UX trace_length;              /* Trace length */
@@ -184,8 +186,9 @@ namespace riscv {
 		u32 fcsr;                     /* Floating-Point Control and Status Register */
 
 		processor_base() : pc(0), ireg(), freg(),
-			node_id(0), hart_id(0), log(0), lr(0), badaddr(0), env(),
-			running(true), debugging(false), breakpoint(0), trace_iters(0), trace_length(0),
+			node_id(0), hart_id(0), log(0), lr(0), cause(0), badaddr(0), env(),
+			running(true), debugging(false), exceptions(true),
+			breakpoint(0), trace_iters(0), trace_length(0),
 			trace_pc(), trace_fn(),
 			time(0), cycle(0), instret(0), fcsr(0) {}
 
@@ -207,11 +210,15 @@ namespace riscv {
 			hostspot_trace_skip = std::numeric_limits<size_t>::max()
 		};
 
-		[[noreturn]] void raise(int cause, ux addr)
+		void raise(int ex_cause, ux ex_addr)
 		{
 			/* setjmp cannot return zero so 0x100 is added to cause */
-			badaddr = addr;
-			longjmp(env, cause + internal_cause_offset);
+			badaddr = ex_addr;
+			if (exceptions) {
+				longjmp(env, ex_cause + internal_cause_offset);
+			} else {
+				cause = ex_cause;
+			}
 		}
 	};
 
