@@ -323,6 +323,7 @@ namespace riscv {
 		mmu_ops create_load_store(JitRuntime &rt)
 		{
 			Label lb = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(lb);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -331,6 +332,7 @@ namespace riscv {
 			as.ret();
 
 			Label lh = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(lh);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -339,6 +341,7 @@ namespace riscv {
 			as.ret();
 
 			Label lw = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(lw);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -347,6 +350,7 @@ namespace riscv {
 			as.ret();
 
 			Label ld = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(ld);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -355,6 +359,7 @@ namespace riscv {
 			as.ret();
 
 			Label sb = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(sb);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -364,6 +369,7 @@ namespace riscv {
 			as.ret();
 
 			Label sh = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(sh);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -373,6 +379,7 @@ namespace riscv {
 			as.ret();
 
 			Label sw = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(sw);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
@@ -382,6 +389,7 @@ namespace riscv {
 			as.ret();
 
 			Label sd = as.newLabel();
+			as.align(kAlignCode, 16);
 			as.bind(sd);
 			save_volatile();
 			as.mov(x86::rdi, x86::rax);
