@@ -1,4 +1,4 @@
-RISC-V Meta
+rv8
 ===========
 
 [![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
@@ -10,8 +10,7 @@ Version : (under version control)
 About
 -------------
 
-RISC-V Meta is a suite of tools that operate on RISC-V Instruction
-Set Architecture.
+rv8 - RISC-V simulator for x86-64
 
 The suite contains simple decoupled libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
@@ -71,6 +70,7 @@ The following table shows the RISC-V Meta tools:
 |rv-asm  | Assembler
 |rv-meta | Code and documentation generator
 |rv-bin  | ELF dump, disassmble, compress and histogram
+|rv-jit  | Simulator for x86-64
 |rv-sim  | ABI Proxy Simulator
 |rv-sys  | Privileged System Emulator
 
