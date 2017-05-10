@@ -1,7 +1,7 @@
 rv8 - RISC-V simulator for x86-64
 ===========
 
-[![Build Status](https://travis-ci.org/michaeljclark/riscv-meta.svg?branch=master)](https://travis-ci.org/michaeljclark/riscv-meta)
+[![Build Status](https://travis-ci.org/rv8-io/rv8.svg?branch=master)](https://travis-ci.org/rv8-io/rv8)
 
 Date    : January 15, 2020
 
