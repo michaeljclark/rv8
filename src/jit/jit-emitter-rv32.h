@@ -2114,10 +2114,7 @@ namespace riscv {
 			}
 		}
 
-		template <typename T>
-		bool emit_branch(decode_type &dec, bool cond,
-			Error(T::*bf)(const Label&), const char* bfname,
-			Error(T::*ibf)(const Label&), const char* ibfname)
+		bool emit_branch(decode_type &dec, bool cond, x86::Cond bf, x86::Cond ibf)
 		{
 			addr_t branch_pc = dec.pc + dec.imm;
 			addr_t cont_pc = dec.pc + inst_length(dec.inst);
@@ -2129,11 +2126,11 @@ namespace riscv {
 			term_pc = 0;
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
-				(as.*bf)(branch_i->second);
+				as.j(bf, branch_i->second);
 				as.jmp(cont_i->second);
 			}
 			else if (cond && branch_i != labels.end()) {
-				(as.*bf)(branch_i->second);
+				as.j(bf, branch_i->second);
 				uintptr_t cont_addr = lookup_trace_slow(cont_pc);
 				if (cont_addr) {
 					as.jmp(Imm(cont_addr));
@@ -2143,7 +2140,7 @@ namespace riscv {
 				}
 			}
 			else if (!cond && cont_i != labels.end()) {
-				(as.*ibf)(cont_i->second);
+				as.j(ibf, cont_i->second);
 				uintptr_t branch_addr = lookup_trace_slow(branch_pc);
 				if (branch_addr) {
 					as.jmp(Imm(branch_addr));
@@ -2153,7 +2150,7 @@ namespace riscv {
 				}
 			} else if (cond) {
 				Label l = as.newLabel();
-				(as.*bf)(l);
+				as.j(bf, l);
 				uintptr_t cont_addr = lookup_trace_slow(cont_pc);
 				if (cont_addr) {
 					as.jmp(Imm(cont_addr));
@@ -2165,7 +2162,7 @@ namespace riscv {
 				term_pc = branch_pc;
 			} else {
 				Label l = as.newLabel();
-				(as.*ibf)(l);
+				as.j(ibf, l);
 				uintptr_t branch_addr = lookup_trace_slow(branch_pc);
 				if (branch_addr) {
 					as.jmp(Imm(branch_addr));
@@ -2182,37 +2179,37 @@ namespace riscv {
 		bool emit_bne(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, &X86Assembler::jne, "jne", &X86Assembler::je, "je");
+			return emit_branch(dec, cond, x86::kCondNE, x86::kCondE);
 		}
 
 		bool emit_beq(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val == proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, &X86Assembler::je, "je", &X86Assembler::jne, "jne");
+			return emit_branch(dec, cond, x86::kCondE, x86::kCondNE);
 		}
 
 		bool emit_blt(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val < proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, &X86Assembler::jl, "jl", &X86Assembler::jge, "jge");
+			return emit_branch(dec, cond, x86::kCondL, x86::kCondGE);
 		}
 
 		bool emit_bge(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.x.val >= proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, &X86Assembler::jge, "jge", &X86Assembler::jl, "jl");
+			return emit_branch(dec, cond, x86::kCondGE, x86::kCondL);
 		}
 
 		bool emit_bltu(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.xu.val < proc.ireg[dec.rs2].r.xu.val;
-			return emit_branch(dec, cond, &X86Assembler::jb, "jb", &X86Assembler::jae, "jae");
+			return emit_branch(dec, cond, x86::kCondB, x86::kCondAE);
 		}
 
 		bool emit_bgeu(decode_type &dec)
 		{
 			bool cond = proc.ireg[dec.rs1].r.xu.val >= proc.ireg[dec.rs2].r.xu.val;
-			return emit_branch(dec, cond, &X86Assembler::jae, "jae", &X86Assembler::jb, "jb");
+			return emit_branch(dec, cond, x86::kCondAE, x86::kCondB);
 		}
 
 		bool emit_lw(decode_type &dec)
