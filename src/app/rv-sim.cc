@@ -347,7 +347,7 @@ struct rv_emulator
 		}
 
 		if (help_or_error) {
-			printf("usage: %s [<options>] <elf_file>\n", argv[0]);
+			printf("usage: %s [<options>] <elf_file> [<options>]\n", argv[0]);
 			cmdline_option::print_options(options);
 			exit(9);
 		}

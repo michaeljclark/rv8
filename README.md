@@ -170,7 +170,7 @@ RISC-V x86-64 JIT Simulator command line options:
 
 ```
 $ rv-jit -h
-usage: rv-jit [<options>] <asm_file>
+usage: rv-jit [<options>] <elf_file> [<options>]
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
               --log-memory-map, -m            Log Memory Map Information
@@ -289,7 +289,7 @@ The ABI Proxy Simulator command line options:
 
 ```
 $ rv-sim -h
-usage: rv-sim [<options>] <elf_file>
+usage: rv-sim [<options>] <elf_file> [<options>]
                          --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands

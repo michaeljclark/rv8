@@ -87,7 +87,7 @@
 
 using namespace riscv;
 
-#ifdef ENABLE_JIT_FUSION
+#if 1
 
 using proxy_model_rv32imafdc = processor_rv32imafdc_model<
 	jit_decode, processor_rv32imafd, mmu_proxy_rv32>;
@@ -357,7 +357,7 @@ struct rv_jit
 
 		if (help_or_error)
 		{
-			printf("usage: %s [<options>] <asm_file>\n", argv[0]);
+			printf("usage: %s [<options>] <elf_file> [<options>]\n", argv[0]);
 			cmdline_option::print_options(options);
 			exit(9);
 		}
