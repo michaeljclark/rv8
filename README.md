@@ -163,6 +163,34 @@ sudo apt-get install g++-6 libncurses5-dev
 make CXX=g++-6 CC=gcc-6
 ```
 
+RV x86-64 Simulator
+-----------------------------
+
+RISC-V x86-64 JIT Simulator command line options:
+
+```
+$ rv-jit -h
+usage: rv-jit [<options>] <asm_file>
+            --log-instructions, -l            Log Instructions
+                --log-operands, -o            Log Instructions and Operands
+              --log-memory-map, -m            Log Memory Map Information
+               --log-registers, -r            Log Registers (defaults to integer registers)
+               --log-jit-trace, -T            Log JIT trace
+    --register-usage-histogram, -H            Record register usage
+          --pc-usage-histogram, -P            Record program counter usage
+                       --debug, -d            Start up in debugger CLI
+                   --no-pseudo, -x            Disable Pseudoinstruction decoding
+                    --no-trace, -t            Disable JIT tracer
+                       --audit, -a            Enable JIT audit
+                 --trace-iters, -I <string>   Trace iterations
+                --trace-length, -L <string>   Trace length
+                        --help, -h            Show help
+```
+
+**Notes**
+
+- Currently only the Linux syscall ABI proxy is implemented for the JIT simulator
+
 RV ELF Dump Utility
 -----------------------------
 
