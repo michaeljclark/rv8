@@ -191,96 +191,6 @@ usage: rv-jit [<options>] <elf_file> [<options>]
 
 - Currently only the Linux syscall ABI proxy is implemented for the JIT simulator
 
-RV ELF Dump Utility
------------------------------
-
-ELF Dump usage command line options:
-
-```
-$ rv-bin dump -h
-usage: dump [<options>] <elf_file>
-                       --color, -c            Enable Color
-            --print-elf-header, -e            Print ELF header
-        --print-elf-header-ext, -x            Print ELF header (extended)
-       --print-section-headers, -s            Print Section headers
-       --print-program-headers, -p            Print Program headers
-          --print-symbol-table, -t            Print Symbol Table
-           --print-relocations, -r            Print Relocations
-           --print-disassembly, -d            Print Disassembly
-                      --pseudo, -P            Decode Pseudoinstructions
-               --print-headers, -h            Print All Headers
-                   --print-all, -a            Print All Headers and Disassembly
-                        --help, -h            Show help
-```
-
-To run the ELF parser and disassembler:
-
-```
-rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
-```
-
-**Notes**
-
-- The ELF dissassembler output requires 125 column terminal window
-
-
-RV Metadata Utility
------------------------------
-
-The RV source and documentation generator usage command line options:
-
-```
-$ rv-meta -h
-usage: rv-meta [<options>]
-                        --help, -h            Show help
-                  --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
-                    --read-isa, -r <string>   Read instruction set metadata from directory
-                  --no-comment, -N            Don't emit comments in generated source
-           --numeric-constants, -0            Use numeric constants in generated source
-         --print-constraints-h, -XC           Print constraints header
-            --print-fpu-test-h, -FH           Print FPU test header
-            --print-fpu-test-c, -FC           Print FPU test source
-              --print-interp-h, -V            Print interpreter header
-                 --print-jit-h, -J            Print jit header
-                --print-jit-cc, -K            Print jit source
-   --substitute-question-marks, -?            Substitute question marks for zeros in LaTeX output
-                 --print-latex, -l            Print LaTeX instruction listing
-                       --color, -c            Enable ANSI color map
-                   --print-map, -m            Print instruction map
-      --print-map-pseudocode-c, -mc           Print instruction map with C pseudocode
-    --print-map-pseudocode-alt, -ma           Print instruction map with alternate pseudocode
-                --print-meta-h, -H            Print metadata header
-               --print-meta-cc, -C            Print metadata source
-            --print-operands-h, -A            Print operands header
-             --print-strings-h, -SH           Print strings header
-            --print-strings-cc, -SC           Print strings source
-              --print-switch-h, -S            Print switch header
-```
-
-To print a colour opcode map for the RV32IMA ISA subset:
-
-```
-rv-meta -I RV32IMA -m -c -r meta
-```
-
-To print a colour opcode map for the RV64IMAFDS ISA subset:
-
-```
-rv-meta -I RV64IMAFDS -m -c -r meta
-```
-
-To output LaTeX for the RV32C ISA subset:
-
-```
-rv-meta -I RV32C -l -r meta
-```
-
-To output LaTeX for the RV64G ISA subset:
-
-```
-rv-meta -I RV64G -l -r meta
-```
-
 
 RV Proxy Simulator
 -----------------------------
@@ -345,6 +255,39 @@ rv-sys build/riscv64-unknown-elf/bin/test-m-mmio-uart
 ```
 
 
+RV ELF Dump Utility
+-----------------------------
+
+ELF Dump usage command line options:
+
+```
+$ rv-bin dump -h
+usage: dump [<options>] <elf_file>
+                       --color, -c            Enable Color
+            --print-elf-header, -e            Print ELF header
+        --print-elf-header-ext, -x            Print ELF header (extended)
+       --print-section-headers, -s            Print Section headers
+       --print-program-headers, -p            Print Program headers
+          --print-symbol-table, -t            Print Symbol Table
+           --print-relocations, -r            Print Relocations
+           --print-disassembly, -d            Print Disassembly
+                      --pseudo, -P            Decode Pseudoinstructions
+               --print-headers, -h            Print All Headers
+                   --print-all, -a            Print All Headers and Disassembly
+                        --help, -h            Show help
+```
+
+To run the ELF parser and disassembler:
+
+```
+rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
+```
+
+**Notes**
+
+- The ELF dissassembler output requires 125 column terminal window
+
+
 RV ELF Histogram Utility
 -------------------------------------
 
@@ -374,6 +317,65 @@ To print the top 20 registers in a RISC-V ELF binary:
 ```
 rv-bin histogram -R -b -c █ linux/vmlinux | head -20
 ```
+
+
+RV Metadata Utility
+-----------------------------
+
+The RV source and documentation generator usage command line options:
+
+```
+$ rv-meta -h
+usage: rv-meta [<options>]
+                        --help, -h            Show help
+                  --isa-subset, -I <string>   ISA subset (e.g. RV32IMA, RV32G, RV32GSC, RV64IMA, RV64G, RV64GSC)
+                    --read-isa, -r <string>   Read instruction set metadata from directory
+                  --no-comment, -N            Don't emit comments in generated source
+           --numeric-constants, -0            Use numeric constants in generated source
+         --print-constraints-h, -XC           Print constraints header
+            --print-fpu-test-h, -FH           Print FPU test header
+            --print-fpu-test-c, -FC           Print FPU test source
+              --print-interp-h, -V            Print interpreter header
+                 --print-jit-h, -J            Print jit header
+                --print-jit-cc, -K            Print jit source
+   --substitute-question-marks, -?            Substitute question marks for zeros in LaTeX output
+                 --print-latex, -l            Print LaTeX instruction listing
+                       --color, -c            Enable ANSI color map
+                   --print-map, -m            Print instruction map
+      --print-map-pseudocode-c, -mc           Print instruction map with C pseudocode
+    --print-map-pseudocode-alt, -ma           Print instruction map with alternate pseudocode
+                --print-meta-h, -H            Print metadata header
+               --print-meta-cc, -C            Print metadata source
+            --print-operands-h, -A            Print operands header
+             --print-strings-h, -SH           Print strings header
+            --print-strings-cc, -SC           Print strings source
+              --print-switch-h, -S            Print switch header
+```
+
+To print a colour opcode map for the RV32IMA ISA subset:
+
+```
+rv-meta -I RV32IMA -m -c -r meta
+```
+
+To print a colour opcode map for the RV64IMAFDS ISA subset:
+
+```
+rv-meta -I RV64IMAFDS -m -c -r meta
+```
+
+To output LaTeX for the RV32C ISA subset:
+
+```
+rv-meta -I RV32C -l -r meta
+```
+
+To output LaTeX for the RV64G ISA subset:
+
+```
+rv-meta -I RV64G -l -r meta
+```
+
 
 References
 ----------------
