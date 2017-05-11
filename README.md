@@ -12,7 +12,7 @@ About
 
 RISC-V simulator for x86-64
 
-The suite contains simple decoupled libraries and command line tools
+The rv8 suite contains decoupled libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
 instruction set metadata, instruction decoders, a JIT assembler, LaTeX
 documentation, a metadata based RISC-V disassembler, a histogram tool
@@ -20,7 +20,7 @@ for generating statistics on RISC-V ELF executables, a RISC-V proxy
 syscall simulator, a RISC-V full system emulator that implements the
 RISC-V 1.9.1 privileged specification and an x86-64 binary translator.
 
-The future goals of the RISC-V Meta project are:
+The future goals of the rv8 project are:
 
 - Concise metadata representing the RISC-V ISA
 - Tools for metadata-based generation of source and documentation 
@@ -28,7 +28,7 @@ The future goals of the RISC-V Meta project are:
 - ELF Binary compressor, decompressor
 - High performance emulation, sandboxing and binary translation
 - RISC-V-(n) → RISC-V-(n+1)
-- RISC-V-(n) → Intel i786 + AVX-512
+- RISC-V-(n) → Intel i7 / AMD64 + AVX-512
 - RISC-V Linux ABI emulation on MacOS, Windows, Linux and *BSD
 - RISC-V Linux ABI randomisation and entropy coding
 - RISC-V Specification undefined behaviour investigation
