@@ -1,5 +1,7 @@
-rv8 - RISC-V simulator for x86-64
+rv8
 ===========
+
+RISC-V simulator for x86-64
 
 [![Build Status](https://travis-ci.org/rv8-io/rv8.svg?branch=master)](https://travis-ci.org/rv8-io/rv8)
 
@@ -9,8 +11,6 @@ Version : (under version control)
 
 About
 -------------
-
-RISC-V simulator for x86-64
 
 The rv8 suite contains decoupled libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
