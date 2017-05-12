@@ -25,7 +25,6 @@ The future goals of the rv8 project are:
 - Concise metadata representing the RISC-V ISA
 - Tools for metadata-based generation of source and documentation 
 - Full color disassembler
-- ELF Binary compressor, decompressor
 - High performance emulation, sandboxing and binary translation
 - RISC-V-(n) → RISC-V-(n+1)
 - RISC-V-(n) → Intel i7 / AMD64 + AVX-512
@@ -63,9 +62,8 @@ The following table shows the RISC-V Meta tools:
 
 |Name    | Description
 |:------ | :-----------------
-|rv-asm  | Assembler
 |rv-meta | Code and documentation generator
-|rv-bin  | ELF dump, disassmble, compress and histogram
+|rv-bin  | ELF dump, disassmble and histogram
 |rv-jit  | Simulator for x86-64
 |rv-sim  | ABI Proxy Simulator
 |rv-sys  | Privileged System Emulator

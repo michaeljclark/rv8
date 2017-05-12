@@ -21,7 +21,6 @@ using namespace riscv;
 
 typedef int(*rv_cmd_fn)(int argc, const char **argv);
 
-int rv_compress_main(int argc, const char **argv);
 int rv_dump_main(int argc, const char **argv);
 int rv_histogram_main(int argc, const char **argv);
 int rv_pte_main(int argc, const char **argv);
@@ -32,7 +31,6 @@ struct rv_cmd {
 };
 
 static rv_cmd cmds[] = {
-	{ "compress",  rv_compress_main },
 	{ "dump",      rv_dump_main },
 	{ "histogram", rv_histogram_main },
 	{ "pte",       rv_pte_main },

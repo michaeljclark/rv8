@@ -32,20 +32,8 @@ namespace riscv {
 			debug_cli *cli;
 		};
 
-		EditLine *el;
-		History *hist;
-		Tokenizer *tok;
-		HistEvent ev;
 		cmd_map map;
-
-		static const char* prompt(EditLine *el)
-		{
-			static char prompt_buf[32] = {};
-			cmd_state *st;
-			el_get(el, EL_CLIENTDATA, &st);
-			snprintf(prompt_buf, sizeof(prompt_buf), "(%s) ", st->proc->name());
-			return prompt_buf;
-		}
+		char line_buf[256];
 
 		static size_t word_size_mnem(std::string ws)
 		{
@@ -62,20 +50,8 @@ namespace riscv {
 			}
 		}
 
-		debug_cli() :
-			el(nullptr),
-			hist(nullptr),
-			tok(nullptr)
+		debug_cli()
 		{
-			/* set up editline */
-			hist = history_init();
-			history(hist, &ev, H_SETSIZE, 100);
-			tok  = tok_init(NULL);
-			el = el_init("rv-cli", stdin, stdout, stderr);
-			el_set(el, EL_EDITOR, "emacs");
-			el_set(el, EL_PROMPT_ESC, prompt, '\1');
-			el_set(el, EL_HIST, history, hist);
-
 			/* add commands to map */
 			add_command(cmd_dev,    1, 1, "dev",    "",                 "Show Devices");
 			add_command(cmd_disasm, 2, 2, "disasm", "<addr>",           "Disassemble Memory");
@@ -88,13 +64,6 @@ namespace riscv {
 			add_command(cmd_quit,   1, 1, "quit",   "",                 "End Simulation");
 			add_command(cmd_reg,    1, 1, "reg",    "",                 "Show Registers");
 			add_command(cmd_run,    1, 2, "run",    "[count]",          "Step processor");
-		}
-
-		~debug_cli()
-		{
-			el_end(el);
-			tok_end(tok);
-			history_end(hist);
 		}
 
 		void add_command(cmd_fn fn, size_t min_args, size_t max_args,
@@ -332,7 +301,6 @@ namespace riscv {
 				}
 
 				hist_pc_map_t hist_pc_reduce;
-				hist_pc_reduce.set_empty_key(0);
 				for (auto ent : st.proc->hist_pc) {
 					addr_t key = ent.first >> addr_shift;
 					auto hi = hist_pc_reduce.find(key);
@@ -399,16 +367,20 @@ namespace riscv {
 
 		/* CLI main loop */
 
+		char* getline(P *proc)
+		{
+			printf("(%s) ", proc->name());
+			return fgets(line_buf, sizeof(line_buf), stdin);
+		}
+
 		size_t run(P *proc)
 		{
 			cmd_state st{ proc, this };
-			const char *buf = nullptr;
-			int num;
 			size_t inst_step;
+			char *buf;
 
-			el_set(el, EL_CLIENTDATA, &st);
 			proc->debug_enter();
-			while ((buf = el_gets(el, &num)) != NULL && num != 0) {
+			while ((buf = getline(proc)) != NULL) {
 				auto line = ltrim(rtrim(buf));
 				auto args = split(line, " ", false, false);
 				if (args.size() == 0) continue;
@@ -430,7 +402,6 @@ namespace riscv {
 					}
 					continue;
 				}
-				history(hist, &ev, H_ENTER, line.c_str());
 				if ((inst_step = def.fn(st, args)) != 0) break;
 			}
 			proc->debug_leave();

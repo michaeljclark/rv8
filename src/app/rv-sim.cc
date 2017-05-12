@@ -44,8 +44,6 @@
 #include <sys/time.h>
 #include <sys/utsname.h>
 
-#include "histedit.h"
-
 #include "host-endian.h"
 #include "types.h"
 #include "fmt.h"

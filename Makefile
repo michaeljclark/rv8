@@ -38,10 +38,8 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 TOP_DIR =       $(shell pwd)
 INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
-                -I$(TOP_DIR)/src/edit \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
-                -I$(TOP_DIR)/src/expr \
                 -I$(TOP_DIR)/src/gen \
                 -I$(TOP_DIR)/src/jit \
                 -I$(TOP_DIR)/src/meta \
@@ -211,38 +209,8 @@ RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
 # sparsehash
 SPARSEHASH_SRC = sparsehash/src/sparsehash/internal/sparseconfig.h
 
-# libedit
-LIBEDIT_SRCS =   $(SRC_DIR)/edit/chared.c \
-                 $(SRC_DIR)/edit/common.c \
-                 $(SRC_DIR)/edit/el.c \
-                 $(SRC_DIR)/edit/eln.c \
-                 $(SRC_DIR)/edit/emacs.c \
-                 $(SRC_DIR)/edit/filecomplete.c \
-                 $(SRC_DIR)/edit/hist.c \
-                 $(SRC_DIR)/edit/history.c \
-                 $(SRC_DIR)/edit/historyn.c \
-                 $(SRC_DIR)/edit/keymacro.c \
-                 $(SRC_DIR)/edit/map.c \
-                 $(SRC_DIR)/edit/chartype.c \
-                 $(SRC_DIR)/edit/parse.c \
-                 $(SRC_DIR)/edit/prompt.c \
-                 $(SRC_DIR)/edit/read.c \
-                 $(SRC_DIR)/edit/readline.c \
-                 $(SRC_DIR)/edit/refresh.c \
-                 $(SRC_DIR)/edit/search.c \
-                 $(SRC_DIR)/edit/sig.c \
-                 $(SRC_DIR)/edit/terminal.c \
-                 $(SRC_DIR)/edit/tokenizer.c \
-                 $(SRC_DIR)/edit/tokenizern.c \
-                 $(SRC_DIR)/edit/tty.c \
-                 $(SRC_DIR)/edit/unvis.c \
-                 $(SRC_DIR)/edit/vis.c \
-                 $(SRC_DIR)/edit/vi.c
-LIBEDIT_OBJS =   $(call cc_src_objs, $(LIBEDIT_SRCS))
-LIBEDIT_LIB =    $(LIB_DIR)/libedit.a
-
 # libasmjit_x86
-X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
+ASMJIT_SRCS =   asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/base/assembler.cpp \
                 asmjit/src/asmjit/base/codebuilder.cpp \
                 asmjit/src/asmjit/base/codecompiler.cpp \
@@ -272,18 +240,8 @@ X86_SRCS =      asmjit/src/asmjit/base/arch.cpp \
                 asmjit/src/asmjit/x86/x86operand.cpp \
                 asmjit/src/asmjit/x86/x86operand_regs.cpp \
                 asmjit/src/asmjit/x86/x86regalloc.cpp
-X86_OBJS =      $(call asmjit_src_objs, $(X86_SRCS))
-X86_LIB =       $(LIB_DIR)/libasmjit_x86.a
-
-# libexpr
-LIBEXPR_SRCS =   $(SRC_DIR)/expr/builtin-features.cc \
-                 $(SRC_DIR)/expr/catch.cc \
-                 $(SRC_DIR)/expr/functions.cc \
-                 $(SRC_DIR)/expr/objects.cc \
-                 $(SRC_DIR)/expr/packToken.cc \
-                 $(SRC_DIR)/expr/shunting-yard.cc
-LIBEXPR_OBJS =   $(call cxx_src_objs, $(LIBEXPR_SRCS))
-LIBEXPR_LIB =    $(LIB_DIR)/libexpr.a
+ASMJIT_OBJS =   $(call asmjit_src_objs, $(ASMJIT_SRCS))
+ASMJIT_LIB =    $(LIB_DIR)/libasmjit_x86.a
 
 # libriscv_model
 RV_MODEL_HDR =  $(SRC_DIR)/model/model.h
@@ -347,19 +305,13 @@ FIX_MACHO_SRCS = $(SRC_DIR)/tool/fix-macho-zeropage.c
 FIX_MACHO_OBJS = $(call cc_src_objs, $(FIX_MACHO_SRCS))
 FIX_MACHO_BIN =  $(BIN_DIR)/fix-macho-zeropage
 
-# rv-asm
-RV_ASSEMBLER_SRCS = $(SRC_DIR)/app/rv-asm.cc
-RV_ASSEMBLER_OBJS = $(call cxx_src_objs, $(RV_ASSEMBLER_SRCS))
-RV_ASSEMBLER_BIN =  $(BIN_DIR)/rv-asm
-
 # rv-meta
 RV_META_SRCS =  $(SRC_DIR)/app/rv-meta.cc
 RV_META_OBJS =  $(call cxx_src_objs, $(RV_META_SRCS))
 RV_META_BIN =   $(BIN_DIR)/rv-meta
 
 # rv-bin
-RV_BIN_SRCS =   $(SRC_DIR)/app/rv-compress.cc \
-                $(SRC_DIR)/app/rv-dump.cc \
+RV_BIN_SRCS =   $(SRC_DIR)/app/rv-dump.cc \
                 $(SRC_DIR)/app/rv-histogram.cc \
                 $(SRC_DIR)/app/rv-pte.cc \
                 $(SRC_DIR)/app/rv-bin.cc
@@ -381,11 +333,6 @@ RV_SYS_SRCS =     $(SRC_DIR)/app/rv-sys.cc
 RV_SYS_OBJS =     $(call cxx_src_objs, $(RV_SYS_SRCS))
 RV_SYS_BIN =      $(BIN_DIR)/rv-sys
 
-# test-asmjit
-TEST_ASMJIT_SRCS = $(SRC_DIR)/app/test-asmjit.cc
-TEST_ASMJIT_OBJS = $(call cxx_src_objs, $(TEST_ASMJIT_SRCS))
-TEST_ASMJIT_BIN =  $(BIN_DIR)/test-asmjit
-
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/test-bits.cc
 TEST_BITS_OBJS = $(call cxx_src_objs, $(TEST_BITS_SRCS))
@@ -400,11 +347,6 @@ TEST_ENCODER_BIN =  $(BIN_DIR)/test-encoder
 TEST_ENDIAN_SRCS = $(SRC_DIR)/app/test-endian.cc
 TEST_ENDIAN_OBJS = $(call cxx_src_objs, $(TEST_ENDIAN_SRCS))
 TEST_ENDIAN_BIN =  $(BIN_DIR)/test-endian
-
-# test-expr
-TEST_EXPR_SRCS = $(SRC_DIR)/app/test-expr.cc
-TEST_EXPR_OBJS = $(call cxx_src_objs, $(TEST_EXPR_SRCS))
-TEST_EXPR_BIN =  $(BIN_DIR)/test-expr
 
 # test-jit
 TEST_JIT_SRCS = $(SRC_DIR)/app/test-jit.cc
@@ -437,8 +379,7 @@ TEST_RAND_OBJS = $(call cxx_src_objs, $(TEST_RAND_SRCS))
 TEST_RAND_BIN =  $(BIN_DIR)/test-rand
 
 # source and binaries
-ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
-           $(RV_ASM_SRCS) \
+ALL_CXX_SRCS = $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
            $(RV_GEN_SRCS) \
            $(RV_META_SRC) \
@@ -453,27 +394,21 @@ ALL_CXX_SRCS = $(RV_ASSEMBLER_SRCS) \
            $(TEST_BITS_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
-           $(TEST_EXPR_SRCS) \
            $(TEST_JIT_SRCS) \
            $(TEST_MMU_SRCS) \
            $(TEST_MUL_SRCS) \
            $(TEST_OPERATORS_SRCS) \
            $(TEST_PRINTF_SRCS) \
-           $(TEST_RAND_SRCS) \
-           $(LIBEXPR_SRCS)
-ALL_CC_SRCS = $(LIBEDIT_SRCS)
+           $(TEST_RAND_SRCS)
 
-BINARIES = $(RV_ASSEMBLER_BIN) \
-           $(RV_META_BIN) \
+BINARIES = $(RV_META_BIN) \
            $(RV_BIN_BIN) \
            $(RV_JIT_BIN) \
            $(RV_SIM_BIN) \
            $(RV_SYS_BIN) \
-           $(TEST_ASMJIT_BIN) \
            $(TEST_BITS_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
-           $(TEST_EXPR_BIN) \
            $(TEST_JIT_BIN) \
            $(TEST_MMU_BIN) \
            $(TEST_MUL_BIN) \
@@ -572,7 +507,6 @@ install:
 	install $(RV_SIM_BIN) $(DEST_DIR)/rv-sim
 	install $(RV_SYS_BIN) $(DEST_DIR)/rv-sys
 	install $(RV_JIT_BIN) $(DEST_DIR)/rv-jit
-	install $(RV_ASSEMBLER_BIN) $(DEST_DIR)/rv-asm
 
 # metadata targets
 
@@ -631,23 +565,11 @@ $(TEST_CC_SRC): $(RV_META_BIN) $(RV_META_DATA)
 
 # lib targets
 
-$(X86_LIB): $(X86_OBJS)
+$(ASMJIT_LIB): $(ASMJIT_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_ASM_LIB): $(RV_ASM_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, AR $@, $(AR) cr $@ $^)
-
-$(RV_CRYPTO_LIB): $(RV_CRYPTO_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, AR $@, $(AR) cr $@ $^)
-
-$(LIBEDIT_LIB): $(LIBEDIT_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, AR $@, $(AR) cr $@ $^)
-
-$(LIBEXPR_LIB): $(LIBEXPR_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
@@ -679,10 +601,6 @@ $(FIX_MACHO_BIN): $(FIX_MACHO_OBJS)
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 endif
 
-$(RV_ASSEMBLER_BIN): $(RV_ASSEMBLER_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(LIBEXPR_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
@@ -691,19 +609,15 @@ $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(X86_LIB) $(LIBEDIT_LIB) $(DLMALLOC_LIB)
+$(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(LIBEDIT_LIB) $(DLMALLOC_LIB)
+$(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(RV_CRYPTO_LIB) $(LIBEDIT_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(TEST_ASMJIT_BIN): $(TEST_ASMJIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(X86_LIB)
+$(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
@@ -719,11 +633,7 @@ $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
-$(TEST_EXPR_BIN): $(TEST_EXPR_OBJS) $(LIBEXPR_LIB)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
-
-$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(X86_LIB) $(LIBEDIT_LIB)
+$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 

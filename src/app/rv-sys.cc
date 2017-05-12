@@ -39,8 +39,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#include "histedit.h"
-
 #include "host-endian.h"
 #include "types.h"
 #include "fmt.h"
