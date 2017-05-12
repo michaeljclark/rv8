@@ -238,7 +238,7 @@ namespace riscv {
 		TraceLookup create_trace_lookup(JitRuntime &rt)
 		{
 			auto lookup_slow = as.newLabel();
-			auto match_slow = as.newLabel();
+			auto lookup_fail = as.newLabel();
 
 			u32 mask = (P::trace_l1_size - 1) << 1;
 
@@ -263,21 +263,7 @@ namespace riscv {
 			as.mov(x86::rdi, x86::rax);
 			as.call(Imm(func_address(lookup_trace_slow)));
 			as.test(x86::rax, x86::rax);
-			as.jnz(match_slow);
-			as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
-			as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
-			as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
-			as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
-			as.pop(x86::rbp);
-			as.pop(x86::rbx);
-			as.pop(x86::r15);
-			as.pop(x86::r14);
-			as.pop(x86::r13);
-			as.pop(x86::r12);
-			as.ret();
-
-			/* slow path match store cache pc -> trace */
-			as.bind(match_slow);
+			as.jz(lookup_fail);
 			as.mov(x86::rcx, x86::qword_ptr(x86::rbp, proc_offset(pc)));
 			as.mov(x86::rdx, x86::rcx);
 			as.and_(x86::rcx, Imm(mask));
@@ -292,6 +278,20 @@ namespace riscv {
 			as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
 			as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
 			as.jmp(x86::rax);
+
+			/* fail path, return to emulator */
+			as.bind(lookup_fail);
+			as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
+			as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
+			as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
+			as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
+			as.pop(x86::rbp);
+			as.pop(x86::rbx);
+			as.pop(x86::r15);
+			as.pop(x86::r14);
+			as.pop(x86::r13);
+			as.pop(x86::r12);
+			as.ret();
 
 			Error err = rt.add(&lookup_trace_fast, &code);
 			if (err) panic("failed to create trace lookup function");
