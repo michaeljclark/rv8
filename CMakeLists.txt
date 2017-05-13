@@ -98,13 +98,13 @@ include_directories(
 	src/elf
 	src/emu
 	src/gen
+	src/hash
 	src/jit
 	src/mem
 	src/model
 	src/rom
 	src/util
 	asmjit/src/asmjit
-	sparsehash/src
 )
 
 add_library(dlmalloc ${dlmalloc_SOURCES})

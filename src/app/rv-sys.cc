@@ -29,7 +29,7 @@
 #include <atomic>
 #include <type_traits>
 
-#include <sparsehash/dense_hash_map>
+#include "dense_hash_map"
 
 #include <poll.h>
 #include <fcntl.h>

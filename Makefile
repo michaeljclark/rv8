@@ -41,20 +41,20 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/elf \
                 -I$(TOP_DIR)/src/emu \
                 -I$(TOP_DIR)/src/gen \
+                -I$(TOP_DIR)/src/hash \
                 -I$(TOP_DIR)/src/jit \
                 -I$(TOP_DIR)/src/meta \
                 -I$(TOP_DIR)/src/mem \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
                 -I$(TOP_DIR)/src/util \
-                -I$(TOP_DIR)/sparsehash/src \
                 -I$(TOP_DIR)/asmjit/src/asmjit
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations -Wno-strict-aliasing
 CPPFLAGS =
 CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
-CXXFLAGS =      -std=c++1y -fno-rtti $(CFLAGS)
+CXXFLAGS =      -std=c++1y -fno-rtti -fno-exceptions $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x10000000000 -lncurses
@@ -205,9 +205,6 @@ RV_UTIL_SRCS =  $(SRC_DIR)/util/base64.cc \
                 $(SRC_DIR)/util/util.cc
 RV_UTIL_OBJS =  $(call cxx_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
-
-# sparsehash
-SPARSEHASH_SRC = sparsehash/src/sparsehash/internal/sparseconfig.h
 
 # libasmjit_x86
 ASMJIT_SRCS =   asmjit/src/asmjit/base/arch.cpp \
@@ -460,10 +457,6 @@ sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
 TEST_MK =       src/test/test.mk
 TEST_RV64 =    ARCH=rv64imafdc TARGET=riscv64-unknown-elf
 TEST_RV32 =    ARCH=rv32imafdc TARGET=riscv32-unknown-elf
-
-# sparsehash
-$(SPARSEHASH_SRC):
-	( cd sparsehash && ./configure && make src/sparsehash/internal/sparseconfig.h )
 
 qemu-tests: qemu-tests-rv64
 

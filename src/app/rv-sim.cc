@@ -33,7 +33,7 @@
 #include "libc_override_osx.h"
 #endif
 
-#include <sparsehash/dense_hash_map>
+#include "dense_hash_map"
 
 #include <poll.h>
 #include <fcntl.h>
