@@ -36,6 +36,7 @@ NOEXEC_FLAGS =  -Wl,-z,noexecstack
 
 # default optimizer, debug and warning flags
 TOP_DIR =       $(shell pwd)
+ASMJIT_SRC_DIR = third_party/asmjit/src
 INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/asm \
                 -I$(TOP_DIR)/src/elf \
@@ -48,7 +49,7 @@ INCLUDES :=     -I$(TOP_DIR)/src/abi \
                 -I$(TOP_DIR)/src/model \
                 -I$(TOP_DIR)/src/rom \
                 -I$(TOP_DIR)/src/util \
-                -I$(TOP_DIR)/asmjit/src/asmjit
+                -I$(TOP_DIR)/$(ASMJIT_SRC_DIR)/asmjit
 OPT_FLAGS =     -O3 -fwrapv
 DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations -Wno-strict-aliasing
@@ -162,7 +163,7 @@ OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 
 # helper functions
-asmjit_src_objs =  $(subst asmjit/src,$(OBJ_DIR),$(subst .cpp,.o,$(1)))
+asmjit_src_objs =  $(subst $(ASMJIT_SRC_DIR),$(OBJ_DIR),$(subst .cpp,.o,$(1)))
 cxx_src_objs =  $(subst $(SRC_DIR),$(OBJ_DIR),$(subst .cc,.o,$(1)))
 cxx_src_deps =  $(subst $(SRC_DIR),$(DEP_DIR),$(subst .cc,.cc.P,$(1)))
 cc_src_objs =   $(subst $(SRC_DIR),$(OBJ_DIR),$(subst .c,.o,$(1)))
@@ -207,36 +208,36 @@ RV_UTIL_OBJS =  $(call cxx_src_objs, $(RV_UTIL_SRCS))
 RV_UTIL_LIB =   $(LIB_DIR)/libriscv_util.a
 
 # libasmjit_x86
-ASMJIT_SRCS =   asmjit/src/asmjit/base/arch.cpp \
-                asmjit/src/asmjit/base/assembler.cpp \
-                asmjit/src/asmjit/base/codebuilder.cpp \
-                asmjit/src/asmjit/base/codecompiler.cpp \
-                asmjit/src/asmjit/base/codeemitter.cpp \
-                asmjit/src/asmjit/base/codeholder.cpp \
-                asmjit/src/asmjit/base/constpool.cpp \
-                asmjit/src/asmjit/base/cpuinfo.cpp \
-                asmjit/src/asmjit/base/func.cpp \
-                asmjit/src/asmjit/base/globals.cpp \
-                asmjit/src/asmjit/base/inst.cpp \
-                asmjit/src/asmjit/base/logging.cpp \
-                asmjit/src/asmjit/base/operand.cpp \
-                asmjit/src/asmjit/base/osutils.cpp \
-                asmjit/src/asmjit/base/regalloc.cpp \
-                asmjit/src/asmjit/base/runtime.cpp \
-                asmjit/src/asmjit/base/string.cpp \
-                asmjit/src/asmjit/base/utils.cpp \
-                asmjit/src/asmjit/base/vmem.cpp \
-                asmjit/src/asmjit/base/zone.cpp \
-                asmjit/src/asmjit/x86/x86assembler.cpp \
-                asmjit/src/asmjit/x86/x86builder.cpp \
-                asmjit/src/asmjit/x86/x86compiler.cpp \
-                asmjit/src/asmjit/x86/x86inst.cpp \
-                asmjit/src/asmjit/x86/x86instimpl.cpp \
-                asmjit/src/asmjit/x86/x86internal.cpp \
-                asmjit/src/asmjit/x86/x86logging.cpp \
-                asmjit/src/asmjit/x86/x86operand.cpp \
-                asmjit/src/asmjit/x86/x86operand_regs.cpp \
-                asmjit/src/asmjit/x86/x86regalloc.cpp
+ASMJIT_SRCS =   $(ASMJIT_SRC_DIR)/asmjit/base/arch.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/assembler.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/codebuilder.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/codecompiler.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/codeemitter.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/codeholder.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/constpool.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/cpuinfo.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/func.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/globals.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/inst.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/logging.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/operand.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/osutils.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/regalloc.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/runtime.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/string.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/utils.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/vmem.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/base/zone.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86assembler.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86builder.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86compiler.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86inst.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86instimpl.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86internal.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86logging.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86operand.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86operand_regs.cpp \
+                $(ASMJIT_SRC_DIR)/asmjit/x86/x86regalloc.cpp
 ASMJIT_OBJS =   $(call asmjit_src_objs, $(ASMJIT_SRCS))
 ASMJIT_LIB =    $(LIB_DIR)/libasmjit_x86.a
 
@@ -461,12 +462,12 @@ TEST_RV32 =    ARCH=rv32imafdc TARGET=riscv32-unknown-elf
 qemu-tests: qemu-tests-rv64
 
 qemu-tests-rv64:
-	( cd riscv-qemu-tests && make all64 )
-	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run64 )
+	( cd third_party/qemu-tests && make all64 )
+	( cd third_party/qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run64 )
 
 qemu-tests-rv32:
-	( cd riscv-qemu-tests && make all32 )
-	( cd riscv-qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run32 )
+	( cd third_party/qemu-tests && make all32 )
+	( cd third_party/qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run32 )
 
 linux: ; ./scripts/bootstrap-linux.sh
 
@@ -661,7 +662,7 @@ else
 cmd = @echo "$1"; $2
 endif
 
-$(OBJ_DIR)/%.o : asmjit/src/%.cpp ; @mkdir -p $(shell dirname $@) ;
+$(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
 
 $(SRC_DIR)/%.cc : $(SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;

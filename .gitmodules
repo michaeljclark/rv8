@@ -1,6 +1,6 @@
 [submodule "riscv-qemu-tests"]
-	path = riscv-qemu-tests
+	path = third_party/qemu-tests
 	url = https://github.com/arsv/riscv-qemu-tests.git
 [submodule "asmjit"]
-	path = asmjit
+	path = third_party/asmjit
 	url = https://github.com/michaeljclark/asmjit.git
