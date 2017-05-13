@@ -12,7 +12,7 @@ Version : (under version control)
 About
 -------------
 
-The rv8 suite contains decoupled libraries and command line tools
+The rv8 simulator suite contains libraries and command line tools
 for creating instruction opcode maps, C headers and source containing
 instruction set metadata, instruction decoders, a JIT assembler, LaTeX
 documentation, a metadata based RISC-V disassembler, a histogram tool
