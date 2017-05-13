@@ -56,7 +56,6 @@ namespace riscv {
 		
 		static const int tight_spin_limit =         8;
 		static const int spin_limit =               1 << 24;
-		static const int debug_spin =               true;
 		static const int atomic_bits =              sizeof(atomic_uint_t) << 3;
 		static const int offset_bits =              OFFSET_BITS;
 		static const int version_bits =             VERSION_BITS;
@@ -219,16 +218,6 @@ namespace riscv {
 						version_back.store(pack, release_memory_order);
 						return true;
 						
-					} else if (debug_contention) {
-						uint64_t _tsc = cpu_cycle_clock();
-						debug("%s version=%llu time=%llu spin_count=%d thread:%p phase 2 contention",
-								  __func__, _counter_back, _tsc, spin_count, std::this_thread::get_id());
-					}
-				} else {
-					if (debug_contention) {
-						uint64_t _tsc = cpu_cycle_clock();
-						debug("%s version=%llu time=%llu spin_count=%d thread:%p phase 1 contention",
-								  __func__, _counter_back, _tsc, spin_count, std::this_thread::get_id());
 					}
 				}
 
@@ -243,10 +232,6 @@ namespace riscv {
 				}
 				
 			} while (++spin_count < spin_limit);
-			
-			if (debug_spin) {
-				debug("%s thread:%p failed: reached spin limit", __func__, std::this_thread::get_id());
-			}
 			
 			return false;
 		}
@@ -306,16 +291,6 @@ namespace riscv {
 						version_front.store(pack, release_memory_order);
 						return val;
 						
-					} else if (debug_contention) {
-						uint64_t _tsc = cpu_cycle_clock();
-						debug("%s version=%llu time=%llu spin_count=%d thread:%p phase 2 contention",
-								  __func__, _counter_front, _tsc, spin_count, std::this_thread::get_id());
-					}
-				} else {
-					if (debug_contention) {
-						uint64_t _tsc = cpu_cycle_clock();
-						debug("%s version=%llu time=%llu spin_count=%d thread:%p phase 1 contention",
-								  __func__, _counter_front, _tsc, spin_count, std::this_thread::get_id());
 					}
 				}
 				
@@ -330,10 +305,6 @@ namespace riscv {
 				}
 				
 			} while (++spin_count < spin_limit);
-			
-			if (debug_spin) {
-				debug("%s thread:%p failed: reached spin limit", __func__, std::this_thread::get_id());
-			}
 			
 			return T(0);
 		}
