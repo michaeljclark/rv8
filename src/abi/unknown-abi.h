@@ -302,7 +302,7 @@ namespace riscv {
 			case abi_syscall_unlink:        abi_sys_unlink(proc); break;
 			case abi_syscall_stat:          abi_sys_stat(proc); break;
 			case abi_syscall_chown:         abi_sys_chown(proc); break;
-			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7]);
+			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7].r.xu.val);
 		}
 	}
 
