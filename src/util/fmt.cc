@@ -221,6 +221,7 @@ int riscv::io_printf(std::string &buf, std::string &fmt,
 #endif
 
 	for (;;) {
+next:
 		for (ci = fi; fi != fmt.end() && (ch = *fi) != '%'; fi++) /* void */;
 
 		if ((n = fi - ci) != 0) {
@@ -240,6 +241,9 @@ int riscv::io_printf(std::string &buf, std::string &fmt,
 
 rflag:	ch = *fi++;
 rsw:	switch (ch) {
+			case '%':
+				io_print(buf, "%", 1);
+				goto next;
 			case ' ':
 				/*-
 				 * ``If the space and + flags both appear, the space
