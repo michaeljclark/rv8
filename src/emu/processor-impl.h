@@ -29,8 +29,8 @@ namespace riscv {
 	/* Processor base template */
 
 	typedef google::dense_hash_map<addr_t,size_t> hist_pc_map_t;
+	typedef google::dense_hash_map<size_t,size_t> hist_reg_map_t;
 	typedef std::pair<addr_t,size_t> hist_pc_pair_t;
-	typedef std::map<size_t,size_t> hist_reg_map_t;
 	typedef std::pair<size_t,size_t> hist_reg_pair_t;
 
 	template<typename T, typename P, typename M>
@@ -48,6 +48,7 @@ namespace riscv {
 		{
 			hist_pc.set_empty_key(0);
 			hist_pc.set_deleted_key(-1);
+			hist_reg.set_empty_key(-1);
 		}
 
 		std::string format_inst(inst_t inst)
