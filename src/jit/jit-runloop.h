@@ -180,6 +180,7 @@ namespace riscv {
 						rt.release(ent.second);
 					}
 					trace_cache.clear_no_resize();
+					trace_cache_skip_prolog.clear_no_resize();
 					return pc_offset;
 				default: break;
 			}
