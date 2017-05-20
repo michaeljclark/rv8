@@ -176,15 +176,20 @@ namespace riscv {
 		{
 			switch(dec.op) {
 				case rv_op_fence_i:
-					for (auto ent : trace_cache) {
-						rt.release(ent.second);
-					}
-					trace_cache.clear_no_resize();
-					trace_cache_skip_prolog.clear_no_resize();
+					clear_trace_cache();
 					return pc_offset;
 				default: break;
 			}
 			return -1; /* illegal instruction */
+		}
+
+		void clear_trace_cache()
+		{
+			for (auto ent : trace_cache) {
+				rt.release(ent.second);
+			}
+			trace_cache.clear_no_resize();
+			trace_cache_skip_prolog.clear_no_resize();
 		}
 
 		static uintptr_t lookup_trace(uintptr_t pc)
