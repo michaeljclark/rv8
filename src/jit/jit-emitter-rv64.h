@@ -3623,16 +3623,6 @@ namespace riscv {
 				term_pc = 0;
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
 
-				if (dec.rd == rv_ireg_zero) {
-					// ret
-				}
-				else if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(link_addr));
-				} else {
-					as.mov(x86::rax, Imm(link_addr));
-					as.mov(rbp_reg_q(dec.rd), x86::rax);
-				}
-
 				if (dec.rs1 == rv_ireg_zero) {
 					if (dec.imm == 0) {
 						as.xor_(x86::eax, x86::eax);
@@ -3652,6 +3642,16 @@ namespace riscv {
 					as.mov(x86::qword_ptr(x86::rbp, proc_offset(pc)), x86::rax);
 				}
 
+				if (dec.rd == rv_ireg_zero) {
+					// ret
+				}
+				else if (rdx > 0) {
+					as.mov(x86::gpq(rdx), Imm(link_addr));
+				} else {
+					as.mov(x86::rax, Imm(link_addr));
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+
 				as.jmp(Imm(func_address(lookup_trace_fast)));
 
 				return false;
@@ -3667,7 +3667,9 @@ namespace riscv {
 				// nop
 			} else {
 				int64_t addr = dec.pc + dec.imm;
-				if (rdx > 0) {
+				if (dec.rd == rv_ireg_zero) {
+					// nop
+				} else if (rdx > 0) {
 					as.mov(x86::gpq(rdx), Imm(addr));
 				} else {
 					as.mov(x86::rax, Imm(addr));
@@ -3685,18 +3687,22 @@ namespace riscv {
 			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4 /* auipc */;
 			callstack.push_back(link_addr);
 
-			if (rdx > 0) {
-				as.mov(x86::gpq(rdx), Imm(link_addr));
-			} else {
-				as.mov(x86::rax, Imm(link_addr));
-				as.mov(rbp_reg_q(dec.rd), x86::rax);
-			}
-
-			if (rs1x > 0) {
+			if (dec.rs1 == rv_ireg_zero) {
+				// nop
+			} else if (rs1x > 0) {
 				as.mov(x86::gpq(rs1x), Imm(term_pc));
 			} else {
 				as.mov(x86::rax, Imm(term_pc));
 				as.mov(rbp_reg_q(dec.rs1), x86::rax);
+			}
+
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			} else if (rdx > 0) {
+				as.mov(x86::gpq(rdx), Imm(link_addr));
+			} else {
+				as.mov(x86::rax, Imm(link_addr));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 
 			return true;

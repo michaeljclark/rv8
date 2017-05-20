@@ -2500,16 +2500,6 @@ namespace riscv {
 				term_pc = 0;
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
 
-				if (dec.rd == rv_ireg_zero) {
-					// ret
-				}
-				else if (rdx > 0) {
-					as.mov(x86::gpd(rdx), Imm(link_addr));
-				} else {
-					as.mov(x86::eax, Imm(link_addr));
-					as.mov(rbp_reg_d(dec.rd), x86::eax);
-				}
-
 				if (dec.rs1 == rv_ireg_zero) {
 					if (dec.imm == 0) {
 						as.xor_(x86::eax, x86::eax);
@@ -2529,6 +2519,16 @@ namespace riscv {
 					as.mov(x86::dword_ptr(x86::rbp, proc_offset(pc)), x86::eax);
 				}
 
+				if (dec.rd == rv_ireg_zero) {
+					// ret
+				}
+				else if (rdx > 0) {
+					as.mov(x86::gpd(rdx), Imm(link_addr));
+				} else {
+					as.mov(x86::eax, Imm(link_addr));
+					as.mov(rbp_reg_d(dec.rd), x86::eax);
+				}
+
 				as.jmp(Imm(func_address(lookup_trace_fast)));
 
 				return false;
@@ -2538,13 +2538,15 @@ namespace riscv {
 		bool emit_la(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst) + 4;
+			term_pc = dec.pc + inst_length(dec.inst) + 4; /* auipc */;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			} else {
 				int32_t addr = dec.pc + dec.imm;
-				if (rdx > 0) {
+				if (dec.rd == rv_ireg_zero) {
+					// nop
+				} else if (rdx > 0) {
 					as.mov(x86::gpd(rdx), Imm(addr));
 				} else {
 					as.mov(rbp_reg_d(dec.rd), Imm(addr));
@@ -2558,19 +2560,23 @@ namespace riscv {
 			log_trace("\t# 0x%016llx\tcall\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.imm;
 			int rdx = x86_reg(rv_ireg_ra), rs1x = x86_reg(dec.rd);
-			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4;
+			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4; /* auipc */;
 			callstack.push_back(link_addr);
 
-			if (rdx > 0) {
-				as.mov(x86::gpd(rdx), Imm(link_addr));
-			} else {
-				as.mov(rbp_reg_d(dec.rd), Imm(link_addr));
-			}
-
-			if (rs1x > 0) {
+			if (dec.rs1 == rv_ireg_zero) {
+				// nop
+			} else if (rs1x > 0) {
 				as.mov(x86::gpd(rs1x), Imm(term_pc));
 			} else {
 				as.mov(rbp_reg_d(dec.rs1), Imm(term_pc));
+			}
+
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			} else if (rdx > 0) {
+				as.mov(x86::gpd(rdx), Imm(link_addr));
+			} else {
+				as.mov(rbp_reg_d(dec.rd), Imm(link_addr));
 			}
 
 			return true;
