@@ -40,6 +40,7 @@ namespace riscv {
 		JitRuntime rt;
 		google::dense_hash_map<addr_t,TraceFunc> trace_cache;
 		google::dense_hash_map<addr_t,TraceFunc> trace_cache_skip_prolog;
+		google::dense_hash_map<addr_t,TraceFunc> audit_trace_cache;
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 		TraceLookup lookup_trace_fast;
@@ -55,6 +56,8 @@ namespace riscv {
 			trace_cache.set_deleted_key(-1);
 			trace_cache_skip_prolog.set_empty_key(0);
 			trace_cache_skip_prolog.set_deleted_key(-1);
+			audit_trace_cache.set_empty_key(0);
+			audit_trace_cache.set_deleted_key(-1);
 		}
 
 		virtual bool handleError(Error err, const char* message, CodeEmitter* origin)
@@ -338,6 +341,22 @@ namespace riscv {
 			}
 		}
 
+		void copy_reg(typename P::processor_type *dst, typename P::processor_type *src)
+		{
+			memcpy(dst, src, sizeof(typename P::processor_type));
+		}
+
+		void compare_reg(typename P::processor_type *dst, typename P::processor_type *src)
+		{
+			for (size_t i = 0; i < P::ireg_count; i++) {
+				dst->ireg[i].r.xu.val = src->ireg[i].r.xu.val;
+			}
+			for (size_t i = 0; i < P::freg_count; i++) {
+				dst->freg[i].r.xu.val = src->freg[i].r.xu.val;
+			}
+			dst->pc = src->pc;
+		}
+
 		void jit_audit(typename P::decode_type &dec, inst_t inst, typename P::ux pc_offset)
 		{
 			CodeHolder code;
@@ -348,28 +367,36 @@ namespace riscv {
 			jit_emitter emitter(*this, code, ops, lookup_trace, lookup_trace_fast);
 			bool audited = false;
 			typename P::processor_type pre_jit, post_jit;
-
-			if (P::log & proc_log_jit_trace) {
-	 			code.setLogger(&logger);
-			}
+			addr_t save_pc = dec.pc = P::pc;
 
 			/* jit instruction */
-			emitter.emit_prolog();
-			emitter.begin();
-			addr_t save_pc = dec.pc = P::pc;
-			dec.inst = inst;
-			if (emitter.emit(dec)) {
-				emitter.end();
-				emitter.emit_epilog();
-				TraceFunc fn;
-				Error err = rt.add(&fn, &code);
-				if (!err) {
-					memcpy(&pre_jit, static_cast<typename P::processor_type*>(this), sizeof(typename P::processor_type));
-					fn(static_cast<typename P::processor_type*>(this));
-					memcpy(&post_jit, static_cast<typename P::processor_type*>(this), sizeof(typename P::processor_type));
-					memcpy(static_cast<typename P::processor_type*>(this), &pre_jit, sizeof(typename P::processor_type));
-					audited = true;
-					rt.release(fn);
+			auto ti = audit_trace_cache.find(P::pc);
+			if (ti != audit_trace_cache.end()) {
+				copy_reg(&pre_jit, this);
+				ti->second(static_cast<typename P::processor_type *>(this));
+				copy_reg(&post_jit, this);
+				copy_reg(this, &pre_jit);
+				audited = true;
+			} else {
+				if (P::log & proc_log_jit_trace) {
+					code.setLogger(&logger);
+				}
+				emitter.emit_prolog();
+				emitter.begin();
+				dec.inst = inst;
+				if (emitter.emit(dec)) {
+					emitter.end();
+					emitter.emit_epilog();
+					TraceFunc fn;
+					Error err = rt.add(&fn, &code);
+					if (!err) {
+						copy_reg(&pre_jit, this);
+						fn(static_cast<typename P::processor_type*>(this));
+						copy_reg(&post_jit, this);
+						copy_reg(this, &pre_jit);
+						audited = true;
+						audit_trace_cache[P::pc] = fn;
+					}
 				}
 			}
 
