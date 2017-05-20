@@ -1127,4 +1127,5 @@ int main()
 	free(pt1);
 	free(ct);
 	free(pt2);
+	return 0;
 }

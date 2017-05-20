@@ -192,4 +192,5 @@ int main()
 	}
 	qsort(arr, ARRAY_SIZE, sizeof(unsigned long), compare);
 	printf("%ld\n", arr[ARRAY_SIZE-1]);
+	return 0;
 }
