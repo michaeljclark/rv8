@@ -2291,6 +2291,7 @@ namespace riscv {
 				emit_mv_rd_rs1_sx_32(dec);
 			}
 			else if (dec.rd == dec.rs1) {
+				emit_mv_cl_rs2(dec);
 				if (rdx > 0) {
 					as.sar(x86::gpd(rdx), x86::cl);
 				} else {
