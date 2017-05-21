@@ -683,5 +683,5 @@ $(DEP_DIR)/%.c.P : $(SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
 			sed "s#\(.*\)\.o#$(OBJ_DIR)$${SUB_DIR}/\1.o $(DEP_DIR)$${SUB_DIR}/\1.c.P#"  > $@) )
 
 # make dependencies
-include $(call cxx_src_deps,$(ALL_CXX_SRCS))
-include $(call cc_src_deps,$(ALL_CC_SRCS))
+-include $(call cxx_src_deps,$(ALL_CXX_SRCS))
+-include $(call cc_src_deps,$(ALL_CC_SRCS))
