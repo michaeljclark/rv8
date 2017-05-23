@@ -30,12 +30,12 @@ Directive    | Arguments                      | Description
 .type        | symbol, @function              | ignore
 .option      | {rvc,norvc,pic,nopic,push,pop} | RISC-V options
 .byte        |                                | 8-bit comma separated words
-.half        |                                | 16-bit comma separated words (naturally aligned)
-.word        |                                | 32-bit comma separated words (naturally aligned)
-.dword       |                                | 64-bit comma separated words (naturally aligned)
 .2byte       |                                | 16-bit comma separated words (unaligned)
 .4byte       |                                | 32-bit comma separated words (unaligned)
 .8byte       |                                | 64-bit comma separated words (unaligned)
+.half        |                                | 16-bit comma separated words (naturally aligned)
+.word        |                                | 32-bit comma separated words (naturally aligned)
+.dword       |                                | 64-bit comma separated words (naturally aligned)
 .dtprelword  |                                | 32-bit thread local word
 .dtpreldword |                                | 64-bit thread local word
 .p2align     | p2,[pad_val=0],max             | align to power of 2
