@@ -64,7 +64,7 @@ The following table shows the RISC-V Meta tools:
 |:------ | :-----------------
 |rv-meta | Code and documentation generator
 |rv-bin  | ELF dump, disassmble and histogram
-|rv-jit  | Simulator for x86-64
+|rv-jit  | Binary Translator for x86-64
 |rv-sim  | ABI Proxy Simulator
 |rv-sys  | Privileged System Emulator
 
