@@ -15,9 +15,10 @@ Directive    | Arguments                      | Description
 .globl       | symbol_name                    | emit symbol_name to symbol table (scope GLOBAL)
 .local       | symbol_name                    | emit symbol_name to symbol table (scope LOCAL)
 .comm        | symbol_name,size,align         | emit common object to .bss section
-.ident       | "string"                       | ignore
+.common      | symbol_name,size,align         | emit common object to .bss section
+.ident       | "string"                       | accepted for source compatibility
 .section     | [{.text,.data,.rodata,.bss}]   | emit section (if not present, default .text) and make current
-.size        | symbol, symbol                 | ignore
+.size        | symbol, symbol                 | accepted for source compatibility
 .text        |                                | emit .text section (if not present) and make current
 .data        |                                | emit .data section (if not present) and make current
 .rodata      |                                | emit .rodata section (if not present) and make current
@@ -27,7 +28,7 @@ Directive    | Arguments                      | Description
 .equ         | name, value                    | constant definition
 .macro       | name arg1 [, argn]             | begin macro definition \argname to substitute
 .endm        |                                | end macro definition
-.type        | symbol, @function              | ignore
+.type        | symbol, @function              | accepted for source compatibility
 .option      | {rvc,norvc,pic,nopic,push,pop} | RISC-V options
 .byte        |                                | 8-bit comma separated words
 .2byte       |                                | 16-bit comma separated words (unaligned)
@@ -38,6 +39,8 @@ Directive    | Arguments                      | Description
 .dword       |                                | 64-bit comma separated words (naturally aligned)
 .dtprelword  |                                | 32-bit thread local word
 .dtpreldword |                                | 64-bit thread local word
+.sleb128     | expression                     | signed little endian base 128, DWARF
+.uleb128     | expression                     | unsigned little endian base 128, DWARF
 .p2align     | p2,[pad_val=0],max             | align to power of 2
 .balign      | b,[pad_val=0]                  | byte align
 .zero        | integer                        | zero bytes
