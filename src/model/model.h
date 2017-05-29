@@ -377,7 +377,6 @@ struct rv_meta_model
 	rv_pseudo_map         pseudos_by_name;
 
 	static rv_opcode_mask decode_mask(std::string bit_spec);
-	static std::string opcode_mask(rv_opcode_ptr opcode);
 	static std::string format_type(rv_operand_ptr operand);
 	static std::string format_codec(std::string prefix, rv_codec_ptr codec, std::string dot, bool strip_suffix = true);
 	static std::string format_format(std::string prefix, rv_format_ptr format, char special);

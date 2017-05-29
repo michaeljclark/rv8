@@ -5,10 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <fstream>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -91,11 +87,12 @@ const rv_primitive_type* rv_lookup_primitive_by_meta_type(std::string meta_type,
 template <typename T>
 std::string join(std::vector<T> list, std::string sep)
 {
-	std::stringstream ss;
+	std::string s;
 	for (auto i = list.begin(); i != list.end(); i++) {
-		ss << (i != list.begin() ? sep : "") << *i;
+		if (i != list.begin()) s.append(sep);
+		s.append(*i);
 	}
-	return ss.str();
+	return s;
 }
 
 int64_t rv_parse_value(const char* valstr)
@@ -131,12 +128,13 @@ rv_bitrange::rv_bitrange(std::string bitrange)
 
 std::string rv_bitrange::to_string(std::string sep, bool collapse_single_bit_range)
 {
-	std::stringstream ss;
-	ss << msb;
+	std::string s;
+	s.append(std::to_string(msb));
 	if (!collapse_single_bit_range || msb != lsb) {
-		ss << sep << lsb;
+		s.append(sep);
+		s.append(std::to_string(lsb));
 	}
-	return ss.str();
+	return s;
 }
 
 rv_bitspec::rv_bitspec(std::string bitspec)
@@ -193,17 +191,18 @@ size_t rv_bitspec::decoded_msb()
 
 std::string rv_bitspec::to_string()
 {
-	std::stringstream ss;
+	std::string s;
 	for (auto si = segments.begin(); si != segments.end(); si++) {
-		if (si != segments.begin()) ss << ",";
-		ss << si->first.to_string(":") << "[";
+		if (si != segments.begin()) s.append(",");
+		s.append(si->first.to_string(":"));
+		s.append("[");
 		for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-			if (ti != si->second.begin()) ss << "|";
-			ss << ti->to_string(":");
+			if (ti != si->second.begin()) s.append("|");
+			s.append(ti->to_string(":"));
 		}
-		ss << "]";
+		s.append("]");
 	}
-	return ss.str();
+	return s;
 }
 
 std::string rv_bitspec::to_template()
@@ -218,23 +217,31 @@ std::string rv_bitspec::to_template()
 			}
 		}
 	}
-	std::stringstream ss;
-	ss << "<" << (msb + 1) << ", ";
+	std::string s;
+	s.append("<");
+	s.append(std::to_string(msb + 1));
+	s.append(", ");
 	for (auto si = segments.begin(); si != segments.end(); si++) {
-		if (si != segments.begin()) ss << ", ";
-		ss << "S<" << si->first.to_string(",", false) << ", ";
+		if (si != segments.begin()) s.append(", ");
+		s.append("S<");
+		s.append(si->first.to_string(",", false));
+		s.append(", ");
 		if (si->second.size() == 0) {
-			ss << "B<" << (si->first.msb - si->first.lsb) << ",0>";
+			s.append("B<");
+			s.append(std::to_string(si->first.msb - si->first.lsb));
+			s.append(",0>");
 		} else {
 			for (auto ti = si->second.begin(); ti != si->second.end(); ti++) {
-				if (ti != si->second.begin()) ss << ",";
-				ss << "B<" << ti->to_string(",") << ">";
+				if (ti != si->second.begin()) s.append(",");
+				s.append("B<");
+				s.append(ti->to_string(","));
+				s.append(">");
 			}
 		}
-		ss << ">";
+		s.append(">");
 	}
-	ss << ">";
-	return ss.str();
+	s.append(">");
+	return s;
 }
 
 const ssize_t rv_meta_model::DEFAULT = std::numeric_limits<ssize_t>::max();
@@ -283,7 +290,7 @@ std::vector<rv_bitrange> rv_meta_model::bitmask_to_bitrange(std::vector<ssize_t>
 std::string rv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::string var, bool comment)
 {
 	std::vector<rv_bitrange> v = bitmask_to_bitrange(bits);
-	std::stringstream ss;
+	std::string s;
 
 	ssize_t total_length = bits.size();
 	ssize_t range_start = bits.size();
@@ -292,38 +299,38 @@ std::string rv_meta_model::format_bitmask(std::vector<ssize_t> &bits, std::strin
 		rv_bitrange r = *ri;
 		ssize_t range_end = range_start - (r.msb - r.lsb);
 		ssize_t shift = r.msb - range_start + 1;
-		if (ri != v.begin()) ss << " | ";
-		ss << "((" << var << " >> " << shift << ") & 0b";
+		if (ri != v.begin()) s.append(" | ");
+		s.append("((");
+		s.append(var);
+		s.append(" >> ");
+		s.append(std::to_string(shift));
+		s.append(") & 0b");
 		for (ssize_t i = total_length; i > 0; i--) {
-			if (i <= range_start && i >= range_end) ss << "1";
-			else ss << "0";
+			if (i <= range_start && i >= range_end) s.append("1");
+			else s.append("0");
 		}
-		ss << ")";
+		s.append(")");
 		range_start -= (r.msb - r.lsb) + 1;
 	}
 
 	if (comment) {
-		ss << " /* " << var << "[";
+		s.append(" /* ");
+		s.append(var);
+		s.append("[");
 		for (auto ri = v.begin(); ri != v.end(); ri++) {
 			rv_bitrange r = *ri;
-			if (ri != v.begin()) ss << "|";
-			if (r.msb == r.lsb) ss << r.msb;
-			else ss << r.msb << ":" << r.lsb;
+			if (ri != v.begin()) s.append("|");
+			if (r.msb == r.lsb) s.append(std::to_string(r.msb));
+			else {
+				s.append(std::to_string(r.msb));
+				s.append(":");
+				s.append(std::to_string(r.lsb));
+			}
 		}
-		ss << "] */";
+		s.append("] */");
 	}
 
-	return ss.str();
-}
-
-std::string rv_meta_model::opcode_mask(rv_opcode_ptr opcode)
-{
-	std::stringstream ss;
-	ss << std::left << std::setw(20) << "";
-	for (auto &mask : opcode->masks) {
-		ss << " " << mask.first.msb << ".." << mask.first.lsb << "=" << mask.second;
-	}
-	return ss.str();
+	return s;
 }
 
 std::string rv_meta_model::format_type(rv_operand_ptr operand)
@@ -500,15 +507,15 @@ std::vector<std::string> rv_meta_model::parse_line(std::string line)
 
 std::vector<std::vector<std::string>> rv_meta_model::read_file(std::string filename)
 {
+	char buf[256], *s;
 	std::vector<std::vector<std::string>> data;
-	std::ifstream in(filename.c_str());
-	std::string line;
-	if (!in.is_open()) {
+	FILE *file = fopen(filename.c_str(), "r");
+	if (!file) {
 		panic("error opening %s\n", filename.c_str());
 	}
-	while (in.good())
+	while ((s = fgets(buf, sizeof(buf), file)))
 	{
-		std::getline(in, line);
+		std::string line = s;
 		size_t hoffset = line.find("#");
 		if (hoffset != std::string::npos) {
 			line = ltrim(rtrim(line.substr(0, hoffset)));
@@ -517,7 +524,7 @@ std::vector<std::vector<std::string>> rv_meta_model::read_file(std::string filen
 		if (part.size() == 0) continue;
 		data.push_back(part);
 	}
-	in.close();
+	fclose(file);
 	return data;
 }
 
