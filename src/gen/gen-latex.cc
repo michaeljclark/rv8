@@ -3,7 +3,6 @@
 //
 
 #include <cstdio>
-#include <sstream>
 #include <functional>
 #include <algorithm>
 #include <memory>
@@ -242,14 +241,18 @@ static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool
 			}
 
 			// construct the LaTeX for this row
-			std::stringstream ls;
+			std::string ls;
 			for (size_t i = 0; i < operand_parts.size(); i++) {
 				auto size = std::get<2>(operand_parts[i]);
 				auto &str = std::get<3>(operand_parts[i]);
-				ls << (i != 0 ? " & " : "")
-				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
-				   << "{" << (i == 0 ? "|" : "") << "c|}"
-				   << "{" << str << "}";
+				if (i != 0) ls.append(" & ");
+				ls.append("\\multicolumn{");
+				ls.append(std::to_string(size * kLatexTableColumns / bit_width));
+				ls.append("}{");
+				if (i == 0) ls.append("|");
+				ls.append("c|}{");
+				ls.append(str);
+				ls.append("}");
 			}
 
 			// format the opcode name and operands
@@ -260,13 +263,13 @@ static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool
 
 			// print this row
 			printf("%s & \\scriptsize{%s %s} \\\\\n\\cline{1-%ld}\n",
-				ls.str().c_str(), name.c_str(), join(operand_comps, ", ").c_str(), kLatexTableColumns);
+				ls.c_str(), name.c_str(), join(operand_comps, ", ").c_str(), kLatexTableColumns);
 			break;
 		}
 		case rv_latex_type_type_spec:
 		{
 			// construct the LaTeX for this type row
-			std::stringstream ls;
+			std::string ls;
 			auto type = row.type;
 			size_t bit_width = type->parts[0].first.segments.front().first.msb + 1;
 			for (size_t i = 0; i < type->parts.size(); i++) {
@@ -297,10 +300,14 @@ static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool
 					}
 				}
 
-				ls << (i != 0 ? " & " : "")
-				   << "\\multicolumn{" << (size * kLatexTableColumns / bit_width) << "}"
-				   << "{" << (i == 0 ? "|" : "") << "c|}"
-				   << "{" << str << "}";
+				if (i != 0) ls.append(" & ");
+				ls.append("\\multicolumn{");
+				ls.append(std::to_string(size * kLatexTableColumns / bit_width));
+				ls.append("}{");
+				if (i == 0) ls.append("|");
+				ls.append("c|}{");
+				ls.append(str);
+				ls.append("}");
 			}
 
 			// format the type name
@@ -310,13 +317,13 @@ static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool
 
 			// print this row
 			printf("%s & \\scriptsize{\\bf %s} \\\\\n\\cline{1-%ld}\n",
-				ls.str().c_str(), name.c_str(), kLatexTableColumns);
+				ls.c_str(), name.c_str(), kLatexTableColumns);
 			break;
 		}
 		case rv_latex_type_type_bitrange:
 		{
 			// construct the LaTeX for this type bit range header
-			std::stringstream ls;
+			std::string ls;
 			auto type = row.type;
 			size_t bit_width = type->parts[0].first.segments.front().first.msb + 1;
 			for (size_t i = 0; i < type->parts.size(); i++) {
@@ -327,17 +334,28 @@ static void print_latex_row(rv_gen *gen, rv_latex_row &row, std::string ts, bool
 				auto size = msb - lsb + 1;
 				auto tsize = size * kLatexTableColumns / bit_width;
 				if (size == 1) {
-					ls << "\\multicolumn{" << tsize << "}{c}{\\scriptsize{" << msb << "}} & ";
+					ls.append("\\multicolumn{");
+					ls.append(std::to_string(tsize));
+					ls.append("}{c}{\\scriptsize{");
+					ls.append(std::to_string(msb));
+					ls.append("}} & ");
 				} else {
 					auto lsize = size >> 1;
 					auto rsize = tsize - lsize;
-					ls << "\\multicolumn{" << lsize << "}{l}{\\scriptsize{" << msb << "}} & "
-					   << "\\multicolumn{" << rsize << "}{r}{\\scriptsize{" << lsb << "}} & ";
+					ls.append("\\multicolumn{");
+					ls.append(std::to_string(lsize));
+					ls.append("}{l}{\\scriptsize{");
+					ls.append(std::to_string(msb));
+					ls.append("}} & \\multicolumn{");
+					ls.append(std::to_string(rsize));
+					ls.append("}{r}{\\scriptsize{");
+					ls.append(std::to_string(lsb));
+					ls.append("}} & ");
 				}
 			}
 			// print this row
 			printf("%s \\\\\n\\cline{1-%ld}\n",
-				ls.str().c_str(), kLatexTableColumns);
+				ls.c_str(), kLatexTableColumns);
 			break;
 		}
 	}
@@ -441,21 +459,21 @@ static void print_latex(rv_gen *gen)
 	}
 
 	// create the table width specification
-	std::stringstream ts;
-	ts << "{";
-	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "p{0.05mm}";
-	ts << "p{50mm}l}";
-	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts << "& ";
-	ts << "& \\\\\n";
+	std::string ts;
+	ts.append("{");
+	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts.append("p{0.05mm}");
+	ts.append("p{50mm}l}");
+	for (ssize_t i = 0 ; i < kLatexTableColumns; i++) ts.append("& ");
+	ts.append("& \\\\\n");
 
 	// print document header
 	printf("%s", kLatexDocumentBegin);
-	printf("%s%s", kLatexTableBegin, ts.str().c_str());
+	printf("%s%s", kLatexTableBegin, ts.c_str());
 
 	// iterate through pages and rows and printing them
 	for (auto &page : pages) {
 		for (auto &row : page.rows) {
-			print_latex_row(gen, row, ts.str(), remove_question_marks);
+			print_latex_row(gen, row, ts, remove_question_marks);
 		}
 	}
 
