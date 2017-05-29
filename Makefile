@@ -424,7 +424,7 @@ endif
 
 # build rules
 
-all: $(SPARSEHASH_SRC) $(RV_META_BIN) meta $(BINARIES) $(ASSEMBLY)
+all: meta $(BINARIES) $(ASSEMBLY)
 clean: ; @echo "CLEAN $(BUILD_DIR)"; rm -rf $(BUILD_DIR)
 backup: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar -czf $${dir}-backup-$$(date '+%Y%m%d').tar.gz $${dir}
 dist: clean ; dir=$$(basename $$(pwd)) ; cd .. && tar --exclude .git -czf $${dir}-$$(date '+%Y%m%d').tar.gz $${dir}
