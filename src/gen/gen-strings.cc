@@ -3,6 +3,7 @@
 //
 
 #include <cstdio>
+#include <cstdlib>
 #include <cinttypes>
 #include <functional>
 #include <algorithm>
