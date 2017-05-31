@@ -5,26 +5,29 @@ RISC-V simulator for x86-64
 
 [![Build Status](https://travis-ci.org/rv8-io/rv8.svg?branch=master)](https://travis-ci.org/rv8-io/rv8)
 
-Date    : January 15, 2020
+**rv8** is a RISC-V simulation suite comprising a high performance x86-64 binary translator, a user mode simulator, a full system emulator and an ELF binary analysis tool:
 
-Version : (under version control)
+* **rv-jit** - _user mode x86-64 binary translator_
+* **rv-sim** - _user mode system call proxy simulator_
+* **rv-sys** - _full system emulator with soft MMU_
+* **rv-bin** - _ELF disassembler and histogram tool_
+* **rv-meta** - _Code and documentation generator_
 
-About
--------------
+The rv8 simulator suite contains libraries and command line tools for creating instruction opcode maps, C headers and source containing instruction set metadata, instruction decoders, a JIT assembler, LaTeX documentation, a metadata based RISC-V disassembler, a histogram tool for generating statistics on RISC-V ELF executables, a RISC-V proxy syscall simulator, a RISC-V full system emulator that implements the RISC-V 1.9.1 privileged specification and an x86-64 binary translator.
 
-The rv8 simulator suite contains libraries and command line tools
-for creating instruction opcode maps, C headers and source containing
-instruction set metadata, instruction decoders, a JIT assembler, LaTeX
-documentation, a metadata based RISC-V disassembler, a histogram tool
-for generating statistics on RISC-V ELF executables, a RISC-V proxy
-syscall simulator, a RISC-V full system emulator that implements the
-RISC-V 1.9.1 privileged specification and an x86-64 binary translator.
+![rv8 binary translation](/doc/images/bintrans.png)
+
+_**RISC-V to x86-64 binary translation**_
+
+The rv8 binary translation engine works by interpreting code while profiling it for hot paths. Hot paths are translated on the fly to native code. The translation engine maintains a call stack to allow runtime inlining of hot functions. A branch target cache is used to accelerate returns and indirect calls through function pointers. The translator supports hybrid binary translation and interpretation to handle instructions that do not have native translations. Currently ‘IM’ code is translated and ‘AFD’ is interpreted. The translator supports RVC compressed code.
+
+
+## Project Goals
 
 The future goals of the rv8 project are:
 
 - Concise metadata representing the RISC-V ISA
 - Tools for metadata-based generation of source and documentation 
-- Full color disassembler
 - High performance emulation, sandboxing and binary translation
 - RISC-V-(n) → RISC-V-(n+1)
 - RISC-V-(n) → Intel i7 / AMD64 + AVX-512
@@ -33,11 +36,73 @@ The future goals of the rv8 project are:
 - RISC-V Specification undefined behaviour investigation
 - RISC-V Virtualization and memory protection investigation
 
-See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) and
-[RISC-V Instruction Types](/doc/pdf/riscv-types.pdf) for sample LaTeX output.
 
-Screenshots
-----------------
+## Supported Platforms
+
+- Target
+  - RV32IMAFDC
+  - RV64IMAFDC
+  - Privilged ISA 1.9.1
+- Host
+  - Linux x86-64 _(stable)_
+  - macOS 10.11 x86-64 _(alpha)_
+  - FreeBSD 11 x86-64 _(alpha)_
+
+
+## Getting Started
+
+_Building riscv-gnu-toolchain_
+
+```
+$ sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev
+$ git clone https://github.com/riscv/riscv-gnu-toolchain.git
+$ cd riscv-gnu-toolchain
+$ git submodule update --init --recursive
+$ ./configure --prefix=/opt/riscv/toolchain
+$ make
+```
+
+_Building rv8_
+
+```
+$ export RISCV=/opt/riscv/toolchain
+$ git clone https://github.com/rv8-io/rv8.git
+$ cd rv8
+$ git submodule update --init --recursive
+$ make
+$ sudo make install
+```
+
+_Running rv8_
+
+```
+$ make test-build
+$ rv-jit build/riscv64-unknown-elf/bin/test-dhrystone
+```
+
+
+## Build Dependencies
+
+- gmake
+- gcc-5.4 or clang-3.4
+- RISC-V GNU Toolchain
+- `RISCV` environment variable
+
+### Ubuntu 14.04LTS Dependencies
+
+The compiler in Ubuntu 14.04LTS doesn't support C++14. These
+instructions will install g++6 from the ubuntu toolchain repository
+and build the project using g++6.
+
+```
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt-get install g++-6 libncurses5-dev
+make CXX=g++-6 CC=gcc-6
+```
+
+
+## Screenshots
 
 ![ASCII map screenshot](/doc/images/screenshot-1.png)
 
@@ -55,34 +120,34 @@ Screenshots
 
 *Example Disassembly output from `rv-bin dump`*
 
-Tools
------------------
+See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) and
+[RISC-V Instruction Types](/doc/pdf/riscv-types.pdf) for sample LaTeX output.
 
-The following table shows the RISC-V Meta tools:
 
-|Name    | Description
-|:------ | :-----------------
-|rv-meta | Code and documentation generator
-|rv-bin  | ELF dump, disassmble and histogram
-|rv-jit  | Binary Translator for x86-64
-|rv-sim  | ABI Proxy Simulator
-|rv-sys  | Privileged System Emulator
+## Useful Commands
 
-Libraries
------------------
+Command                | Description
+----                   | ---
+```make map```         | print a colour opcode map
+```make latex```       | output a LaTeX opcode tex
+```make pdf```         | output a LaTeX opcode pdf
+```make test-spike```  | run the ABI Proxy Simulator tests with _`spike`_
+```make test-sim```    | run the ABI Proxy Simulator tests with _`rv-sim`_
+```make qemu-tests```  | run the QEMU tests with _`rv-sim`_
+```make test-sys```    | run the Privileged System Emulator tests with _`rv-sys`_
+```make linux```       | bootstrap bbl, linux kernel and busybox image
+```sudo make install```| install to `/usr/local/bin`
 
-The following table shows the RISC-V Meta libraries:
+**Notes**
 
-| Name                | Description                             | Scale
-| :------------------ | :-------------------------------------- | :----
-| `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
-| `libriscv_elf.a`    | ELF parser                              | micro
-| `libriscv_gen.a`    | Source and documentation generators     | macro
-| `libriscv_model.a`  | Instruction set metamodel               | macro
-| `libriscv_util.a`   | Utility functions for tools             | mini
+- The `linux` target requires the RISC-V GNU Linux Toolchain
+- The `test-build` target requires the RISC-V ELF Toolchain
+- The `qemu-tests` target requires the `third_party/qemu-tests` to be built
 
-Project Structure
------------------------
+
+## Project Structure
+
+### Directories
 
 | Directory    | Description
 | :----------- | :---------------
@@ -99,69 +164,22 @@ Project Structure
 | `src/util`   | Miscellaneous utilities library
 | `doc/pdf`    | Generated documentation
 
-Dependencies
------------------
+### Libraries
 
-- gmake
-- gcc-5.4 or clang-3.4
-- ragel (required to regenerate config grammar)
-- riscv-gnu-toolchain (required for `make test-sim`)
-- Note: Set RISCV environment variable to point to toolchain
+The following table shows the RISC-V Meta libraries:
 
-Supported Platforms
------------------------------
+| Name                | Description                             | Scale
+| :------------------ | :-------------------------------------- | :----
+| `libriscv_asm.a`    | ISA metadata and disassembly formatting | micro
+| `libriscv_elf.a`    | ELF parser                              | micro
+| `libriscv_gen.a`    | Source and documentation generators     | macro
+| `libriscv_model.a`  | Instruction set metamodel               | macro
+| `libriscv_util.a`   | Utility functions for tools             | mini
 
-- Linux
-- macOS
-- FreeBSD
-- Windows Services for Linux
 
-Build Instructions
------------------------------
+## Program Options
 
-The meta compiler has been tested on Linux, Darwin and FreeBSD.
-
-To checkout submodules: ```git submodule update --init --recursive```
-
-To build the utilities, simulator, emulator and tests: ```make all test-build```
-
-To print a colour opcode map: ```make map```
-
-To output a LaTeX opcode tex: ```make latex```
-
-To output a LaTeX opcode pdf: ```make pdf```
-
-To run the ABI Proxy Simulator tests with _`spike`_: ```make test-spike```
-
-To run the ABI Proxy Simulator tests with _`rv-sim`_: ```make test-sim```
-
-To run the QEMU tests with _`rv-sim`_: ```make qemu-tests```
-
-To run the Privileged System Emulator tests with _`rv-sys`_: ```make test-sys```
-
-To bootstrap bbl, linux kernel and busybox image: ```make linux```
-
-To install to `/usr/local/bin`: ```make && sudo make install```
-
-**Notes**
-
-- The test-build target requires the RISC-V GNU Compiler Toolchain
-
-### Ubuntu 14.04LTS Dependencies
-
-The compiler in Ubuntu 14.04LTS doesn't support C++14. These
-instructions will install g++6 from the ubuntu toolchain repository
-and build the project using g++6.
-
-```
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-sudo apt-get update
-sudo apt-get install g++-6 libncurses5-dev
-make CXX=g++-6 CC=gcc-6
-```
-
-RV x86-64 Simulator
------------------------------
+### RISC-V x86-64 Simulator
 
 RISC-V x86-64 JIT Simulator command line options:
 
@@ -189,8 +207,7 @@ usage: rv-jit [<options>] <elf_file> [<options>]
 - Currently only the Linux syscall ABI proxy is implemented for the JIT simulator
 
 
-RV Proxy Simulator
------------------------------
+### RISC-V Proxy Simulator
 
 The ABI Proxy Simulator command line options:
 
@@ -215,10 +232,9 @@ rv-sim build/riscv64-unknown-elf/bin/hello-world-libc
 ```
 
 
-RV System Emulator
------------------------------
+### RISC-V Full System Emulator
 
-The Privilged ISA System Emulator command line options:
+The Privilged ISA Full System Emulator command line options:
 
 ```
 $ rv-sys -h
@@ -252,8 +268,7 @@ rv-sys build/riscv64-unknown-elf/bin/test-m-mmio-uart
 ```
 
 
-RV ELF Dump Utility
------------------------------
+### RISC-V ELF Dump Utility
 
 ELF Dump usage command line options:
 
@@ -285,8 +300,7 @@ rv-bin dump -c -a build/riscv64-unknown-elf/bin/hello-world-pcrel
 - The ELF dissassembler output requires 125 column terminal window
 
 
-RV ELF Histogram Utility
--------------------------------------
+### RISC-V ELF Histogram Utility
 
 The ELF Histogram Utility usage command line options:
 
@@ -316,8 +330,7 @@ rv-bin histogram -R -b -c █ linux/vmlinux | head -20
 ```
 
 
-RV Metadata Utility
------------------------------
+### RISC-V Metadata Utility
 
 The RV source and documentation generator usage command line options:
 
@@ -374,8 +387,7 @@ rv-meta -I RV64G -l -r meta
 ```
 
 
-References
-----------------
+### References
 
 - [lowRISC project](http://www.lowrisc.org/)
 - [Native Client x86-64 Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/x86-64-sandbox)
