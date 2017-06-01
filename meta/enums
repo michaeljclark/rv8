@@ -91,6 +91,14 @@ vm      sv48                 10      "Page-based 48-bit virtual addressing"     
 vm      sv57                 11      "Reserved for page-based 48-bit virtual addressing"  1.7-1.9.1
 vm      sv64                 12      "Reserved for page-based 48-bit virtual addressing"  1.7-1.9.1
 
+# Virtualization Management field (satp.vm)
+svm     mbare                0       "No translation or protection"                       1.10
+svm     sv32                 1       "Page-based 32-bit virtual addressing"               1.10,rv32
+svm     sv39                 8       "Page-based 39-bit virtual addressing"               1.10,rv64
+svm     sv48                 9       "Page-based 48-bit virtual addressing"               1.10,rv64
+svm     sv57                 10      "Reserved for page-based 48-bit virtual addressing"  1.10,rv64
+svm     sv64                 11      "Reserved for page-based 48-bit virtual addressing"  1.10,rv64
+
 # Machine Cause Register faults (mcause), interrupt bit clear
 cause   misaligned_fetch     0       "Instruction address misaligned"                     1.7-
 cause   fault_fetch          1       "Instruction access fault"                           1.7-

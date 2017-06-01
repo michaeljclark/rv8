@@ -145,6 +145,16 @@ enum rv_vm
 	rv_vm_sv64 = 12,                    /* Reserved for page-based 48-bit virtual addressing */
 };
 
+enum rv_svm
+{
+	rv_svm_mbare = 0,                   /* No translation or protection */
+	rv_svm_sv32 = 1,                    /* Page-based 32-bit virtual addressing */
+	rv_svm_sv39 = 8,                    /* Page-based 39-bit virtual addressing */
+	rv_svm_sv48 = 9,                    /* Page-based 48-bit virtual addressing */
+	rv_svm_sv57 = 10,                   /* Reserved for page-based 48-bit virtual addressing */
+	rv_svm_sv64 = 11,                   /* Reserved for page-based 48-bit virtual addressing */
+};
+
 enum rv_cause
 {
 	rv_cause_misaligned_fetch = 0,      /* Instruction address misaligned */
