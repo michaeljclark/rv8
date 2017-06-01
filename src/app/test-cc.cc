@@ -41,14 +41,14 @@ extern "C" f32 fmsub_s(f32 s1, f32 s2, f32 s3)
 extern "C" f32 fnmsub_s(f32 s1, f32 s2, f32 s3)
 {
 	f32 d = 0;
-	fenv_setrm(rm); d = -(s1 * s2 - s3);
+	fenv_setrm(rm); d = s1 * -s2 + s3;
 	return d;
 }
 
 extern "C" f32 fnmadd_s(f32 s1, f32 s2, f32 s3)
 {
 	f32 d = 0;
-	fenv_setrm(rm); d = -(s1 * s2 + s3);
+	fenv_setrm(rm); d = s1 * -s2 - s3;
 	return d;
 }
 
@@ -224,14 +224,14 @@ extern "C" f64 fmsub_d(f64 s1, f64 s2, f64 s3)
 extern "C" f64 fnmsub_d(f64 s1, f64 s2, f64 s3)
 {
 	f64 d = 0;
-	fenv_setrm(rm); d = -(s1 * s2 - s3);
+	fenv_setrm(rm); d = s1 * -s2 + s3;
 	return d;
 }
 
 extern "C" f64 fnmadd_d(f64 s1, f64 s2, f64 s3)
 {
 	f64 d = 0;
-	fenv_setrm(rm); d = -(s1 * s2 + s3);
+	fenv_setrm(rm); d = s1 * -s2 - s3;
 	return d;
 }
 

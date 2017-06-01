@@ -320,12 +320,12 @@ typename P::ux exec_inst_rv32(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fnmadd_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fadd_s:
@@ -450,12 +450,12 @@ typename P::ux exec_inst_rv32(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fnmadd_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fadd_d:
@@ -1016,12 +1016,12 @@ typename P::ux exec_inst_rv64(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fnmadd_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fadd_s:
@@ -1166,12 +1166,12 @@ typename P::ux exec_inst_rv64(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fnmadd_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fadd_d:
@@ -1762,12 +1762,12 @@ typename P::ux exec_inst_rv128(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fnmadd_s:
 			if (rvf) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = -(proc.freg[dec.rs1].r.s.val * proc.freg[dec.rs2].r.s.val + proc.freg[dec.rs3].r.s.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.s.val = proc.freg[dec.rs1].r.s.val * -proc.freg[dec.rs2].r.s.val - proc.freg[dec.rs3].r.s.val;
 			};
 			break;
 		case rv_op_fadd_s:
@@ -1912,12 +1912,12 @@ typename P::ux exec_inst_rv128(T &dec, P &proc, typename P::ux pc_offset)
 			break;
 		case rv_op_fnmsub_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fnmadd_d:
 			if (rvd) {
-				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = -(proc.freg[dec.rs1].r.d.val * proc.freg[dec.rs2].r.d.val + proc.freg[dec.rs3].r.d.val);
+				fenv_setrm((proc.fcsr >> 5) & 0b111); proc.freg[dec.rd].r.d.val = proc.freg[dec.rs1].r.d.val * -proc.freg[dec.rs2].r.d.val - proc.freg[dec.rs3].r.d.val;
 			};
 			break;
 		case rv_op_fadd_d:
