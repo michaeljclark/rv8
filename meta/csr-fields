@@ -3,6 +3,14 @@
 #
 
 # machine status
+status    ie      0       m       "Interrupt Enable Stack 0"                1.7
+status    prv     2:1     m       "Privilege Mode Stack 0"                  1.7
+status    ie1     3       m       "Interrupt Enable Stack 1"                1.7
+status    prv1    5:4     m       "Privilege Mode Stack 1"                  1.7
+status    ie2     6       m       "Interrupt Enable Stack 2"                1.7
+status    prv2    8:7     m       "Privilege Mode Stack 2"                  1.7
+status    ie3     9       m       "Interrupt Enable Stack 3"                1.7
+status    prv3    11:10   m       "Privilege Mode Stack 3"                  1.7
 status    uie     0       mhsu    "User mode Interrupt Enable"              1.9-
 status    sie     1       mhs     "Supervisor mode Interrupt Enable"        1.9-
 status    hie     2       mh      "Hypervisor mode Interrupt Enable"        1.9-
