@@ -55,10 +55,10 @@ enum rv_rm
 
 enum rv_aqrl
 {
-	rv_aqrl_relaxed = 0,                /* Atomicity - no explicit synchronisation or ordering */
-	rv_aqrl_acquire = 2,                /* Acquire memory operation - prior writes from other harts visible */
-	rv_aqrl_release = 1,                /* Release memory operation - visible to other harts in subsequent reads */
-	rv_aqrl_acq_rel = 3,                /* Read-modify-write - global order of reads and writes */
+	rv_aqrl_relaxed = 0,                /* Atomicity - no explicit ordering */
+	rv_aqrl_acquire = 2,                /* Acquire - prior writes from other harts visible */
+	rv_aqrl_release = 1,                /* Release - subsequent reads visible to other harts */
+	rv_aqrl_acq_rel = 3,                /* Acquire-Release - global order of reads and writes */
 };
 
 enum rv_fence
@@ -159,6 +159,9 @@ enum rv_cause
 	rv_cause_supervisor_ecall = 9,      /* Environment call from S-mode */
 	rv_cause_hypervisor_ecall = 10,     /* Environment call from H-mode */
 	rv_cause_machine_ecall = 11,        /* Environment call from M-mode */
+	rv_cause_exec_page_fault = 12,      /* Instruction page fault */
+	rv_cause_load_page_fault = 13,      /* Load page fault */
+	rv_cause_store_page_fault = 15,     /* Store/AMO page fault */
 };
 
 enum rv_intr
@@ -232,6 +235,7 @@ enum rv_csr
 	rv_csr_uepc = 0x041,                /* User exception program counter */
 	rv_csr_ucause = 0x042,              /* User trap cause */
 	rv_csr_ubadaddr = 0x043,            /* User bad address */
+	rv_csr_utval = 0x043,               /* User bad address or instruction */
 	rv_csr_uip = 0x044,                 /* User interrupt pending */
 	rv_csr_fflags = 0x001,              /* Floating-Point Accrued Exceptions */
 	rv_csr_frm = 0x002,                 /* Floating-Point Dynamic Rounding Mode */
@@ -251,8 +255,10 @@ enum rv_csr
 	rv_csr_sepc = 0x141,                /* Supervisor exception program counter */
 	rv_csr_scause = 0x142,              /* Supervisor trap cause */
 	rv_csr_sbadaddr = 0x143,            /* Supervisor bad address */
+	rv_csr_stval = 0x143,               /* Supervisor bad address or instruction */
 	rv_csr_sip = 0x144,                 /* Supervisor interrupt pending */
 	rv_csr_sptbr = 0x180,               /* Page-table base register */
+	rv_csr_satp = 0x180,                /* Supervisor address translation and protection */
 	rv_csr_scycle = 0xD00,              /* Supervisor cycle counter */
 	rv_csr_stime = 0xD01,               /* Supervisor wall-clock time */
 	rv_csr_sinstret = 0xD02,            /* Supervisor instructions-retired counter */
@@ -289,7 +295,28 @@ enum rv_csr
 	rv_csr_mepc = 0x341,                /* Machine exception program counter */
 	rv_csr_mcause = 0x342,              /* Machine trap cause */
 	rv_csr_mbadaddr = 0x343,            /* Machine bad address */
+	rv_csr_mtval = 0x343,               /* Machine bad address or instruction */
 	rv_csr_mip = 0x344,                 /* Machine interrupt pending */
+	rv_csr_pmpcfg0 = 0x3A0,             /* Physical memory protection configuration */
+	rv_csr_pmpcfg1 = 0x3A0,             /* Physical memory protection configuration (RV32 only) */
+	rv_csr_pmpcfg2 = 0x3A0,             /* Physical memory protection configuration */
+	rv_csr_pmpcfg3 = 0x3A0,             /* Physical memory protection configuration (RV32 only) */
+	rv_csr_pmpaddr0 = 0x3B0,            /* Physical memory protection address register */
+	rv_csr_pmpaddr1 = 0x3B1,            /* Physical memory protection address register */
+	rv_csr_pmpaddr2 = 0x3B2,            /* Physical memory protection address register */
+	rv_csr_pmpaddr3 = 0x3B3,            /* Physical memory protection address register */
+	rv_csr_pmpaddr4 = 0x3B4,            /* Physical memory protection address register */
+	rv_csr_pmpaddr5 = 0x3B5,            /* Physical memory protection address register */
+	rv_csr_pmpaddr6 = 0x3B6,            /* Physical memory protection address register */
+	rv_csr_pmpaddr7 = 0x3B7,            /* Physical memory protection address register */
+	rv_csr_pmpaddr8 = 0x3B8,            /* Physical memory protection address register */
+	rv_csr_pmpaddr9 = 0x3B9,            /* Physical memory protection address register */
+	rv_csr_pmpaddr10 = 0x3BA,           /* Physical memory protection address register */
+	rv_csr_pmpaddr11 = 0x3BB,           /* Physical memory protection address register */
+	rv_csr_pmpaddr12 = 0x3BC,           /* Physical memory protection address register */
+	rv_csr_pmpaddr13 = 0x3BE,           /* Physical memory protection address register */
+	rv_csr_pmpaddr14 = 0x3BD,           /* Physical memory protection address register */
+	rv_csr_pmpaddr15 = 0x3BF,           /* Physical memory protection address register */
 	rv_csr_mbase = 0x380,               /* Base register */
 	rv_csr_mbound = 0x381,              /* Bound register */
 	rv_csr_mibase = 0x382,              /* Instruction base register */
