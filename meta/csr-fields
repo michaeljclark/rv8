@@ -11,6 +11,10 @@ status    ie2     6       m       "Interrupt Enable Stack 2"                1.7
 status    prv2    8:7     m       "Privilege Mode Stack 2"                  1.7
 status    ie3     9       m       "Interrupt Enable Stack 3"                1.7
 status    prv3    11:10   m       "Privilege Mode Stack 3"                  1.7
+status    fs      13:12   mhs     "FPU register status"                     1.7
+status    xs      15:14   mhs     "Extension status"                        1.7
+status    mprv    16      m       "Data access at prv1 privilege level"     1.7
+status    vm      21:17   m       "Virtual Memory Mode"                     1.7
 status    uie     0       mhsu    "User mode Interrupt Enable"              1.9-
 status    sie     1       mhs     "Supervisor mode Interrupt Enable"        1.9-
 status    hie     2       mh      "Hypervisor mode Interrupt Enable"        1.9-
@@ -22,9 +26,8 @@ status    mpie    7       m       "Prior Machine mode Interrupt Enable"     1.9-
 status    spp     8       mhs     "SRET pop privilege"                      1.9-
 status    hpp     10:9    mh      "HRET pop privilege"                      1.9-
 status    mpp     12:11   m       "MRET pop privilege"                      1.9-
-status    fs      14:13   mhs     "FPU register status"                     1.7-
-status    xs      16:15   mhs     "Extension status"                        1.7-
-status    mprv    16      m       "Data access at prv1 privilege level"     1.7
+status    fs      14:13   mhs     "FPU register status"                     1.9-
+status    xs      16:15   mhs     "Extension status"                        1.9-
 status    mprv    17      m       "Data access at mpp privilege level"      1.9-
 status    pum     18      mhs     "Protect User Memory"                     1.9-1.9.1
 status    sum     18      mhs     "Supervisor User Memory"                  1.10-
@@ -32,7 +35,6 @@ status    mxr     19      m       "Make eXecute Readable"                   1.9-
 status    tvm     20      mhs     "Trap Virtual Memory"                     1.10-
 status    tw      21      mhs     "Timeout Wait"                            1.10-
 status    tsr     22      mhs     "Trap SRET"                               1.10-
-status    vm      21:17   m       "Virtual Memory Mode"                     1.7
 status    vm      28:24   m       "Virtual Memory Mode"                     1.9-1.9.1
 
 # address translation
