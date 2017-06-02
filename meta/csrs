@@ -27,9 +27,9 @@
 0xC00  uro  cycle      "Cycle counter (for RDCYCLE)"                          1.7-
 0xC01  uro  time       "Wall-clock time (for RDTIME)"                         1.7-
 0xC02  uro  instret    "Instructions-retired counter (for RDINSTRET)"         1.7-
-0xC80  uro  cycleh     "Upper 32 bits of cycle, RV32I only"                   1.7-
-0xC81  uro  timeh      "Upper 32 bits of time, RV32I only"                    1.7-
-0xC82  uro  instreth   "Upper 32 bits of instret, RV32I only"                 1.7-
+0xC80  uro  cycleh     "Upper 32 bits of cycle, RV32I only"                   1.7-,rv32
+0xC81  uro  timeh      "Upper 32 bits of time, RV32I only"                    1.7-,rv32
+0xC82  uro  instreth   "Upper 32 bits of instret, RV32I only"                 1.7-,rv32
 
 # Supervisor Trap Setup
 0x100  srw  sstatus    "Supervisor status register"                           1.7-
@@ -54,9 +54,9 @@
 0xD00  sro  scycle     "Supervisor cycle counter"                             1.9-
 0xD01  sro  stime      "Supervisor wall-clock time"                           1.7-
 0xD02  sro  sinstret   "Supervisor instructions-retired counter"              1.9-
-0xD80  sro  scycleh    "Upper 32 bits of scycle, RV32I only"                  1.9-
-0xD81  sro  stimeh     "Upper 32 bits of stime, RV32I only"                   1.7-
-0xD82  sro  sinstreth  "Upper 32 bits of sinstret, RV32I only"                1.9-
+0xD80  sro  scycleh    "Upper 32 bits of scycle, RV32I only"                  1.9-,rv32
+0xD81  sro  stimeh     "Upper 32 bits of stime, RV32I only"                   1.7-,rv32
+0xD82  sro  sinstreth  "Upper 32 bits of sinstret, RV32I only"                1.9-,rv32
 
 # Hypervisor Trap Setup
 0x200  hrw  hstatus    "Hypervisor status register"                           1.7-1.9.1
@@ -78,9 +78,9 @@
 0xE00  sro  hcycle     "Hypervisor cycle counter"                             1.7-1.9.1
 0xE01  sro  htime      "Hypervisor wall-clock time"                           1.7-1.9.1
 0xE02  sro  hinstret   "Hypervisor instructions-retired counter"              1.9-1.9.1
-0xE80  sro  hcycleh    "Upper 32 bits of hcycle, RV32I only"                  1.7-1.9.1
-0xE81  sro  htimeh     "Upper 32 bits of htime, RV32I only"                   1.7-1.9.1
-0xE82  sro  hinstreth  "Upper 32 bits of hinstret, RV32I only"                1.9-1.9.1
+0xE80  sro  hcycleh    "Upper 32 bits of hcycle, RV32I only"                  1.7-1.9.1,rv32
+0xE81  sro  htimeh     "Upper 32 bits of htime, RV32I only"                   1.7-1.9.1,rv32
+0xE82  sro  hinstreth  "Upper 32 bits of hinstret, RV32I only"                1.9-1.9.1,rv32
 
 # Machine Information Registers
 0xF11  mro  mvendorid  "Verndor ID"                                           1.9-
@@ -165,9 +165,9 @@
 0xB1D  mrw  mhpmcounter29   "Machine performance-monitoring counter"          1.9.1-
 0xB1E  mrw  mhpmcounter30   "Machine performance-monitoring counter"          1.9.1-
 0xB1F  mrw  mhpmcounter31   "Machine performance-monitoring counter"          1.9.1-
-0xB80  mrw  mcycleh         "Upper 32 bits of mcycle, RV32I only"             1.7-
-0xB81  mrw  mtimeh          "Upper 32 bits of mtime, RV32I only"              1.7-1.9
-0xB82  mrw  minstreth       "Upper 32 bits of minstret, RV32I only"           1.7-
+0xB80  mrw  mcycleh         "Upper 32 bits of mcycle, RV32I only"             1.7-,rv32
+0xB81  mrw  mtimeh          "Upper 32 bits of mtime, RV32I only"              1.7-1.9,rv32
+0xB82  mrw  minstreth       "Upper 32 bits of minstret, RV32I only"           1.7-,rv32
 0xB83  mrw  mhpmcounter3h   "Upper 32 bits of mhpmcounter3, RV32I only"       1.9.1-
 0xB84  mrw  mhpmcounter4h   "Upper 32 bits of mhpmcounter4, RV32I only"       1.9.1-
 0xB85  mrw  mhpmcounter5h   "Upper 32 bits of mhpmcounter5, RV32I only"       1.9.1-
