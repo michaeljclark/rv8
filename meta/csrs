@@ -83,7 +83,7 @@
 0xE82  sro  hinstreth  "Upper 32 bits of hinstret, RV32I only"                1.9-1.9.1,rv32
 
 # Machine Information Registers
-0xF11  mro  mvendorid  "Verndor ID"                                           1.9-
+0xF11  mro  mvendorid  "Vendor ID"                                            1.9-
 0xF12  mro  marchid    "Architecture ID"                                      1.9-
 0xF13  mro  mimpid     "Implementation ID"                                    1.9-
 0xF14  mro  mhartid    "Hardware thread ID"                                   1.7-
