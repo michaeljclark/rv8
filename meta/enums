@@ -120,12 +120,12 @@ cause   store_page_fault     15      "Store/AMO page fault"                     
 intr    u_software           0       "User software interrupt"                            1.7-
 intr    s_software           1       "Supervisor software interrupt"                      1.7-
 intr    h_software           2       "Hypervisor software interrupt"                      1.7-1.9.1
-intr    m_software           3       "Machine software interrupt"                         1.7-
+intr    m_software           3       "Machine software interrupt"                         1.7-1.9.1
 intr    u_timer              4       "User timer interrupt"                               1.7-
 intr    s_timer              5       "Supervisor timer interrupt"                         1.7-
 intr    h_timer              6       "Hypervisor timer interrupt"                         1.7-1.9.1
-intr    m_timer              7       "Machine timer interrupt"                            1.7-
+intr    m_timer              7       "Machine timer interrupt"                            1.7-1.9.1
 intr    u_external           8       "User external interrupt"                            1.7-
 intr    s_external           9       "Supervisor external interrupt"                      1.7-
 intr    h_external           10      "Hypervisor external interrupt"                      1.7-1.9.1
-intr    m_external           11      "Machine external interrupt"                         1.7-
+intr    m_external           11      "Machine external interrupt"                         1.7-1.9.1
