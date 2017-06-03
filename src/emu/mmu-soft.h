@@ -407,6 +407,9 @@ namespace riscv {
 				/* translate address if we have a valid PTE */
 				if ((pte.val.flags & (pte_flag_R | pte_flag_X))) {
 
+					/* check for misaligned superpage */
+					if (((1 << (shift - page_shift)) - 1) & pte.val.ppn) goto fault;
+
 					/* update PTE accessed and dirty flags */
 					update_pte_flags<PTM>(op, pte_uva);
 
