@@ -49,7 +49,7 @@ static const void sprintf_pad(size_t &offset, std::string &buf, size_t pad_to)
 {
 	static const char *space32 = "                                        ";
 	if (pad_to < offset) pad_to = offset;
-	size_t x = std::min(strlen(space32), std::max((pad_to - offset), 0UL));
+	size_t x = std::min(strlen(space32), (size_t)std::max(((ssize_t)pad_to - (ssize_t)offset), 0L));
 	sprintf_fmt(offset, buf, "%s", space32 + strlen(space32) - x);
 }
 
