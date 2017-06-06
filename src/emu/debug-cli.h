@@ -370,7 +370,8 @@ namespace riscv {
 
 		char* getline(P *proc)
 		{
-			printf("(%s) ", proc->name());
+			fprintf(stdout, "(%s) ", proc->name());
+			fflush(stdout);
 			return fgets(line_buf, sizeof(line_buf), stdin);
 		}
 
