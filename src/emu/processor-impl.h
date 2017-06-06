@@ -165,18 +165,18 @@ namespace riscv {
 		{
 			size_t reg;
 			std::string op;
-			std::vector<std::string> ops;
+			std::map<std::string,std::string> ops;
 			const rv_operand_data *operand_data = rv_inst_operand_data[dec.op];
 			while (operand_data->type != rv_type_none) {
 				op.clear();
 				switch (operand_data->type) {
 					case rv_type_ireg:
 						reg = regnum(dec, operand_data->operand_name);
-						sprintf(op, "%s=0x", rv_ireg_name_sym[reg]);
+						sprintf(op, "0x");
 						sprintf(op,
 							rv_type_primitives[operand_data->primitive].hex_format,
 							P::ireg[reg].r.xu.val);
-						ops.push_back(op);
+						ops[rv_ireg_name_sym[reg]] = op;
 						break;
 					case rv_type_freg:
 						reg = regnum(dec, operand_data->operand_name);
@@ -200,7 +200,7 @@ namespace riscv {
 								operand_data->primitive == rv_primitive_f64 ?
 								P::freg[reg].r.d.val : P::freg[reg].r.s.val);
 						}
-						ops.push_back(op);
+						ops[rv_freg_name_sym[reg]] = op;
 						break;
 					default: break;
 				}
@@ -209,9 +209,12 @@ namespace riscv {
 
 			std::string operands;
 			for (auto i = ops.begin(); i != ops.end(); i++) {
-				operands.append((i == ops.begin() ? "(" : ", "));
-				operands.append(*i);
-				operands.append((i == ops.end() - 1 ? ")" : ""));
+				if (i != ops.begin()) {
+					operands.append(", ");
+				}
+				operands.append(i->first);
+				operands.append("=");
+				operands.append(i->second);
 			}
 			return operands;
 		}
