@@ -28,10 +28,12 @@ static const char* CODECS_FILE                = "codecs";
 static const char* EXTENSIONS_FILE            = "extensions";
 static const char* REGISTERS_FILE             = "registers";
 static const char* CSRS_FILE                  = "csrs";
+static const char* CSR_FIELDS_FILE            = "csr-fields";
 static const char* OPCODES_FILE               = "opcodes";
 static const char* CONSTRAINTS_FILE           = "constraints";
 static const char* COMPRESSION_FILE           = "compression";
 static const char* PSEUDO_FILE                = "pseudos";
+static const char* OPCODE_MAJORS_FILE         = "opcode-majors";
 static const char* OPCODE_FULLNAMES_FILE      = "opcode-fullnames";
 static const char* OPCODE_DESCRIPTIONS_FILE   = "opcode-descriptions";
 static const char* OPCODE_PSEUDOCODE_C_FILE   = "opcode-pseudocode-c";
@@ -269,6 +271,36 @@ rv_opcode_mask rv_meta_model::decode_mask(std::string bit_spec)
 	}
 
 	return rv_opcode_mask(rv_bitrange(msb, lsb), val);
+}
+
+rv_version rv_meta_model::decode_version(std::string version, rv_version default_version)
+{
+	std::vector<std::string> vpart = split(version, ".");
+	if (vpart.size() == 1 && vpart[0].size() > 0) {
+		return rv_version(strtoul(vpart[0].c_str(), nullptr, 10));
+	} else if (vpart.size() == 2) {
+		return rv_version(strtoul(vpart[0].c_str(), nullptr, 10),
+			strtoul(vpart[1].c_str(), nullptr, 10), 0);
+	} else if (vpart.size() == 3) {
+		return rv_version(strtoul(vpart[0].c_str(), nullptr, 10),
+			strtoul(vpart[1].c_str(), nullptr, 10),
+			strtoul(vpart[2].c_str(), nullptr, 10));
+	}
+	return default_version;
+}
+
+rv_version_spec rv_meta_model::decode_version_spec(std::string version_spec)
+{
+	std::vector<std::string> spart = split(split(version_spec, ",")[0], "-");
+	if (spart.size() == 1) {
+		rv_version start_end = decode_version(spart[0], rv_version(0));
+		return rv_version_spec(start_end, start_end);
+	} else if (spart.size() >= 2) {
+		return rv_version_spec(decode_version(spart[0], rv_version(0)),
+			decode_version(spart[1], rv_version(std::numeric_limits<int>::max())));
+	} else {
+		return rv_version_spec(rv_version(0), rv_version(0));
+	}
 }
 
 std::vector<rv_bitrange> rv_meta_model::bitmask_to_bitrange(std::vector<ssize_t> &bits)
@@ -726,11 +758,11 @@ void rv_meta_model::parse_operand(std::vector<std::string> &part)
 
 void rv_meta_model::parse_enum(std::vector<std::string> &part)
 {
-	if (part.size() < 4) {
-		panic("operands requires 4 parameters: %s", join(part, " ").c_str());
+	if (part.size() < 5) {
+		panic("operands requires 5 parameters: %s", join(part, " ").c_str());
 	}
 	auto enumv = enums_by_name[part[0]] = std::make_shared<rv_enum>(
-		part[0], part[1], part[2], part[3]
+		part[0], part[1], part[2], part[3], decode_version_spec(part[4])
 	);
 	enums.push_back(enumv);
 }
@@ -813,13 +845,42 @@ void rv_meta_model::parse_register(std::vector<std::string> &part)
 
 void rv_meta_model::parse_csr(std::vector<std::string> &part)
 {
-	if (part.size() < 4) {
-		panic("csrs requires 4 parameters: %s", join(part, " ").c_str());
+	if (part.size() < 5) {
+		panic("csrs requires 5 parameters: %s", join(part, " ").c_str());
 	}
 	auto csr = csrs_by_name[part[2]] = std::make_shared<rv_csr>(
-		part[0], part[1], part[2], part[3]
+		part[0], part[1], part[2], part[3], decode_version_spec(part[4])
 	);
 	csrs.push_back(csr);
+}
+
+void rv_meta_model::parse_csr_field(std::vector<std::string> &part)
+{
+	if (part.size() < 6) {
+		panic("csr-fields requires 6 parameters: %s", join(part, " ").c_str());
+	}
+	auto csr_field = std::make_shared<rv_csr_field>(
+		part[0], part[1], part[2], part[3], part[4], decode_version_spec(part[5])
+	);
+	csr_fields.push_back(csr_field);
+}
+
+void rv_meta_model::parse_opcode_major(std::vector<std::string> &part)
+{
+	if (part.size() < 2) {
+		panic("opcode-majors requires at least 2 parameters: %s", join(part, " ").c_str());
+	}
+	auto opcode_major = std::make_shared<rv_opcode_major>();
+	for (auto mnem : part) {
+		if (is_mask(mnem)) {
+			opcode_major->masks.push_back(decode_mask(mnem));
+		} else if (opcode_major->name.size() == 0) {
+			opcode_major->name = mnem;
+		} else {
+			panic("opcode-majors: unexpected token: %s", mnem.c_str());
+		}
+	}
+	opcode_majors.push_back(opcode_major);
 }
 
 void rv_meta_model::parse_opcode(std::vector<std::string> &part)
@@ -1089,6 +1150,8 @@ bool rv_meta_model::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + EXTENSIONS_FILE)) parse_extension(part);
 	for (auto part : read_file(dirname + std::string("/") + REGISTERS_FILE)) parse_register(part);
 	for (auto part : read_file(dirname + std::string("/") + CSRS_FILE)) parse_csr(part);
+	for (auto part : read_file(dirname + std::string("/") + CSR_FIELDS_FILE)) parse_csr_field(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_MAJORS_FILE)) parse_opcode_major(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODES_FILE)) parse_opcode(part);
 	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
