@@ -291,7 +291,7 @@ enum rv_csr
 	rv_csr_hcycleh = 0xE80,             /* Upper 32 bits of hcycle, RV32I only */
 	rv_csr_htimeh = 0xE81,              /* Upper 32 bits of htime, RV32I only */
 	rv_csr_hinstreth = 0xE82,           /* Upper 32 bits of hinstret, RV32I only */
-	rv_csr_mvendorid = 0xF11,           /* Verndor ID */
+	rv_csr_mvendorid = 0xF11,           /* Vendor ID */
 	rv_csr_marchid = 0xF12,             /* Architecture ID */
 	rv_csr_mimpid = 0xF13,              /* Implementation ID */
 	rv_csr_mhartid = 0xF14,             /* Hardware thread ID */
