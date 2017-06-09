@@ -592,64 +592,64 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 ifeq ($(ARCH),darwin_x86_64)
 $(FIX_MACHO_BIN): $(FIX_MACHO_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 endif
 
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_MUL_BIN): $(TEST_MUL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_OPERATORS_BIN): $(TEST_OPERATORS_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_RAND_BIN): $(TEST_RAND_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
+	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
 
 $(TEST_CC_ASM): $(TEST_CC_SRC)
 	@mkdir -p $(shell dirname $@) ;
