@@ -23,7 +23,8 @@ LD :=           $(CXX)
 AR :=           $(shell which ar)
 
 # compiler function tests
-check_opt =     $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
+check_cxx_opt = $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) $(3) $$T.$(2) -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.$(2))
+check_ld_opt =  $(shell T=$$(mktemp /tmp/test.XXXX); echo 'int main() { return 0; }' > $$T.$(2) ; $(1) -c $$T.$(2) -o $$T.o  >/dev/null 2>&1 ; $(1) $(3) $$T.o -o /dev/null >/dev/null 2>&1 ; echo $$?; rm $$T $$T.o)
 
 # compiler flag test definitions
 LIBCPP_FLAGS =  -stdlib=libc++
@@ -67,7 +68,7 @@ PTH_LDFLAGS_2 = -lpthread
 RT_LDFLAGS =    -lrt
 
 # check if we can use libc++
-ifeq ($(call check_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
 CXXFLAGS +=     $(LIBCPP_FLAGS)
 endif
 
@@ -86,32 +87,32 @@ endif
 # check if hardening is enabled. e.g. make enable_harden=1
 ifeq ($(enable_harden),1)
 # check if we can use stack protector
-ifeq ($(call check_opt,$(CXX),cc,$(STPS_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(STPS_FLAGS)), 0)
 CXXFLAGS +=     $(STPS_FLAGS)
 else
-ifeq ($(call check_opt,$(CXX),cc,$(STP_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(STP_FLAGS)), 0)
 CXXFLAGS +=     $(STP_FLAGS)
 endif
 endif
 # check if we can link with read only relocations
-ifeq ($(call check_opt,$(CXX),cc,$(RELROF_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(RELROF_FLAGS)), 0)
 LDFLAGS +=      $(RELROF_FLAGS)
 else
-ifeq ($(call check_opt,$(CXX),cc,$(RELRO_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(RELRO_FLAGS)), 0)
 LDFLAGS +=      $(RELRO_FLAGS)
 endif
 endif
 # check if we can link with non executable stack
-ifeq ($(call check_opt,$(CXX),cc,$(NOEXEC_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(NOEXEC_FLAGS)), 0)
 LDFLAGS +=      $(NOEXEC_FLAGS)
 endif
 endif
 # check if we can link with a small zero page and text at high address
-ifeq ($(call check_opt,$(CXX),cc,$(MACOS_LDFLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(MACOS_LDFLAGS)), 0)
 LDFLAGS +=      $(MACOS_LDFLAGS)
 endif
 # check if we can static link text at high address
-ifeq ($(call check_opt,$(CXX),cc,$(LINUX_LDFLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(LINUX_LDFLAGS)), 0)
 LDFLAGS +=      $(LINUX_LDFLAGS)
 endif
 
@@ -124,26 +125,31 @@ endif
 endif
 
 # check if we can use pthread preprocessor flag
-ifeq ($(call check_opt,$(CXX),cc,$(PTH_CPPFLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(PTH_CPPFLAGS)), 0)
 CPPFLAGS +=     $(PTH_CPPFLAGS)
 endif
 
+# check if we can use pthread preprocessor flag with the linker
+ifeq ($(call check_ld_opt,$(CXX),cc,-Werror -pthread), 0)
+LDFLAGS +=      $(PTH_CPPFLAGS)
+endif
+
 # check if we can use pthread lib flags
-ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS_1)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(PTH_LDFLAGS_1)), 0)
 LDFLAGS +=      $(PTH_LDFLAGS_1)
 else
-ifeq ($(call check_opt,$(CXX),cc,$(PTH_LDFLAGS_2)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(PTH_LDFLAGS_2)), 0)
 LDFLAGS +=      $(PTH_LDFLAGS_2)
 endif
 endif
 
 # check if we can use realtime clock library
-ifeq ($(call check_opt,$(CXX),cc,$(RT_LDFLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(RT_LDFLAGS)), 0)
 LDFLAGS +=      $(RT_LDFLAGS)
 endif
 
 # check if we can use libcxx
-ifeq ($(call check_opt,$(CXX),cc,$(LIBCXX_FLAGS)), 0)
+ifeq ($(call check_cxx_opt,$(CXX),cc,$(LIBCXX_FLAGS)), 0)
 CXXFLAGS +=     $(LIBCXX_FLAGS)
 endif
 
@@ -592,75 +598,75 @@ $(DLMALLOC_LIB): $(DLMALLOC_OBJS)
 ifeq ($(ARCH),darwin_x86_64)
 $(FIX_MACHO_BIN): $(FIX_MACHO_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 endif
 
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(DLMALLOC_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_MUL_BIN): $(TEST_MUL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_OPERATORS_BIN): $(TEST_OPERATORS_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_RAND_BIN): $(TEST_RAND_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $(CXXFLAGS) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $(LDFLAGS)  $^ -o $@)
 
 $(TEST_CC_ASM): $(TEST_CC_SRC)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXXASM $@, $(CXX) -fno-omit-frame-pointer $(CXXFLAGS) $^ -S -o $@)
 
 # build recipes
-ifdef V
-cmd = $2
-else
+#ifdef V
+#cmd = $2
+#else
 cmd = @echo "$1"; $2
-endif
+#endif
 
 $(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
