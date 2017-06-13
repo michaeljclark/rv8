@@ -662,11 +662,11 @@ $(TEST_CC_ASM): $(TEST_CC_SRC)
 	$(call cmd, CXXASM $@, $(CXX) -fno-omit-frame-pointer $(CXXFLAGS) $^ -S -o $@)
 
 # build recipes
-#ifdef V
-#cmd = $2
-#else
+ifdef V
+cmd = $2
+else
 cmd = @echo "$1"; $2
-#endif
+endif
 
 $(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)

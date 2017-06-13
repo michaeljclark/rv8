@@ -1,4 +1,4 @@
-script: make
+script: make V=1
 
 compiler:
   - gcc-5
