@@ -521,7 +521,9 @@ install:
 # newer than the output files and these targets will get called each time
 # make is run as the timestamps are not updated unless the output differs.
 
-parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); $(RV_META_BIN) $(1) -r $(META_DIR) > $$T; diff $$T $(2) > /dev/null || mv $$T $(2) ; rm -f $$T)
+parse_meta =  $(shell T=$$(mktemp /tmp/test.XXXX); \
+               $(RV_META_BIN) $(1) -r $(META_DIR) > $$T; \
+               diff $$T $(2) > /dev/null || mv $$T $(2) ; rm -f $$T)
 
 meta: $(RV_OPANDS_HDR) $(RV_CODEC_HDR) $(RV_JIT_HDR) $(RV_JIT_SRC) \
 	$(RV_META_HDR) $(RV_META_SRC) $(RV_STR_HDR) $(RV_STR_SRC) \
