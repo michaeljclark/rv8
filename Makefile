@@ -26,7 +26,6 @@ endif
 endif
 
 # linker, archiver and ragel parser generator
-RAGEL :=        $(shell which ragel)
 LD :=           $(CXX)
 AR :=           $(shell which ar)
 
@@ -668,9 +667,6 @@ endif
 
 $(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
-
-$(SRC_DIR)/%.cc : $(SRC_DIR)/%.rl ; @mkdir -p $(shell dirname $@) ;
-	$(call cmd, RAGEL $@, $(RAGEL) $< -o $@)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
