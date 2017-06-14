@@ -1,10 +1,18 @@
-# install directory
-DEST_DIR =	/usr/local/bin
-
 # architecture detection
 OS :=           $(shell uname -s | sed 's/ /_/' | tr A-Z a-z)
 CPU :=          $(shell uname -m | sed 's/ /_/' | tr A-Z a-z)
 ARCH :=         $(OS)_$(CPU)
+
+# directories
+SRC_DIR =       src
+BUILD_DIR =     build
+META_DIR =      meta
+ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
+BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
+LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
+OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
+DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
+DEST_DIR =      /usr/local/bin
 
 # check which c++ compiler to use (default clang). e.g. make prefer_gcc=1
 ifeq ($(CXX),)
@@ -157,16 +165,6 @@ endif
 ifeq ($(OS),linux)
 CPPFLAGS +=     -D_FILE_OFFSET_BITS=64
 endif
-
-# directories
-SRC_DIR =       src
-BUILD_DIR =     build
-META_DIR =      meta
-ASM_DIR =       $(BUILD_DIR)/$(ARCH)/asm
-BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
-LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
-OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
-DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
 
 # helper functions
 asmjit_src_objs =  $(subst $(ASMJIT_SRC_DIR),$(OBJ_DIR),$(subst .cpp,.o,$(1)))
