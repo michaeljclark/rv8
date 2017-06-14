@@ -319,27 +319,27 @@ RV_META_OBJS =  $(call cxx_src_objs, $(RV_META_SRCS))
 RV_META_BIN =   $(BIN_DIR)/rv-meta
 
 # rv-bin
-RV_BIN_SRCS =   $(SRC_DIR)/app/rv-dump.cc \
-                $(SRC_DIR)/app/rv-histogram.cc \
-                $(SRC_DIR)/app/rv-pte.cc \
-                $(SRC_DIR)/app/rv-bin.cc
-RV_BIN_OBJS =   $(call cxx_src_objs, $(RV_BIN_SRCS))
-RV_BIN_BIN =    $(BIN_DIR)/rv-bin
+RV_BIN_SRCS = $(SRC_DIR)/app/rv-dump.cc \
+              $(SRC_DIR)/app/rv-histogram.cc \
+              $(SRC_DIR)/app/rv-pte.cc \
+              $(SRC_DIR)/app/rv-bin.cc
+RV_BIN_OBJS = $(call cxx_src_objs, $(RV_BIN_SRCS))
+RV_BIN_BIN =  $(BIN_DIR)/rv-bin
 
 # rv-jit
-RV_JIT_SRCS =     $(SRC_DIR)/app/rv-jit.cc
-RV_JIT_OBJS =     $(call cxx_src_objs, $(RV_JIT_SRCS))
-RV_JIT_BIN =      $(BIN_DIR)/rv-jit
+RV_JIT_SRCS = $(SRC_DIR)/app/rv-jit.cc
+RV_JIT_OBJS = $(call cxx_src_objs, $(RV_JIT_SRCS))
+RV_JIT_BIN =  $(BIN_DIR)/rv-jit
 
 # rv-sim
-RV_SIM_SRCS =     $(SRC_DIR)/app/rv-sim.cc
-RV_SIM_OBJS =     $(call cxx_src_objs, $(RV_SIM_SRCS))
-RV_SIM_BIN =      $(BIN_DIR)/rv-sim
+RV_SIM_SRCS = $(SRC_DIR)/app/rv-sim.cc
+RV_SIM_OBJS = $(call cxx_src_objs, $(RV_SIM_SRCS))
+RV_SIM_BIN =  $(BIN_DIR)/rv-sim
 
 # rv-sys
-RV_SYS_SRCS =     $(SRC_DIR)/app/rv-sys.cc
-RV_SYS_OBJS =     $(call cxx_src_objs, $(RV_SYS_SRCS))
-RV_SYS_BIN =      $(BIN_DIR)/rv-sys
+RV_SYS_SRCS = $(SRC_DIR)/app/rv-sys.cc
+RV_SYS_OBJS = $(call cxx_src_objs, $(RV_SYS_SRCS))
+RV_SYS_BIN =  $(BIN_DIR)/rv-sys
 
 # test-bits
 TEST_BITS_SRCS = $(SRC_DIR)/app/test-bits.cc
@@ -455,19 +455,23 @@ doc/pdf/riscv-types.pdf: doc/tex/riscv-types.tex ; @mkdir -p doc/pdf
 
 # rom
 
-ROM_MK =        src/rom/rom.mk
+ROM_MK = src/rom/rom.mk
 rom: ; $(MAKE) -f $(ROM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
 
 # sample-asm
 
-ASM_MK =        src/sample/asm.mk
+ASM_MK = src/sample/asm.mk
 sample-asm: ; $(MAKE) -f $(ASM_MK) all ARCH=rv64imafd TARGET=riscv64-unknown-elf
+
+# linux bootstrap
+
+linux: ; ./scripts/bootstrap-linux.sh
 
 # tests
 
-TEST_MK =       src/test/test.mk
-TEST_RV64 =    ARCH=rv64imafdc TARGET=riscv64-unknown-elf
-TEST_RV32 =    ARCH=rv32imafdc TARGET=riscv32-unknown-elf
+TEST_MK = src/test/test.mk
+TEST_RV64 = ARCH=rv64imafdc TARGET=riscv64-unknown-elf
+TEST_RV32 = ARCH=rv32imafdc TARGET=riscv32-unknown-elf
 
 qemu-tests: qemu-tests-rv64
 
@@ -478,10 +482,6 @@ qemu-tests-rv64:
 qemu-tests-rv32:
 	( cd third_party/qemu-tests && make all32 )
 	( cd third_party/qemu-tests && make QEMU=$(TOP_DIR)/$(RV_SIM_BIN) run32 )
-
-linux: ; ./scripts/bootstrap-linux.sh
-
-test-emulate: ; @echo Please use make test-sim
 
 test-build: test-build-rv64
 test-spike: test-spike-rv64
