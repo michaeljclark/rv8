@@ -316,7 +316,6 @@ namespace riscv {
 				if (emitter.emit(dec) == false) break;
 				if ((new_offset = P::inst_exec(dec, pc_offset)) == typename P::ux(-1)) break;
 				P::pc += new_offset;
-				P::cycle++;
 				P::instret++;
 				if (P::trace_length != 0 && (P::instret - trace_instret) >= P::trace_length) break;
 			}
@@ -407,7 +406,6 @@ namespace riscv {
 			{
 				if (P::log) P::print_log(dec, inst);
 				P::pc += new_offset;
-				P::cycle++;
 				P::instret++;
 			} else {
 				P::raise(rv_cause_illegal_instruction, P::pc);
@@ -504,7 +502,6 @@ namespace riscv {
 				{
 					if (P::log & ~(proc_log_hist_pc | proc_log_jit_trap)) P::print_log(dec, inst);
 					P::pc += new_offset;
-					P::cycle++;
 					P::instret++;
 				} else {
 					P::raise(rv_cause_illegal_instruction, P::pc);

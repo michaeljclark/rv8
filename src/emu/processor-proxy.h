@@ -35,11 +35,11 @@ namespace riscv {
 				                                 fcsr_mask, fcsr_mask);
 				                      fenv_clearflags(P::fcsr);
 				                      fenv_setrm((P::fcsr >> 5) & 0x7);                          break;
-				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::cycle, value);      break;
+				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::instret, value);    break;
 				case rv_csr_time:     P::time = cpu_cycle_clock();
 				                      P::get_csr(dec, rv_mode_U, op, csr, P::time, value);       break;
 				case rv_csr_instret:  P::get_csr(dec, rv_mode_U, op, csr, P::instret, value);    break;
-				case rv_csr_cycleh:   P::get_csr_hi(dec, rv_mode_U, op, csr, P::cycle, value);   break;
+				case rv_csr_cycleh:   P::get_csr_hi(dec, rv_mode_U, op, csr, P::instret, value); break;
 				case rv_csr_timeh:    P::get_csr_hi(dec, rv_mode_U, op, csr, P::time, value);    break;
 				case rv_csr_instreth: P::get_csr_hi(dec, rv_mode_U, op, csr, P::instret, value); break;
 				default: return -1; /* illegal instruction */

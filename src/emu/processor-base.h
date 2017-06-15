@@ -181,7 +181,6 @@ namespace riscv {
 		/* Base ISA Control and Status Registers */
 
 		u64 time;                     /* User Time Register */
-		u64 cycle;                    /* User Number of Cycles */
 		u64 instret;                  /* User Number of Instructions Retired  */
 		u32 fcsr;                     /* Floating-Point Control and Status Register */
 
@@ -190,7 +189,7 @@ namespace riscv {
 			running(true), debugging(false), exceptions(true),
 			breakpoint(0), trace_iters(0), trace_length(0),
 			trace_pc(), trace_fn(),
-			time(0), cycle(0), instret(0), fcsr(0) {}
+			time(0), instret(0), fcsr(0) {}
 
 		/* Internal setjmp/longjump causes */
 

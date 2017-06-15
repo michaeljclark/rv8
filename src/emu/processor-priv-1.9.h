@@ -567,11 +567,11 @@ core {
 				                             fcsr_mask, fcsr_mask);
 				                      fenv_clearflags(P::fcsr);
 				                      fenv_setrm((P::fcsr >> 5) & 0x7);                        break;
-				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::cycle, value);    break;
+				case rv_csr_cycle:    P::get_csr(dec, rv_mode_U, op, csr, P::instret, value);  break;
 				case rv_csr_time:     P::time = get_time();
 				                      P::get_csr(dec, rv_mode_U, op, csr, P::time, value);     break;
 				case rv_csr_instret:  P::get_csr(dec, P::mode, op, csr, P::instret, value);    break;
-				case rv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+				case rv_csr_cycleh:   P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case rv_csr_timeh:    P::get_csr_hi(dec, P::mode, op, csr, P::time, value);    break;
 				case rv_csr_instreth: P::get_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case rv_csr_misa:     P::set_csr(dec, P::mode, op, csr, P::misa, value,
@@ -603,9 +603,9 @@ core {
 				case rv_csr_mibound:  P::set_csr(dec, P::mode, op, csr, P::mibound, value);    break;
 				case rv_csr_mdbase:   P::set_csr(dec, P::mode, op, csr, P::mdbase, value);     break;
 				case rv_csr_mdbound:  P::set_csr(dec, P::mode, op, csr, P::mdbound, value);    break;
-				case rv_csr_mcycle:   P::set_csr(dec, rv_mode_U, op, csr, P::cycle, value);    break;
+				case rv_csr_mcycle:   P::set_csr(dec, rv_mode_U, op, csr, P::instret, value);  break;
 				case rv_csr_minstret: P::set_csr(dec, P::mode, op, csr, P::instret, value);    break;
-				case rv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::cycle, value);   break;
+				case rv_csr_mcycleh:  P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case rv_csr_minstreth:P::set_csr_hi(dec, P::mode, op, csr, P::instret, value); break;
 				case rv_csr_sstatus:  P::set_csr(dec, P::mode, op, csr, P::mstatus.xu.val, value,
 				                             sstatus_wmask, sstatus_rmask);                    break;

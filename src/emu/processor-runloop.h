@@ -170,7 +170,6 @@ namespace riscv {
 				{
 					if (P::log) P::print_log(dec, inst);
 					P::pc += new_offset;
-					P::cycle++;
 					P::instret++;
 				} else {
 					P::raise(rv_cause_illegal_instruction, P::pc);
