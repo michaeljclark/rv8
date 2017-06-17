@@ -59,12 +59,6 @@ set(
 )
 
 set(
-	dlmalloc_SOURCES
-	src/mem/dlmalloc.cc
-	src/mem/osmorecore.cc
-)
-
-set(
 	rv_bin_SOURCES
 	src/app/rv-dump.cc
 	src/app/rv-histogram.cc
@@ -107,9 +101,6 @@ include_directories(
 	asmjit/src/asmjit
 )
 
-add_library(dlmalloc ${dlmalloc_SOURCES})
-target_compile_features(dlmalloc PRIVATE cxx_generic_lambdas)
-
 add_library(riscv_asm ${libriscv_asm_SOURCES})
 target_compile_features(riscv_asm PRIVATE cxx_generic_lambdas)
 
@@ -135,7 +126,7 @@ target_link_libraries(rv-meta riscv_model riscv_gen riscv_util)
 
 add_executable(rv-sim ${rv_sim_SOURCES})
 target_compile_features(rv-sim PRIVATE cxx_generic_lambdas)
-target_link_libraries(rv-sim ncurses riscv_asm riscv_elf riscv_util dlmalloc)
+target_link_libraries(rv-sim ncurses riscv_asm riscv_elf riscv_util)
 
 add_executable(rv-sys ${rv_sys_SOURCES})
 target_compile_features(rv-sys PRIVATE cxx_generic_lambdas)
@@ -143,4 +134,4 @@ target_link_libraries(rv-sys ncurses riscv_asm riscv_elf riscv_util)
 
 add_executable(rv-jit ${rv_jit_SOURCES})
 target_compile_features(rv-jit PRIVATE cxx_generic_lambdas)
-target_link_libraries(rv-jit riscv_asm riscv_elf riscv_util asmjit dlmalloc)
+target_link_libraries(rv-jit riscv_asm riscv_elf riscv_util asmjit)

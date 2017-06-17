@@ -12,7 +12,7 @@ BIN_DIR =       $(BUILD_DIR)/$(ARCH)/bin
 LIB_DIR =       $(BUILD_DIR)/$(ARCH)/lib
 OBJ_DIR =       $(BUILD_DIR)/$(ARCH)/obj
 DEP_DIR =       $(BUILD_DIR)/$(ARCH)/dep
-DEST_DIR =      /usr/local/bin
+DEST_DIR =      /usr/local
 
 # check which c++ compiler to use (default clang). e.g. make prefer_gcc=1
 ifeq ($(CXX),)
@@ -73,8 +73,8 @@ CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
 CXXFLAGS =      -std=c++1y -fno-rtti -fno-exceptions $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
-MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x10000000000
-LINUX_LDFLAGS = -Wl,--section-start=.text=0x40000000
+MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000
+LINUX_LDFLAGS = -Wl,-Ttext-segment=0x7f000000
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
@@ -196,12 +196,6 @@ RV_META_DATA =  $(META_DIR)/codecs \
                 $(META_DIR)/registers \
                 $(META_DIR)/types
 
-# libdlmalloc
-DLMALLOC_SRCS = $(SRC_DIR)/mem/dlmalloc.cc \
-                $(SRC_DIR)/mem/osmorecore.cc
-DLMALLOC_OBJS = $(call cxx_src_objs, $(DLMALLOC_SRCS))
-DLMALLOC_LIB =  $(LIB_DIR)/libdlmalloc.a
-
 # libriscv_util
 RV_UTIL_SRCS =  $(SRC_DIR)/util/base64.cc \
                 $(SRC_DIR)/util/bigint.cc \
@@ -308,11 +302,6 @@ RV_ASM_SRCS =   $(SRC_DIR)/asm/assembler.cc \
 RV_ASM_OBJS =   $(call cxx_src_objs, $(RV_ASM_SRCS))
 RV_ASM_LIB =    $(LIB_DIR)/libriscv_asm.a
 
-# fix-macho-zeropage
-FIX_MACHO_SRCS = $(SRC_DIR)/tool/fix-macho-zeropage.c
-FIX_MACHO_OBJS = $(call cc_src_objs, $(FIX_MACHO_SRCS))
-FIX_MACHO_BIN =  $(BIN_DIR)/fix-macho-zeropage
-
 # rv-meta
 RV_META_SRCS =  $(SRC_DIR)/app/rv-meta.cc
 RV_META_OBJS =  $(call cxx_src_objs, $(RV_META_SRCS))
@@ -386,6 +375,25 @@ TEST_RAND_SRCS = $(SRC_DIR)/app/test-rand.cc
 TEST_RAND_OBJS = $(call cxx_src_objs, $(TEST_RAND_SRCS))
 TEST_RAND_BIN =  $(BIN_DIR)/test-rand
 
+# mmap-linux
+MMAP_LINUX_LDFLAGS = \
+	-shared -fPIC \
+	-Wl,-soname,mmap-linux.so \
+	-Wl,-Ttext-segment=0x7e000000 \
+	-Wl,-rpath,$(DEST_DIR)/lib/mmap-linux.so
+MMAP_LINUX_SRCS =   $(SRC_DIR)/mem/mmap-linux.c
+MMAP_LINUX_OBJS =   $(call cc_src_objs, $(MMAP_LINUX_SRCS))
+MMAP_LINUX_LIB =    $(LIB_DIR)/mmap-linux.so
+
+# mmap-linux
+MMAP_MACOS_LDFLAGS = \
+	-dynamiclib -fPIC \
+	-install_name $(DEST_DIR)/lib/mmap-macos.dylib \
+	-image_base 0x7ffe80000000
+MMAP_MACOS_SRCS =   $(SRC_DIR)/mem/mmap-macos.c
+MMAP_MACOS_OBJS =   $(call cc_src_objs, $(MMAP_MACOS_SRCS))
+MMAP_MACOS_LIB =    $(LIB_DIR)/mmap-macos.dylib
+
 # source and binaries
 ALL_CXX_SRCS = $(RV_ASM_SRCS) \
            $(RV_ELF_SRCS) \
@@ -425,12 +433,6 @@ BINARIES = $(RV_META_BIN) \
            $(TEST_RAND_BIN)
 
 ASSEMBLY = $(TEST_CC_ASM)
-
-ifeq ($(ARCH),darwin_x86_64)
-ALL_CC_SRCS += $(FIX_MACHO_SRCS)
-BINARIES += $(FIX_MACHO_BIN)
-endif
-
 
 # build rules
 
@@ -506,11 +508,12 @@ danger: ; @echo Please do not make danger
 # install
 
 install:
-	install $(RV_META_BIN) $(DEST_DIR)/rv-meta
-	install $(RV_BIN_BIN) $(DEST_DIR)/rv-bin
-	install $(RV_SIM_BIN) $(DEST_DIR)/rv-sim
-	install $(RV_SYS_BIN) $(DEST_DIR)/rv-sys
-	install $(RV_JIT_BIN) $(DEST_DIR)/rv-jit
+	install $(RV_META_BIN) $(DEST_DIR)/bin/rv-meta
+	install $(RV_BIN_BIN) $(DEST_DIR)/bin/rv-bin
+	install $(RV_SIM_BIN) $(DEST_DIR)/bin/rv-sim
+	install $(RV_SYS_BIN) $(DEST_DIR)/bin/rv-sys
+	install $(RV_JIT_BIN) $(DEST_DIR)/bin/rv-jit
+	install $(MMAP_LIB) $(DEST_DIR)/lib/
 
 # metadata targets
 
@@ -595,17 +598,31 @@ $(RV_UTIL_LIB): $(RV_UTIL_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
-$(DLMALLOC_LIB): $(DLMALLOC_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, AR $@, $(AR) cr $@ $^)
-
-# binary targets
+# mmap interception
 
 ifeq ($(ARCH),darwin_x86_64)
-$(FIX_MACHO_BIN): $(FIX_MACHO_OBJS)
-	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
+MMAP_LIB = $(MMAP_MACOS_LIB)
+MMAP_FLAGS = -rpath $(DEST_DIR)/lib
 endif
+
+ifeq ($(ARCH),linux_x86_64)
+MMAP_LIB = $(MMAP_LINUX_LIB)
+MMAP_FLAGS = -Wl,-rpath,$(DEST_DIR)/lib
+endif
+
+$(MMAP_MACOS_OBJS): CFLAGS += -fPIC
+
+$(MMAP_LINUX_OBJS): CFLAGS += -fPIC
+
+$(MMAP_MACOS_LIB): $(MMAP_MACOS_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, DYLIB $@, $(CC) $(MMAP_MACOS_LDFLAGS) -o $@ $^)
+
+$(MMAP_LINUX_LIB): $(MMAP_LINUX_OBJS)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, SOLIB $@, $(CC) $(MMAP_LINUX_LDFLAGS) -o $@ $^ -ldl)
+
+# binary targets
 
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
@@ -615,13 +632,13 @@ $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
-$(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(DLMALLOC_LIB)
+$(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
-$(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(DLMALLOC_LIB)
+$(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(MMAP_LIB)
 	@mkdir -p $(shell dirname $@) ;
-	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
+	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
 $(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;

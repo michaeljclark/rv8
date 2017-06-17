@@ -30,10 +30,6 @@
 #include <atomic>
 #include <type_traits>
 
-#if defined(__APPLE__)
-#include "libc_override_osx.h"
-#endif
-
 #include "dense_hash_map"
 
 #include <poll.h>
@@ -432,14 +428,6 @@ struct rv_jit
 
 
 /* program main */
-
-#if defined(__APPLE__)
-static void __attribute__ ((constructor)) premain()
-{
-	ReplaceSystemAlloc();
-	printf("rv-jit v0.0-alpha\n");
-}
-#endif
 
 int main(int argc, const char *argv[], const char* envp[])
 {
