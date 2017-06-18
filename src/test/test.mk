@@ -62,6 +62,10 @@ PROGRAMS = \
 	$(BIN_DIR)/test-dhrystone \
 	$(BIN_DIR)/test-loop-1 \
 	$(BIN_DIR)/test-loop-2 \
+	$(BIN_DIR)/test-fusion-elision \
+	$(BIN_DIR)/test-fusion-macro \
+	$(BIN_DIR)/test-fusion-indirect \
+	$(BIN_DIR)/test-fusion-vanilla \
 	$(BIN_DIR)/test-open \
 	$(BIN_DIR)/test-malloc \
 	$(BIN_DIR)/test-miniz \
@@ -153,6 +157,18 @@ $(BIN_DIR)/test-loop-1: $(OBJ_DIR)/test-loop-1.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-loop-2.o: $(SRC_DIR)/test-loop-2.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-loop-2: $(OBJ_DIR)/test-loop-2.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-fusion-vanilla.o: $(SRC_DIR)/test-fusion.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-fusion-vanilla: $(OBJ_DIR)/test-fusion-vanilla.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-fusion-macro.o: $(SRC_DIR)/test-fusion.c ; $(CC) -DMACRO_FUSION $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-fusion-macro: $(OBJ_DIR)/test-fusion-macro.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-fusion-elision.o: $(SRC_DIR)/test-fusion.c ; $(CC) -DMACRO_FUSION_ELISION $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-fusion-elision: $(OBJ_DIR)/test-fusion-elision.o ; $(CC) $(CFLAGS) $^ -o $@
+
+$(OBJ_DIR)/test-fusion-indirect.o: $(SRC_DIR)/test-fusion.c ; $(CC) -DMACRO_INDIRECT $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-fusion-indirect: $(OBJ_DIR)/test-fusion-indirect.o ; $(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/test-open.o: $(SRC_DIR)/test-open.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-open: $(OBJ_DIR)/test-open.o ; $(CC) $(CFLAGS) $^ -o $@
