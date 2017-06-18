@@ -3688,7 +3688,7 @@ namespace riscv {
 			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4 /* auipc */;
 			callstack.push_back(link_addr);
 
-			if (dec.rs1 == rv_ireg_zero) {
+			if (dec.rd == rv_ireg_ra) {
 				// nop
 			} else if (rs1x > 0) {
 				as.mov(x86::gpq(rs1x), Imm(term_pc));
@@ -3697,9 +3697,7 @@ namespace riscv {
 				as.mov(rbp_reg_q(dec.rs1), x86::rax);
 			}
 
-			if (dec.rd == rv_ireg_zero) {
-				// nop
-			} else if (rdx > 0) {
+			if (rdx > 0) {
 				as.mov(x86::gpq(rdx), Imm(link_addr));
 			} else {
 				as.mov(x86::rax, Imm(link_addr));
