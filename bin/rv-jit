@@ -1,0 +1,6 @@
+#!/bin/sh
+OS=$(uname -s | sed 's/ /_/' | tr A-Z a-z)
+CPU=$(uname -m | sed 's/ /_/' | tr A-Z a-z)
+test "$OS" = "darwin" &&  export DYLD_LIBRARY_PATH=build/${OS}_${CPU}/lib
+test "$OS" = "linux" &&  export LD_LIBRARY_PATH=build/${OS}_${CPU}/lib
+exec build/${OS}_${CPU}/bin/rv-jit
