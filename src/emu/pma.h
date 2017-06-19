@@ -129,48 +129,56 @@ namespace riscv {
 		pma_type_main            = 1U<<1,  /* main memory region */
 		pma_type_io              = 1U<<2,  /* IO memory region */
 
+		/* supported memory range protection */
+		pma_prot_read            = 1U<<3,  /* region is readable */
+		pma_prot_write           = 1U<<4,  /* region is writable */
+		pma_prot_execute         = 1U<<5,  /* region is executable */
+
 		/* cache read enable (default disabled) */
-		pma_cache_read           = 1U<<3,  /* cache reads enabled */
+		pma_cache_read           = 1U<<6,  /* cache reads enabled */
 
 		/* cache eviction enable (default no eviction) */
-		pma_cache_eviction       = 1U<<4,  /* implementation defined eviction policy */
+		pma_cache_eviction       = 1U<<7,  /* implementation defined eviction policy */
 
-		/* supported memory range cache write modes (default no writes) */
-		pma_cache_write_back     = 1U<<5,  /* write back caching (normal cache policy) */
-		pma_cache_write_through  = 1U<<6,  /* write through cache to backing store */
-		pma_cache_write_combine  = 1U<<7,  /* write accumulate until fence or cache line is full */
-		pma_cache_write_around   = 1U<<8,  /* uncacheable, write directly to backing store */
+		/* supported memory range cache write modes (default write around) */
+		pma_cache_write_back     = 1U<<8,  /* write back caching (normal cache policy) */
+		pma_cache_write_through  = 1U<<9,  /* write through cache to backing store */
+		pma_cache_write_combine  = 1U<<10, /* write accumulate until fence or cache line is full */
 
 		/* supported memory range cache allocation modes (default no allocation) */
-		pma_cache_alloc_read     = 1U<<9,  /* allocate cache on reads */
-		pma_cache_alloc_write    = 1U<<10, /* allocate cache on writes */
+		pma_cache_alloc_read     = 1U<<11, /* allocate cache on reads */
+		pma_cache_alloc_write    = 1U<<12, /* allocate cache on writes */
 
 		/* supported memory ordering */
-		pma_order_channel_0      = 1U<<11, /* hart point to point strong ordering */
-		pma_order_channel_1      = 1U<<12, /* hart global strong ordering */
+		pma_order_channel_0      = 1U<<13, /* hart point to point strong ordering */
+		pma_order_channel_1      = 1U<<14, /* hart global strong ordering */
 
 		/* supported memory range coherence policies (not coherent, not private is a type) */
-		pma_policy_coherent      = 1U<<13, /* hardware managed coherence */
-		pma_policy_private       = 1U<<14, /* non shared private */
-
-		/* support memory range atomic operations (not present indicates no amo support) */
-		pma_io_amo_swap          = 1U<<15, /* amoswap */
-		pma_io_amo_logical       = 1U<<16, /* above + amoand, amoor, amoxor */
-		pma_io_amo_arithmetic    = 1U<<17, /* above + amoadd, amomin, amomax, amominu, amomaxu */
-
-		/* supported memory range atomic operation sizes (amo for aligend main memory is implied) */
-		pma_io_amo_size_4        = 1U<<18, /* amo<>.w */
-		pma_io_amo_size_8        = 1U<<19, /* amo<>.d */
-		pma_io_amo_size_16       = 1U<<20, /* amo<>.q */
+		pma_policy_coherent      = 1U<<15, /* hardware managed coherence */
+		pma_policy_private       = 1U<<16, /* non shared private */
 
 		/* supported memory range io idempotency (N/A main memory) */
-		pma_io_idempotent_read   = 1U<<21, /* reads are idempotent (allow speculative or redundant reads) */
-		pma_io_idempotent_write  = 1U<<22, /* writes are idempotent (allow speculative or redundant writes) */
+		pma_io_idempotent_read   = 1U<<17, /* reads are idempotent (allow speculative or redundant reads) */
+		pma_io_idempotent_write  = 1U<<18, /* writes are idempotent (allow speculative or redundant writes) */
 
-		/* supported memory range protection */
-		pma_prot_read            = 1U<<23, /* region is readable */
-		pma_prot_write           = 1U<<24, /* region is writable */
-		pma_prot_execute         = 1U<<25, /* region is executable */
+		/* support memory range atomic operations (not present indicates no amo support) */
+		pma_io_amo_swap          = 1U<<19, /* amoswap */
+		pma_io_amo_logical       = 1U<<20, /* above + amoand, amoor, amoxor */
+		pma_io_amo_arithmetic    = 1U<<21, /* above + amoadd, amomin, amomax, amominu, amomaxu */
+
+		/* supported memory range atomic operation sizes (amo for aligend main memory is implied) */
+		pma_io_amo_size_4        = 1U<<22, /* amo<>.w */
+		pma_io_amo_size_8        = 1U<<23, /* amo<>.d */
+		pma_io_amo_size_16       = 1U<<24, /* amo<>.q */
+
+		/* supported IO sizes for the backing store (memory controller config) */
+		pma_io_size_1            = 1U<<25, /* b - 8-bits */
+		pma_io_size_2            = 1U<<26, /* h - 16-bits */
+		pma_io_size_4            = 1U<<27, /* w - 32-bits */
+		pma_io_size_8            = 1U<<28, /* w - 64-bits */
+		pma_io_size_16           = 1U<<29, /* w - 128-bits */
+		pma_io_size_32           = 1U<<30, /* w - 256-bits */
+		pma_io_size_64           = 1U<<31, /* w - 512-bits */
 	};
 
 }
