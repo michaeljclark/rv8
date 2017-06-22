@@ -46,9 +46,9 @@ The future goals of the rv8 project are:
   - RV64IMAFDC
   - Privilged ISA 1.9.1
 - Host
-  - Linux x86-64 _(stable)_
-  - macOS 10.11 x86-64 _(stable)_
-  - FreeBSD 11 x86-64 _(alpha)_
+  - Linux (Debian 9.0 x86-64, Ubuntu 16.04 x86-64, Fedora 25 x86-64) _(stable)_
+  - macOS 10.11 (Sierra x86-64) _(stable)_
+  - FreeBSD 11 (x86-64) _(alpha)_
 
 
 ## Getting Started
@@ -86,9 +86,11 @@ $ rv-jit build/riscv64-unknown-elf/bin/test-dhrystone
 ## Build Dependencies
 
 - gmake
-- gcc-5.4 or clang-3.4
+- gcc-5.4 or clang-3.4 (Linux minimum)
+- gcc-6.3 or clang-3.8 (Linux recommended)
 - RISC-V GNU Toolchain
-- `RISCV` environment variable
+- RISCV environment variable
+
 
 ### Ubuntu 14.04LTS Dependencies
 

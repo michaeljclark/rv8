@@ -74,12 +74,13 @@ CXXFLAGS =      -std=c++1y -fno-rtti -fno-exceptions $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000
-LINUX_LDFLAGS = -Wl,-Ttext-segment=0x7f000000
+LINUX_LDFLAGS = -Wl,-Ttext-segment=0x7ffe00000000
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 PTH_LDFLAGS_2 = -lpthread
 RT_LDFLAGS =    -lrt
+PIE_FLAGS =     -pie -fPIE
 
 # check if we can use libc++
 ifeq ($(call check_cxx_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
@@ -160,6 +161,12 @@ endif
 # check if we can use realtime clock library
 ifeq ($(call check_cxx_opt,$(CXX),cc,$(RT_LDFLAGS)), 0)
 LDFLAGS +=      $(RT_LDFLAGS)
+endif
+
+# check if we can link PIE
+ifeq ($(call check_ld_opt,$(CXX),cc,-Werror $(PIE_FLAGS)), 0)
+CXXFLAGS +=     $(PIE_FLAGS)
+LDFLAGS +=      $(PIE_FLAGS)
 endif
 
 # check if we can use libcxx
@@ -350,6 +357,11 @@ TEST_JIT_SRCS = $(SRC_DIR)/app/test-jit.cc
 TEST_JIT_OBJS = $(call cxx_src_objs, $(TEST_JIT_SRCS))
 TEST_JIT_BIN =  $(BIN_DIR)/test-jit
 
+# test-mmap
+TEST_MMAP_SRCS = $(SRC_DIR)/app/test-mmap.cc
+TEST_MMAP_OBJS = $(call cxx_src_objs, $(TEST_MMAP_SRCS))
+TEST_MMAP_BIN =  $(BIN_DIR)/test-mmap
+
 # test-mmu
 TEST_MMU_SRCS = $(SRC_DIR)/app/test-mmu.cc
 TEST_MMU_OBJS = $(call cxx_src_objs, $(TEST_MMU_SRCS))
@@ -379,13 +391,13 @@ TEST_RAND_BIN =  $(BIN_DIR)/test-rand
 MMAP_LINUX_LDFLAGS = \
 	-shared -fPIC \
 	-Wl,-soname,mmap-linux.so \
-	-Wl,-Ttext-segment=0x7e000000 \
+	-Wl,-Ttext-segment=0x7ffe80000000 \
 	-Wl,-rpath,$(DEST_DIR)/lib/mmap-linux.so
 MMAP_LINUX_SRCS =   $(SRC_DIR)/mem/mmap-linux.c
 MMAP_LINUX_OBJS =   $(call cc_src_objs, $(MMAP_LINUX_SRCS))
 MMAP_LINUX_LIB =    $(LIB_DIR)/mmap-linux.so
 
-# mmap-linux
+# mmap-macos
 MMAP_MACOS_LDFLAGS = \
 	-dynamiclib -fPIC \
 	-install_name $(DEST_DIR)/lib/mmap-macos.dylib \
@@ -411,6 +423,7 @@ ALL_CXX_SRCS = $(RV_ASM_SRCS) \
            $(TEST_ENCODER_SRCS) \
            $(TEST_ENDIAN_SRCS) \
            $(TEST_JIT_SRCS) \
+           $(TEST_MMAP_SRCS) \
            $(TEST_MMU_SRCS) \
            $(TEST_MUL_SRCS) \
            $(TEST_OPERATORS_SRCS) \
@@ -426,6 +439,7 @@ BINARIES = $(RV_META_BIN) \
            $(TEST_ENCODER_BIN) \
            $(TEST_ENDIAN_BIN) \
            $(TEST_JIT_BIN) \
+           $(TEST_MMAP_BIN) \
            $(TEST_MMU_BIN) \
            $(TEST_MUL_BIN) \
            $(TEST_OPERATORS_BIN) \
@@ -659,6 +673,10 @@ $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 $(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
+
+$(TEST_MMAP_BIN): $(TEST_MMAP_OBJS) $(MMAP_LIB)
+	@mkdir -p $(shell dirname $@) ;
+	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
 $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
 	@mkdir -p $(shell dirname $@) ;

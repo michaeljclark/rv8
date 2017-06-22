@@ -26,16 +26,15 @@ namespace riscv {
 	{
 		/*
 		 * Define top of emulator address space, beginning of emulator text.
-		 * Note: due to memory model limitations the executable is linked below 2GB.
 		 *
 		 * MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000
-		 * LINUX_LDFLAGS = -Wl,-Ttext-segment=0x7e000000
+		 * LINUX_LDFLAGS = -pie -fPIE -Wl,-Ttext-segment=0x7ffe00000000
 		 */
 
 		typedef std::shared_ptr<MEMORY> memory_type;
 
 		enum : addr_t {
-			memory_top = 0x40000000
+			memory_top = 0x80000000
 		};
 
 		memory_type mem;
