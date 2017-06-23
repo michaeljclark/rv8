@@ -74,13 +74,13 @@ CXXFLAGS =      -std=c++1y -fno-rtti -fno-exceptions $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
 MACOS_LDFLAGS = -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000
-LINUX_LDFLAGS = -Wl,-Ttext-segment=0x7ffe00000000
+LINUX_LDFLAGS = -pie -Wl,-Ttext-segment=0x7ffe00000000
 LIBCXX_FLAGS =  -stdlib=libcxx
 PTH_CPPFLAGS =  -pthread
 PTH_LDFLAGS_1 = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 PTH_LDFLAGS_2 = -lpthread
 RT_LDFLAGS =    -lrt
-PIE_FLAGS =     -pie -fPIE
+PIE_FLAGS =     -fPIE
 
 # check if we can use libc++
 ifeq ($(call check_cxx_opt,$(CXX),cc,$(LIBCPP_FLAGS)), 0)
