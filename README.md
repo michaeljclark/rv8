@@ -47,8 +47,8 @@ The future goals of the rv8 project are:
   - Privilged ISA 1.9.1
 - Host
   - Linux (Debian 9.0 x86-64, Ubuntu 16.04 x86-64, Fedora 25 x86-64) _(stable)_
-  - macOS 10.11 (Sierra x86-64) _(stable)_
-  - FreeBSD 11 (x86-64) _(alpha)_
+  - macOS (Sierra 10.11 x86-64) _(stable)_
+  - FreeBSD (11 x86-64) _(alpha)_
 
 
 ## Getting Started
