@@ -3746,6 +3746,22 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_zext(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\tzext\t%s", dec.pc, rv_ireg_name_sym[dec.rd]);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd);
+
+			if (rdx > 0) {
+				as.movzx(x86::gpq(rdx), x86::gpd(rdx));
+			} else {
+				as.mov(x86::eax, rbp_reg_d(dec.rd));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
+			}
+
+			return true;
+		}
+
 		bool emit(decode_type &dec)
 		{
 			auto li = labels.find(dec.pc);
@@ -3820,6 +3836,7 @@ namespace riscv {
 				case rv_op_jalr: return emit_jalr(dec);
 				case jit_op_la: return emit_la(dec);
 				case jit_op_call: return emit_call(dec);
+				case jit_op_zext: return emit_zext(dec);
 			}
 			return false;
 		}
