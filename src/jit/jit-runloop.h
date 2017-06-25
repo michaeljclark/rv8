@@ -38,9 +38,10 @@ namespace riscv {
 		};
 
 		JitRuntime rt;
-		google::dense_hash_map<addr_t,TraceFunc> trace_cache;
-		google::dense_hash_map<addr_t,TraceFunc> trace_cache_skip_prolog;
-		google::dense_hash_map<addr_t,TraceFunc> audit_trace_cache;
+		google::dense_hash_map<addr_t,TraceFunc> trace_cache_prolog;
+		google::dense_hash_map<addr_t,TraceFunc> trace_cache_entry;
+		google::dense_hash_map<addr_t,TraceFunc> audit_trace_cache_prolog;
+		std::map<addr_t,std::vector<intptr_t>> jmp_fixup_addrs;
 		std::shared_ptr<debug_cli<P>> cli;
 		rv_inst_cache_ent inst_cache[inst_cache_size];
 		TraceLookup lookup_trace_fast;
@@ -52,12 +53,12 @@ namespace riscv {
 			.sb = mmu_sb, .sh = mmu_sh, .sw = mmu_sw, .sd = mmu_sd
 		}
 		{
-			trace_cache.set_empty_key(0);
-			trace_cache.set_deleted_key(-1);
-			trace_cache_skip_prolog.set_empty_key(0);
-			trace_cache_skip_prolog.set_deleted_key(-1);
-			audit_trace_cache.set_empty_key(0);
-			audit_trace_cache.set_deleted_key(-1);
+			trace_cache_prolog.set_empty_key(0);
+			trace_cache_prolog.set_deleted_key(-1);
+			trace_cache_entry.set_empty_key(0);
+			trace_cache_entry.set_deleted_key(-1);
+			audit_trace_cache_prolog.set_empty_key(0);
+			audit_trace_cache_prolog.set_deleted_key(-1);
 		}
 
 		virtual bool handleError(Error err, const char* message, CodeEmitter* origin)
@@ -179,27 +180,27 @@ namespace riscv {
 		{
 			switch(dec.op) {
 				case rv_op_fence_i:
-					clear_trace_cache();
+					clear_trace_cache_prolog();
 					return pc_offset;
 				default: break;
 			}
 			return -1; /* illegal instruction */
 		}
 
-		void clear_trace_cache()
+		void clear_trace_cache_prolog()
 		{
-			for (auto ent : trace_cache) {
+			for (auto ent : trace_cache_prolog) {
 				rt.release(ent.second);
 			}
-			trace_cache.clear_no_resize();
-			trace_cache_skip_prolog.clear_no_resize();
+			trace_cache_prolog.clear_no_resize();
+			trace_cache_entry.clear_no_resize();
 		}
 
 		static uintptr_t lookup_trace(uintptr_t pc)
 		{
 			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
-			auto ti = proc->trace_cache_skip_prolog.find(pc);
-			uintptr_t fn = func_address(ti != proc->trace_cache_skip_prolog.end() ? ti->second : nullptr);
+			auto ti = proc->trace_cache_entry.find(pc);
+			uintptr_t fn = func_address(ti != proc->trace_cache_entry.end() ? ti->second : nullptr);
 			return fn;
 		}
 
@@ -259,22 +260,52 @@ namespace riscv {
 			proc->mmu.template store<P,u64>(*proc, addr, val);
 		}
 
+		void jit_apply_fixups(jit_emitter &emitter, addr_t pc, intptr_t entry_addr)
+		{
+			auto jfa = jmp_fixup_addrs.find(pc);
+			if (jfa != jmp_fixup_addrs.end()) {
+				for (auto fixup_addr : jfa->second) {
+					*(int*)(fixup_addr - 4) = (int)(entry_addr - fixup_addr);
+				}
+				jmp_fixup_addrs.erase(jfa);
+			}
+		}
+
+		void jit_stash_fixups(jit_emitter &emitter, CodeHolder &code, intptr_t prolog_addr)
+		{
+			for (auto &jfl : emitter.jmp_fixup_labels) {
+				addr_t fixup_pc = jfl.first;
+				for (auto &label : jfl.second) {
+					auto jfa = jmp_fixup_addrs.find(fixup_pc);
+					if (jfa == jmp_fixup_addrs.end()) {
+						jfa = jmp_fixup_addrs.insert(jmp_fixup_addrs.end(),
+							std::pair<addr_t,std::vector<intptr_t>>(fixup_pc, std::vector<intptr_t>()));
+					}
+					jfa->second.push_back(prolog_addr + code.getLabelOffset(label));
+				}
+			}
+		}
+
 		void jit_cache(jit_emitter &emitter, CodeHolder &code, addr_t pc)
 		{
 			TraceFunc fn = nullptr;
 			Error err = rt.add(&fn, &code);
 			if (!err) {
-				union { intptr_t u; TraceFunc fn; } r = { .fn = fn };
-				r.u += code.getLabelOffset(emitter.start);
-				trace_cache[pc] = fn;
-				trace_cache_skip_prolog[pc] = r.fn;
+				union { intptr_t i; TraceFunc fn; } r = { .fn = fn };
+				intptr_t prolog_addr = r.i;
+				r.i += code.getLabelOffset(emitter.start);
+				intptr_t entry_addr = r.i;
+				trace_cache_prolog[pc] = fn;
+				trace_cache_entry[pc] = r.fn;
+				jit_apply_fixups(emitter, pc, entry_addr);
+				jit_stash_fixups(emitter, code, prolog_addr);
 			}
 		}
 
 		bool jit_exec(P &proc, addr_t pc)
 		{
-			auto ti = trace_cache.find(pc);
-			if (ti != trace_cache.end()) {
+			auto ti = trace_cache_prolog.find(pc);
+			if (ti != trace_cache_prolog.end()) {
 				ti->second(static_cast<typename P::processor_type *>(&proc));
 				return true;
 			}
@@ -369,8 +400,8 @@ namespace riscv {
 			addr_t save_pc = dec.pc = P::pc;
 
 			/* jit instruction */
-			auto ti = audit_trace_cache.find(P::pc);
-			if (ti != audit_trace_cache.end()) {
+			auto ti = audit_trace_cache_prolog.find(P::pc);
+			if (ti != audit_trace_cache_prolog.end()) {
 				copy_reg(&pre_jit, this);
 				ti->second(static_cast<typename P::processor_type *>(this));
 				copy_reg(&post_jit, this);
@@ -394,7 +425,7 @@ namespace riscv {
 						copy_reg(&post_jit, this);
 						copy_reg(this, &pre_jit);
 						audited = true;
-						audit_trace_cache[P::pc] = fn;
+						audit_trace_cache_prolog[P::pc] = fn;
 					}
 				}
 			}

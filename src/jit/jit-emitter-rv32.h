@@ -24,6 +24,8 @@ namespace riscv {
 		TraceLookup lookup_trace_slow;
 		TraceLookup lookup_trace_fast;
 		std::map<addr_t,Label> labels;
+		std::map<addr_t,Label> jmp_tramp_labels;
+		std::map<addr_t,std::vector<Label>> jmp_fixup_labels;
 		std::vector<addr_t> callstack;
 		u32 term_pc;
 		bool use_mmu;
@@ -198,6 +200,13 @@ namespace riscv {
 			as.pop(x86::r13);
 			as.pop(x86::r12);
 			as.ret();
+
+
+			for (auto &jtl : jmp_tramp_labels) {
+				as.bind(jtl.second);
+				emit_pc(jtl.first);
+				as.jmp(Imm(func_address(lookup_trace_fast)));
+			}
 		}
 
 		TraceLookup create_trace_lookup(JitRuntime &rt)
@@ -1862,6 +1871,46 @@ namespace riscv {
 			}
 		}
 
+		inline auto create_jump_tramp(addr_t pc)
+		{
+			auto jtl = jmp_tramp_labels.find(pc);
+			if (jtl == jmp_tramp_labels.end()) {
+				jtl = jmp_tramp_labels.insert(jmp_tramp_labels.end(),
+					std::pair<addr_t,Label>(pc, as.newLabel()));
+			}
+			return jtl;
+		}
+
+		inline auto create_jump_fixup(addr_t pc)
+		{
+			auto jfl = jmp_fixup_labels.find(pc);
+			if (jfl == jmp_fixup_labels.end()) {
+				jfl = jmp_fixup_labels.insert(jmp_fixup_labels.end(),
+					std::pair<addr_t,std::vector<Label>>(pc, std::vector<Label>()));
+			}
+			return jfl;
+		}
+
+		void emit_jump_fixup(addr_t pc)
+		{
+			auto jtl = create_jump_tramp(pc);
+			auto jfl = create_jump_fixup(pc);
+			as.jmp(jtl->second);
+			Label label = as.newLabel();
+			as.bind(label);
+			jfl->second.push_back(label);
+		}
+
+		void emit_branch_fixup(x86::Cond bf, addr_t pc)
+		{
+			auto jtl = create_jump_tramp(pc);
+			auto jfl = create_jump_fixup(pc);
+			as.j(bf, jtl->second);
+			Label label = as.newLabel();
+			as.bind(label);
+			jfl->second.push_back(label);
+		}
+
 		bool emit_branch(decode_type &dec, bool cond, x86::Cond bf, x86::Cond ibf)
 		{
 			addr_t branch_pc = dec.pc + dec.imm;
@@ -1871,7 +1920,6 @@ namespace riscv {
 
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			emit_cmp(dec);
-			term_pc = 0;
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
 				as.j(bf, branch_i->second);
@@ -1883,9 +1931,9 @@ namespace riscv {
 				if (cont_addr) {
 					as.jmp(Imm(cont_addr));
 				} else {
-					emit_pc(cont_pc);
-					as.jmp(Imm(func_address(lookup_trace_fast)));
+					emit_jump_fixup(cont_pc);
 				}
+				term_pc = 0;
 			}
 			else if (!cond && cont_i != labels.end()) {
 				as.j(ibf, cont_i->second);
@@ -1893,32 +1941,24 @@ namespace riscv {
 				if (branch_addr) {
 					as.jmp(Imm(branch_addr));
 				} else {
-					emit_pc(branch_pc);
-					as.jmp(Imm(func_address(lookup_trace_fast)));
+					emit_jump_fixup(branch_pc);
 				}
+				term_pc = 0;
 			} else if (cond) {
-				Label l = as.newLabel();
-				as.j(bf, l);
 				uintptr_t cont_addr = lookup_trace_slow(cont_pc);
 				if (cont_addr) {
-					as.jmp(Imm(cont_addr));
+					as.j(ibf, Imm(cont_addr));
 				} else {
-					emit_pc(cont_pc);
-					as.jmp(Imm(func_address(lookup_trace_fast)));
+					emit_branch_fixup(ibf, cont_pc);
 				}
-				as.bind(l);
 				term_pc = branch_pc;
 			} else {
-				Label l = as.newLabel();
-				as.j(ibf, l);
 				uintptr_t branch_addr = lookup_trace_slow(branch_pc);
 				if (branch_addr) {
-					as.jmp(Imm(branch_addr));
+					as.j(bf, Imm(branch_addr));
 				} else {
-					emit_pc(branch_pc);
-					as.jmp(Imm(func_address(lookup_trace_fast)));
+					emit_branch_fixup(bf, branch_pc);
 				}
-				as.bind(l);
 				term_pc = cont_pc;
 			}
 			return true;
