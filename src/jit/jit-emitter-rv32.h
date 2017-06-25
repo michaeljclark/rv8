@@ -2620,9 +2620,9 @@ namespace riscv {
 			return true;
 		}
 
-		bool emit_zext(decode_type &dec)
+		bool emit_zextw(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tzext\t%s", dec.pc, rv_ireg_name_sym[dec.rd]);
+			log_trace("\t# 0x%016llx\tzext.w\t%s", dec.pc, rv_ireg_name_sym[dec.rd]);
 			term_pc = dec.pc + dec.sz;
 
 			return true;
@@ -2685,7 +2685,7 @@ namespace riscv {
 				case rv_op_jalr: return emit_jalr(dec);
 				case jit_op_la: return emit_la(dec);
 				case jit_op_call: return emit_call(dec);
-				case jit_op_zext: return emit_zext(dec);
+				case jit_op_zextw: return emit_zextw(dec);
 			}
 			return false;
 		}

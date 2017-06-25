@@ -15,7 +15,7 @@ namespace riscv {
 		enum match_state {
 			match_state_none,
 			match_state_auipc,
-			match_state_zext
+			match_state_zextw
 		};
 
 		u64 imm;
@@ -72,7 +72,7 @@ namespace riscv {
 								imm = dec.imm;
 								pseudo_pc = dec.pc;
 								sz = inst_length(dec.inst);
-								state = match_state_zext;
+								state = match_state_zextw;
 								queue.push_back(dec);
 								return true;
 							}
@@ -109,11 +109,11 @@ namespace riscv {
 							break;
 					}
 					break;
-				case match_state_zext:
+				case match_state_zextw:
 					switch (dec.op) {
 						case rv_op_srli:
 							if (rd == dec.rd && rd == dec.rs1 && dec.imm == 32) {
-								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_zext, rd, imm);
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_zextw, rd, imm);
 								pseudo.sz = sz + inst_length(dec.inst);
 								E::emit(pseudo);
 								clear_queue();
