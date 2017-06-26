@@ -89,9 +89,6 @@ namespace riscv {
 								E::emit(pseudo);
 								clear_queue();
 								return true;
-							} else {
-								emit_queue();
-								break;
 							}
 						case rv_op_jalr:
 							if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
@@ -100,9 +97,6 @@ namespace riscv {
 								E::emit(pseudo);
 								clear_queue();
 								return true;
-							} else {
-								emit_queue();
-								break;
 							}
 						default:
 							emit_queue();
@@ -118,9 +112,6 @@ namespace riscv {
 								E::emit(pseudo);
 								clear_queue();
 								return true;
-							} else {
-								emit_queue();
-								break;
 							}
 						default:
 							emit_queue();
