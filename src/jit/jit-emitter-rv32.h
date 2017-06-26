@@ -2628,6 +2628,28 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_addiwz(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\taddiw.z\t%s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd);
+
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else {
+				if (rdx > 0) {
+					as.add(x86::gpd(rdx), Imm(dec.imm));
+				} else {
+					as.mov(x86::eax, rbp_reg_d(dec.rd));
+					as.add(x86::eax, Imm(dec.imm));
+					as.mov(rbp_reg_d(dec.rd), x86::eax);
+				}
+			}
+
+			return true;
+		}
+
 		bool emit(decode_type &dec)
 		{
 			auto li = labels.find(dec.pc);
@@ -2686,6 +2708,7 @@ namespace riscv {
 				case jit_op_la: return emit_la(dec);
 				case jit_op_call: return emit_call(dec);
 				case jit_op_zextw: return emit_zextw(dec);
+				case jit_op_addiwz: return emit_addiwz(dec);
 			}
 			return false;
 		}

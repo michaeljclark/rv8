@@ -35,7 +35,8 @@ namespace riscv {
 	enum jit_op {
 		jit_op_la = 1024,
 		jit_op_call = 1025,
-		jit_op_zextw = 1026
+		jit_op_zextw = 1026,
+		jit_op_addiwz = 1027
 	};
 
 	typedef void (*TraceFunc)(void*);

@@ -15,7 +15,9 @@ namespace riscv {
 		enum match_state {
 			match_state_none,
 			match_state_auipc,
-			match_state_zextw
+			match_state_zextw,
+			match_state_addiw,
+			match_state_addiwz
 		};
 
 		u64 imm;
@@ -66,6 +68,16 @@ namespace riscv {
 							state = match_state_auipc;
 							queue.push_back(dec);
 							return true;
+						case rv_op_addiw:
+							if (dec.rd == dec.rs1) {
+								rd = dec.rd;
+								imm = dec.imm;
+								pseudo_pc = dec.pc;
+								sz = inst_length(dec.inst);
+								state = match_state_addiw;
+								queue.push_back(dec);
+								return true;
+							}
 						case rv_op_slli:
 							if (dec.rd == dec.rs1 && dec.imm == 32) {
 								rd = dec.rd;
@@ -77,6 +89,35 @@ namespace riscv {
 								return true;
 							}
 						default:
+							break;
+					}
+					break;
+				case match_state_addiw:
+					switch (dec.op) {
+						case rv_op_slli:
+							if (rd == dec.rd && rd == dec.rs1 && dec.imm == 32) {
+								sz += inst_length(dec.inst);
+								state = match_state_addiwz;
+								queue.push_back(dec);
+								return true;
+							}
+						default:
+							emit_queue();
+							break;
+					}
+					break;
+				case match_state_addiwz:
+					switch (dec.op) {
+						case rv_op_srli:
+							if (rd == dec.rd && rd == dec.rs1 && dec.imm == 32) {
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_addiwz, rd, imm);
+								pseudo.sz = sz + inst_length(dec.inst);
+								E::emit(pseudo);
+								clear_queue();
+								return true;
+							}
+						default:
+							emit_queue();
 							break;
 					}
 					break;
