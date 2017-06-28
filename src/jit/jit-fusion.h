@@ -22,6 +22,7 @@ namespace riscv {
 
 		u64 imm;
 		int rd;
+		int rs1;
 		size_t sz;
 		addr_t pseudo_pc;
 		match_state state;
@@ -79,9 +80,9 @@ namespace riscv {
 								return true;
 							}
 						case rv_op_slli:
-							if (dec.rd == dec.rs1 && dec.imm == 32) {
+							if (dec.imm == 32) {
 								rd = dec.rd;
-								imm = dec.imm;
+								rs1 = dec.rs1;
 								pseudo_pc = dec.pc;
 								sz = inst_length(dec.inst);
 								state = match_state_zextw;
@@ -98,6 +99,15 @@ namespace riscv {
 							if (rd == dec.rd && rd == dec.rs1 && dec.imm == 32) {
 								sz += inst_length(dec.inst);
 								state = match_state_addiwz;
+								queue.push_back(dec);
+								return true;
+							} else if (dec.imm == 32) {
+								emit_queue();
+								rd = dec.rd;
+								rs1 = dec.rs1;
+								pseudo_pc = dec.pc;
+								sz = inst_length(dec.inst);
+								state = match_state_zextw;
 								queue.push_back(dec);
 								return true;
 							}
@@ -148,7 +158,7 @@ namespace riscv {
 					switch (dec.op) {
 						case rv_op_srli:
 							if (rd == dec.rd && rd == dec.rs1 && dec.imm == 32) {
-								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_zextw, rd, imm);
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_zextw, rd, rs1, 0);
 								pseudo.sz = sz + inst_length(dec.inst);
 								E::emit(pseudo);
 								clear_queue();
