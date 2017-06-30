@@ -25,6 +25,7 @@ namespace riscv {
 		TraceLookup lookup_trace_fast;
 		std::map<addr_t,Label> labels;
 		std::map<addr_t,Label> jmp_tramp_labels;
+		std::map<addr_t,Label> exit_tramp_labels;
 		std::map<addr_t,std::vector<Label>> jmp_fixup_labels;
 		std::vector<addr_t> callstack;
 		u32 term_pc;
@@ -206,6 +207,12 @@ namespace riscv {
 				as.bind(jtl.second);
 				emit_pc(jtl.first);
 				as.jmp(Imm(func_address(lookup_trace_fast)));
+			}
+
+			for (auto &jtl : exit_tramp_labels) {
+				as.bind(jtl.second);
+				emit_pc(jtl.first);
+				as.jmp(term);
 			}
 		}
 
@@ -1871,6 +1878,16 @@ namespace riscv {
 			}
 		}
 
+		inline auto create_exit_tramp(addr_t pc)
+		{
+			auto jtl = exit_tramp_labels.find(pc);
+			if (jtl == exit_tramp_labels.end()) {
+				jtl = exit_tramp_labels.insert(exit_tramp_labels.end(),
+					std::pair<addr_t,Label>(pc, as.newLabel()));
+			}
+			return jtl;
+		}
+
 		inline auto create_jump_tramp(addr_t pc)
 		{
 			auto jtl = jmp_tramp_labels.find(pc);
@@ -2529,12 +2546,11 @@ namespace riscv {
 				term_pc = 0;
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
-				as.cmp(x86::gpd(x86_reg(rv_ireg_ra)), Imm(link_addr));
-				Label l = as.newLabel();
-				as.je(l);
-				emit_pc(dec.pc);
-				as.jmp(term);
-				as.bind(l);
+
+				auto etl = create_exit_tramp(dec.pc);
+				as.cmp(x86::gpq(x86_reg(rv_ireg_ra)), Imm(link_addr));
+				as.jne(etl->second);
+
 				return true;
 			} else {
 				term_pc = 0;
