@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	mmu_type mmu;
 
 	// insert entry for VA 0x10000 into the TLB (PDID=0, ASID=0, VA=0x10000, PPN=1, PTE.bits=DAGURWXV)
-	mmu.l1_dtlb.insert(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000, /* PTE level */ 2, /* PTE.bits */ 0xff, /* PPN */ 0x1, /* PTE UVA */ 0);
+	mmu.l1_dtlb.insert(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000, /* PTE level */ 2, /* PTE.bits */ 0xff, /* PPN */ 0x1);
 
 	// test that PPN 1 is returned for (PDID=0, ASID=0, VA=0x10000) -> PPN=1, PTE.bits=DAGURWXV)
 	tlb_type::tlb_entry_t *tlb_ent = mmu.l1_dtlb.lookup(/* PDID */ 0, /* ASID */ 0, /* VA */ 0x10000);

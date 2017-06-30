@@ -312,13 +312,13 @@ namespace riscv {
 		{
 			tlb_ent = tlb.lookup(proc.pdid, proc.sptbr >> tlb_type::ppn_bits, va);
 			if (tlb_ent) {
-				/* update PTE accessed and dirty flags */
-				update_pte_flags<PTM>(op, tlb_ent->uva);
-
-				return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
-			} else {
-				return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
+				/* check if accessed and dirty flags are up-to-date */
+				uintptr_t ad_flags = pte_flag_A | (op == op_store ? pte_flag_D : 0);
+				if ((tlb_ent->pteb & ad_flags) != ad_flags) {
+					return page_translate_offset<PTM>(tlb_ent->ppn, va, tlb_ent->ptel);
+				}
 			}
+			return page_translate_addr_tlb_miss<P,PTM>(proc, va, op, tlb, tlb_ent);
 		}
 
 		/* translate address using a TLB and a paged addressing mode
@@ -348,20 +348,9 @@ namespace riscv {
 
 			/* Insert the virtual to physical mapping into the TLB */
 			tlb_ent = tlb.insert(proc.pdid, proc.sptbr >> tlb_type::ppn_bits,
-				va, level, pte.val.flags, pte.val.ppn, pte_uva);
+				va, level, pte.val.flags, pte.val.ppn);
 
 			return pa;
-		}
-
-		/* update PTE accessed and dirty */
-		template <typename PTM> void update_pte_flags(mmu_op op, addr_t pte_uva)
-		{
-			typedef typename PTM::pte_type pte_type;
-			pte_type &pte = *(pte_type*)pte_uva;
-			UX update_flags = (op == op_store ? (pte_flag_D | pte_flag_A) : pte_flag_A);
-			if (pte.val.flags != (pte.val.flags | update_flags)) {
-				pte.val.flags |= update_flags;
-			}
 		}
 
 		/* walk the page table to find a PTE for a given virtual address */
@@ -410,8 +399,12 @@ namespace riscv {
 					/* check for misaligned superpage */
 					if (((1 << (shift - page_shift)) - 1) & pte.val.ppn) goto fault;
 
-					/* update PTE accessed and dirty flags */
-					update_pte_flags<PTM>(op, pte_uva);
+					/* check if we need to update PTE accessed and dirty flags */
+					uintptr_t ad_flags = pte_flag_A | (op == op_store ? pte_flag_D : 0);
+					if ((pte.val.flags & ad_flags) != ad_flags) {
+						pte.val.flags |= ad_flags;
+						segment->store(pte_uva, *(typename PTM::size_type*)&pte);
+					}
 
 					if (proc.log & proc_log_pagewalk) {
 						debug("walk_page_table va=0x%llx sptbr=0x%llx, level=%d "
