@@ -156,7 +156,7 @@ namespace riscv {
 
 		/* UART MMIO interface */
 
-		void load_8 (UX va, u8  &val)
+		buserror_t load_8 (UX va, u8  &val)
 		{
 			if (com.lcr & LCR_DLAB) {
 				switch (va) {
@@ -209,9 +209,10 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("uart_mmio:0x%04llx -> 0x%hhx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void store_8 (UX va, u8  val)
+		buserror_t store_8 (UX va, u8  val)
 		{
 			if (proc.log & proc_log_mmio) {
 				printf("uart_mmio:0x%04llx <- 0x%hhx\n", addr_t(va), val);
@@ -264,6 +265,7 @@ namespace riscv {
 					break;
 				}
 			}
+			return 0;
 		}
 
 		/* UART implementation */

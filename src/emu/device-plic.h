@@ -54,7 +54,7 @@ namespace riscv {
 
 		/* PLIC MMIO */
 
-		void load_32(UX va, u32 &val)
+		buserror_t load_32(UX va, u32 &val)
 		{
 			if (va == 4) {
 				u32 mask = pending & ~served;
@@ -71,9 +71,10 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void load_64(UX va, u64 &val)
+		buserror_t load_64(UX va, u64 &val)
 		{
 			if (va == 0) {
 				u32 mask = pending & ~served;
@@ -90,9 +91,10 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx -> 0x%08llx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void store_32(UX va, u32 val)
+		buserror_t store_32(UX va, u32 val)
 		{
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
@@ -103,9 +105,10 @@ namespace riscv {
 					served &= ~(1 << val);
 				}
 			}
+			return 0;
 		}
 
-		void store_64(UX va, u64 val)
+		buserror_t store_64(UX va, u64 val)
 		{
 			if (proc.log & proc_log_mmio) {
 				printf("plic_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
@@ -116,6 +119,7 @@ namespace riscv {
 					served &= ~(1 << val);
 				}
 			}
+			return 0;
 		}
 
 	};

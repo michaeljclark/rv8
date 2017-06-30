@@ -31,40 +31,44 @@ namespace riscv {
 
 		/* RAND MMIO */
 
-		void load_8 (UX va, u8  &val)
+		buserror_t load_8 (UX va, u8  &val)
 		{
 			u8 r = cpu.get_random_seed();
 			val = (va < total_size) ? r : 0;
 			if (proc.log & proc_log_mmio) {
 				printf("rand_mmio:0x%04llx -> 0x%02hhx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void load_16(UX va, u16 &val)
+		buserror_t load_16(UX va, u16 &val)
 		{
 			u16 r = cpu.get_random_seed();
 			val = (va < total_size - 1) ? r : 0;
 			if (proc.log & proc_log_mmio) {
 				printf("rand_mmio:0x%04llx -> 0x%04hx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void load_32(UX va, u32 &val)
+		buserror_t load_32(UX va, u32 &val)
 		{
 			u32 r = cpu.get_random_seed();
 			val = (va < total_size - 3) ? r : 0;
 			if (proc.log & proc_log_mmio) {
 				printf("rand_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void load_64(UX va, u64 &val)
+		buserror_t load_64(UX va, u64 &val)
 		{
 			u64 r = (u64(cpu.get_random_seed()) << 32) | u64(cpu.get_random_seed());
 			val = (va < total_size - 7) ? r : 0;
 			if (proc.log & proc_log_mmio) {
 				printf("rand_mmio:0x%04llx -> 0x%016llx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 	};
 

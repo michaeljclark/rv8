@@ -7,8 +7,82 @@
 
 namespace riscv {
 
+	typedef int buserror_t;
+
 	template <typename UX>
-	struct memory_segment
+	struct memory_bus
+	{
+		virtual buserror_t load_8(UX va, u8 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+			return -1;
+		}
+
+		virtual buserror_t load_16(UX va, u16 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+			return -1;
+		}
+
+		virtual buserror_t load_32(UX va, u32 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+			return -1;
+		}
+
+		virtual buserror_t load_64(UX va, u64 &val)
+		{
+			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
+			return -1;
+		}
+
+		virtual buserror_t store_8 (UX va, u8  val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+			return -1;
+		}
+
+		virtual buserror_t store_16(UX va, u16 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+			return -1;
+		}
+
+		virtual buserror_t store_32(UX va, u32 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+			return -1;
+		}
+
+		virtual buserror_t store_64(UX va, u64 val)
+		{
+			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
+			return -1;
+		}
+
+		template <typename T>
+		constexpr buserror_t load(UX va, T &val)
+		{
+			if (sizeof(T) == 1) { return load_8(va, *(u8*)&val); }
+			else if (sizeof(T) == 2) { return load_16(va, *(u16*)&val); }
+			else if (sizeof(T) == 4) { return load_32(va, *(u32*)&val); }
+			else if (sizeof(T) == 8) { return load_64(va, *(u64*)&val); }
+			else return -1;
+		}
+
+		template <typename T>
+		constexpr buserror_t store(UX va, T val)
+		{
+			if (sizeof(T) == 1) { return store_8(va, val); }
+			else if (sizeof(T) == 2) { return store_16(va, val); }
+			else if (sizeof(T) == 4) { return store_32(va, val); }
+			else if (sizeof(T) == 8) { return store_64(va, val); }
+			else return -1;
+		}
+	};
+
+	template <typename UX>
+	struct memory_segment : memory_bus<UX>
 	{
 		const char *name; /* segment name */
 		UX mpa;           /* segment machine physical address (guest) */
@@ -20,64 +94,6 @@ namespace riscv {
 			name(name), mpa(mpa), uva(uva), size(size), flags(flags) {}
 
 		virtual ~memory_segment() {}
-
-		virtual void load_8(UX va, u8 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-		}
-
-		virtual void load_16(UX va, u16 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-		}
-
-		virtual void load_32(UX va, u32 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-		}
-
-		virtual void load_64(UX va, u64 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-		}
-
-		virtual void store_8 (UX va, u8  val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-		}
-
-		virtual void store_16(UX va, u16 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-		}
-
-		virtual void store_32(UX va, u32 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-		}
-
-		virtual void store_64(UX va, u64 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-		}
-
-		template <typename T>
-		constexpr void load(UX va, T &val)
-		{
-			if (sizeof(T) == 1) load_8(va, *(u8*)&val);
-			else if (sizeof(T) == 2) load_16(va, *(u16*)&val);
-			else if (sizeof(T) == 4) load_32(va, *(u32*)&val);
-			else if (sizeof(T) == 8) load_64(va, *(u64*)&val);
-		}
-
-		template <typename T>
-		constexpr void store(UX va, T val)
-		{
-			if (sizeof(T) == 1) store_8(va, val);
-			else if (sizeof(T) == 2) store_16(va, val);
-			else if (sizeof(T) == 4) store_32(va, val);
-			else if (sizeof(T) == 8) store_64(va, val);
-		}
 	};
 
 	/*  user memory segment contains one mapping from a segment of emulated machine
@@ -93,22 +109,22 @@ namespace riscv {
 			munmap((void*)memory_segment<UX>::uva, memory_segment<UX>::size);
 		}
 
-		void load_8 (UX va, u8  &val) { val = *static_cast<u8*>((void*)(addr_t)va); }
-		void load_16(UX va, u16 &val) { val = *static_cast<u16*>((void*)(addr_t)va); }
-		void load_32(UX va, u32 &val) { val = *static_cast<u32*>((void*)(addr_t)va); }
-		void load_64(UX va, u64 &val) { val = *static_cast<u64*>((void*)(addr_t)va); }
+		virtual buserror_t load_8 (UX va, u8  &val) { val = *static_cast<u8*>((void*)(addr_t)va); return 0; }
+		virtual buserror_t load_16(UX va, u16 &val) { val = *static_cast<u16*>((void*)(addr_t)va); return 0; }
+		virtual buserror_t load_32(UX va, u32 &val) { val = *static_cast<u32*>((void*)(addr_t)va); return 0; }
+		virtual buserror_t load_64(UX va, u64 &val) { val = *static_cast<u64*>((void*)(addr_t)va); return 0; }
 
-		void store_8 (UX va, u8  val) { *static_cast<u8*>((void*)(addr_t)va) = val; }
-		void store_16(UX va, u16 val) { *static_cast<u16*>((void*)(addr_t)va) = val; }
-		void store_32(UX va, u32 val) { *static_cast<u32*>((void*)(addr_t)va) = val; }
-		void store_64(UX va, u64 val) { *static_cast<u64*>((void*)(addr_t)va) = val; }
+		virtual buserror_t store_8 (UX va, u8  val) { *static_cast<u8*>((void*)(addr_t)va) = val; return 0; }
+		virtual buserror_t store_16(UX va, u16 val) { *static_cast<u16*>((void*)(addr_t)va) = val; return 0; }
+		virtual buserror_t store_32(UX va, u32 val) { *static_cast<u32*>((void*)(addr_t)va) = val; return 0; }
+		virtual buserror_t store_64(UX va, u64 val) { *static_cast<u64*>((void*)(addr_t)va) = val; return 0; }
 	};
 
 
 	/*  user_memory device contains mappings for mulitple segments of emulated
 	    physical address space to user virtual address space */
 	template <typename UX>
-	struct user_memory
+	struct user_memory : memory_bus<UX>
 	{
 		typedef std::shared_ptr<memory_segment<UX>> memory_segment_type;
 
@@ -183,6 +199,70 @@ namespace riscv {
 				}
 			}
 			return 0;
+		}
+
+		virtual buserror_t load_8(UX va, u8 &val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->load_8(uva, val);
+		}
+
+		virtual buserror_t load_16(UX va, u16 &val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->load_16(uva, val);
+		}
+
+		virtual buserror_t load_32(UX va, u32 &val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->load_32(uva, val);
+		}
+
+		virtual buserror_t load_64(UX va, u64 &val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->load_64(uva, val);
+		}
+
+		virtual buserror_t store_8 (UX va, u8  val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->store_8(uva, val);
+		}
+
+		virtual buserror_t store_16(UX va, u16 val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->store_16(uva, val);
+		}
+
+		virtual buserror_t store_32(UX va, u32 val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->store_32(uva, val);
+		}
+
+		virtual buserror_t store_64(UX va, u64 val)
+		{
+			memory_segment<UX> *segment = nullptr;
+			addr_t uva = mpa_to_uva(segment, va);
+			if (unlikely(!segment)) return -1;
+			return segment->store_64(uva, val);
 		}
 
 	};

@@ -47,7 +47,7 @@ namespace riscv {
 
 		/* Timer MMIO */
 
-		void load_32(UX va, u32 &val)
+		buserror_t load_32(UX va, u32 &val)
 		{
 			if (va == 0) {
 				val = u32(mtime);
@@ -58,9 +58,10 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("rtc_mmio:0x%04llx -> 0x%08x\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void load_64(UX va, u64 &val)
+		buserror_t load_64(UX va, u64 &val)
 		{
 			if (va == 0) {
 				val = mtime;
@@ -68,9 +69,10 @@ namespace riscv {
 			if (proc.log & proc_log_mmio) {
 				printf("rtc_mmio:0x%04llx -> 0x%016llx\n", addr_t(va), val);
 			}
+			return 0;
 		}
 
-		void store_32(UX va, u32 val)
+		buserror_t store_32(UX va, u32 val)
 		{
 			if (proc.log & proc_log_mmio) {
 				printf("rtc_mmio:0x%04llx <- 0x%08x\n", addr_t(va), val);
@@ -81,9 +83,10 @@ namespace riscv {
 			else if (va == 4) {
 				mtime = (mtime & (u64(-1) >> 32)) | (u64(val) << 32);
 			}
+			return 0;
 		}
 
-		void store_64(UX va, u64 val)
+		buserror_t store_64(UX va, u64 val)
 		{
 			if (proc.log & proc_log_mmio) {
 				printf("rtc_mmio:0x%04llx <- 0x%016llx\n", addr_t(va), val);
@@ -91,6 +94,7 @@ namespace riscv {
 			if (va == 0) {
 				mtime = val;
 			}
+			return 0;
 		}
 	};
 
