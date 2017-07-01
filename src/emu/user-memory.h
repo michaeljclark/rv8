@@ -12,53 +12,15 @@ namespace riscv {
 	template <typename UX>
 	struct memory_bus
 	{
-		virtual buserror_t load_8(UX va, u8 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-			return -1;
-		}
+		virtual buserror_t load_8 (UX va, u8  &val) { return -1; }
+		virtual buserror_t load_16(UX va, u16 &val) { return -1; }
+		virtual buserror_t load_32(UX va, u32 &val) { return -1; }
+		virtual buserror_t load_64(UX va, u64 &val) { return -1; }
 
-		virtual buserror_t load_16(UX va, u16 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-			return -1;
-		}
-
-		virtual buserror_t load_32(UX va, u32 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-			return -1;
-		}
-
-		virtual buserror_t load_64(UX va, u64 &val)
-		{
-			printf("mmio     :0x%04llx -> invalid\n", addr_t(va)); val = 0;
-			return -1;
-		}
-
-		virtual buserror_t store_8 (UX va, u8  val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-			return -1;
-		}
-
-		virtual buserror_t store_16(UX va, u16 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-			return -1;
-		}
-
-		virtual buserror_t store_32(UX va, u32 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-			return -1;
-		}
-
-		virtual buserror_t store_64(UX va, u64 val)
-		{
-			printf("mmio     :0x%04llx <- invalid\n", addr_t(va));
-			return -1;
-		}
+		virtual buserror_t store_8 (UX va, u8  val) { return -1; }
+		virtual buserror_t store_16(UX va, u16 val) { return -1; }
+		virtual buserror_t store_32(UX va, u32 val) { return -1; }
+		virtual buserror_t store_64(UX va, u64 val) { return -1; }
 
 		template <typename T>
 		constexpr buserror_t load(UX va, T &val)
