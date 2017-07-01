@@ -490,6 +490,7 @@ namespace riscv {
 
 		void emit_mv_rd_rs1(decode_type &dec)
 		{
+			if (dec.rd == dec.rs1) return;
 			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (rdx > 0) {
 				if (rs1x > 0) {
@@ -509,6 +510,7 @@ namespace riscv {
 
 		void emit_mv_rd_rs1_32(decode_type &dec)
 		{
+			if (dec.rd == dec.rs1) return;
 			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (rdx > 0) {
 				if (rs1x > 0) {
@@ -528,6 +530,7 @@ namespace riscv {
 
 		void emit_mv_rd_rs2(decode_type &dec)
 		{
+			if (dec.rd == dec.rs2) return;
 			int rdx = x86_reg(dec.rd), rs2x = x86_reg(dec.rs2);
 			if (rdx > 0) {
 				if (rs2x > 0) {
@@ -621,20 +624,7 @@ namespace riscv {
 				// nop
 			}
 			else if (dec.rs1 == rv_ireg_zero) {
-				if (rdx > 0) {
-					if (rs2x > 0) {
-						as.mov(x86::gpq(rdx), x86::gpq(rs2x));
-					} else {
-						as.mov(x86::gpq(rdx), rbp_reg_q(dec.rs2));
-					}
-				} else {
-					if (rs2x > 0) {
-						as.mov(rbp_reg_q(dec.rd), x86::gpq(rs2x));
-					} else {
-						as.mov(x86::rax, rbp_reg_q(dec.rs2));
-						as.mov(rbp_reg_q(dec.rd), x86::rax);
-					}
-				}
+				emit_mv_rd_rs2(dec);
 			}
 			else if (dec.rs2 == rv_ireg_zero) {
 				emit_mv_rd_rs1(dec);
@@ -709,9 +699,7 @@ namespace riscv {
 				// nop
 			}
 			else if (dec.rs1 == rv_ireg_zero) {
-				if (dec.rd != dec.rs2) {
-					emit_mv_rd_rs2(dec);
-				}
+				emit_mv_rd_rs2(dec);
 				if (rdx > 0) {
 					as.neg(x86::gpq(rdx));
 				} else {
