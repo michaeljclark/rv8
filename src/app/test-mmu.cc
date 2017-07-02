@@ -34,7 +34,7 @@
 #include "pte.h"
 #include "pma.h"
 #include "amo.h"
-#include "user-memory.h"
+#include "mmu-memory.h"
 #include "tlb-soft.h"
 #include "mmu-soft.h"
 

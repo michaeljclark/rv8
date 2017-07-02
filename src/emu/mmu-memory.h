@@ -1,9 +1,9 @@
 //
-//  memory.h
+//  mmu-memory.h
 //
 
-#ifndef rv_memory_h
-#define rv_memory_h
+#ifndef rv_mmu_memory_h
+#define rv_mmu_memory_h
 
 namespace riscv {
 

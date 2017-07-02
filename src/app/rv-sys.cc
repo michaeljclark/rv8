@@ -64,7 +64,7 @@
 #include "processor-logging.h"
 #include "processor-base.h"
 #include "processor-impl.h"
-#include "user-memory.h"
+#include "mmu-memory.h"
 #include "tlb-soft.h"
 #include "mmu-soft.h"
 #include "interp.h"
