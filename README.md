@@ -43,6 +43,7 @@ The rv8 full system emulator has the following features:
 - Soft MMU supporting sv32, sv39, sv48 page translation modes
 - Abstract MMIO device interface for device emulation
 - Extensible interpreter generated from ISA metadata
+- Protected address space
 
 _**RISC-V user mode simulator**_
 
@@ -55,6 +56,10 @@ The rv8 user mode simulator has the following features:
 - A small set of emulated Linux system calls for simple file IO
 - Extensible interpreter generated from ISA metadata
 - Instruction logging mode for tracing program execution
+- Shared address space
+  - `0x000000000000 - 0x000000000fff` (zero)
+  - `0x000000001000 - 0x7ffdffffffff` (guest)
+  - `0x7ffe00000000 - 0x7fffffffffff` (host)
 
 ## Project Goals
 
