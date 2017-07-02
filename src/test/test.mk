@@ -70,6 +70,7 @@ PROGRAMS = \
 	$(BIN_DIR)/test-malloc \
 	$(BIN_DIR)/test-miniz \
 	$(BIN_DIR)/test-nbody \
+	$(BIN_DIR)/test-norx \
 	$(BIN_DIR)/test-primes \
 	$(BIN_DIR)/test-qsort \
 	$(BIN_DIR)/test-sha512 \
@@ -181,6 +182,9 @@ $(BIN_DIR)/test-miniz: $(OBJ_DIR)/test-miniz.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-nbody.o: $(SRC_DIR)/test-nbody.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-nbody: $(OBJ_DIR)/test-nbody.o ; $(CC) $(CFLAGS) $^ -lm -o $@
+
+$(OBJ_DIR)/test-norx.o: $(SRC_DIR)/test-norx.c ; $(CC) $(CFLAGS) -c $^ -o $@
+$(BIN_DIR)/test-norx: $(OBJ_DIR)/test-norx.o ; $(CC) $(CFLAGS) $^ -lm -o $@
 
 $(OBJ_DIR)/test-primes.o: $(SRC_DIR)/test-primes.c ; $(CC) $(CFLAGS) -c $^ -o $@
 $(BIN_DIR)/test-primes: $(OBJ_DIR)/test-primes.o ; $(CC) $(CFLAGS) $^ -o $@
