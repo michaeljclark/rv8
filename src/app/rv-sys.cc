@@ -26,6 +26,9 @@
 #include <deque>
 #include <map>
 #include <thread>
+#include <mutex>
+#include <chrono>
+#include <condition_variable>
 #include <atomic>
 #include <type_traits>
 

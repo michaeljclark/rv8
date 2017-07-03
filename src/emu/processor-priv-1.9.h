@@ -257,10 +257,22 @@ namespace riscv {
 		std::shared_ptr<config_mmio_device<processor_privileged>> device_config;
 		std::shared_ptr<string_mmio_device<processor_privileged>> device_string;
 
+		u64 intr_sleep_time, intr_powerdown_delay;
+		std::vector<struct pollfd> pollfds;
+
+		std::mutex intr_mutex;
+		std::condition_variable intr_cond;
+
 		const char* name() { return "rv-sys"; }
 
 		const u64 RTC_FREQ = 10000000;
 		const u64 RTC_DIV = 1000000000 / RTC_FREQ;
+
+		const u64 POWERDOWN_DELAY_INTERRUPT = 30000000;
+		const u64 POWERDOWN_DELAY_DEFAULT = 10000;
+		const u64 POWERDOWN_SLEEP_DEFAULT = 1000000;
+
+		processor_privileged() : intr_sleep_time(0), intr_powerdown_delay(1000), pollfds() {}
 
 		u64 get_time()
 		{
@@ -363,6 +375,32 @@ core {
 			P::mmu.mem->add_segment(device_htif);
 			P::mmu.mem->add_segment(device_config);
 			P::mmu.mem->add_segment(device_string);
+		}
+
+		void wait_for_interrupt()
+		{
+			auto &cpu = host_cpu::get_instance();
+
+			/* get time in nanoseconds */
+			u64 t = cpu.get_time_ns();
+
+			/* spin for intr_powerdown_delay after last interrupt */
+			if (t - intr_sleep_time < intr_powerdown_delay) {
+				std::this_thread::yield();
+				return;
+			}
+
+			/* sleep on interrupt condition variable */
+			std::unique_lock<std::mutex> intr_lock(intr_mutex);
+			if (intr_cond.wait_for(intr_lock, std::chrono::nanoseconds
+				(POWERDOWN_SLEEP_DEFAULT)) == std::cv_status::no_timeout)
+			{
+				intr_powerdown_delay = POWERDOWN_DELAY_INTERRUPT;
+			} else {
+				intr_powerdown_delay = POWERDOWN_DELAY_DEFAULT;
+			}
+			intr_lock.unlock();
+			intr_sleep_time = cpu.get_time_ns();
 		}
 
 		void print_device_registers()
@@ -666,7 +704,7 @@ core {
 					}
 				case rv_op_wfi:
 					if (P::mode >= rv_mode_S) {
-						std::this_thread::yield();
+						wait_for_interrupt();
 						return pc_offset;
 					} else {
 						return -1; /* illegal instruction */

@@ -15,7 +15,7 @@ namespace riscv {
 		P &proc;
 		struct termios old_tio, new_tio;
 		int pipefds[2];
-		struct pollfd pollfds[2];
+		std::vector<struct pollfd> pollfds;
 		queue_atomic<char> queue;
 		volatile bool running;
 		volatile bool suspended;
@@ -59,9 +59,12 @@ namespace riscv {
 				if ((ret = read(STDIN_FILENO, buf, (sizeof(buf)))) < 0) {
 					debug("console: stdin: read: %s", strerror(errno));
 				} else {
+					proc.intr_mutex.lock();
 					for (ssize_t i = 0; i < ret; i++) {
 						queue.push_back(buf[i]);
 					}
+					proc.intr_cond.notify_one();
+					proc.intr_mutex.unlock();
 				}
 			}
 		}
@@ -72,13 +75,14 @@ namespace riscv {
 			open_pipe();
 			configure_console();
 			while (running) {
+				pollfds.resize(2);
 				pollfds[0].fd = pipefds[0];
 				pollfds[0].events = POLLIN;
 				pollfds[0].revents = 0;
 				pollfds[1].fd = STDIN_FILENO;
 				pollfds[1].events = POLLIN;
 				pollfds[1].revents = 0;
-				if (poll(pollfds, 2, -1) < 0 && errno != EINTR) {
+				if (poll(pollfds.data(), pollfds.size(), -1) < 0 && errno != EINTR) {
 					panic("console poll failed: %s", strerror(errno));
 				}
 				process_output();
