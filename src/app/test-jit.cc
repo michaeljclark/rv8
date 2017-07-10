@@ -65,6 +65,7 @@
 #include "processor-model.h"
 #include "mmu-proxy.h"
 #include "unknown-abi.h"
+#include "processor-histogram.h"
 #include "processor-proxy.h"
 #include "debug-cli.h"
 

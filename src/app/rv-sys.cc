@@ -86,6 +86,7 @@
 #include "device-gpio.h"
 #include "device-rand.h"
 #include "device-htif.h"
+#include "processor-histogram.h"
 #include "processor-priv-1.9.h"
 #include "debug-cli.h"
 #include "processor-runloop.h"
@@ -231,12 +232,15 @@ struct rv_emulator
 			{ "-t", "--log-traps", cmdline_arg_type_none,
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
-			{ "-H", "--register-usage-histogram", cmdline_arg_type_none,
-				"Record register usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
 				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
+			{ "-R", "--register-usage-histogram", cmdline_arg_type_none,
+				"Record register usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
+			{ "-I", "--instruction-usage-histogram", cmdline_arg_type_none,
+				"Record instruction usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_inst); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },

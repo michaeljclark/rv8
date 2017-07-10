@@ -16,6 +16,48 @@ namespace riscv {
 
 		void init() {}
 
+		void exit(int rc)
+		{
+			if (!(P::log & proc_log_exit_stats)) ::exit(rc);
+
+			/* reopen console */
+			int fd = open("/dev/tty", O_WRONLY);
+			if (fd < 0) ::exit(rc);
+			if (dup2(fd, fileno(stdout)) < 0) ::exit(rc);
+
+			/* print stats */
+			printf("\n");
+			printf("control and status registers\n");
+			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+			P::print_csr_registers();
+
+			/* print program counter histogram */
+			if (P::log & proc_log_hist_pc) {
+				printf("\n");
+				printf("program counter histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_pc(*this, false);
+				printf("\n");
+			}
+
+			/* print register histogram */
+			if (P::log & proc_log_hist_reg) {
+				printf("\n");
+				printf("register usage histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_reg(*this, false);
+			}
+
+			/* print register histogram */
+			if (P::log & proc_log_hist_inst) {
+				printf("\n");
+				printf("instruction usage histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_inst(*this, false);
+				printf("\n");
+			}
+		}
+
 		addr_t inst_csr(typename P::decode_type &dec, int op, int csr, typename P::ux value, addr_t pc_offset)
 		{
 			u32 fflags_mask   = 0x1f;

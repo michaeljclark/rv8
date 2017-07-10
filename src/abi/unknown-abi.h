@@ -205,6 +205,7 @@ namespace riscv {
 
 	template <typename P> void abi_sys_exit(P &proc)
 	{
+		proc.exit(proc.ireg[rv_ireg_a0]);
 		exit(proc.ireg[rv_ireg_a0]);
 	}
 

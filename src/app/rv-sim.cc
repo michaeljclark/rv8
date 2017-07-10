@@ -67,6 +67,7 @@
 #include "processor-model.h"
 #include "mmu-proxy.h"
 #include "unknown-abi.h"
+#include "processor-histogram.h"
 #include "processor-proxy.h"
 #include "debug-cli.h"
 #include "processor-runloop.h"
@@ -311,12 +312,18 @@ struct rv_emulator
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers (defaults to integer registers)",
 				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
-			{ "-H", "--register-usage-histogram", cmdline_arg_type_none,
-				"Record register usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
+			{ "-e", "--log-exit", cmdline_arg_type_none,
+				"Log statistics on exit",
+				[&](std::string s) { return (proc_logs |= proc_log_exit_stats); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
 				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
+			{ "-R", "--register-usage-histogram", cmdline_arg_type_none,
+				"Record register usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
+			{ "-I", "--instruction-usage-histogram", cmdline_arg_type_none,
+				"Record instruction usage",
+				[&](std::string s) { return (proc_logs |= proc_log_hist_inst); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger CLI",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },

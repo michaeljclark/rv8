@@ -232,8 +232,9 @@ usage: rv-jit [<options>] <elf_file> [<options>]
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
                --log-jit-trace, -T            Log JIT trace
-    --register-usage-histogram, -H            Record register usage
           --pc-usage-histogram, -P            Record program counter usage
+    --register-usage-histogram, -R            Record register usage
+ --instruction-usage-histogram, -I            Record instruction usage
                        --debug, -d            Start up in debugger CLI
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                     --no-trace, -t            Disable JIT tracer
@@ -255,11 +256,14 @@ The ABI Proxy Simulator command line options:
 ```
 $ rv-sim -h
 usage: rv-sim [<options>] <elf_file> [<options>]
-                         --isa, -i <string>   ISA Extensions (IMA, IMAC, IMAFD, IMAFDC)
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
+                    --log-exit, -e            Log statistics on exit
+          --pc-usage-histogram, -P            Record program counter usage
+    --register-usage-histogram, -R            Record register usage
+ --instruction-usage-histogram, -I            Record instruction usage
                        --debug, -d            Start up in debugger CLI
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                         --seed, -s <string>   Random seed
@@ -285,19 +289,19 @@ usage: rv-sys [<options>] <elf_file>
                     --log-mmio, -O            Log Memory Mapped IO
               --log-memory-map, -m            Log Memory Map Information
                --log-mmode-csr, -M            Log Machine Control and Status Registers
-               --log-hmode-csr, -H            Log Hypervisor Control and Status Registers
                --log-smode-csr, -S            Log Supervisor Control and Status Registers
-               --log-umode-csr, -U            Log User Control and Status Registers
                --log-registers, -r            Log Registers (defaults to integer registers)
                --log-pagewalks, -v            Log Pagewalks
+                  --log-config, -c            Log Config
                    --log-traps, -t            Log Traps
-    --register-usage-histogram, -H            Record register usage
-          --pc-usage-histogram, -J            Record program counter usage
+          --pc-usage-histogram, -P            Record program counter usage
+    --register-usage-histogram, -R            Record register usage
+ --instruction-usage-histogram, -I            Record instruction usage
                        --debug, -d            Start up in debugger
                   --debug-trap, -T            Start up in debugger and enter debugger on trap
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
                 --map-physical, -p <string>   Map execuatable at physical address
-                         --bbl, -b <string>   BBL Boot ( 32, 64 )
+                      --binary, -b <string>   Boot Binary ( 32, 64 )
                         --seed, -s <string>   Random seed
                         --help, -h            Show help
 ```
