@@ -25,7 +25,13 @@ namespace riscv {
 			if (fd < 0) ::exit(rc);
 			if (dup2(fd, fileno(stdout)) < 0) ::exit(rc);
 
-			/* print stats */
+			/* print integer register file */
+			printf("\n");
+			printf("integer register file\n");
+			printf("~~~~~~~~~~~~~~~~~~~~~\n");
+			P::print_int_registers();
+
+			/* print control and status registers */
 			printf("\n");
 			printf("control and status registers\n");
 			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");

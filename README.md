@@ -260,7 +260,7 @@ usage: rv-sim [<options>] <elf_file> [<options>]
                 --log-operands, -o            Log Instructions and Operands
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
-                    --log-exit, -e            Log statistics on exit
+                    --log-exit, -e            Log Registers at exit
           --pc-usage-histogram, -P            Record program counter usage
     --register-usage-histogram, -R            Record register usage
  --instruction-usage-histogram, -I            Record instruction usage
@@ -294,6 +294,7 @@ usage: rv-sys [<options>] <elf_file>
                --log-pagewalks, -v            Log Pagewalks
                   --log-config, -c            Log Config
                    --log-traps, -t            Log Traps
+                    --log-exit, -e            Log Registers at exit
           --pc-usage-histogram, -P            Record program counter usage
     --register-usage-histogram, -R            Record register usage
  --instruction-usage-histogram, -I            Record instruction usage

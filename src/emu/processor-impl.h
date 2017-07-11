@@ -273,7 +273,7 @@ namespace riscv {
 			for (size_t i = rv_ireg_x1; i < P::ireg_count; i++) {
 				printf("%s%s", format_reg(rv_ireg_name_sym[i],
 					P::ireg[i].r.xu.val).c_str(), /* 3 column layout */
-					((i - 1) % 3) == 0 ? "\n" : ((i - 1) % 3) > 0 ? " " : "");
+					((i - 1) % 2) == 0 ? "\n" : ((i - 1) % 2) > 0 ? " " : "");
 			}
 		}
 
