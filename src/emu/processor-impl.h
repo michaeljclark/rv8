@@ -263,7 +263,7 @@ namespace riscv {
 		void print_csr_registers()
 		{
 			printf("%s %s\n", format_reg("instret", P::instret, true).c_str(),
-			                  format_reg("time", P::time, true).c_str());
+			                  format_reg("time", P::time).c_str());
 			printf("%s %s\n", format_reg("pc", P::pc).c_str(),
 			                  format_reg("fcsr", P::fcsr).c_str());
 		}
