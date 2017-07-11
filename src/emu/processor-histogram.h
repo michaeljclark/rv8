@@ -7,7 +7,7 @@
 
 namespace riscv {
 
-	const size_t max_chars = 80;
+	const size_t max_chars = 40;
 
 	static std::string repeat_str(std::string str, size_t count)
 	{
