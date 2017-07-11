@@ -300,8 +300,9 @@ namespace riscv {
 			return 0;
 		}
 
-		[[noreturn]] static size_t cmd_quit(cmd_state&, args_t &)
+		[[noreturn]] static size_t cmd_quit(cmd_state &st, args_t &)
 		{
+			st.proc->exit(1);
 			exit(1);
 		}
 

@@ -377,6 +377,55 @@ core {
 			P::mmu.mem->add_segment(device_string);
 		}
 
+		void exit(int rc)
+		{
+			if (!(P::log & proc_log_exit_stats)) ::exit(rc);
+
+			/* print integer register file */
+			printf("\n");
+			printf("integer register file\n");
+			printf("~~~~~~~~~~~~~~~~~~~~~\n");
+			P::print_int_registers();
+
+			/* print control and status registers */
+			printf("\n");
+			printf("control and status registers\n");
+			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+			print_csr_registers();
+
+			/* device registers */
+			printf("\n");
+			printf("io device registers\n");
+			printf("~~~~~~~~~~~~~~~~~~~\n");
+			print_device_registers();
+
+			/* print program counter histogram */
+			if (P::log & proc_log_hist_pc) {
+				printf("\n");
+				printf("program counter histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_pc(*this, false);
+				printf("\n");
+			}
+
+			/* print register histogram */
+			if (P::log & proc_log_hist_reg) {
+				printf("\n");
+				printf("register usage histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_reg(*this, false);
+			}
+
+			/* print register histogram */
+			if (P::log & proc_log_hist_inst) {
+				printf("\n");
+				printf("instruction usage histogram\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				histogram_inst(*this, false);
+				printf("\n");
+			}
+		}
+
 		void wait_for_interrupt()
 		{
 			auto &cpu = host_cpu::get_instance();
@@ -885,8 +934,7 @@ core {
 
 			/* if reqeusted, terminate and dump register state */
 			if (terminate) {
-				print_csr_registers();
-				P::print_int_registers();
+				exit(0);
 				P::running = false;
 				return;
 			}
