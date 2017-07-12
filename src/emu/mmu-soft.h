@@ -103,7 +103,6 @@ namespace riscv {
 		{
 			typename tlb_type::tlb_entry_t* tlb_ent = nullptr;
 			inst_t inst = 0;
-			u32 inst_32;
 			u16 inst_16;
 
 			/* raise exception if address is misalligned */
@@ -116,8 +115,8 @@ namespace riscv {
 			addr_t mpa = translate_addr<P,op>(proc, pc, tlb_ent);
 			if (!mpa) return 0;
 
-			/* check execute permissions and fetch first 32 bits */
-			if (unlikely(fetch_access_fault(proc, proc.mode, tlb_ent) || mem->load(mpa, inst_32))) {
+			/* check execute permissions and fetch first 16 bits */
+			if (unlikely(fetch_access_fault(proc, proc.mode, tlb_ent) || mem->load(mpa, inst_16))) {
 				proc.raise(rv_cause_fault_fetch, pc);
 				return 0;
 			}
@@ -128,13 +127,22 @@ namespace riscv {
 			}
 
 			/* decode length and fetch any remaining instruction bytes */
-			inst = htole32(inst_32);
+			inst = htole16(inst_16);
 			if ((inst & 0b11) != 0b11) {
-				inst &= 0xffff; // mask to 16-bits
 				pc_offset = 2;
 			} else if ((inst & 0b11100) != 0b11100) {
+				if (unlikely(mem->load(mpa + 2, inst_16))) {
+					proc.raise(rv_cause_fault_fetch, pc);
+					return 0;
+				}
+				inst |= inst_t(htole16(inst_16)) << 16;
 				pc_offset = 4;
 			} else if ((inst & 0b111111) == 0b011111) {
+				if (unlikely(mem->load(mpa + 2, inst_16))) {
+					proc.raise(rv_cause_fault_fetch, pc);
+					return 0;
+				}
+				inst |= inst_t(htole16(inst_16)) << 16;
 				if (unlikely(mem->load(mpa + 4, inst_16))) {
 					proc.raise(rv_cause_fault_fetch, pc);
 					return 0;
@@ -142,11 +150,21 @@ namespace riscv {
 				inst |= inst_t(htole16(inst_16)) << 32;
 				pc_offset = 6;
 			} else if ((inst & 0b1111111) == 0b0111111) {
-				if (unlikely(mem->load(mpa + 4, inst_32))) {
+				if (unlikely(mem->load(mpa + 2, inst_16))) {
 					proc.raise(rv_cause_fault_fetch, pc);
 					return 0;
 				}
-				inst |= inst_t(htole32(inst_32)) << 32;
+				inst |= inst_t(htole16(inst_16)) << 16;
+				if (unlikely(mem->load(mpa + 4, inst_16))) {
+					proc.raise(rv_cause_fault_fetch, pc);
+					return 0;
+				}
+				inst |= inst_t(htole16(inst_16)) << 32;
+				if (unlikely(mem->load(mpa + 6, inst_16))) {
+					proc.raise(rv_cause_fault_fetch, pc);
+					return 0;
+				}
+				inst |= inst_t(htole16(inst_16)) << 48;
 				pc_offset = 8;
 			} else {
 				proc.raise(rv_cause_fault_fetch, pc);
