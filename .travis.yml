@@ -6,8 +6,6 @@ script: make
 env:
   global:
    - secure: "Pcnt9IeeWSodhASGm0gEj0b0iNMN0e6wS/e9H23wMQ0FlDf8XvTNnW4+2RBTz85ogqGi9aHGNqgV550d9+h8oU4i4D99ulyG6AB+o07f14Jln3aAlxW9OGLpNZ4ybaUpcrIAnnasa01Km1L1BjgjW1X2QKghBPUYw3VHtGJ/bs5oNqmoaktToEGxc1OqxlpZ4L64BciKHOqDdi3Lcqhybd3wEH+op8xjh5Ffj/YP1Iw4qnaV/k6hqVxjvIBSg0PWYudXBCO9uftpuPFV5F+clS0+Ojknda/e4s1sqCvvMWrCkbBXafc+eLwbAlLNMwDXGYdkV4PLgyVh+QMPpqdbXkruoiYF2E4pU2pReo4zvIbJuGINqpw9I/SjP/MAIx97Y1U/Tjz2uxbgt8fk5evZ5JbFfuZokOa7ZIhO6StOwWKRTBoPip8PK5ykLP3kYCJEZXcZ64/Gjd0tOPP+bebxNtV7o7OFRAmxMrnMlrcgjO5Gd0SiSe0IFaYoxtKKJnXb4HdZ7ZoBeR9dzsByUVLEjvSk7lLqsWEnGclRrXs1altfyfaq2jOUlGZjWflBp6egTE+sZheMnBwkk0vTs3ww0kgm7XtFi64Ww0jFfAqjRzVI/vXlVu85UUxn92Vqm6ohyaJpaUpNKPqfcAdzIu4SDorT7MoVFD5NgggN/XOBoGQ="
-  matrix:
-   - CXX=g++-5
 
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
@@ -16,6 +14,7 @@ before_install:
 
 install:
   - sudo apt-get install -qq g++-5
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
 
 addons:
   coverity_scan:
@@ -24,5 +23,5 @@ addons:
       description: "Build submitted via Travis CI"
     notification_email: michaeljclark@mac.com
     build_command_prepend: "make clean"
-    build_command:   "make -j 4 CXX=g++-5"
+    build_command: "make -j 4"
     branch_pattern: coverity_scan
