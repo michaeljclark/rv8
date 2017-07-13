@@ -4,6 +4,7 @@ rv8
 RISC-V simulator for x86-64
 
 [![Build Status](https://travis-ci.org/rv8-io/rv8.svg?branch=master)](https://travis-ci.org/rv8-io/rv8)
+[![Coverity Status](https://img.shields.io/coverity/scan/13148.svg)](https://scan.coverity.com/projects/rv8-io-rv8)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TKDFDG65GCXD2)
 
