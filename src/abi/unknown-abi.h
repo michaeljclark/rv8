@@ -18,9 +18,12 @@ namespace riscv {
 		abi_syscall_pwrite = 68,
 		abi_syscall_fstat = 80,
 		abi_syscall_exit = 93,
+		abi_syscall_exit_group = 94,
+		abi_syscall_set_tid_address = 96,
 		abi_syscall_uname = 160,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
+		abi_syscall_mmap = 222,
 		abi_syscall_open = 1024,
 		abi_syscall_unlink = 1026,
 		abi_syscall_stat = 1038,
@@ -209,6 +212,12 @@ namespace riscv {
 		exit(proc.ireg[rv_ireg_a0]);
 	}
 
+	template <typename P> void abi_sys_set_tid_address(P &proc)
+	{
+		proc.clear_child_tid = *(int*)(uintptr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		proc.ireg[rv_ireg_a0].r.xu.val = 1; /* tid is 1 for now */
+	}
+
 	template <typename P> void abi_sys_uname(P &proc)
 	{
 		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
@@ -284,25 +293,36 @@ namespace riscv {
 		}
 	}
 
+	template <typename P> void abi_sys_mmap(P &proc)
+	{
+		proc.ireg[rv_ireg_a0].r.xu.val = (uintptr_t)mmap(
+			(void*)(uintptr_t)proc.ireg[rv_ireg_a0].r.xu.val, proc.ireg[rv_ireg_a1].r.xu.val,
+			proc.ireg[rv_ireg_a2].r.xu.val, proc.ireg[rv_ireg_a3].r.xu.val,
+			proc.ireg[rv_ireg_a4].r.xu.val, proc.ireg[rv_ireg_a5].r.xu.val);
+	}
+
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
-			case abi_syscall_openat:        abi_sys_openat(proc); break;
-			case abi_syscall_close:         abi_sys_close(proc); break;
-			case abi_syscall_lseek:         abi_sys_lseek(proc); break;
-			case abi_syscall_read:          abi_sys_read(proc);  break;
-			case abi_syscall_write:         abi_sys_write(proc); break;
-			case abi_syscall_pread:         abi_sys_pread(proc); break;
-			case abi_syscall_pwrite:        abi_sys_pwrite(proc); break;
-			case abi_syscall_fstat:         abi_sys_fstat(proc); break;
-			case abi_syscall_exit:          abi_sys_exit(proc); break;
-			case abi_syscall_uname:         abi_sys_uname(proc); break;
-			case abi_syscall_gettimeofday:  abi_sys_gettimeofday(proc);break;
-			case abi_syscall_brk:           abi_sys_brk(proc); break;
-			case abi_syscall_open:          abi_sys_open(proc); break;
-			case abi_syscall_unlink:        abi_sys_unlink(proc); break;
-			case abi_syscall_stat:          abi_sys_stat(proc); break;
-			case abi_syscall_chown:         abi_sys_chown(proc); break;
+			case abi_syscall_openat:          abi_sys_openat(proc); break;
+			case abi_syscall_close:           abi_sys_close(proc); break;
+			case abi_syscall_lseek:           abi_sys_lseek(proc); break;
+			case abi_syscall_read:            abi_sys_read(proc);  break;
+			case abi_syscall_write:           abi_sys_write(proc); break;
+			case abi_syscall_pread:           abi_sys_pread(proc); break;
+			case abi_syscall_pwrite:          abi_sys_pwrite(proc); break;
+			case abi_syscall_fstat:           abi_sys_fstat(proc); break;
+			case abi_syscall_exit:            abi_sys_exit(proc); break;
+			case abi_syscall_exit_group:      abi_sys_exit(proc); break;
+			case abi_syscall_set_tid_address: abi_sys_set_tid_address(proc); break;
+			case abi_syscall_uname:           abi_sys_uname(proc); break;
+			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
+			case abi_syscall_brk:             abi_sys_brk(proc); break;
+			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
+			case abi_syscall_open:            abi_sys_open(proc); break;
+			case abi_syscall_unlink:          abi_sys_unlink(proc); break;
+			case abi_syscall_stat:            abi_sys_stat(proc); break;
+			case abi_syscall_chown:           abi_sys_chown(proc); break;
 			default: panic("unknown syscall: %d", proc.ireg[rv_ireg_a7].r.xu.val);
 		}
 	}

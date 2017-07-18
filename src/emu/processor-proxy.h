@@ -12,6 +12,9 @@ namespace riscv {
 	template <typename P>
 	struct processor_proxy : P
 	{
+		int set_child_tid;
+		int clear_child_tid;
+
 		const char* name() { return "rv-sim"; }
 
 		void init() {}

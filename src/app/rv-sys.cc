@@ -193,6 +193,11 @@ struct rv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
+		/* zero bss */
+		if ((phdr.p_flags & PF_W) && phdr.p_memsz > phdr.p_filesz) {
+			memset((void*)((uintptr_t)addr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz - 1);
+		}
+
 		/* add the mmap to the emulator soft_mmu */
 		proc.mmu.mem->add_mmap(map_vaddr, addr_t(addr), map_len,
 			pma_type_main | elf_pma_flags(phdr.p_flags));

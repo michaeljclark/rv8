@@ -128,6 +128,7 @@ struct rv_emulator
 
 	elf_file elf;
 	std::string elf_filename;
+	uintptr_t imagebase = 0;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
@@ -205,23 +206,29 @@ struct rv_emulator
 			envp array, null terminated
 			argv pointer array, null terminated
 			argc <- stack pointer
-
-			enum {
-				AT_NULL = 0,         * end of auxiliary vector *
-				AT_BASE = 7,         * pointer to image base *
-			};
-
-			typedef struct {
-				Elf32_Word a_type;
-				Elf32_Word a_val;
-			} Elf32_auxv;
-
-			typedef struct {
-				Elf64_Word a_type;
-				Elf64_Word a_val;
-			} Elf64_auxv;
 		*/
 
+		/* set up aux data */
+		std::vector<Elf32_auxv> aux_data_32;
+		std::vector<Elf64_auxv> aux_data_64;
+		if (P::xlen == 32) {
+			aux_data_32.push_back(Elf32_auxv{AT_BASE, Elf32_Word(imagebase)});
+			aux_data_32.push_back(Elf32_auxv{AT_PHDR, Elf32_Word(imagebase + elf.ehdr.e_phoff)});
+			aux_data_32.push_back(Elf32_auxv{AT_PHNUM, elf.ehdr.e_phnum});
+			aux_data_32.push_back(Elf32_auxv{AT_PHENT, elf.ehdr.e_phentsize});
+			aux_data_32.push_back(Elf32_auxv{AT_PAGESZ, page_size});
+			aux_data_32.push_back(Elf32_auxv{AT_RANDOM, cpu.get_random_seed()});
+			aux_data_32.push_back(Elf32_auxv{AT_NULL, 0});
+		}
+		if (P::xlen == 64) {
+			aux_data_64.push_back(Elf64_auxv{AT_BASE, Elf64_Word(imagebase)});
+			aux_data_64.push_back(Elf64_auxv{AT_PHDR, Elf64_Word(imagebase + elf.ehdr.e_phoff)});
+			aux_data_64.push_back(Elf64_auxv{AT_PHNUM, elf.ehdr.e_phnum});
+			aux_data_64.push_back(Elf64_auxv{AT_PHENT, elf.ehdr.e_phentsize});
+			aux_data_64.push_back(Elf64_auxv{AT_PAGESZ, page_size});
+			aux_data_64.push_back(Elf64_auxv{AT_RANDOM, cpu.get_random_seed()});
+			aux_data_64.push_back(Elf64_auxv{AT_NULL, 0});
+		}
 
 		/* add environment data to stack */
 		std::vector<typename P::ux> env_data;
@@ -242,7 +249,15 @@ struct rv_emulator
 		/* align stack to 16 bytes */
 		proc.ireg[rv_ireg_sp] = proc.ireg[rv_ireg_sp] & ~15;
 
-		/* TODO - Add auxiliary vector to stack */
+		/* add auxiliary vector to stack */
+		if (P::xlen == 32) {
+			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)aux_data_32.data(),
+				aux_data_32.size() * sizeof(Elf32_auxv));
+		}
+		if (P::xlen == 64) {
+			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)aux_data_64.data(),
+				aux_data_64.size() * sizeof(Elf64_auxv));
+		}
 
 		/* add environment array to stack */
 		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)env_data.data(),
@@ -269,11 +284,17 @@ struct rv_emulator
 		addr_t map_offset = phdr.p_offset - map_delta;
 		addr_t map_vaddr = phdr.p_vaddr - map_delta;
 		addr_t map_len = round_up(phdr.p_memsz + map_delta, page_size);
+		if (!imagebase) imagebase = map_vaddr;
 		void *addr = mmap((void*)map_vaddr, map_len,
 			elf_p_flags_mmap(phdr.p_flags), MAP_FIXED | MAP_PRIVATE, fd, map_offset);
 		close(fd);
 		if (addr == MAP_FAILED) {
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
+		}
+
+		/* zero bss */
+		if ((phdr.p_flags & PF_W) && phdr.p_memsz > phdr.p_filesz) {
+			memset((void*)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz - 1);
 		}
 
 		/* log elf load segment virtual address range */
