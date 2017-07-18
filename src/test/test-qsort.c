@@ -173,24 +173,24 @@ loop:	SWAPINIT(long, a, es);
 /*		qsort(pn - r, r / es, es, cmp);*/
 }
 
-#define ARRAY_SIZE 10000000
+#define ARRAY_SIZE 50000000
 
 int compare (const void *a, const void *b)
 {
-    const unsigned long *ia = (const unsigned long *)a;
-    const unsigned long *ib = (const unsigned long *)b;
+    const int *ia = (const int *)a;
+    const int *ib = (const int *)b;
     return *ia  - *ib; 
 }
 
 int main()
 {
-	unsigned long *arr = (unsigned long*)malloc(ARRAY_SIZE * sizeof(unsigned long));
-	unsigned long val = 1;
+	int *arr = malloc(ARRAY_SIZE * sizeof(int));
+	int val = 1;
 	for (size_t i = 0; i < ARRAY_SIZE; i++) {
 		arr[i] = val;
 		val = ((val * 8191) << 7) ^ val;
 	}
-	qsort(arr, ARRAY_SIZE, sizeof(unsigned long), compare);
-	printf("%ld\n", arr[ARRAY_SIZE-1]);
+	qsort(arr, ARRAY_SIZE, sizeof(int), compare);
+	printf("%u\n", arr[ARRAY_SIZE-1]);
 	return 0;
 }
