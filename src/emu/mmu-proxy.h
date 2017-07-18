@@ -34,7 +34,7 @@ namespace riscv {
 		typedef std::shared_ptr<MEMORY> memory_type;
 
 		enum : addr_t {
-			memory_top = 0x7f0000000000
+			memory_top = (sizeof(UX) == 4 ? 0x80000000 : 0x7f0000000000)
 		};
 
 		memory_type mem;
