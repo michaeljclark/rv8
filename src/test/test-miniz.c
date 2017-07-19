@@ -8444,13 +8444,13 @@ static const size_t DATA_SIZE = 8 * 1024 * 1024;
 
 int main()
 {
-    uint step = 0;
+    uInt step = 0;
     int cmp_status;
     uLong src_len = DATA_SIZE;
     uLong cmp_len = compressBound(src_len);
     uLong uncomp_len = src_len;
     unsigned char *pData, *pCmp, *pUncomp;
-    uint total_succeeded = 0;
+    uInt total_succeeded = 0;
 
     /* create test pattern */
     pData = malloc(DATA_SIZE);
@@ -8485,10 +8485,10 @@ int main()
     if (step)
     {
       // Purposely corrupt the compressed data if fuzzy testing (this is a very crude fuzzy test).
-      uint n = 1 + (rand() % 3);
+      uInt n = 1 + (rand() % 3);
       while (n--)
       {
-        uint i = rand() % cmp_len;
+        uInt i = rand() % cmp_len;
         pCmp[i] ^= (rand() & 0xFF);
       }
     }
