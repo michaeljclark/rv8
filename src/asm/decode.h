@@ -33,8 +33,8 @@ template <typename T> inline void decode_cr(T &dec, inst_t inst)
 template <typename T> inline void decode_cr_mv(T &dec, inst_t inst)
 {
 	dec.rd = operand_crd::decode(inst);
-	dec.rs1 = rv_ireg_zero;
-	dec.rs2 = operand_crs2::decode(inst);
+	dec.rs1 = operand_crs2::decode(inst);
+	dec.rs2 = rv_ireg_zero;
 	dec.imm = 0;
 }
 

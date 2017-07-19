@@ -29,8 +29,8 @@ template <typename T> inline inst_t encode_cr(T &dec)
 /* Encode CR mv */
 template <typename T> inline inst_t encode_cr_mv(T &dec)
 {
-	assert(dec.rs1 == rv_ireg_zero);
-	return operand_crd::encode(dec.rd) | operand_crs2::encode(dec.rs2);
+	assert(dec.imm == 0);
+	return operand_crd::encode(dec.rd) | operand_crs2::encode(dec.rs1);
 }
 
 /* Encode CR jalr */
