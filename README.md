@@ -259,6 +259,7 @@ $ rv-sim -h
 usage: rv-sim [<options>] <elf_file> [<options>]
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
+                 --symbolicate, -S            Symbolicate addresses in instruction log
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
                     --log-exit, -e            Log Registers at exit
