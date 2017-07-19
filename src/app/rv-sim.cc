@@ -132,6 +132,7 @@ struct rv_emulator
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
+	bool symbolicate = false;
 	uint64_t initial_seed = 0;
 	int ext = rv_set_imafdc;
 
@@ -157,6 +158,26 @@ struct rv_emulator
 		if (v & PF_W) prot |= PROT_WRITE;
 		if (v & PF_R) prot |= PROT_READ;
 		return prot;
+	}
+
+	const char* symlookup(addr_t addr)
+	{
+		static char symbol_tmpname[256];
+		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
+		if (sym) {
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"%s", elf.sym_name(sym));
+			return symbol_tmpname;
+		}
+		sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
+		if (sym) {
+			int64_t offset = int64_t(addr) - sym->st_value;
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+				"%s%s0x%" PRIx64, elf.sym_name(sym),
+				offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
+			return symbol_tmpname;
+		}
+		return nullptr;
 	}
 
 	/* Map a single stack segment into user address space */
@@ -327,6 +348,9 @@ struct rv_emulator
 			{ "-o", "--log-operands", cmdline_arg_type_none,
 				"Log Instructions and Operands",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap | proc_log_operands)); } },
+			{ "-S", "--symbolicate", cmdline_arg_type_none,
+				"Symbolicate addresses in instruction log",
+				[&](std::string s) { return (symbolicate = true); } },
 			{ "-m", "--log-memory-map", cmdline_arg_type_none,
 				"Log Memory Map Information",
 				[&](std::string s) { return (proc_logs |= proc_log_memory); } },
@@ -387,8 +411,8 @@ struct rv_emulator
 			}
 		}
 
-		/* load ELF (headers only) */
-		elf.load(elf_filename, true);
+		/* load ELF (headers only unless symbolicating) */
+		elf.load(elf_filename, !symbolicate);
 	}
 
 	/* Start the execuatable with the given proxy processor template */
@@ -403,6 +427,7 @@ struct rv_emulator
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
+		if (symbolicate) proc.symlookup = [&](addr_t va) { return this->symlookup(va); };
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
