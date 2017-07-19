@@ -18,7 +18,7 @@ namespace riscv {
 
 		void print_memory_map() {}
 
-		proxy_memory() : segments(), heap_begin(0), heap_end(0), log(false) {}
+		proxy_memory() : segments(), heap_begin(0), heap_end(0), brk(0), log(false) {}
 	};
 
 	template <typename UX, typename MEMORY = proxy_memory<UX>>

@@ -301,10 +301,14 @@ struct rv_emulator
 		if (fd < 0) {
 			panic("map_executable: error: open: %s: %s", filename, strerror(errno));
 		}
+
+		/* round the mmap start address and length to the nearest page size */
 		addr_t map_delta = phdr.p_offset & (page_size-1);
 		addr_t map_offset = phdr.p_offset - map_delta;
 		addr_t map_vaddr = phdr.p_vaddr - map_delta;
 		addr_t map_len = round_up(phdr.p_memsz + map_delta, page_size);
+		addr_t map_end = map_vaddr + map_len;
+		addr_t brk = addr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (!imagebase) imagebase = map_vaddr;
 		void *addr = mmap((void*)map_vaddr, map_len,
 			elf_p_flags_mmap(phdr.p_flags), MAP_FIXED | MAP_PRIVATE, fd, map_offset);
@@ -313,12 +317,13 @@ struct rv_emulator
 			panic("map_executable: error: mmap: %s: %s", filename, strerror(errno));
 		}
 
-		/* zero bss */
+		/* erase trailing bytes past the end of the mapping */
 		if ((phdr.p_flags & PF_W) && phdr.p_memsz > phdr.p_filesz) {
-			memset((void*)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz - 1);
+			addr_t start = addr_t(phdr.p_vaddr + phdr.p_filesz), len = map_end - start;
+			memset((void*)start, 0, len);
 		}
 
-		/* log elf load segment virtual address range */
+		/* log load segment virtual address range */
 		if (proc.log & proc_log_memory) {
 			debug("mmap-elf :%016" PRIxPTR "-%016" PRIxPTR " %s offset=%" PRIxPTR,
 				addr_t(map_vaddr), addr_t(map_vaddr + map_len),
@@ -327,9 +332,15 @@ struct rv_emulator
 
 		/* add the mmap to the emulator proxy_mmu */
 		proc.mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
-		addr_t seg_end = addr_t(map_vaddr + map_len);
-		if (proc.mmu.mem->heap_begin < seg_end) {
-			proc.mmu.mem->brk = proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = seg_end;
+
+		/* set heap mmap area begin and end */
+		if (proc.mmu.mem->heap_begin < map_end) {
+			proc.mmu.mem->heap_begin = proc.mmu.mem->heap_end = map_end;
+		}
+
+		/* set the program break */
+		if (proc.mmu.mem->brk < brk) {
+			proc.mmu.mem->brk = brk;
 		}
 	}
 
