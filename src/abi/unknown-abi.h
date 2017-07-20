@@ -9,11 +9,14 @@ namespace riscv {
 
 	enum abi_syscall
 	{
+		abi_syscall_ioctl = 29,
 		abi_syscall_openat = 56,
 		abi_syscall_close = 57,
 		abi_syscall_lseek = 62,
 		abi_syscall_read = 63,
 		abi_syscall_write = 64,
+		abi_syscall_readv = 65,
+		abi_syscall_writev = 66,
 		abi_syscall_pread = 67,
 		abi_syscall_pwrite = 68,
 		abi_syscall_fstat = 80,
@@ -105,6 +108,49 @@ namespace riscv {
 	#endif
 	}
 
+	enum {
+		abi_ioctl_TIOCGWINSZ = 0x5413
+	};
+
+	enum {
+		abi_errno_EINVAL = 22
+	};
+
+	struct abi_winsize {
+		unsigned short ws_row;
+		unsigned short ws_col;
+		unsigned short ws_xpixel;
+		unsigned short ws_ypixel;
+	};
+
+	template <typename P>
+	struct abi_iovec {
+		typename P::ux iov_base;
+		typename P::ux iov_len;
+	};
+
+	template <typename P> void abi_sys_ioctl(P &proc)
+	{
+		switch (proc.ireg[rv_ireg_a1]) {
+			case abi_ioctl_TIOCGWINSZ: {
+				struct winsize wsz;
+				int ret = ioctl(proc.ireg[rv_ireg_a0], TIOCGWINSZ, &wsz);
+				if (!ret) {
+					abi_winsize *abi_wsz = (abi_winsize*)(uintptr_t)proc.ireg[rv_ireg_a2].r.xu.val;
+					abi_wsz->ws_row = wsz.ws_row;
+					abi_wsz->ws_col = wsz.ws_col;
+					abi_wsz->ws_xpixel = wsz.ws_xpixel;
+					abi_wsz->ws_ypixel = wsz.ws_ypixel;
+				}
+				proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+				break;
+			}
+			default:
+				proc.ireg[rv_ireg_a0] = -abi_errno_EINVAL;
+				break;
+		}
+	}
+
 	template <typename P> void abi_sys_openat(P &proc)
 	{
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
@@ -136,6 +182,34 @@ namespace riscv {
 	{
 		int ret = write(proc.ireg[rv_ireg_a0],
 			(void*)(addr_t)proc.ireg[rv_ireg_a1], proc.ireg[rv_ireg_a2]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_readv(P &proc)
+	{
+		int fd = proc.ireg[rv_ireg_a0];
+		int iovcnt = proc.ireg[rv_ireg_a2];
+		struct iovec *host_iov = (struct iovec*)alloca(sizeof(struct iovec) * iovcnt);
+		struct abi_iovec<P> *abi_iov = (abi_iovec<P>*)(addr_t)proc.ireg[rv_ireg_a1];
+		for (int i = 0; i < iovcnt; i++) {
+			host_iov[i].iov_base = (void*)(addr_t)abi_iov[i].iov_base;
+			host_iov[i].iov_len = (size_t)abi_iov[i].iov_len;
+		}
+		int ret = readv(fd, host_iov, iovcnt);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_writev(P &proc)
+	{
+		int fd = proc.ireg[rv_ireg_a0];
+		int iovcnt = proc.ireg[rv_ireg_a2];
+		struct iovec *host_iov = (struct iovec*)alloca(sizeof(struct iovec) * iovcnt);
+		struct abi_iovec<P> *abi_iov = (abi_iovec<P>*)(addr_t)proc.ireg[rv_ireg_a1];
+		for (int i = 0; i < iovcnt; i++) {
+			host_iov[i].iov_base = (void*)(addr_t)abi_iov[i].iov_base;
+			host_iov[i].iov_len = (size_t)abi_iov[i].iov_len;
+		}
+		int ret = writev(fd, host_iov, iovcnt);
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
@@ -304,11 +378,14 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
+			case abi_syscall_ioctl:           abi_sys_ioctl(proc); break;
 			case abi_syscall_openat:          abi_sys_openat(proc); break;
 			case abi_syscall_close:           abi_sys_close(proc); break;
 			case abi_syscall_lseek:           abi_sys_lseek(proc); break;
 			case abi_syscall_read:            abi_sys_read(proc);  break;
 			case abi_syscall_write:           abi_sys_write(proc); break;
+			case abi_syscall_readv:           abi_sys_readv(proc);  break;
+			case abi_syscall_writev:          abi_sys_writev(proc); break;
 			case abi_syscall_pread:           abi_sys_pread(proc); break;
 			case abi_syscall_pwrite:          abi_sys_pwrite(proc); break;
 			case abi_syscall_fstat:           abi_sys_fstat(proc); break;
