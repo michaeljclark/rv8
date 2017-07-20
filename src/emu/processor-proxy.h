@@ -23,10 +23,14 @@ namespace riscv {
 		{
 			if (!(P::log & proc_log_exit_stats)) ::exit(rc);
 
-			/* reopen console */
-			int fd = open("/dev/tty", O_WRONLY);
-			if (fd < 0) ::exit(rc);
-			if (dup2(fd, fileno(stdout)) < 0) ::exit(rc);
+			/* reopen console if necessary */
+			struct pollfd pfd[3] = { { .fd=fileno(stdout) } };
+			poll(pfd, 1, 0);
+			if (pfd[0].revents & POLLNVAL) {
+				int fd = open("/dev/tty", O_WRONLY);
+				if (fd < 0) ::exit(rc);
+				if (dup2(fd, fileno(stdout)) < 0) ::exit(rc);
+			}
 
 			/* print integer register file */
 			printf("\n");
