@@ -26,6 +26,7 @@ namespace riscv {
 		abi_syscall_uname = 160,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
+		abi_syscall_munmap = 215,
 		abi_syscall_mmap = 222,
 		abi_syscall_open = 1024,
 		abi_syscall_unlink = 1026,
@@ -367,12 +368,18 @@ namespace riscv {
 		}
 	}
 
+	template <typename P> void abi_sys_munmap(P &proc)
+	{
+		int ret = munmap((void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1]);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
 	template <typename P> void abi_sys_mmap(P &proc)
 	{
 		proc.ireg[rv_ireg_a0].r.xu.val = (uintptr_t)mmap(
-			(void*)(uintptr_t)proc.ireg[rv_ireg_a0].r.xu.val, proc.ireg[rv_ireg_a1].r.xu.val,
-			proc.ireg[rv_ireg_a2].r.xu.val, proc.ireg[rv_ireg_a3].r.xu.val,
-			proc.ireg[rv_ireg_a4].r.xu.val, proc.ireg[rv_ireg_a5].r.xu.val);
+			(void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1],
+			proc.ireg[rv_ireg_a2], proc.ireg[rv_ireg_a3],
+			proc.ireg[rv_ireg_a4], proc.ireg[rv_ireg_a5]);
 	}
 
 	template <typename P> void proxy_syscall(P &proc)
@@ -395,6 +402,7 @@ namespace riscv {
 			case abi_syscall_uname:           abi_sys_uname(proc); break;
 			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
+			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
 			case abi_syscall_open:            abi_sys_open(proc); break;
 			case abi_syscall_unlink:          abi_sys_unlink(proc); break;
