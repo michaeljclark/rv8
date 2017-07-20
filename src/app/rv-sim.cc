@@ -35,9 +35,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <sys/uio.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/ioctl.h>
 #include <sys/utsname.h>
 
 #include "host-endian.h"
@@ -230,26 +232,19 @@ struct rv_emulator
 		*/
 
 		/* set up aux data */
-		std::vector<Elf32_auxv> aux_data_32;
-		std::vector<Elf64_auxv> aux_data_64;
-		if (P::xlen == 32) {
-			aux_data_32.push_back(Elf32_auxv{AT_BASE, Elf32_Word(imagebase)});
-			aux_data_32.push_back(Elf32_auxv{AT_PHDR, Elf32_Word(imagebase + elf.ehdr.e_phoff)});
-			aux_data_32.push_back(Elf32_auxv{AT_PHNUM, elf.ehdr.e_phnum});
-			aux_data_32.push_back(Elf32_auxv{AT_PHENT, elf.ehdr.e_phentsize});
-			aux_data_32.push_back(Elf32_auxv{AT_PAGESZ, page_size});
-			aux_data_32.push_back(Elf32_auxv{AT_RANDOM, cpu.get_random_seed()});
-			aux_data_32.push_back(Elf32_auxv{AT_NULL, 0});
-		}
-		if (P::xlen == 64) {
-			aux_data_64.push_back(Elf64_auxv{AT_BASE, Elf64_Word(imagebase)});
-			aux_data_64.push_back(Elf64_auxv{AT_PHDR, Elf64_Word(imagebase + elf.ehdr.e_phoff)});
-			aux_data_64.push_back(Elf64_auxv{AT_PHNUM, elf.ehdr.e_phnum});
-			aux_data_64.push_back(Elf64_auxv{AT_PHENT, elf.ehdr.e_phentsize});
-			aux_data_64.push_back(Elf64_auxv{AT_PAGESZ, page_size});
-			aux_data_64.push_back(Elf64_auxv{AT_RANDOM, cpu.get_random_seed()});
-			aux_data_64.push_back(Elf64_auxv{AT_NULL, 0});
-		}
+		std::vector<typename P::ux> aux_data = {
+			AT_BASE, typename P::ux(imagebase),
+			AT_PHDR, typename P::ux(imagebase + elf.ehdr.e_phoff),
+			AT_PHNUM, elf.ehdr.e_phnum,
+			AT_PHENT, elf.ehdr.e_phentsize,
+			AT_PAGESZ, page_size,
+			AT_RANDOM, cpu.get_random_seed(),
+			AT_UID, getuid(),
+			AT_EUID, geteuid(),
+			AT_GID, getgid(),
+			AT_EGID, getegid(),
+			AT_NULL, 0
+		};
 
 		/* add environment data to stack */
 		std::vector<typename P::ux> env_data;
@@ -271,14 +266,8 @@ struct rv_emulator
 		proc.ireg[rv_ireg_sp] = proc.ireg[rv_ireg_sp] & ~15;
 
 		/* add auxiliary vector to stack */
-		if (P::xlen == 32) {
-			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)aux_data_32.data(),
-				aux_data_32.size() * sizeof(Elf32_auxv));
-		}
-		if (P::xlen == 64) {
-			copy_to_proxy_stack(proc, stack_top, stack_size, (void*)aux_data_64.data(),
-				aux_data_64.size() * sizeof(Elf64_auxv));
-		}
+		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)aux_data.data(),
+			aux_data.size() * sizeof(typename P::ux));
 
 		/* add environment array to stack */
 		copy_to_proxy_stack(proc, stack_top, stack_size, (void*)env_data.data(),
