@@ -31,6 +31,8 @@ namespace riscv {
 		 * LINUX_LDFLAGS = -pie -fPIE -Wl,-Ttext-segment=0x7ffe00000000
 		 */
 
+		static const bool enfore_memory_top = false;
+
 		typedef std::shared_ptr<MEMORY> memory_type;
 
 		enum : addr_t {
@@ -76,12 +78,20 @@ namespace riscv {
 
 		template <typename P, typename T> void load(P &proc, UX va, T &val)
 		{
-			val = UX(*(T*)addr_t(va & (memory_top - 1)));
+			if (enfore_memory_top) {
+				val = UX(*(T*)addr_t(va & (memory_top - 1)));
+			} else {
+				val = UX(*(T*)addr_t(va));
+			}
 		}
 
 		template <typename P, typename T> void store(P &proc, UX va, T val)
 		{
-			*((T*)addr_t(va & (memory_top - 1))) = val;
+			if (enfore_memory_top) {
+				*((T*)addr_t(va & (memory_top - 1))) = val;
+			} else {
+				*((T*)addr_t(va)) = val;
+			}
 		}
 	};
 
