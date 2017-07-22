@@ -77,6 +77,7 @@ namespace riscv {
 							rd = dec.rd;
 							imm = dec.imm;
 							pseudo_pc = dec.pc;
+							sz = inst_length(dec.inst);
 							state = match_state_auipc;
 							queue.push_back(dec);
 							return true;
@@ -171,9 +172,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_addiwz:
 					switch (dec.op) {
@@ -187,9 +188,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_auipc:
 					switch (dec.op) {
@@ -199,10 +200,10 @@ namespace riscv {
 								clear_queue();
 								imm += dec.imm;
 								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_la, dec.rs1, imm);
+								pseudo.sz = sz + inst_length(dec.inst);
 								E::emit(pseudo);
 								return true;
 							}
-							emit_queue();
 							break;
 						case rv_op_jalr:
 							if (rd == dec.rs1 && dec.rd == rv_ireg_ra) {
@@ -210,13 +211,15 @@ namespace riscv {
 								clear_queue();
 								imm += dec.imm;
 								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_call, dec.rs1, imm);
+								pseudo.sz = sz + inst_length(dec.inst);
 								E::emit(pseudo);
 								return true;
 							}
+							break;
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_zextw:
 					switch (dec.op) {
@@ -230,9 +233,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotw_slliw:
 					switch (dec.op) {
@@ -245,9 +248,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotw_srliw:
 					switch (dec.op) {
@@ -260,9 +263,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotd_slli:
 					switch (dec.op) {
@@ -275,9 +278,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotd_srli:
 					switch (dec.op) {
@@ -290,9 +293,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotw_or:
 					switch (dec.op) {
@@ -323,9 +326,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 				case match_state_rotd_or:
 					switch (dec.op) {
@@ -356,9 +359,9 @@ namespace riscv {
 								return true;
 							}
 						default:
-							emit_queue();
 							break;
 					}
+					emit_queue();
 					break;
 			}
 			return E::emit(dec);

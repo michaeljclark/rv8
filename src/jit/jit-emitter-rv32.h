@@ -2593,8 +2593,8 @@ namespace riscv {
 
 		bool emit_la(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tla\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
-			term_pc = dec.pc + inst_length(dec.inst) + 4; /* auipc */;
+			log_trace("\t# 0x%016llx\tla          %s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + dec.sz;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
@@ -2613,10 +2613,10 @@ namespace riscv {
 
 		bool emit_call(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tcall\t%s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			log_trace("\t# 0x%016llx\tcall        %s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.imm;
 			int rdx = x86_reg(rv_ireg_ra), rs1x = x86_reg(dec.rd);
-			addr_t link_addr = dec.pc + inst_length(dec.inst) + 4; /* auipc */;
+			addr_t link_addr = dec.pc + dec.sz;
 			callstack.push_back(link_addr);
 
 			if (dec.rd == rv_ireg_ra) {
@@ -2638,7 +2638,7 @@ namespace riscv {
 
 		bool emit_zextw(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tzext.w\t%s, %s", dec.pc, rv_ireg_name_sym[dec.rd], rv_ireg_name_sym[dec.rs1]);
+			log_trace("\t# 0x%016llx\tzext.w      %s, %s", dec.pc, rv_ireg_name_sym[dec.rd], rv_ireg_name_sym[dec.rs1]);
 			term_pc = dec.pc + dec.sz;
 			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 
@@ -2663,7 +2663,7 @@ namespace riscv {
 
 		bool emit_addiwz(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\taddiw.z\t%s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			log_trace("\t# 0x%016llx\taddiw.z     %s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.sz;
 			int rdx = x86_reg(dec.rd);
 
