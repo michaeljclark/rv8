@@ -2524,7 +2524,7 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			term_pc = dec.pc + inst_length(dec.inst);
-			int rdx = x86_reg(dec.rd);
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -2537,6 +2537,15 @@ namespace riscv {
 				} else {
 					as.shl(rbp_reg_q(dec.rd), Imm(dec.imm));
 				}
+			}
+			else if (rdx < 0) {
+				if (rs1x > 0) {
+					as.mov(x86::rax, x86::gpq(rs1x));
+				} else {
+					as.mov(x86::rax, rbp_reg_q(dec.rs1));
+				}
+				as.shl(x86::rax, Imm(dec.imm));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
 				emit_mv_rd_rs1(dec);
@@ -2553,7 +2562,7 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			term_pc = dec.pc + inst_length(dec.inst);
-			int rdx = x86_reg(dec.rd);
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -2566,6 +2575,15 @@ namespace riscv {
 				} else {
 					as.shr(rbp_reg_q(dec.rd), Imm(dec.imm));
 				}
+			}
+			else if (rdx < 0) {
+				if (rs1x > 0) {
+					as.mov(x86::rax, x86::gpq(rs1x));
+				} else {
+					as.mov(x86::rax, rbp_reg_q(dec.rs1));
+				}
+				as.shr(x86::rax, Imm(dec.imm));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
 				emit_mv_rd_rs1(dec);
@@ -2582,7 +2600,7 @@ namespace riscv {
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
 			term_pc = dec.pc + inst_length(dec.inst);
-			int rdx = x86_reg(dec.rd);
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero) {
 				// nop
 			}
@@ -2595,6 +2613,15 @@ namespace riscv {
 				} else {
 					as.sar(rbp_reg_q(dec.rd), Imm(dec.imm));
 				}
+			}
+			else if (rdx < 0) {
+				if (rs1x > 0) {
+					as.mov(x86::rax, x86::gpq(rs1x));
+				} else {
+					as.mov(x86::rax, rbp_reg_q(dec.rs1));
+				}
+				as.sar(x86::rax, Imm(dec.imm));
+				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
 				emit_mv_rd_rs1(dec);
@@ -3794,6 +3821,277 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_rorwi_rr(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\trorwi_rr\t%s, %s, %s, %d", dec.pc, rv_ireg_name_sym[dec.rd],
+				rv_ireg_name_sym[dec.rs1], rv_ireg_name_sym[dec.rs2], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rd2x = x86_reg(dec.rs2);
+
+			if (dec.rd == dec.rs1 || dec.rs2 == dec.rs1) {
+				if (rs1x > 0) {
+					as.mov(x86::ecx, x86::gpd(rs1x));
+					as.mov(x86::eax, x86::gpd(rs1x));
+				} else {
+					as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+					as.mov(x86::eax, x86::ecx);
+				}
+				as.shr(x86::ecx, Imm(dec.imm));
+				as.ror(x86::eax, Imm(dec.imm));
+				if (rd2x > 0) {
+					as.movsxd(x86::gpq(rd2x), x86::ecx);
+				} else {
+					as.movsxd(x86::rcx, x86::ecx);
+					as.mov(rbp_reg_q(dec.rs2), x86::rcx);
+				}
+				if (rdx > 0) {
+					as.movsxd(x86::gpq(rdx), x86::eax);
+				} else {
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			} else {
+				// rotate right residual
+				if (rd2x > 0) {
+					if (rs1x > 0) {
+						as.mov(x86::gpd(rd2x), x86::gpd(rs1x));
+					} else {
+						as.mov(x86::gpd(rd2x), rbp_reg_d(dec.rs1));
+					}
+					as.shr(x86::gpd(rd2x), Imm(dec.imm));
+					as.movsxd(x86::gpq(rd2x), x86::gpd(rd2x));
+				}
+				else {
+					if (rs1x > 0) {
+						as.mov(x86::eax, x86::gpd(rs1x));
+					} else {
+						as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					}
+					as.sar(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rs2), x86::rax);
+				}
+
+				// rotate
+				if (rdx > 0) {
+					emit_mv_rd_rs1_sx_32(dec);
+					as.ror(x86::gpd(rdx), Imm(dec.imm));
+					emit_sx_32_rd(dec);
+				} else {
+					if (rs1x > 0) {
+						as.mov(x86::eax, x86::gpd(rs1x));
+					} else {
+						as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					}
+					as.ror(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			}
+
+			return true;
+		}
+
+		bool emit_rorwi_lr(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\trorwi_lr\t%s, %s, %s, %d", dec.pc, rv_ireg_name_sym[dec.rd],
+				rv_ireg_name_sym[dec.rs1], rv_ireg_name_sym[dec.rs2], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rd2x = x86_reg(dec.rs2);
+
+			if (dec.rd == dec.rs1 || dec.rs2 == dec.rs1) {
+				if (rs1x > 0) {
+					as.mov(x86::ecx, x86::gpd(rs1x));
+					as.mov(x86::eax, x86::gpd(rs1x));
+				} else {
+					as.mov(x86::ecx, rbp_reg_d(dec.rs1));
+					as.mov(x86::eax, x86::ecx);
+				}
+				as.shl(x86::ecx, Imm(32 - dec.imm));
+				as.ror(x86::eax, Imm(dec.imm));
+				if (rd2x > 0) {
+					as.movsxd(x86::gpq(rd2x), x86::ecx);
+				} else {
+					as.movsxd(x86::rcx, x86::ecx);
+					as.mov(rbp_reg_q(dec.rs2), x86::rcx);
+				}
+				if (rdx > 0) {
+					as.movsxd(x86::gpq(rdx), x86::eax);
+				} else {
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			} else {
+				// rotate left residual
+				if (rd2x > 0) {
+					if (rs1x > 0) {
+						as.mov(x86::gpd(rd2x), x86::gpd(rs1x));
+					} else {
+						as.mov(x86::gpd(rd2x), rbp_reg_d(dec.rs1));
+					}
+					as.shl(x86::gpd(rd2x), Imm(32 - dec.imm));
+					as.movsxd(x86::gpq(rd2x), x86::gpd(rd2x));
+				} else {
+					if (rs1x > 0) {
+						as.mov(x86::eax, x86::gpd(rs1x));
+					} else {
+						as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					}
+					as.shl(x86::eax, Imm(32 - dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rs2), x86::rax);
+				}
+
+				// rotate
+				if (rdx > 0) {
+					emit_mv_rd_rs1_sx_32(dec);
+					as.ror(x86::gpd(rdx), Imm(dec.imm));
+					emit_sx_32_rd(dec);
+				} else {
+					if (rs1x > 0) {
+						as.mov(x86::eax, x86::gpd(rs1x));
+					} else {
+						as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					}
+					as.ror(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			}
+
+			return true;
+		}
+
+		bool emit_rordi_rr(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\trordi_rr\t%s, %s, %s, %d", dec.pc, rv_ireg_name_sym[dec.rd],
+				rv_ireg_name_sym[dec.rs1], rv_ireg_name_sym[dec.rs2], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rd2x = x86_reg(dec.rs2);
+
+			if (dec.rd == dec.rs1 || dec.rs2 == dec.rs1) {
+				if (rs1x > 0) {
+					as.mov(x86::rcx, x86::gpq(rs1x));
+					as.mov(x86::rax, x86::gpq(rs1x));
+				} else {
+					as.mov(x86::rcx, rbp_reg_q(dec.rs1));
+					as.mov(x86::rax, x86::rcx);
+				}
+				as.shr(x86::rcx, Imm(dec.imm));
+				as.ror(x86::rax, Imm(dec.imm));
+				if (rd2x > 0) {
+					as.mov(x86::gpq(rd2x), x86::rcx);
+				} else {
+					as.mov(rbp_reg_q(dec.rs2), x86::rcx);
+				}
+				if (rdx > 0) {
+					as.mov(x86::gpq(rdx), x86::rax);
+				} else {
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			} else {
+				// rotate right residual
+				if (rd2x > 0) {
+					if (rs1x > 0) {
+						as.mov(x86::gpq(rd2x), x86::gpq(rs1x));
+					} else {
+						as.mov(x86::gpq(rd2x), rbp_reg_q(dec.rs1));
+					}
+					as.sar(x86::gpq(rd2x), Imm(dec.imm));
+				}
+				else {
+					if (rs1x > 0) {
+						as.mov(x86::rax, x86::gpq(rs1x));
+					} else {
+						as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					}
+					as.shr(x86::rax, Imm(dec.imm));
+					as.mov(rbp_reg_q(dec.rs2), x86::rax);
+				}
+
+				// rotate
+				if (rdx > 0) {
+					emit_mv_rd_rs1(dec);
+					as.ror(x86::gpq(rdx), Imm(dec.imm));
+				} else {
+					if (rs1x > 0) {
+						as.mov(x86::rax, x86::gpq(rs1x));
+					} else {
+						as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					}
+					as.ror(x86::rax, Imm(dec.imm));
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			}
+
+			return true;
+		}
+
+		bool emit_rordi_lr(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\trordi_lr\t%s, %s, %s, %d", dec.pc, rv_ireg_name_sym[dec.rd],
+				rv_ireg_name_sym[dec.rs1], rv_ireg_name_sym[dec.rs2], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1), rd2x = x86_reg(dec.rs2);
+
+			if (dec.rd == dec.rs1 || dec.rs2 == dec.rs1) {
+				if (rs1x > 0) {
+					as.mov(x86::rcx, x86::gpq(rs1x));
+					as.mov(x86::rax, x86::gpq(rs1x));
+				} else {
+					as.mov(x86::rcx, rbp_reg_q(dec.rs1));
+					as.mov(x86::rax, x86::rcx);
+				}
+				as.shl(x86::rcx, Imm(64 - dec.imm));
+				as.ror(x86::rax, Imm(dec.imm));
+				if (rd2x > 0) {
+					as.mov(x86::gpq(rd2x), x86::rcx);
+				} else {
+					as.mov(rbp_reg_q(dec.rs2), x86::rcx);
+				}
+				if (rdx > 0) {
+					as.mov(x86::gpq(rdx), x86::rax);
+				} else {
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			} else {
+				// rotate left residual
+				if (rd2x > 0) {
+					if (rs1x > 0) {
+						as.mov(x86::gpq(rd2x), x86::gpq(rs1x));
+					} else {
+						as.mov(x86::gpq(rd2x), rbp_reg_q(dec.rs1));
+					}
+					as.shl(x86::gpq(rd2x), Imm(64 - dec.imm));
+				}
+				else {
+					if (rs1x > 0) {
+						as.mov(x86::rax, x86::gpq(rs1x));
+					} else {
+						as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					}
+					as.shl(x86::rax, Imm(64 - dec.imm));
+					as.mov(rbp_reg_q(dec.rs2), x86::rax);
+				}
+
+				// rotate
+				if (rdx > 0) {
+					emit_mv_rd_rs1(dec);
+					as.ror(x86::gpq(rdx), Imm(dec.imm));
+				} else {
+					if (rs1x > 0) {
+						as.mov(x86::rax, x86::gpq(rs1x));
+					} else {
+						as.mov(x86::rax, rbp_reg_q(dec.rs1));
+					}
+					as.ror(x86::rax, Imm(dec.imm));
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
+				}
+			}
+
+			return true;
+		}
+
 		bool emit(decode_type &dec)
 		{
 			auto li = labels.find(dec.pc);
@@ -3870,6 +4168,10 @@ namespace riscv {
 				case jit_op_call: return emit_call(dec);
 				case jit_op_zextw: return emit_zextw(dec);
 				case jit_op_addiwz: return emit_addiwz(dec);
+				case jit_op_rorwi_rr: return emit_rorwi_rr(dec);
+				case jit_op_rorwi_lr: return emit_rorwi_lr(dec);
+				case jit_op_rordi_rr: return emit_rordi_rr(dec);
+				case jit_op_rordi_lr: return emit_rordi_lr(dec);
 			}
 			return false;
 		}

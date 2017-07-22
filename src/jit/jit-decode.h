@@ -33,13 +33,20 @@ namespace riscv {
 
 		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, u8 rs1, s32 imm)
 			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(0), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
+
+		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, u8 rs1, u8 rs2, s32 imm)
+			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(rs2), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
 	};
 
 	enum jit_op {
 		jit_op_la = 1024,
 		jit_op_call = 1025,
 		jit_op_zextw = 1026,
-		jit_op_addiwz = 1027
+		jit_op_addiwz = 1027,
+		jit_op_rorwi_rr = 1028,
+		jit_op_rorwi_lr = 1029,
+		jit_op_rordi_rr = 1030,
+		jit_op_rordi_lr = 1031
 	};
 
 	typedef void (*TraceFunc)(void*);
