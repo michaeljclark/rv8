@@ -2683,6 +2683,44 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_auipc_lw(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\tauipc.lw    %s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else {
+				u32 addr = dec.pc + dec.imm;
+				if (use_mmu) {
+					as.mov(x86::rax, Imm(addr));
+					as.call(Imm(func_address(ops.lw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::dword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
+					if (rdx > 0) {
+						as.mov(x86::gpd(rdx), x86::eax);
+					} else {
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+				else {
+					if (rdx > 0) {
+						as.mov(x86::gpd(rdx), x86::dword_ptr(addr));
+					}
+					else {
+						as.mov(x86::eax, x86::dword_ptr(addr));
+						as.mov(rbp_reg_d(dec.rd), x86::eax);
+					}
+				}
+			}
+			return true;
+		}
+
 		bool emit(decode_type &dec)
 		{
 			auto li = labels.find(dec.pc);
@@ -2742,6 +2780,7 @@ namespace riscv {
 				case jit_op_call: return emit_call(dec);
 				case jit_op_zextw: return emit_zextw(dec);
 				case jit_op_addiwz: return emit_addiwz(dec);
+				case jit_op_auipc_lw: return emit_auipc_lw(dec);
 			}
 			return false;
 		}

@@ -4092,6 +4092,109 @@ namespace riscv {
 			return true;
 		}
 
+		bool emit_auipc_lw(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\tauipc.lw    %s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else {
+				u64 addr = dec.pc + dec.imm;
+				if (use_mmu) {
+					as.mov(x86::rax, Imm(addr));
+					as.call(Imm(func_address(ops.lw)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
+					if (rdx > 0) {
+						as.movsxd(x86::gpq(rdx), x86::eax);
+					} else {
+						as.movsxd(x86::rax, x86::eax);
+						as.mov(rbp_reg_q(dec.rd), x86::rax);
+					}
+				}
+				else {
+					if (addr <= std::numeric_limits<u32>::max()) {
+						if (rdx > 0) {
+							as.mov(x86::gpd(rdx), x86::dword_ptr(addr));
+							as.movsxd(x86::gpq(rdx), x86::gpd(rdx));
+						}
+						else {
+							as.mov(x86::eax, x86::dword_ptr(addr));
+							as.movsxd(x86::rax, x86::eax);
+							as.mov(rbp_reg_q(dec.rd), x86::rax);
+						}
+					} else {
+						as.mov(x86::rax, Imm(addr));
+						if (rdx > 0) {
+							as.mov(x86::gpd(rdx), x86::dword_ptr(x86::rax));
+							as.movsxd(x86::gpq(rdx), x86::gpd(rdx));
+						}
+						else {
+							as.mov(x86::eax, x86::dword_ptr(x86::rax));
+							as.movsxd(x86::rax, x86::eax);
+							as.mov(rbp_reg_q(dec.rd), x86::rax);
+						}
+					}
+				}
+			}
+			return true;
+		}
+
+		bool emit_auipc_ld(decode_type &dec)
+		{
+			log_trace("\t# 0x%016llx\tauipc.ld    %s, %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			term_pc = dec.pc + dec.sz;
+			int rdx = x86_reg(dec.rd);
+			if (dec.rd == rv_ireg_zero) {
+				// nop
+			}
+			else {
+				u64 addr = dec.pc + dec.imm;
+				if (use_mmu) {
+					as.mov(x86::rax, Imm(addr));
+					as.call(Imm(func_address(ops.ld)));
+					auto okay = as.newLabel();
+					as.cmp(x86::qword_ptr(x86::rbp, proc_offset(cause)), Imm(0));
+					as.je(okay);
+					emit_pc(dec.pc);
+					as.jmp(term);
+					as.bind(okay);
+					if (rdx > 0) {
+						as.mov(x86::gpq(rdx), x86::rax);
+					} else {
+						as.mov(rbp_reg_q(dec.rd), x86::rax);
+					}
+				}
+				else {
+					if (addr <= std::numeric_limits<u32>::max()) {
+						if (rdx > 0) {
+							as.mov(x86::gpq(rdx), x86::qword_ptr(addr));
+						}
+						else {
+							as.mov(x86::rax, x86::qword_ptr(addr));
+							as.mov(rbp_reg_q(dec.rd), x86::rax);
+						}
+					} else {
+						as.mov(x86::rax, Imm(addr));
+						if (rdx > 0) {
+							as.mov(x86::gpq(rdx), x86::qword_ptr(x86::rax));
+						}
+						else {
+							as.mov(x86::rax, x86::qword_ptr(x86::rax));
+							as.mov(rbp_reg_q(dec.rd), x86::rax);
+						}
+					}
+				}
+			}
+			return true;
+		}
+
 		bool emit(decode_type &dec)
 		{
 			auto li = labels.find(dec.pc);
@@ -4172,6 +4275,8 @@ namespace riscv {
 				case jit_op_rorwi_lr: return emit_rorwi_lr(dec);
 				case jit_op_rordi_rr: return emit_rordi_rr(dec);
 				case jit_op_rordi_lr: return emit_rordi_lr(dec);
+				case jit_op_auipc_lw: return emit_auipc_lw(dec);
+				case jit_op_auipc_ld: return emit_auipc_ld(dec);
 			}
 			return false;
 		}

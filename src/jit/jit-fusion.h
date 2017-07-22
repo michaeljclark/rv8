@@ -216,6 +216,28 @@ namespace riscv {
 								return true;
 							}
 							break;
+						case rv_op_lw:
+							if (rd == dec.rd && rd == dec.rs1) {
+								queue.push_back(dec);
+								clear_queue();
+								imm += dec.imm;
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_auipc_lw, rd, imm);
+								pseudo.sz = sz + inst_length(dec.inst);
+								E::emit(pseudo);
+								return true;
+							}
+							break;
+						case rv_op_ld:
+							if (rd == dec.rd && rd == dec.rs1) {
+								queue.push_back(dec);
+								clear_queue();
+								imm += dec.imm;
+								jit_decode pseudo(pseudo_pc, dec.inst, jit_op_auipc_ld, rd, imm);
+								pseudo.sz = sz + inst_length(dec.inst);
+								E::emit(pseudo);
+								return true;
+							}
+							break;
 						default:
 							break;
 					}

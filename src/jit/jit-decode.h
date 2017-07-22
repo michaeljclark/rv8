@@ -46,7 +46,9 @@ namespace riscv {
 		jit_op_rorwi_rr = 1028,
 		jit_op_rorwi_lr = 1029,
 		jit_op_rordi_rr = 1030,
-		jit_op_rordi_lr = 1031
+		jit_op_rordi_lr = 1031,
+		jit_op_auipc_lw = 1032,
+		jit_op_auipc_ld = 1033
 	};
 
 	typedef void (*TraceFunc)(void*);
