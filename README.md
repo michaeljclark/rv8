@@ -402,6 +402,7 @@ usage: rv-meta [<options>]
                    --print-map, -m            Print instruction map
       --print-map-pseudocode-c, -mc           Print instruction map with C pseudocode
     --print-map-pseudocode-alt, -ma           Print instruction map with alternate pseudocode
+              --print-markdown, -md           Print instruction reference in markdown
                 --print-meta-h, -H            Print metadata header
                --print-meta-cc, -C            Print metadata source
             --print-operands-h, -A            Print operands header
