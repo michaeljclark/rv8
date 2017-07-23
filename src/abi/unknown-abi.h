@@ -23,6 +23,7 @@ namespace riscv {
 		abi_syscall_exit = 93,
 		abi_syscall_exit_group = 94,
 		abi_syscall_set_tid_address = 96,
+		abi_syscall_clock_gettime = 113,
 		abi_syscall_uname = 160,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
@@ -32,6 +33,11 @@ namespace riscv {
 		abi_syscall_unlink = 1026,
 		abi_syscall_stat = 1038,
 		abi_syscall_chown = 1039,
+	};
+
+	template <typename P> struct abi_timespec {
+		typename P::long_t tv_sec;
+		typename P::long_t tv_nsec;
 	};
 
 	template <typename P> struct abi_timeval {
@@ -115,6 +121,11 @@ namespace riscv {
 
 	enum {
 		abi_errno_EINVAL = 22
+	};
+
+	enum {
+		abi_clock_CLOCK_REALTIME = 0,
+		abi_clock_CLOCK_MONOTONIC = 1
 	};
 
 	struct abi_winsize {
@@ -293,6 +304,19 @@ namespace riscv {
 		proc.ireg[rv_ireg_a0].r.xu.val = 1; /* tid is 1 for now */
 	}
 
+	template <typename P> void abi_sys_clock_gettime(P &proc)
+	{
+		abi_timespec<P> *abi_ts = (abi_timespec<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		if (abi_ts) {
+			uint64_t t = host_cpu::get_instance().get_time_ns();
+			abi_ts->tv_sec = (typename P::long_t)(t / 1000000000);
+			abi_ts->tv_nsec = (typename P::long_t)(t % 1000000000);
+			proc.ireg[rv_ireg_a0] = 0;
+		} else {
+			proc.ireg[rv_ireg_a0] = -EFAULT;
+		}
+	}
+
 	template <typename P> void abi_sys_uname(P &proc)
 	{
 		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
@@ -399,6 +423,7 @@ namespace riscv {
 			case abi_syscall_exit:            abi_sys_exit(proc); break;
 			case abi_syscall_exit_group:      abi_sys_exit(proc); break;
 			case abi_syscall_set_tid_address: abi_sys_set_tid_address(proc); break;
+			case abi_syscall_clock_gettime:   abi_sys_clock_gettime(proc); break;
 			case abi_syscall_uname:           abi_sys_uname(proc); break;
 			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
