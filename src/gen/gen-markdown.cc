@@ -55,7 +55,7 @@ static void print_markdown(rv_gen *gen)
 			format.append(name);
 			if (operand_comps.size() > 0) {
 				format.append(" ");
-				format.append(join(operand_comps, ", "));
+				format.append(join(operand_comps, ","));
 			}
 			format.append("</sub></code>");
 
