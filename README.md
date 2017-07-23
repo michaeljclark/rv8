@@ -40,7 +40,7 @@ The rv8 full system emulator has the following features:
 
 - RISC-V IMAFD Base plus Privileged ISA (riscv32 and riscv64)
 - Simple integrated debug command line interface
-- Histograms (instruction and program counter frequency)
+- Histograms (registers, instruction and program counter frequency)
 - Soft MMU supporting sv32, sv39, sv48 page translation modes
 - Abstract MMIO device interface for device emulation
 - Extensible interpreter generated from ISA metadata
