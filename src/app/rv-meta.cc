@@ -47,6 +47,7 @@ rv_gen::rv_gen()
 	generators.push_back(std::make_shared<rv_gen_latex>(this));
 	generators.push_back(std::make_shared<rv_gen_latex_alt>(this));
 	generators.push_back(std::make_shared<rv_gen_map>(this));
+	generators.push_back(std::make_shared<rv_gen_markdown>(this));
 	generators.push_back(std::make_shared<rv_gen_meta>(this));
 	generators.push_back(std::make_shared<rv_gen_operands>(this));
 	generators.push_back(std::make_shared<rv_gen_strings>(this));

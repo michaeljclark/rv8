@@ -78,6 +78,13 @@ struct rv_gen_map : rv_gen_abstract
 	void generate();
 };
 
+struct rv_gen_markdown : rv_gen_abstract
+{
+	rv_gen_markdown(rv_gen *gen) : rv_gen_abstract(gen) {}
+	std::vector<cmdline_option> get_cmdline_options();
+	void generate();
+};
+
 struct rv_gen_meta : rv_gen_abstract
 {
 	rv_gen_meta(rv_gen *gen) : rv_gen_abstract(gen) {}

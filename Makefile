@@ -268,6 +268,7 @@ RV_GEN_SRCS =   $(SRC_DIR)/gen/gen-cc.cc \
                 $(SRC_DIR)/gen/gen-latex.cc \
                 $(SRC_DIR)/gen/gen-latex-alt.cc \
                 $(SRC_DIR)/gen/gen-map.cc \
+                $(SRC_DIR)/gen/gen-markdown.cc \
                 $(SRC_DIR)/gen/gen-meta.cc \
                 $(SRC_DIR)/gen/gen-operands.cc \
                 $(SRC_DIR)/gen/gen-strings.cc \
