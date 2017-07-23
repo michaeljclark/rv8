@@ -31,14 +31,44 @@ std::vector<cmdline_option> rv_gen_markdown::get_cmdline_options()
 
 static void print_markdown(rv_gen *gen)
 {
-	for (auto &opcode : gen->opcodes) {
-		if (!opcode->match_extension(gen->ext_subset)) continue;
-		if (opcode->extensions.size() == 0) continue;
+	static const char* fmt = "%-25s|%-40s|%s\n";
 
-		printf("%-10s | %-40s | %s\n",
-			opcode->name.c_str(),
-			opcode->fullname.c_str(),
-			opcode->pseudocode_alt.c_str());
+	for (auto &ext : gen->extensions) {
+		// check if this extension is in the selected subset
+		if (ext->opcodes.size() == 0 || (gen->ext_subset.size() > 0 &&
+			std::find(gen->ext_subset.begin(), gen->ext_subset.end(), ext) == gen->ext_subset.end())) {
+			continue;
+		}
+
+		// print heading
+		printf("_**%s**_\n\n", ext->description.c_str());
+		printf(fmt, "Format", "Name", "Pseudocode");
+		printf(fmt, ":--", ":--", ":--");
+
+		// print opcodes
+		for (auto &opcode : ext->opcodes) {
+			// skip psuedo opcode
+			if (opcode->is_pseudo()) continue;
+
+			auto name = opcode->name;
+			auto operand_comps = split(opcode->format->operands, ",");
+			std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+			if (operand_comps.size() == 1 && operand_comps[0] == "none") operand_comps[0] = "";
+			std::string opcode_format;
+			opcode_format.append("`");
+			opcode_format.append(name);
+			if (operand_comps.size() > 0) {
+				opcode_format.append(" ");
+				opcode_format.append(join(operand_comps, ", "));
+			}
+			opcode_format.append("`");
+
+			printf(fmt,
+				opcode_format.c_str(),
+				opcode->fullname.c_str(),
+				opcode->pseudocode_alt.c_str());
+		}
+		printf("\n");
 	}
 }
 
