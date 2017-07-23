@@ -82,7 +82,8 @@ namespace riscv {
 					rv_freg_name_sym[ent.first - 32],
 				(float)ent.second / (float)total * 100.0f,
 				ent.second,
-				repeat_str("#", ent.second * (max_chars - 1) / max).c_str());
+				repeat_str((ent.first >= 8 && ent.first <= 15) ? "-" : "=",
+					ent.second * (max_chars - 1) / max).c_str());
 		}
 	}
 
