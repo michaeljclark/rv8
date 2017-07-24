@@ -2,7 +2,7 @@
 lui        "rd ← imm"
 auipc      "rd ← pc + imm"
 jal        "rd ← pc + length(inst) ; pc ← pc + imm"
-jalr       "rd ← pc + length(inst) ; pc ← rs1 + imm"
+jalr       "rd ← pc + length(inst) ; pc ← (rs1 + imm) ∧ -2"
 beq        "if rs1 = rs2 then pc ← pc + imm"
 bne        "if rs1 ≠ rs2 then pc ← pc + imm"
 blt        "if rs1 < rs2 then pc ← pc + imm"
