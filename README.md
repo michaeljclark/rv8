@@ -443,7 +443,6 @@ rv-meta -I RV64G -l -r meta
 - [Native Client ARM 32-bit Sandbox](https://developer.chrome.com/native-client/reference/sandbox_internals/arm-32-bit-sandbox)
 - [Design of the RISC-V Instruction Set Architecture](http://www.eecs.berkeley.edu/~waterman/papers/phd-thesis.pdf)
 - [RISC-V ISA Specification](http://riscv.org/specifications/)
-- [RISC-V Compressed ISA Specification](http://riscv.org/specifications/compressed-isa/)
 - [RISC-V Privileged ISA Specification](http://riscv.org/specifications/privileged-isa/)
 - [RISC-V ISA Simulator](https://github.com/riscv/riscv-isa-sim/)
 - [RISC-V Opcodes](https://github.com/riscv/riscv-opcodes/)
