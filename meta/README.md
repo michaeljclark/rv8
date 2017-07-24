@@ -13,6 +13,7 @@ This directory contains metadata for the RISC-V Instruction Set
 |`extensions`           |Instruction set extensions|
 |`formats`              |Disassembly formats|
 |`opcodes`              |Opcode encoding information|
+|`opcode-classes`       |Instruction classes|
 |`opcode-descriptions`  |Instruction descriptions|
 |`opcode-fullnames`     |Instruction full names|
 |`opcode-majors`        |Major opcodes|
