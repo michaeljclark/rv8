@@ -9,10 +9,10 @@ RV32IMAFDC               | Complete
 RV64IMAFDC               | Complete
 Floating Point           | Testing (NaN and RM)
 ABI Proxy Model          | Implement more syscalls
-Soft MMU Model           | Testing (MPRV, PUM, MXR)
-Privilege 1.9 Paging     | Testing (sv{32,39,48},PTE.DARWXUV)
-Privilege 1.9 Timer      | Testing
-Privilege 1.9 PLIC       | Testing
+Soft MMU Model           | 1.9.1 complete, 1.10 pending
+Privilege 1.9 Paging     | 1.9.1 complete, 1.10 pending
+Privilege 1.9 Timer      | 1.9.1 complete
+Privilege 1.9 PLIC       | RISCVEMU compat, SiFive compat pending
 Privilege 1.9 Interrupts | Testing (Revisit {m,h,s,u}{t,e,s}ip delivery)
 Privilege 1.9 PMAs       | In progress
 MMIO UART                | Testing
@@ -20,18 +20,21 @@ VirtIO Input             | Not Started
 VirtIO Framebuffer       | Not Started
 VirtIO Net               | Not Started
 VirtIO Block             | Not Started
-Disassembler             | Mostly complete
-Disassembler (pseudos)   | Requires LA,LI term detection
+GDB server               | Not Started
+Multi-core               | Started
+Disassembler             | Complete
+Disassembler (pseudos)   | Complete
 Disassembler (objdump)   | Option compatibility not started
-i786 Floating Point      | Begun mapping to MXCSR
-i786 Simple bintrans     | RV64IM complete, FD not started
-i786 Optimizing bintrans | Exploratory stage
-i786 Shadow paging       | Exploratory stage
+x86 Floating Point       | Begun mapping to MXCSR
+x86 Simple bintrans      | RV64IM complete, FD not started
+x86 Optimizing bintrans  | Needs register allocator
+x86 Shadow paging        | Exploratory stage
 RVC Compressor           | In progress
 Boot Protocol            | Document ELF Auxv AT_BASE Proposal
-Assembler                | RV64IMAFD Mostly complete
+Assembler                | RV64IMAFD Mostly complete (in assembler branch)
 ELF                      | Started documenting
 RV128                    | Encoder, Decoder and Disassembler complete
+GUI                      | Exploratory stage
 
 ## rv-meta
 
