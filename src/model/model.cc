@@ -631,6 +631,7 @@ rv_extension_list rv_meta_model::decode_isa_extensions(std::string isa_spec)
 			ext_isa_width_str = std::to_string(ext->isa_width);
 			if (isa_spec.find(ext_isa_width_str) == ext_prefix.size()) {
 				ext_isa_width = ext->isa_width;
+				break;
 			}
 		}
 	}
