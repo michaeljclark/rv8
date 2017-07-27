@@ -454,6 +454,7 @@ rv-meta -I RV64G -l -r meta
 - [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html)
 - [The Netwide Assembler](http://repo.or.cz/nasm.git)
 - [The Renewed Case for the Reduced Instruction Set - Macro-Op Fusion for RISC-V](https://people.eecs.berkeley.edu/~krste/papers/EECS-2016-130.pdf)
+- [An Approach for Implementing Efficient Superscalar CISC Processors](http://pharm.ece.wisc.edu/papers/HPCA2006.pdf)
 - [Complete x86/x64 JIT and Remote Assembler for C++](https://github.com/kobalicek/asmjit/)
 - [Optimizing Binary Translation of Dynamically Generated Code](http://plrg.eecs.uci.edu/publications/cgo15.pdf)
 - [Live Range Hole Allocation in Dynamic Binary Translation](http://amas-bt.cs.virginia.edu/2011proceedings/amasbt2011-p2.pdf)
