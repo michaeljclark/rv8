@@ -48,7 +48,7 @@ The rv8 full system emulator has the following features:
 
 _**RISC-V user mode simulator**_
 
-The rv8 user mode simulator is a single address space implementation of the RISC-V ISA that implements the RISC-V Linux syscall ABI (application binary interface) and delegates system calls to the underlying native host operating system. The user mode simulator can run RISC-V Linux binaries on non-Linux operating systems via system call emulation. The current user mode simulator implements a small number of system calls to allow running RISC-V Linux ELF static binaries.
+The rv8 user mode simulator is a single address space implementation of the RISC-V ISA that implements a subset of the RISC-V Linux syscall ABI (application binary interface) and delegates system calls to the underlying native host operating system. The user mode simulator can run RISC-V Linux binaries on non-Linux operating systems via system call emulation. The current user mode simulator implements a small number of system calls to allow running RISC-V Linux ELF static binaries.
 
 The rv8 user mode simulator has the following features:
 
