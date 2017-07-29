@@ -35,6 +35,57 @@ namespace riscv {
 		abi_syscall_chown = 1039,
 	};
 
+	enum {
+		abi_mmap_PROT_READ = 1,
+		abi_mmap_PROT_WRITE = 2,
+		abi_mmap_PROT_EXEC = 4
+	};
+
+	enum {
+		abi_mmap_MAP_SHARED = 0x1,
+		abi_mmap_MAP_PRIVATE = 0x2,
+		abi_mmap_MAP_FIXED = 0x10,
+		abi_mmap_MAP_ANON = 0x20
+	};
+
+	enum {
+		abi_ioctl_TIOCGWINSZ = 0x5413
+	};
+
+	enum {
+		abi_errno_EINVAL = 22
+	};
+
+	enum {
+		abi_clock_CLOCK_REALTIME = 0,
+		abi_clock_CLOCK_MONOTONIC = 1
+	};
+
+	enum {
+		abi_utsname_NEW_UTS_LEN = 64
+	};
+
+	struct abi_new_utsname {
+		char sysname[abi_utsname_NEW_UTS_LEN + 1];
+		char nodename[abi_utsname_NEW_UTS_LEN + 1];
+		char release[abi_utsname_NEW_UTS_LEN + 1];
+		char version[abi_utsname_NEW_UTS_LEN + 1];
+		char machine[abi_utsname_NEW_UTS_LEN + 1];
+		char domainname[abi_utsname_NEW_UTS_LEN + 1];
+	};
+
+	struct abi_winsize {
+		unsigned short ws_row;
+		unsigned short ws_col;
+		unsigned short ws_xpixel;
+		unsigned short ws_ypixel;
+	};
+
+	template <typename P> struct abi_iovec {
+		typename P::ux iov_base;
+		typename P::ux iov_len;
+	};
+
 	template <typename P> struct abi_timespec {
 		typename P::long_t tv_sec;
 		typename P::long_t tv_nsec;
@@ -74,17 +125,6 @@ namespace riscv {
 		typename P::uint_t  __unused5;
 	};
 
-	const int NEW_UTS_LEN = 64;
-
-	struct abi_new_utsname {
-		char sysname[NEW_UTS_LEN + 1];
-		char nodename[NEW_UTS_LEN + 1];
-		char release[NEW_UTS_LEN + 1];
-		char version[NEW_UTS_LEN + 1];
-		char machine[NEW_UTS_LEN + 1];
-		char domainname[NEW_UTS_LEN + 1];
-	};
-
 	template <typename P>
 	void cvt_abi_stat(abi_stat<P> *guest_stat, struct stat *host_stat)
 	{
@@ -114,32 +154,6 @@ namespace riscv {
 		guest_stat->ctime_nsec = host_stat->st_ctim.tv_nsec;
 	#endif
 	}
-
-	enum {
-		abi_ioctl_TIOCGWINSZ = 0x5413
-	};
-
-	enum {
-		abi_errno_EINVAL = 22
-	};
-
-	enum {
-		abi_clock_CLOCK_REALTIME = 0,
-		abi_clock_CLOCK_MONOTONIC = 1
-	};
-
-	struct abi_winsize {
-		unsigned short ws_row;
-		unsigned short ws_col;
-		unsigned short ws_xpixel;
-		unsigned short ws_ypixel;
-	};
-
-	template <typename P>
-	struct abi_iovec {
-		typename P::ux iov_base;
-		typename P::ux iov_len;
-	};
 
 	template <typename P> void abi_sys_ioctl(P &proc)
 	{
@@ -322,11 +336,11 @@ namespace riscv {
 		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
 		struct utsname host_utsname;
 		int ret = uname(&host_utsname);
-		strncpy(ustname->sysname, host_utsname.sysname, NEW_UTS_LEN);
-		strncpy(ustname->nodename, host_utsname.nodename, NEW_UTS_LEN);
-		strncpy(ustname->release, host_utsname.release, NEW_UTS_LEN);
-		strncpy(ustname->version, host_utsname.version, NEW_UTS_LEN);
-		strncpy(ustname->machine, host_utsname.machine, NEW_UTS_LEN);
+		strncpy(ustname->sysname, host_utsname.sysname, abi_utsname_NEW_UTS_LEN);
+		strncpy(ustname->nodename, host_utsname.nodename, abi_utsname_NEW_UTS_LEN);
+		strncpy(ustname->release, host_utsname.release, abi_utsname_NEW_UTS_LEN);
+		strncpy(ustname->version, host_utsname.version, abi_utsname_NEW_UTS_LEN);
+		strncpy(ustname->machine, host_utsname.machine, abi_utsname_NEW_UTS_LEN);
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
@@ -394,16 +408,24 @@ namespace riscv {
 
 	template <typename P> void abi_sys_munmap(P &proc)
 	{
-		int ret = munmap((void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1]);
+		int ret = guest_munmap((void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1]);
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
 	template <typename P> void abi_sys_mmap(P &proc)
 	{
-		proc.ireg[rv_ireg_a0].r.xu.val = (uintptr_t)mmap(
+		int prot = 0, flags = 0;
+		int abi_prot = proc.ireg[rv_ireg_a2], abi_flags = proc.ireg[rv_ireg_a3];
+		prot  |= (abi_prot  & abi_mmap_PROT_READ)   ? PROT_READ   : 0;
+		prot  |= (abi_prot  & abi_mmap_PROT_WRITE)  ? PROT_WRITE  : 0;
+		prot  |= (abi_prot  & abi_mmap_PROT_EXEC)   ? PROT_EXEC   : 0;
+		flags |= (abi_flags & abi_mmap_MAP_SHARED)  ? MAP_SHARED  : 0;
+		flags |= (abi_flags & abi_mmap_MAP_PRIVATE) ? MAP_PRIVATE : 0;
+		flags |= (abi_flags & abi_mmap_MAP_FIXED)   ? MAP_FIXED   : 0;
+		flags |= (abi_flags & abi_mmap_MAP_ANON)    ? MAP_ANON    : 0;
+		proc.ireg[rv_ireg_a0].r.xu.val = (uintptr_t)guest_mmap(
 			(void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1],
-			proc.ireg[rv_ireg_a2], proc.ireg[rv_ireg_a3],
-			proc.ireg[rv_ireg_a4], proc.ireg[rv_ireg_a5]);
+			prot, flags, proc.ireg[rv_ireg_a4], proc.ireg[rv_ireg_a5]);
 	}
 
 	template <typename P> void proxy_syscall(P &proc)

@@ -66,6 +66,7 @@
 #include "interp.h"
 #include "processor-model.h"
 #include "mmu-proxy.h"
+#include "mmap-core.h"
 #include "unknown-abi.h"
 #include "processor-histogram.h"
 #include "processor-proxy.h"

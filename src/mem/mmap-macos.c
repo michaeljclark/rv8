@@ -10,12 +10,24 @@
 #include <mach/vm_param.h>
 #include <mach/mach_vm.h>
 
+#include "mmap-core.h"
+
 static uintptr_t map_base = 0x7fff00000000UL;
 static const uintptr_t entropy_mask = 0xffffffUL;
 
 __attribute__((__always_inline__)) static uintptr_t round_page(uintptr_t x)
 {
 	return ((x + PAGE_SIZE - 1UL) & ~(PAGE_SIZE - 1UL));
+}
+
+int guest_munmap(void *addr, size_t len)
+{
+	return __guest_munmap(munmap, addr, len);
+}
+
+void* guest_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
+{
+	return __guest_mmap(mmap, addr, len, prot, flags, fd, offset);
 }
 
 static void*
@@ -29,6 +41,12 @@ __mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 	void *rv = mmap(addr, len, prot, flags, fd, offset);
 	if (rv != MAP_FAILED) map_base += incr;
 	return rv;
+}
+
+static int
+__munmap(void *addr, size_t len)
+{
+	return munmap(addr, len);
 }
 
 static kern_return_t
@@ -96,6 +114,7 @@ typedef struct { const void* replacement; const void* replacee; } interpose_t;
 __attribute__((used)) static const interpose_t __interposers[]
 __attribute__ ((section("__DATA, __interpose"))) = {
 	{ (void *)__mmap,             (void *)mmap },
+	{ (void *)__munmap,           (void *)munmap },
 	{ (void *)__vm_allocate,      (void *)vm_allocate },
 	{ (void *)__vm_map,           (void *)vm_map },
 	{ (void *)__mach_vm_allocate, (void *)mach_vm_allocate },

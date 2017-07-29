@@ -394,7 +394,7 @@ MMAP_LINUX_LDFLAGS = \
 	-Wl,-soname,mmap-linux.so \
 	-Wl,-Ttext-segment=0x7ffe80000000 \
 	-Wl,-rpath,$(DEST_DIR)/lib/mmap-linux.so
-MMAP_LINUX_SRCS =   $(SRC_DIR)/mem/mmap-linux.c
+MMAP_LINUX_SRCS =   $(SRC_DIR)/mem/mmap-linux.c $(SRC_DIR)/mem/mmap-core.c
 MMAP_LINUX_OBJS =   $(call cc_src_objs, $(MMAP_LINUX_SRCS))
 MMAP_LINUX_LIB =    $(LIB_DIR)/mmap-linux.so
 
@@ -403,7 +403,7 @@ MMAP_MACOS_LDFLAGS = \
 	-dynamiclib -fPIC \
 	-install_name $(DEST_DIR)/lib/mmap-macos.dylib \
 	-image_base 0x7ffe80000000
-MMAP_MACOS_SRCS =   $(SRC_DIR)/mem/mmap-macos.c
+MMAP_MACOS_SRCS =   $(SRC_DIR)/mem/mmap-macos.c $(SRC_DIR)/mem/mmap-core.c
 MMAP_MACOS_OBJS =   $(call cc_src_objs, $(MMAP_MACOS_SRCS))
 MMAP_MACOS_LIB =    $(LIB_DIR)/mmap-macos.dylib
 
@@ -671,7 +671,7 @@ $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
-$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB)
+$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 

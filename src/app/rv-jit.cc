@@ -69,6 +69,7 @@
 #include "interp.h"
 #include "processor-model.h"
 #include "mmu-proxy.h"
+#include "mmap-core.h"
 #include "unknown-abi.h"
 #include "processor-histogram.h"
 #include "processor-proxy.h"
@@ -152,7 +153,7 @@ struct rv_jit
 	template <typename P>
 	void map_proxy_stack(P &proc, addr_t stack_top, size_t stack_size)
 	{
-		void *addr = mmap((void*)(stack_top - stack_size), stack_size,
+		void *addr = guest_mmap((void*)(stack_top - stack_size), stack_size,
 			PROT_READ | PROT_WRITE, MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
 			panic("map_proxy_stack: error: mmap: %s", strerror(errno));
@@ -265,7 +266,7 @@ struct rv_jit
 		addr_t map_end = map_vaddr + map_len;
 		addr_t brk = addr_t(phdr.p_vaddr + phdr.p_memsz);
 		if (!imagebase) imagebase = map_vaddr;
-		void *addr = mmap((void*)map_vaddr, map_len,
+		void *addr = guest_mmap((void*)map_vaddr, map_len,
 			elf_p_flags_mmap(phdr.p_flags), MAP_FIXED | MAP_PRIVATE, fd, map_offset);
 		close(fd);
 		if (addr == MAP_FAILED) {
@@ -432,7 +433,7 @@ struct rv_jit
 
 		/* Unmap memory segments */
 		for (auto &seg: proc.mmu.mem->segments) {
-			munmap(seg.first, seg.second);
+			guest_munmap(seg.first, seg.second);
 		}
 	}
 
