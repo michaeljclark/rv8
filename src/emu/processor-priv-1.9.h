@@ -263,6 +263,8 @@ namespace riscv {
 		std::mutex intr_mutex;
 		std::condition_variable intr_cond;
 
+		std::string stats_dirname;
+
 		const char* name() { return "rv-sys"; }
 
 		const u64 RTC_FREQ = 10000000;
@@ -379,50 +381,66 @@ core {
 
 		void exit(int rc)
 		{
-			if (!(P::log & proc_log_exit_stats)) ::exit(rc);
+			if (P::log & proc_log_exit_log_stats) {
 
-			/* print integer register file */
-			printf("\n");
-			printf("integer register file\n");
-			printf("~~~~~~~~~~~~~~~~~~~~~\n");
-			P::print_int_registers();
-
-			/* print control and status registers */
-			printf("\n");
-			printf("control and status registers\n");
-			printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-			print_csr_registers();
-
-			/* device registers */
-			printf("\n");
-			printf("io device registers\n");
-			printf("~~~~~~~~~~~~~~~~~~~\n");
-			print_device_registers();
-
-			/* print program counter histogram */
-			if (P::log & proc_log_hist_pc) {
+				/* print integer register file */
 				printf("\n");
-				printf("program counter histogram\n");
-				printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-				histogram_pc(*this, false);
+				printf("integer register file\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~\n");
+				P::print_int_registers();
+
+				/* print control and status registers */
 				printf("\n");
+				printf("control and status registers\n");
+				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+				print_csr_registers();
+
+				/* device registers */
+				printf("\n");
+				printf("io device registers\n");
+				printf("~~~~~~~~~~~~~~~~~~~\n");
+				print_device_registers();
+
+				/* print program counter histogram */
+				if (P::log & proc_log_hist_pc) {
+					printf("\n");
+					printf("program counter histogram\n");
+					printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+					histogram_pc_print(*this, false);
+					printf("\n");
+				}
+
+				/* print register histogram */
+				if (P::log & proc_log_hist_reg) {
+					printf("\n");
+					printf("register usage histogram\n");
+					printf("~~~~~~~~~~~~~~~~~~~~~~~~\n");
+					histogram_reg_print(*this, false);
+				}
+
+				/* print register histogram */
+				if (P::log & proc_log_hist_inst) {
+					printf("\n");
+					printf("instruction usage histogram\n");
+					printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+					histogram_inst_print(*this, false);
+					printf("\n");
+				}
 			}
 
-			/* print register histogram */
-			if (P::log & proc_log_hist_reg) {
-				printf("\n");
-				printf("register usage histogram\n");
-				printf("~~~~~~~~~~~~~~~~~~~~~~~~\n");
-				histogram_reg(*this, false);
-			}
-
-			/* print register histogram */
-			if (P::log & proc_log_hist_inst) {
-				printf("\n");
-				printf("instruction usage histogram\n");
-				printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-				histogram_inst(*this, false);
-				printf("\n");
+			if (P::log & proc_log_exit_save_stats) {
+				if (P::log & proc_log_hist_pc) {
+					std::string filename = stats_dirname + "/" + "hist-pc.csv";
+					histogram_pc_save(*this, filename);
+				}
+				if (P::log & proc_log_hist_reg) {
+					std::string filename = stats_dirname + "/" + "hist-reg.csv";
+					histogram_reg_save(*this, filename);
+				}
+				if (P::log & proc_log_hist_inst) {
+					std::string filename = stats_dirname + "/" + "hist-inst.csv";
+					histogram_inst_save(*this, filename);
+				}
 			}
 		}
 

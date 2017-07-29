@@ -286,15 +286,15 @@ namespace riscv {
 			}
 
 			if (hist_pc) {
-				histogram_pc(*st.proc, reverse_sort);
+				histogram_pc_print(*st.proc, reverse_sort);
 			}
 
 			if (hist_reg) {
-				histogram_reg(*st.proc, reverse_sort);
+				histogram_reg_print(*st.proc, reverse_sort);
 			}
 
 			if (hist_inst) {
-				histogram_inst(*st.proc, reverse_sort);
+				histogram_inst_print(*st.proc, reverse_sort);
 			}
 
 			return 0;

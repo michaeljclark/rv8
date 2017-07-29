@@ -141,13 +141,14 @@ struct rv_emulator
 	static const uintmax_t default_ram_size = 0x40000000ULL; /* 1GiB */
 
 	elf_file elf;
-	std::string boot_filename;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	bool help_or_error = false;
 	addr_t map_physical = 0;
 	s64 ram_boot = 0;
 	uint64_t initial_seed = 0;
+	std::string boot_filename;
+	std::string stats_dirname;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
@@ -237,18 +238,21 @@ struct rv_emulator
 			{ "-t", "--log-traps", cmdline_arg_type_none,
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
-			{ "-E", "--log-exit", cmdline_arg_type_none,
-				"Log Registers and statistics at exit",
-				[&](std::string s) { return (proc_logs |= proc_log_exit_stats); } },
+			{ "-E", "--log-exit-stats", cmdline_arg_type_none,
+				"Log Registers and Statistics at Exit",
+				[&](std::string s) { return (proc_logs |= proc_log_exit_log_stats); } },
+			{ "-D", "--save-exit-stats", cmdline_arg_type_string,
+				"Save Registers and Statistics at Exit",
+				[&](std::string s) { stats_dirname = s; return (proc_logs |= proc_log_exit_save_stats); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_pc | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
 			{ "-R", "--register-usage-histogram", cmdline_arg_type_none,
 				"Record register usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_reg | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
 			{ "-I", "--instruction-usage-histogram", cmdline_arg_type_none,
 				"Record instruction usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_inst | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_inst); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
@@ -317,6 +321,7 @@ struct rv_emulator
 		P proc;
 		proc.log = proc_logs;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
+		proc.stats_dirname = stats_dirname;
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);

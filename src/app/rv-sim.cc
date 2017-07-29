@@ -130,7 +130,6 @@ struct rv_emulator
 	*/
 
 	elf_file elf;
-	std::string elf_filename;
 	uintptr_t imagebase = 0;
 	host_cpu &cpu;
 	int proc_logs = 0;
@@ -138,6 +137,8 @@ struct rv_emulator
 	bool symbolicate = false;
 	uint64_t initial_seed = 0;
 	int ext = rv_set_imafdc;
+	std::string elf_filename;
+	std::string stats_dirname;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
@@ -358,18 +359,21 @@ struct rv_emulator
 			{ "-r", "--log-registers", cmdline_arg_type_none,
 				"Log Registers (defaults to integer registers)",
 				[&](std::string s) { return (proc_logs |= proc_log_int_reg); } },
-			{ "-E", "--log-exit", cmdline_arg_type_none,
-				"Log Registers and statistics at exit",
-				[&](std::string s) { return (proc_logs |= proc_log_exit_stats); } },
+			{ "-E", "--log-exit-stats", cmdline_arg_type_none,
+				"Log Registers and Statistics at Exit",
+				[&](std::string s) { return (proc_logs |= proc_log_exit_log_stats); } },
+			{ "-D", "--save-exit-stats", cmdline_arg_type_string,
+				"Save Registers and Statistics at Exit",
+				[&](std::string s) { stats_dirname = s; return (proc_logs |= proc_log_exit_save_stats); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_pc | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
 			{ "-R", "--register-usage-histogram", cmdline_arg_type_none,
 				"Record register usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_reg | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_reg); } },
 			{ "-I", "--instruction-usage-histogram", cmdline_arg_type_none,
 				"Record instruction usage",
-				[&](std::string s) { return (proc_logs |= proc_log_hist_inst | proc_log_exit_stats); } },
+				[&](std::string s) { return (proc_logs |= proc_log_hist_inst); } },
 			{ "-d", "--debug", cmdline_arg_type_none,
 				"Start up in debugger CLI",
 				[&](std::string s) { return (proc_logs |= proc_log_ebreak_cli); } },
@@ -428,6 +432,7 @@ struct rv_emulator
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
+		proc.stats_dirname = stats_dirname;
 		if (symbolicate) proc.symlookup = [&](addr_t va) { return this->symlookup(va); };
 
 		/* randomise integer register state with 512 bits of entropy */

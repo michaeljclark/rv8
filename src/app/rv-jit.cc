@@ -134,6 +134,7 @@ struct rv_jit
 	int trace_length = 0;
 	bool help_or_error = false;
 	std::string elf_filename;
+	std::string stats_dirname;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
@@ -319,9 +320,12 @@ struct rv_jit
 			{ "-T", "--log-jit-trace", cmdline_arg_type_none,
 				"Log JIT trace",
 				[&](std::string s) { return (proc_logs |= proc_log_jit_trace); } },
-			{ "-E", "--log-exit", cmdline_arg_type_none,
-				"Log Registers and statistics at exit",
-				[&](std::string s) { return (proc_logs |= proc_log_exit_stats); } },
+			{ "-E", "--log-exit-stats", cmdline_arg_type_none,
+				"Log Registers and Statistics at Exit",
+				[&](std::string s) { return (proc_logs |= proc_log_exit_log_stats); } },
+			{ "-D", "--save-exit-stats", cmdline_arg_type_string,
+				"Save Registers and Statistics at Exit",
+				[&](std::string s) { stats_dirname = s; return (proc_logs |= proc_log_exit_save_stats); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
 				[&](std::string s) { return (proc_logs |= proc_log_hist_pc); } },
@@ -411,6 +415,7 @@ struct rv_jit
 		proc.log = proc_logs;
 		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
+		proc.stats_dirname = stats_dirname;
 		proc.trace_iters = trace_iters;
 		proc.trace_length = trace_length;
 
