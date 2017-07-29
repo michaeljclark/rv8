@@ -233,7 +233,7 @@ usage: rv-jit [<options>] <elf_file> [<options>]
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
                --log-jit-trace, -T            Log JIT trace
-                    --log-exit, -e            Log Registers and statistics at exit
+                    --log-exit, -E            Log Registers and statistics at exit
           --pc-usage-histogram, -P            Record program counter usage
     --register-usage-histogram, -R            Record register usage
  --instruction-usage-histogram, -I            Record instruction usage
@@ -263,7 +263,7 @@ usage: rv-sim [<options>] <elf_file> [<options>]
                  --symbolicate, -S            Symbolicate addresses in instruction log
               --log-memory-map, -m            Log Memory Map Information
                --log-registers, -r            Log Registers (defaults to integer registers)
-                    --log-exit, -e            Log Registers and statistics at exit
+                    --log-exit, -E            Log Registers and statistics at exit
           --pc-usage-histogram, -P            Record program counter usage
     --register-usage-histogram, -R            Record register usage
  --instruction-usage-histogram, -I            Record instruction usage
@@ -297,7 +297,7 @@ usage: rv-sys [<options>] <elf_file>
                --log-pagewalks, -v            Log Pagewalks
                   --log-config, -c            Log Config
                    --log-traps, -t            Log Traps
-                    --log-exit, -e            Log Registers and statistics at exit
+                    --log-exit, -E            Log Registers and statistics at exit
           --pc-usage-histogram, -P            Record program counter usage
     --register-usage-histogram, -R            Record register usage
  --instruction-usage-histogram, -I            Record instruction usage
