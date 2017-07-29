@@ -70,6 +70,7 @@ DEBUG_FLAGS =   -g
 WARN_FLAGS =    -Wall -Wsign-compare -Wno-deprecated-declarations -Wno-strict-aliasing
 CPPFLAGS =
 CFLAGS =        $(DEBUG_FLAGS) $(OPT_FLAGS) $(WARN_FLAGS) $(INCLUDES)
+CCFLAGS =       -std=c11 -D_DEFAULT_SOURCE $(CFLAGS)
 CXXFLAGS =      -std=c++1y -fno-rtti -fno-exceptions $(CFLAGS)
 LDFLAGS =       
 ASM_FLAGS =     -S -masm=intel
@@ -721,7 +722,7 @@ $(DEP_DIR)/%.cc.P : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
 			sed "s#\(.*\)\.o#$(OBJ_DIR)$${SUB_DIR}/\1.o $(DEP_DIR)$${SUB_DIR}/\1.cc.P#"  > $@) )
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
-	$(call cmd, CC $@, $(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@)
+	$(call cmd, CC $@, $(CC) $(CCFLAGS) $(CPPFLAGS) -c $< -o $@)
 $(DEP_DIR)/%.c.P : $(SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
 	$(call cmd, MKDEP $@, $(CC) $(CCFLAGS) -E -MM $< 2> /dev/null | \
 		( SUB_DIR=$(subst $(DEP_DIR),,$(shell dirname $@)); \
