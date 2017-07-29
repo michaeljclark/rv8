@@ -38,7 +38,7 @@ check_ld_opt =  $(shell T=$$(mktemp /tmp/test.XXXX); \
                 echo 'int main() { return 0; }' > $$T.$(2) ; \
                 $(1) -c $$T.$(2) -o $$T.o  >/dev/null 2>&1 ; \
                 $(1) $(3) $$T.o -o /dev/null >/dev/null 2>&1 ; \
-                echo $$?; rm $$T $$T.o)
+                echo $$?; rm $$T $$T.$(2) $$T.o)
 
 # compiler flag test definitions
 LIBCPP_FLAGS =  -stdlib=libc++
