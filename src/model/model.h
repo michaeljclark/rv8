@@ -17,6 +17,7 @@ struct rv_register;
 struct rv_csr;
 struct rv_csr_field;
 struct rv_opcode_major;
+struct rv_opcode_class;
 struct rv_opcode;
 struct rv_constraint;
 struct rv_compressed;
@@ -55,6 +56,9 @@ typedef std::shared_ptr<rv_csr_field> rv_csr_field_ptr;
 typedef std::vector<rv_csr_field_ptr> rv_csr_field_list;
 typedef std::pair<rv_bitrange,size_t> rv_opcode_mask;
 typedef std::vector<rv_opcode_mask> rv_opcode_mask_list;
+typedef std::shared_ptr<rv_opcode_class> rv_opcode_class_ptr;
+typedef std::vector<rv_opcode_class_ptr> rv_opcode_class_list;
+typedef std::map<std::string,rv_opcode_class_ptr> rv_opcode_class_map;
 typedef std::shared_ptr<rv_opcode_major> rv_opcode_major_ptr;
 typedef std::vector<rv_opcode_major_ptr> rv_opcode_major_list;
 typedef std::shared_ptr<rv_opcode> rv_opcode_ptr;
@@ -302,6 +306,14 @@ struct rv_opcode_major
 	std::string name;
 };
 
+struct rv_opcode_class
+{
+	std::string name;
+	rv_opcode_list opcodes;
+
+	rv_opcode_class(std::string name) : name(name) {}
+};
+
 struct rv_opcode
 {
 	std::string name;
@@ -310,6 +322,7 @@ struct rv_opcode
 	std::string pseudocode_c;
 	std::string pseudocode_alt;
 	rv_operand_list operands;
+	rv_opcode_class_list classes;
 	rv_opcode_mask_list masks;
 	rv_codec_ptr codec;
 	rv_format_ptr format;
@@ -417,6 +430,8 @@ struct rv_meta_model
 	rv_csr_map            csrs_by_name;
 	rv_csr_field_list     csr_fields;
 	rv_opcode_major_list  opcode_majors;
+	rv_opcode_class_list  opcode_classes;
+	rv_opcode_class_map   opcode_classes_byname;
 	rv_opcode_list        opcodes;
 	rv_opcode_list        all_opcodes;
 	rv_opcode_list_map    opcodes_by_name;
@@ -471,6 +486,7 @@ struct rv_meta_model
 	void parse_constraint(std::vector<std::string> &part);
 	void parse_compression(std::vector<std::string> &part);
 	void parse_pseudo(std::vector<std::string> &part);
+	void parse_opcode_classes(std::vector<std::string> &part);
 	void parse_opcode_fullname(std::vector<std::string> &part);
 	void parse_opcode_description(std::vector<std::string> &part);
 	void parse_opcode_pseudocode_c(std::vector<std::string> &part);

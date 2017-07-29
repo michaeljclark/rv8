@@ -34,6 +34,7 @@ static const char* CONSTRAINTS_FILE           = "constraints";
 static const char* COMPRESSION_FILE           = "compression";
 static const char* PSEUDO_FILE                = "pseudos";
 static const char* OPCODE_MAJORS_FILE         = "opcode-majors";
+static const char* OPCODE_CLASSES_FILE        = "opcode-classes";
 static const char* OPCODE_FULLNAMES_FILE      = "opcode-fullnames";
 static const char* OPCODE_DESCRIPTIONS_FILE   = "opcode-descriptions";
 static const char* OPCODE_PSEUDOCODE_C_FILE   = "opcode-pseudocode-c";
@@ -1089,6 +1090,37 @@ void rv_meta_model::parse_pseudo(std::vector<std::string> &part)
 	pseudo_opcode->codec = real_opcode->codec;
 }
 
+void rv_meta_model::parse_opcode_classes(std::vector<std::string> &part)
+{
+	if (part.size() < 2) return;
+	std::string opcode_name = part[0];
+	std::vector<std::string> op_class_names = split(part[1], ",");
+	rv_opcode_class_list op_classes;
+
+	for (auto op_class_name : op_class_names) {
+		rv_opcode_class_ptr opcode_class;
+		auto ci = opcode_classes_byname.find(op_class_name);
+		if (ci != opcode_classes_byname.end()) {
+			opcode_class = ci->second;
+		} else {
+			opcode_class = std::make_shared<rv_opcode_class>(op_class_name);
+			opcode_classes.push_back(opcode_class);
+			opcode_classes_byname[op_class_name] = opcode_class;
+		}
+		op_classes.push_back(opcode_class);
+	}
+
+	for (auto opcode : lookup_opcode_by_name(opcode_name)) {
+		for (auto opcode_class : op_classes) {
+			opcode->classes.push_back(opcode_class);
+			if (std::find(opcode_class->opcodes.begin(), opcode_class->opcodes.end(),
+					opcode) == opcode_class->opcodes.end()) {
+				opcode_class->opcodes.push_back(opcode);
+			}
+		}
+	}
+}
+
 void rv_meta_model::parse_opcode_fullname(std::vector<std::string> &part)
 {
 	if (part.size() < 1) return;
@@ -1157,6 +1189,7 @@ bool rv_meta_model::read_metadata(std::string dirname)
 	for (auto part : read_file(dirname + std::string("/") + CONSTRAINTS_FILE)) parse_constraint(part);
 	for (auto part : read_file(dirname + std::string("/") + COMPRESSION_FILE)) parse_compression(part);
 	for (auto part : read_file(dirname + std::string("/") + PSEUDO_FILE)) parse_pseudo(part);
+	for (auto part : read_file(dirname + std::string("/") + OPCODE_CLASSES_FILE)) parse_opcode_classes(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODE_FULLNAMES_FILE)) parse_opcode_fullname(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODE_DESCRIPTIONS_FILE)) parse_opcode_description(part);
 	for (auto part : read_file(dirname + std::string("/") + OPCODE_PSEUDOCODE_C_FILE)) parse_opcode_pseudocode_c(part);
