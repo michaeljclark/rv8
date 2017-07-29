@@ -238,7 +238,7 @@ struct rv_emulator
 				"Log Traps",
 				[&](std::string s) { return (proc_logs |= proc_log_trap); } },
 			{ "-E", "--log-exit", cmdline_arg_type_none,
-				"Log Registers at exit",
+				"Log Registers and statistics at exit",
 				[&](std::string s) { return (proc_logs |= proc_log_exit_stats); } },
 			{ "-P", "--pc-usage-histogram", cmdline_arg_type_none,
 				"Record program counter usage",
