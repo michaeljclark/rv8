@@ -261,11 +261,10 @@ R mulu(typename R::utype x, typename R::utype y)
 	U z1 =    mulu<typename R::htype>(x1, y0);
 	U z2 =    mulu<typename R::htype>(x0, y1);
 	U z3 =    mulu<typename R::htype>(x1, y1);
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U lo =    z0 + (z4 << qb);
-	U c2 =    lo < z0;
-	U hi =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U hi =    z3 + (z4 >> qb) + (c1 >> qb);
+	U lo =    (c1 << qb) + (z0 & mask);
 
 	return R(hi, lo);
 }
@@ -319,14 +318,13 @@ R mul(typename R::stype x, typename R::stype y)
 	U z1 =    mulu<typename R::htype>(x1, y0);
 	U z2 =    mulu<typename R::htype>(x0, y1);
 	U z3 =    mulu<typename R::htype>(x1, y1);
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U l1 =    z0 + (z4 << qb);
-	U c2 =    l1 < z0;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+	U l1 =    (c1 << qb) + (z0 & mask);
 	U rs =    xs ^ ys;
-	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
 	U l2 =    l1 - rs;
-	U hb =    l2 > l1;
+	U hb =    l1 < l2;
 	U h2 =    h1 - hb;
 	U hi =    -rs ^ h2;
 	U lo =    -rs ^ l2;
@@ -355,13 +353,12 @@ R mulsu(typename R::stype x, typename R::utype y)
 	U z1 =    mulu<typename R::htype>(x1, y0);
 	U z2 =    mulu<typename R::htype>(x0, y1);
 	U z3 =    mulu<typename R::htype>(x1, y1);
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U l1 =    z0 + (z4 << qb);
-	U c2 =    l1 < z0;
-	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+	U l1 =    (c1 << qb) + (z0 & mask);
 	U l2 =    l1 - xs;
-	U hb =    l2 > l1;
+	U hb =    l1 < l2;
 	U h2 =    h1 - hb;
 	U hi =    -xs ^ h2;
 	U lo =    -xs ^ l2;
@@ -385,11 +382,9 @@ U mulhu(U x, U y)
 	U z1 =    x1 * y0;
 	U z2 =    x0 * y1;
 	U z3 =    x1 * y1;
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U lo =    z0 + (z4 << qb);
-	U c2 =    lo < z0;
-	U hi =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U hi =    z3 + (z4 >> qb) + (c1 >> qb);
 
 	return hi;
 }
@@ -408,23 +403,22 @@ S mulh(S x, S y)
 	U xs =    x < 0;
 	U ys =    y < 0;
 	U xu =    (~xs + 1) ^ (x - xs);
+	U yu =    (~ys + 1) ^ (y - ys);
 	U x0 =    xu       & mask;
 	U x1 =    xu >> qb & mask;
-	U yu =    (~ys + 1) ^ (y - ys);
 	U y0 =    yu       & mask;
 	U y1 =    yu >> qb & mask;
 	U z0 =    x0 * y0;
 	U z1 =    x1 * y0;
 	U z2 =    x0 * y1;
 	U z3 =    x1 * y1;
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U l1 =    z0 + (z4 << qb);
-	U c2 =    l1 < z0;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+	U l1 =    (c1 << qb) + (z0 & mask);
 	U rs =    xs ^ ys;
-	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
 	U l2 =    l1 - rs;
-	U hb =    l2 > l1;
+	U hb =    l1 < l2;
 	U h2 =    h1 - hb;
 	U hi =    -rs ^ h2;
 
@@ -450,13 +444,12 @@ S mulhsu(S x, U y)
 	U z1 =    x1 * y0;
 	U z2 =    x0 * y1;
 	U z3 =    x1 * y1;
-	U z4 =    z1 + z2;
-	U c1 =    z4 < z1;
-	U l1 =    z0 + (z4 << qb);
-	U c2 =    l1 < z0;
-	U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+	U z4 =    z1 + (z0 >> qb);
+	U c1 =    z2 + (z4 & mask);
+	U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+	U l1 =    (c1 << qb) + (z0 & mask);
 	U l2 =    l1 - xs;
-	U hb =    l2 > l1;
+	U hb =    l1 < l2;
 	U h2 =    h1 - hb;
 	U hi =    -xs ^ h2;
 

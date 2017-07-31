@@ -23,11 +23,9 @@ namespace riscv {
 		U z1 =    x1 * y0;
 		U z2 =    x0 * y1;
 		U z3 =    x1 * y1;
-		U z4 =    z1 + z2;
-		U c1 =    z4 < z1;
-		U lo =    z0 + (z4 << qb);
-		U c2 =    lo < z0;
-		U hi =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+		U z4 =    z1 + (z0 >> qb);
+		U c1 =    z2 + (z4 & mask);
+		U hi =    z3 + (z4 >> qb) + (c1 >> qb);
 
 		return hi;
 	}
@@ -54,14 +52,13 @@ namespace riscv {
 		U z1 =    x1 * y0;
 		U z2 =    x0 * y1;
 		U z3 =    x1 * y1;
-		U z4 =    z1 + z2;
-		U c1 =    z4 < z1;
-		U l1 =    z0 + (z4 << qb);
-		U c2 =    l1 < z0;
+		U z4 =    z1 + (z0 >> qb);
+		U c1 =    z2 + (z4 & mask);
+		U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+		U l1 =    (c1 << qb) + (z0 & mask);
 		U rs =    xs ^ ys;
-		U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
 		U l2 =    l1 - rs;
-		U hb =    l2 > l1;
+		U hb =    l1 < l2;
 		U h2 =    h1 - hb;
 		U hi =    -rs ^ h2;
 
@@ -86,13 +83,12 @@ namespace riscv {
 		U z1 =    x1 * y0;
 		U z2 =    x0 * y1;
 		U z3 =    x1 * y1;
-		U z4 =    z1 + z2;
-		U c1 =    z4 < z1;
-		U l1 =    z0 + (z4 << qb);
-		U c2 =    l1 < z0;
-		U h1 =    z3 + (z4 >> qb) + (c1 << qb) + c2;
+		U z4 =    z1 + (z0 >> qb);
+		U c1 =    z2 + (z4 & mask);
+		U h1 =    z3 + (z4 >> qb) + (c1 >> qb);
+		U l1 =    (c1 << qb) + (z0 & mask);
 		U l2 =    l1 - xs;
-		U hb =    l2 > l1;
+		U hb =    l1 < l2;
 		U h2 =    h1 - hb;
 		U hi =    -xs ^ h2;
 
