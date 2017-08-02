@@ -75,6 +75,7 @@ namespace riscv {
 			panic("histogram_pc_save: unable to open: %s: %s",
 				filename.c_str(), strerror(errno));
 		}
+		fprintf(file, "pc\tcount\n");
 		for (auto ent : hist_pc_s) {
 			fprintf(file, "0x%016llx\t%lu\n",
 				ent.first, ent.second);
@@ -128,6 +129,7 @@ namespace riscv {
 			panic("histogram_pc_save: unable to open: %s: %s",
 				filename.c_str(), strerror(errno));
 		}
+		fprintf(file, "register\tcount\n");
 		for (auto ent : hist_reg_s) {
 			fprintf(file, "%s\t%lu\n",
 				ent.first < 32 ?
@@ -181,6 +183,7 @@ namespace riscv {
 			panic("histogram_inst_save: unable to open: %s: %s",
 				filename.c_str(), strerror(errno));
 		}
+		fprintf(file, "opcode\tcount\n");
 		for (auto ent : hist_inst_s) {
 			fprintf(file, "%s\t%lu\n",
 				rv_inst_name_sym[ent.first], ent.second);
