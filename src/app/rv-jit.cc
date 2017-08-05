@@ -89,15 +89,22 @@ using namespace riscv;
 
 using proxy_model_rv32imafdc = processor_rv32imafdc_model<
 	jit_decode, processor_rv32imafd, mmu_proxy_rv32>;
-using proxy_jit_rv32imafdc = jit_runloop<
-	processor_proxy<proxy_model_rv32imafdc>,
-	jit_fusion<jit_emitter_rv32<proxy_model_rv32imafdc>>>;
-
 using proxy_model_rv64imafdc = processor_rv64imafdc_model<
 	jit_decode, processor_rv64imafd, mmu_proxy_rv64>;
-using proxy_jit_rv64imafdc = jit_runloop<
+
+using proxy_jit_rv32imafdc_fusion = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_fusion<jit_emitter_rv32<proxy_model_rv32imafdc>>>;
+using proxy_jit_rv64imafdc_fusion = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
 	jit_fusion<jit_emitter_rv64<proxy_model_rv64imafdc>>>;
+
+using proxy_jit_rv32imafdc = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_emitter_rv32<proxy_model_rv32imafdc>>;
+using proxy_jit_rv64imafdc = jit_runloop<
+	processor_proxy<proxy_model_rv64imafdc>,
+	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
 
 /* environment variables */
@@ -132,6 +139,7 @@ struct rv_jit
 	int proc_logs = 0;
 	int trace_iters = 100;
 	int trace_length = 0;
+	bool disable_fusion = false;
 	bool help_or_error = false;
 	std::string elf_filename;
 	std::string stats_dirname;
@@ -341,6 +349,9 @@ struct rv_jit
 			{ "-x", "--no-pseudo", cmdline_arg_type_none,
 				"Disable Pseudoinstruction decoding",
 				[&](std::string s) { return (proc_logs |= proc_log_no_pseudo); } },
+			{ "-N", "--no-fusion", cmdline_arg_type_none,
+				"Disable JIT macro-op fusion",
+				[&](std::string s) { return (disable_fusion = true); } },
 			{ "-t", "--no-trace", cmdline_arg_type_none,
 				"Disable JIT tracer",
 				[&](std::string s) { mode = jit_mode_none; return true; } },
@@ -448,14 +459,26 @@ struct rv_jit
 	void exec()
 	{
 		/* execute */
-		switch (elf.ei_class) {
-			case ELFCLASS32:
-				start_jit<proxy_jit_rv32imafdc>(); break;
-				break;
-			case ELFCLASS64:
-				start_jit<proxy_jit_rv64imafdc>(); break;
-				break;
-			default: panic("illegal elf class");
+		if (disable_fusion) {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					start_jit<proxy_jit_rv32imafdc>(); break;
+					break;
+				case ELFCLASS64:
+					start_jit<proxy_jit_rv64imafdc>(); break;
+					break;
+				default: panic("illegal elf class");
+			}
+		} else {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					start_jit<proxy_jit_rv32imafdc_fusion>(); break;
+					break;
+				case ELFCLASS64:
+					start_jit<proxy_jit_rv64imafdc_fusion>(); break;
+					break;
+				default: panic("illegal elf class");
+			}
 		}
 	}
 };
