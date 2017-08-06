@@ -2593,7 +2593,7 @@ namespace riscv {
 
 		bool emit_la(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tla          %s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			log_trace("\t# 0x%016llx\tla          %s, pc + %d", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.sz;
 			int rdx = x86_reg(dec.rd);
 			if (dec.rd == rv_ireg_zero) {
@@ -2613,7 +2613,7 @@ namespace riscv {
 
 		bool emit_call(decode_type &dec)
 		{
-			log_trace("\t# 0x%016llx\tcall        %s, 0x%llx", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
+			log_trace("\t# 0x%016llx\tcall        %s, 0x%x", dec.pc, rv_ireg_name_sym[dec.rd], dec.imm);
 			term_pc = dec.pc + dec.imm;
 			int rdx = x86_reg(rv_ireg_ra), rs1x = x86_reg(dec.rd);
 			addr_t link_addr = dec.pc + dec.sz;
