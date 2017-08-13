@@ -123,6 +123,8 @@ namespace riscv {
 		typename P::ux inst_priv(typename P::decode_type &dec, typename P::ux pc_offset)
 		{
 			switch (dec.op) {
+				case rv_op_fence:
+				case rv_op_fence_i: return pc_offset;
 				case rv_op_ecall:  proxy_syscall(*this); return pc_offset;
 				case rv_op_csrrw:  return inst_csr(dec, csr_rw, dec.imm, P::ireg[dec.rs1], pc_offset);
 				case rv_op_csrrs:  return inst_csr(dec, csr_rs, dec.imm, P::ireg[dec.rs1], pc_offset);

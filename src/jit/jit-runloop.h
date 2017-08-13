@@ -179,6 +179,9 @@ namespace riscv {
 		typename P::ux inst_fence_i(typename P::decode_type &dec, typename P::ux pc_offset)
 		{
 			switch(dec.op) {
+				case rv_op_fence:
+					/* nop */
+					return pc_offset;
 				case rv_op_fence_i:
 					clear_trace_cache_prolog();
 					return pc_offset;
