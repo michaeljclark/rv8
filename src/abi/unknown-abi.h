@@ -29,6 +29,7 @@ namespace riscv {
 		abi_syscall_brk = 214,
 		abi_syscall_munmap = 215,
 		abi_syscall_mmap = 222,
+		abi_syscall_madvise = 233,
 		abi_syscall_open = 1024,
 		abi_syscall_unlink = 1026,
 		abi_syscall_stat = 1038,
@@ -428,6 +429,11 @@ namespace riscv {
 			prot, flags, proc.ireg[rv_ireg_a4], proc.ireg[rv_ireg_a5]);
 	}
 
+	template <typename P> void abi_sys_madvise(P &proc)
+	{
+		proc.ireg[rv_ireg_a0] = 0; /* nop */
+	}
+
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
@@ -451,6 +457,7 @@ namespace riscv {
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
 			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
+			case abi_syscall_madvise:         abi_sys_madvise(proc); break;
 			case abi_syscall_open:            abi_sys_open(proc); break;
 			case abi_syscall_unlink:          abi_sys_unlink(proc); break;
 			case abi_syscall_stat:            abi_sys_stat(proc); break;
