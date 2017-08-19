@@ -2,7 +2,7 @@ project(riscv-meta)
 cmake_minimum_required(VERSION 3.1.0)
 
 set(ASMJIT_STATIC true)
-add_subdirectory(asmjit)
+add_subdirectory(third_party/asmjit)
 
 set(
 	libriscv_asm_SOURCES
@@ -98,7 +98,7 @@ include_directories(
 	src/model
 	src/rom
 	src/util
-	asmjit/src/asmjit
+	third_party/asmjit/src/asmjit
 )
 
 add_library(riscv_asm ${libriscv_asm_SOURCES})
