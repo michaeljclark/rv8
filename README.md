@@ -139,7 +139,7 @@ and build the project using g++6.
 ```
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 sudo apt-get update
-sudo apt-get install g++-6 libncurses5-dev
+sudo apt-get install g++-6
 make CXX=g++-6 CC=gcc-6
 ```
 
