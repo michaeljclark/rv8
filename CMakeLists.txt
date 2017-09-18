@@ -1,5 +1,7 @@
 project(rv8)
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.2.0)
+
+set (CMAKE_CXX_STANDARD 14)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -96,36 +98,22 @@ if(APPLE)
 endif()
 
 add_library(riscv_asm ${libriscv_asm_SOURCES})
-target_compile_features(riscv_asm PRIVATE cxx_generic_lambdas)
-
 add_library(riscv_gen ${libriscv_gen_SOURCES})
-target_compile_features(riscv_gen PRIVATE cxx_generic_lambdas)
-
 add_library(riscv_elf ${libriscv_elf_SOURCES})
-target_compile_features(riscv_elf PRIVATE cxx_generic_lambdas)
-
 add_library(riscv_model ${libriscv_model_SOURCES})
-target_compile_features(riscv_model PRIVATE cxx_generic_lambdas)
-
 add_library(riscv_util ${libriscv_util_SOURCES})
-target_compile_features(riscv_util PRIVATE cxx_generic_lambdas)
 
 add_executable(rv-bin ${rv_bin_SOURCES})
-target_compile_features(rv-bin PRIVATE cxx_generic_lambdas)
 target_link_libraries(rv-bin riscv_asm riscv_elf riscv_util)
 
 add_executable(rv-meta src/app/rv-meta.cc)
-target_compile_features(rv-meta PRIVATE cxx_generic_lambdas)
 target_link_libraries(rv-meta riscv_model riscv_gen riscv_util)
 
 add_executable(rv-sys src/app/rv-sys.cc)
-target_compile_features(rv-sys PRIVATE cxx_generic_lambdas)
 target_link_libraries(rv-sys ncurses riscv_asm riscv_elf riscv_util)
 
 add_executable(rv-sim src/app/rv-sim.cc)
-target_compile_features(rv-sim PRIVATE cxx_generic_lambdas)
 target_link_libraries(rv-sim ncurses riscv_asm riscv_elf riscv_util ${MMAP_LIBS})
 
 add_executable(rv-jit src/app/rv-jit.cc)
-target_compile_features(rv-jit PRIVATE cxx_generic_lambdas)
 target_link_libraries(rv-jit riscv_asm riscv_elf riscv_util asmjit ${MMAP_LIBS})
