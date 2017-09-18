@@ -77,13 +77,13 @@ include_directories(
 	src/util
 	third_party/asmjit/src/asmjit)
 
-if(UNIX AND NOT APPLE)
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	set(mmap_SOURCES
 		src/mem/mmap-core.c
 		src/mem/mmap-linux.c)
 	add_library(mmap-linux SHARED ${mmap_SOURCES})
-	set(mmap_LIB mmap-linux)
-	link_libraries("-pie -Wl,-Ttext-segment=0x7ffe00000000")
+	set(MMAP_LIBS mmap-linux ${CMAKE_DL_LIBS})
+	link_libraries("-lrt -lpthread -pie -Wl,-Ttext-segment=0x7ffe00000000")
 endif()
 
 if(APPLE)
@@ -91,8 +91,8 @@ if(APPLE)
 		src/mem/mmap-core.c
 		src/mem/mmap-macos.c)
 	add_library(mmap-macos SHARED ${mmap_SOURCES})
-	set(mmap_LIB mmap-macos)
-	link_libraries("-Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000")
+	set(MMAP_LIBS mmap-macos ${CMAKE_DL_LIBS})
+	link_libraries("-lpthread -Wl,-pagezero_size,0x1000 -Wl,-no_pie -image_base 0x7ffe00000000")
 endif()
 
 add_library(riscv_asm ${libriscv_asm_SOURCES})
@@ -124,8 +124,8 @@ target_link_libraries(rv-sys ncurses riscv_asm riscv_elf riscv_util)
 
 add_executable(rv-sim src/app/rv-sim.cc)
 target_compile_features(rv-sim PRIVATE cxx_generic_lambdas)
-target_link_libraries(rv-sim ncurses riscv_asm riscv_elf riscv_util ${mmap_LIB})
+target_link_libraries(rv-sim ncurses riscv_asm riscv_elf riscv_util ${MMAP_LIBS})
 
 add_executable(rv-jit src/app/rv-jit.cc)
 target_compile_features(rv-jit PRIVATE cxx_generic_lambdas)
-target_link_libraries(rv-jit riscv_asm riscv_elf riscv_util asmjit ${mmap_LIB})
+target_link_libraries(rv-jit riscv_asm riscv_elf riscv_util asmjit ${MMAP_LIBS})
