@@ -9,7 +9,7 @@ namespace riscv {
 
 	using namespace asmjit;
 
-	template <typename P>
+	template <typename P, bool MEMREG = false>
 	struct jit_emitter_rv32
 	{
 		typedef P processor_type;
@@ -2479,7 +2479,12 @@ namespace riscv {
 				callstack.pop_back();
 
 				auto etl = create_exit_tramp(dec.pc);
-				as.cmp(x86::gpq(x86_reg(rv_ireg_ra)), Imm(link_addr));
+				if (rs1x > 0) {
+					as.cmp(x86::gpd(rs1x), Imm(link_addr));
+				} else {
+					as.mov(x86::eax, Imm(link_addr));
+					as.cmp(rbp_reg_d(dec.rs1), x86::eax);
+				}
 				as.jne(etl->second);
 
 				return true;

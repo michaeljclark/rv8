@@ -87,15 +87,22 @@ using namespace riscv;
 
 using proxy_model_rv32imafdc = processor_rv32imafdc_model<
 	jit_decode, processor_rv32imafd, mmu_proxy_rv32>;
-using proxy_jit_rv32imafdc = jit_runloop<
-	processor_proxy<proxy_model_rv32imafdc>,
-	jit_fusion<jit_emitter_rv32<proxy_model_rv32imafdc>>>;
-
 using proxy_model_rv64imafdc = processor_rv64imafdc_model<
 	jit_decode, processor_rv64imafd, mmu_proxy_rv64>;
+
+using proxy_jit_rv32imafdc_memreg = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_emitter_rv32<proxy_model_rv32imafdc,true>>;
+using proxy_jit_rv64imafdc_memreg = jit_runloop<
+	processor_proxy<proxy_model_rv64imafdc>,
+	jit_emitter_rv64<proxy_model_rv64imafdc,true>>;
+
+using proxy_jit_rv32imafdc = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_emitter_rv32<proxy_model_rv32imafdc>>;
 using proxy_jit_rv64imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
-	jit_fusion<jit_emitter_rv64<proxy_model_rv64imafdc>>>;
+	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
 template <typename P>
 struct rv_test_jit
@@ -1906,9 +1913,9 @@ struct rv_test_jit
 	}
 };
 
-int main(int argc, char *argv[])
+template <typename T>
+void test(T &test)
 {
-	rv_test_jit<proxy_jit_rv64imafdc> test;
 	test.test_addi_1();
 	test.test_addi_2();
 	test.test_addi_3();
@@ -2024,4 +2031,15 @@ int main(int argc, char *argv[])
 	test.test_sb_lbu_3();
 	test.test_sb_lbu_4();
 	test.print_summary();
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc == 2 && strcmp(argv[1], "-M") == 0) {
+		rv_test_jit<proxy_jit_rv64imafdc_memreg> proc;
+		test(proc);
+	} else {
+		rv_test_jit<proxy_jit_rv64imafdc> proc;
+		test(proc);
+	}
 }

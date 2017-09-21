@@ -99,6 +99,13 @@ using proxy_jit_rv64imafdc_fusion = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
 	jit_fusion<jit_emitter_rv64<proxy_model_rv64imafdc>>>;
 
+using proxy_jit_rv32imafdc_memreg = jit_runloop<
+	processor_proxy<proxy_model_rv32imafdc>,
+	jit_emitter_rv32<proxy_model_rv32imafdc,true>>;
+using proxy_jit_rv64imafdc_memreg = jit_runloop<
+	processor_proxy<proxy_model_rv64imafdc>,
+	jit_emitter_rv64<proxy_model_rv64imafdc,true>>;
+
 using proxy_jit_rv32imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
 	jit_emitter_rv32<proxy_model_rv32imafdc>>;
@@ -140,6 +147,7 @@ struct rv_jit
 	int trace_iters = 100;
 	int trace_length = 0;
 	bool disable_fusion = false;
+	bool memory_registers = false;
 	bool help_or_error = false;
 	std::string elf_filename;
 	std::string stats_dirname;
@@ -352,6 +360,9 @@ struct rv_jit
 			{ "-N", "--no-fusion", cmdline_arg_type_none,
 				"Disable JIT macro-op fusion",
 				[&](std::string s) { return (disable_fusion = true); } },
+			{ "-M", "--memory-mapped-registers", cmdline_arg_type_none,
+				"Disable JIT host register mapping",
+				[&](std::string s) { return (memory_registers = true); } },
 			{ "-t", "--no-trace", cmdline_arg_type_none,
 				"Disable JIT tracer",
 				[&](std::string s) { mode = jit_mode_none; return true; } },
@@ -459,7 +470,18 @@ struct rv_jit
 	void exec()
 	{
 		/* execute */
-		if (disable_fusion) {
+		if (memory_registers) {
+			switch (elf.ei_class) {
+				case ELFCLASS32:
+					start_jit<proxy_jit_rv32imafdc_memreg>(); break;
+					break;
+				case ELFCLASS64:
+					start_jit<proxy_jit_rv64imafdc_memreg>(); break;
+					break;
+				default: panic("illegal elf class");
+			}
+		}
+		else if (disable_fusion) {
 			switch (elf.ei_class) {
 				case ELFCLASS32:
 					start_jit<proxy_jit_rv32imafdc>(); break;

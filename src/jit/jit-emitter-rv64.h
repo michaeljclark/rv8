@@ -9,7 +9,7 @@ namespace riscv {
 
 	using namespace asmjit;
 
-	template <typename P>
+	template <typename P, bool MEMREG = false>
 	struct jit_emitter_rv64
 	{
 		typedef P processor_type;
@@ -58,6 +58,9 @@ namespace riscv {
 
 		static int x86_reg(int rd)
 		{
+			if (MEMREG) {
+				return -1; /* all registers are memory backed */
+			}
 			switch (rd) {
 				case rv_ireg_zero: return 0;
 				case rv_ireg_ra: return 2;  /* rdx */
@@ -102,47 +105,55 @@ namespace riscv {
 
 		void emit_prolog()
 		{
-			as.push(x86::r12);
-			as.push(x86::r13);
-			as.push(x86::r14);
-			as.push(x86::r15);
-			as.push(x86::rbx);
+			if (!MEMREG) {
+				as.push(x86::r12);
+				as.push(x86::r13);
+				as.push(x86::r14);
+				as.push(x86::r15);
+				as.push(x86::rbx);
+			}
 			as.push(x86::rbp);
 			as.mov(x86::rbp, x86::rdi);
-			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
-			as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
-			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
-			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
-			as.mov(x86::r8,  rbp_reg_q(rv_ireg_a0));
-			as.mov(x86::r9,  rbp_reg_q(rv_ireg_a1));
-			as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
-			as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
-			as.mov(x86::r12, rbp_reg_q(rv_ireg_a4));
-			as.mov(x86::r13, rbp_reg_q(rv_ireg_a5));
-			as.mov(x86::r14, rbp_reg_q(rv_ireg_a6));
-			as.mov(x86::r15, rbp_reg_q(rv_ireg_a7));
+			if (!MEMREG) {
+				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
+				as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
+				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
+				as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
+				as.mov(x86::r8,  rbp_reg_q(rv_ireg_a0));
+				as.mov(x86::r9,  rbp_reg_q(rv_ireg_a1));
+				as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
+				as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
+				as.mov(x86::r12, rbp_reg_q(rv_ireg_a4));
+				as.mov(x86::r13, rbp_reg_q(rv_ireg_a5));
+				as.mov(x86::r14, rbp_reg_q(rv_ireg_a6));
+				as.mov(x86::r15, rbp_reg_q(rv_ireg_a7));
+			}
 		}
 
 		void emit_epilog()
 		{
-			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
-			as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
-			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
-			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
-			as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
-			as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
-			as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
-			as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
-			as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
-			as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
-			as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
-			as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
+			if (!MEMREG) {
+				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
+				as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
+				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
+				as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
+				as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
+				as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
+				as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
+				as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
+				as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
+				as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
+				as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
+				as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
+			}
 			as.pop(x86::rbp);
-			as.pop(x86::rbx);
-			as.pop(x86::r15);
-			as.pop(x86::r14);
-			as.pop(x86::r13);
-			as.pop(x86::r12);
+			if (!MEMREG) {
+				as.pop(x86::rbx);
+				as.pop(x86::r15);
+				as.pop(x86::r14);
+				as.pop(x86::r13);
+				as.pop(x86::r12);
+			}
 			as.ret();
 
 			for (auto &jtl : jmp_tramp_labels) {
@@ -175,14 +186,16 @@ namespace riscv {
 
 			/* slow path lookup cache pc -> trace fn */
 			as.bind(lookup_slow);
-			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
-			as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
-			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
-			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
-			as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
-			as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
-			as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
-			as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
+			if (!MEMREG) {
+				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
+				as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
+				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
+				as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
+				as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
+				as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
+				as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
+				as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
+			}
 			as.mov(x86::rdi, x86::rax);
 			as.call(Imm(func_address(lookup_trace_slow)));
 			as.test(x86::rax, x86::rax);
@@ -192,28 +205,34 @@ namespace riscv {
 			as.and_(x86::rcx, Imm(mask));
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_fn)), x86::rax);
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_pc)), x86::rdx);
-			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
-			as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
-			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
-			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
-			as.mov(x86::r8,  rbp_reg_q(rv_ireg_a0));
-			as.mov(x86::r9,  rbp_reg_q(rv_ireg_a1));
-			as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
-			as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
+			if (!MEMREG) {
+				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
+				as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
+				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
+				as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
+				as.mov(x86::r8,  rbp_reg_q(rv_ireg_a0));
+				as.mov(x86::r9,  rbp_reg_q(rv_ireg_a1));
+				as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
+				as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
+			}
 			as.jmp(x86::rax);
 
 			/* fail path, return to emulator */
 			as.bind(lookup_fail);
-			as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
-			as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
-			as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
-			as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
+			if (!MEMREG) {
+				as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
+				as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
+				as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
+				as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
+			}
 			as.pop(x86::rbp);
-			as.pop(x86::rbx);
-			as.pop(x86::r15);
-			as.pop(x86::r14);
-			as.pop(x86::r13);
-			as.pop(x86::r12);
+			if (!MEMREG) {
+				as.pop(x86::rbx);
+				as.pop(x86::r15);
+				as.pop(x86::r14);
+				as.pop(x86::r13);
+				as.pop(x86::r12);
+			}
 			as.ret();
 
 			Error err = rt.add(&lookup_trace_fast, &code);
@@ -223,24 +242,28 @@ namespace riscv {
 
 		void save_volatile()
 		{
-			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
-			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
-			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
-			as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
-			as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
-			as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
-			as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
+			if (!MEMREG) {
+				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
+				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
+				as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
+				as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
+				as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
+				as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
+				as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
+			}
 		}
 
 		void restore_volatile()
 		{
-			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
-			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
-			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
-			as.mov(x86::r8, rbp_reg_q(rv_ireg_a0));
-			as.mov(x86::r9, rbp_reg_q(rv_ireg_a1));
-			as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
-			as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
+			if (!MEMREG) {
+				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
+				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
+				as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
+				as.mov(x86::r8, rbp_reg_q(rv_ireg_a0));
+				as.mov(x86::r9, rbp_reg_q(rv_ireg_a1));
+				as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
+				as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
+			}
 		}
 
 		mmu_ops create_load_store(JitRuntime &rt)
@@ -3584,7 +3607,17 @@ namespace riscv {
 				callstack.pop_back();
 
 				auto etl = create_exit_tramp(dec.pc);
-				as.cmp(x86::gpq(x86_reg(rv_ireg_ra)), Imm(link_addr));
+				if (rs1x > 0) {
+					if (link_addr < std::numeric_limits<u32>::max()) {
+						as.cmp(x86::gpq(rs1x), Imm(link_addr));
+					} else {
+						as.mov(x86::rax, Imm(link_addr));
+						as.cmp(x86::gpq(rs1x), x86::rax);
+					}
+				} else {
+					as.mov(x86::rax, Imm(link_addr));
+					as.cmp(rbp_reg_q(dec.rs1), x86::rax);
+				}
 				as.jne(etl->second);
 
 				return true;
