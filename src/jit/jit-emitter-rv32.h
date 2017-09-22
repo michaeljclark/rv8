@@ -664,7 +664,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (rdx != 2 /* x86::edx */) {
+				if (!MEMREG && rdx != 2 /* x86::edx */) {
 					as.mov(x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::edx);
 				}
 
@@ -683,7 +683,7 @@ namespace riscv {
 					as.mov(rbp_reg_d(dec.rd), x86::edx);
 				}
 
-				if (rdx != 2 /* x86::edx */) {
+				if (!MEMREG && rdx != 2 /* x86::edx */) {
 					as.mov(x86::edx, x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}
@@ -702,7 +702,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (rdx != 2 /* x86::edx */) {
+				if (!MEMREG && rdx != 2 /* x86::edx */) {
 					as.mov(x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::edx);
 				}
 
@@ -721,7 +721,7 @@ namespace riscv {
 					as.mov(rbp_reg_d(dec.rd), x86::edx);
 				}
 
-				if (rdx != 2 /* x86::edx */) {
+				if (!MEMREG && rdx != 2 /* x86::edx */) {
 					as.mov(x86::edx, x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}
@@ -740,7 +740,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (rdx != 2 /* x86::edx */ || (rs1x == 2 /* x86::edx */ || rs2x == 2 /* x86::edx */)) {
+				if (!MEMREG && (rdx != 2 /* x86::edx */ || (rs1x == 2 /* x86::edx */ || rs2x == 2 /* x86::edx */))) {
 					as.mov(x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::edx);
 				}
 
@@ -763,7 +763,7 @@ namespace riscv {
 				as.mov(x86::ecx, x86::edx);
 
 				/* if necessary restore rdx input operand */
-				if (rs1x == 2 || rs2x == 2 /* x86::edx */) {
+				if (!MEMREG && (rs1x == 2 || rs2x == 2 /* x86::edx */)) {
 					as.mov(x86::edx, x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 
@@ -801,7 +801,7 @@ namespace riscv {
 					as.mov(rbp_reg_d(dec.rd), x86::edx);
 				}
 
-				if (rdx != 2 /* x86::edx */) {
+				if (!MEMREG && (rdx != 2 /* x86::edx */)) {
 					as.mov(x86::edx, x86::dword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}
