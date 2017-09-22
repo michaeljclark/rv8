@@ -29,6 +29,8 @@ namespace riscv {
 		std::map<addr_t,std::vector<Label>> jmp_fixup_labels;
 		std::vector<addr_t> callstack;
 		u32 term_pc;
+		int instret;
+		bool update_instret;
 		bool use_mmu;
 		Label start, term;
 
@@ -36,7 +38,7 @@ namespace riscv {
 			: proc(proc), as(&code), code(code), ops(ops),
 			  lookup_trace_slow(lookup_trace_slow),
 			  lookup_trace_fast(lookup_trace_fast),
-			  term_pc(0), use_mmu(false)
+			  term_pc(0), instret(0), update_instret(true), use_mmu(false)
 		{}
 
 		void log_trace(const char* fmt, ...)
@@ -91,6 +93,14 @@ namespace riscv {
 			return x86::dword_ptr(x86::rbp, proc_offset(ireg) + reg * (P::xlen >> 3));
 		}
 
+		void commit_instret()
+		{
+			if (update_instret && instret > 0) {
+				as.add(x86::qword_ptr(x86::rbp, proc_offset(instret)), Imm(instret));
+				instret = 0;
+			}
+		}
+
 		void emit_prolog()
 		{
 			if (!MEMREG) {
@@ -120,6 +130,8 @@ namespace riscv {
 
 		void emit_epilog()
 		{
+			commit_instret();
+
 			if (!MEMREG) {
 				as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
 				as.mov(rbp_reg_d(rv_ireg_sp), x86::ebx);
@@ -1887,6 +1899,9 @@ namespace riscv {
 			auto cont_i = labels.find(cont_pc);
 
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+
+			commit_instret();
+
 			emit_cmp(dec);
 
 			if (branch_i != labels.end() && cont_i != labels.end()) {
@@ -2687,56 +2702,56 @@ namespace riscv {
 			labels[dec.pc] = l;
 			as.bind(l);
 			switch(dec.op) {
-				case rv_op_auipc: return emit_auipc(dec);
-				case rv_op_add: return emit_add(dec);
-				case rv_op_sub: return emit_sub(dec);
-				case rv_op_mul: return emit_mul(dec);
-				case rv_op_mulh: return emit_mulh(dec);
-				case rv_op_mulhu: return emit_mulhu(dec);
-				case rv_op_mulhsu: return emit_mulhsu(dec);
-				case rv_op_div: return emit_div(dec);
-				case rv_op_rem: return emit_rem(dec);
-				case rv_op_divu: return emit_divu(dec);
-				case rv_op_remu: return emit_remu(dec);
-				case rv_op_slt: return emit_slt(dec);
-				case rv_op_sltu: return emit_sltu(dec);
-				case rv_op_and: return emit_and(dec);
-				case rv_op_or: return emit_or(dec);
-				case rv_op_xor: return emit_xor(dec);
-				case rv_op_sll: return emit_sll(dec);
-				case rv_op_srl: return emit_srl(dec);
-				case rv_op_sra: return emit_sra(dec);
-				case rv_op_addi: return emit_addi(dec);
-				case rv_op_slti: return emit_slti(dec);
-				case rv_op_sltiu: return emit_sltiu(dec);
-				case rv_op_andi: return emit_andi(dec);
-				case rv_op_ori: return emit_ori(dec);
-				case rv_op_xori: return emit_xori(dec);
-				case rv_op_slli: return emit_slli(dec);
-				case rv_op_srli: return emit_srli(dec);
-				case rv_op_srai: return emit_srai(dec);
-				case rv_op_bne: return emit_bne(dec);
-				case rv_op_beq: return emit_beq(dec);
-				case rv_op_blt: return emit_blt(dec);
-				case rv_op_bge: return emit_bge(dec);
-				case rv_op_bltu: return emit_bltu(dec);
-				case rv_op_bgeu: return emit_bgeu(dec);
-				case rv_op_lw: return emit_lw(dec);
-				case rv_op_lh: return emit_lh(dec);
-				case rv_op_lhu: return emit_lhu(dec);
-				case rv_op_lb: return emit_lb(dec);
-				case rv_op_lbu: return emit_lbu(dec);
-				case rv_op_sw: return emit_sw(dec);
-				case rv_op_sh: return emit_sh(dec);
-				case rv_op_sb: return emit_sb(dec);
-				case rv_op_lui: return emit_lui(dec);
-				case rv_op_jal: return emit_jal(dec);
-				case rv_op_jalr: return emit_jalr(dec);
-				case jit_op_la: return emit_la(dec);
-				case jit_op_call: return emit_call(dec);
-				case jit_op_zextw: return emit_zextw(dec);
-				case jit_op_addiwz: return emit_addiwz(dec);
-				case jit_op_auipc_lw: return emit_auipc_lw(dec);
+				case rv_op_auipc:     instret++;    return emit_auipc(dec);
+				case rv_op_add:       instret++;    return emit_add(dec);
+				case rv_op_sub:       instret++;    return emit_sub(dec);
+				case rv_op_mul:       instret++;    return emit_mul(dec);
+				case rv_op_mulh:      instret++;    return emit_mulh(dec);
+				case rv_op_mulhu:     instret++;    return emit_mulhu(dec);
+				case rv_op_mulhsu:    instret++;    return emit_mulhsu(dec);
+				case rv_op_div:       instret++;    return emit_div(dec);
+				case rv_op_rem:       instret++;    return emit_rem(dec);
+				case rv_op_divu:      instret++;    return emit_divu(dec);
+				case rv_op_remu:      instret++;    return emit_remu(dec);
+				case rv_op_slt:       instret++;    return emit_slt(dec);
+				case rv_op_sltu:      instret++;    return emit_sltu(dec);
+				case rv_op_and:       instret++;    return emit_and(dec);
+				case rv_op_or:        instret++;    return emit_or(dec);
+				case rv_op_xor:       instret++;    return emit_xor(dec);
+				case rv_op_sll:       instret++;    return emit_sll(dec);
+				case rv_op_srl:       instret++;    return emit_srl(dec);
+				case rv_op_sra:       instret++;    return emit_sra(dec);
+				case rv_op_addi:      instret++;    return emit_addi(dec);
+				case rv_op_slti:      instret++;    return emit_slti(dec);
+				case rv_op_sltiu:     instret++;    return emit_sltiu(dec);
+				case rv_op_andi:      instret++;    return emit_andi(dec);
+				case rv_op_ori:       instret++;    return emit_ori(dec);
+				case rv_op_xori:      instret++;    return emit_xori(dec);
+				case rv_op_slli:      instret++;    return emit_slli(dec);
+				case rv_op_srli:      instret++;    return emit_srli(dec);
+				case rv_op_srai:      instret++;    return emit_srai(dec);
+				case rv_op_bne:       instret++;    return emit_bne(dec);
+				case rv_op_beq:       instret++;    return emit_beq(dec);
+				case rv_op_blt:       instret++;    return emit_blt(dec);
+				case rv_op_bge:       instret++;    return emit_bge(dec);
+				case rv_op_bltu:      instret++;    return emit_bltu(dec);
+				case rv_op_bgeu:      instret++;    return emit_bgeu(dec);
+				case rv_op_lw:        instret++;    return emit_lw(dec);
+				case rv_op_lh:        instret++;    return emit_lh(dec);
+				case rv_op_lhu:       instret++;    return emit_lhu(dec);
+				case rv_op_lb:        instret++;    return emit_lb(dec);
+				case rv_op_lbu:       instret++;    return emit_lbu(dec);
+				case rv_op_sw:        instret++;    return emit_sw(dec);
+				case rv_op_sh:        instret++;    return emit_sh(dec);
+				case rv_op_sb:        instret++;    return emit_sb(dec);
+				case rv_op_lui:       instret++;    return emit_lui(dec);
+				case rv_op_jal:       instret++;    return emit_jal(dec);
+				case rv_op_jalr:      instret++;    return emit_jalr(dec);
+				case jit_op_la:       instret += 2; return emit_la(dec);
+				case jit_op_call:     instret += 2; return emit_call(dec);
+				case jit_op_zextw:    instret += 2; return emit_zextw(dec);
+				case jit_op_addiwz:   instret += 3; return emit_addiwz(dec);
+				case jit_op_auipc_lw: instret += 2; return emit_auipc_lw(dec);
 			}
 			return false;
 		}
