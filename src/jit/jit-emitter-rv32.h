@@ -58,6 +58,9 @@ namespace riscv {
 
 		static int x86_reg(int rd)
 		{
+			if (MEMREG) {
+				return -1; /* all registers are memory backed */
+			}
 			switch (rd) {
 				case rv_ireg_zero: return 0;
 				case rv_ireg_ra: return 2;  /* rdx */
@@ -90,49 +93,56 @@ namespace riscv {
 
 		void emit_prolog()
 		{
-			as.push(x86::r12);
-			as.push(x86::r13);
-			as.push(x86::r14);
-			as.push(x86::r15);
-			as.push(x86::rbx);
+			if (!MEMREG) {
+				as.push(x86::r12);
+				as.push(x86::r13);
+				as.push(x86::r14);
+				as.push(x86::r15);
+				as.push(x86::rbx);
+			}
 			as.push(x86::rbp);
 			as.mov(x86::rbp, x86::rdi);
-			as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
-			as.mov(x86::ebx, rbp_reg_d(rv_ireg_sp));
-			as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
-			as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));
-			as.mov(x86::r8d,  rbp_reg_d(rv_ireg_a0));
-			as.mov(x86::r9d,  rbp_reg_d(rv_ireg_a1));
-			as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
-			as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
-			as.mov(x86::r12d, rbp_reg_d(rv_ireg_a4));
-			as.mov(x86::r13d, rbp_reg_d(rv_ireg_a5));
-			as.mov(x86::r14d, rbp_reg_d(rv_ireg_a6));
-			as.mov(x86::r15d, rbp_reg_d(rv_ireg_a7));
+			if (!MEMREG) {
+				as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
+				as.mov(x86::ebx, rbp_reg_d(rv_ireg_sp));
+				as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
+				as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));
+				as.mov(x86::r8d,  rbp_reg_d(rv_ireg_a0));
+				as.mov(x86::r9d,  rbp_reg_d(rv_ireg_a1));
+				as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
+				as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
+				as.mov(x86::r12d, rbp_reg_d(rv_ireg_a4));
+				as.mov(x86::r13d, rbp_reg_d(rv_ireg_a5));
+				as.mov(x86::r14d, rbp_reg_d(rv_ireg_a6));
+				as.mov(x86::r15d, rbp_reg_d(rv_ireg_a7));
+			}
 		}
 
 		void emit_epilog()
 		{
-			as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
-			as.mov(rbp_reg_d(rv_ireg_sp), x86::ebx);
-			as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
-			as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
-			as.mov(rbp_reg_d(rv_ireg_a0), x86::r8d);
-			as.mov(rbp_reg_d(rv_ireg_a1), x86::r9d);
-			as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
-			as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
-			as.mov(rbp_reg_d(rv_ireg_a4), x86::r12d);
-			as.mov(rbp_reg_d(rv_ireg_a5), x86::r13d);
-			as.mov(rbp_reg_d(rv_ireg_a6), x86::r14d);
-			as.mov(rbp_reg_d(rv_ireg_a7), x86::r15d);
+			if (!MEMREG) {
+				as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
+				as.mov(rbp_reg_d(rv_ireg_sp), x86::ebx);
+				as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
+				as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
+				as.mov(rbp_reg_d(rv_ireg_a0), x86::r8d);
+				as.mov(rbp_reg_d(rv_ireg_a1), x86::r9d);
+				as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
+				as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
+				as.mov(rbp_reg_d(rv_ireg_a4), x86::r12d);
+				as.mov(rbp_reg_d(rv_ireg_a5), x86::r13d);
+				as.mov(rbp_reg_d(rv_ireg_a6), x86::r14d);
+				as.mov(rbp_reg_d(rv_ireg_a7), x86::r15d);
+			}
 			as.pop(x86::rbp);
-			as.pop(x86::rbx);
-			as.pop(x86::r15);
-			as.pop(x86::r14);
-			as.pop(x86::r13);
-			as.pop(x86::r12);
+			if (!MEMREG) {
+				as.pop(x86::rbx);
+				as.pop(x86::r15);
+				as.pop(x86::r14);
+				as.pop(x86::r13);
+				as.pop(x86::r12);
+			}
 			as.ret();
-
 
 			for (auto &jtl : jmp_tramp_labels) {
 				as.bind(jtl.second);
@@ -164,14 +174,16 @@ namespace riscv {
 
 			/* slow path lookup cache pc -> trace fn */
 			as.bind(lookup_slow);
-			as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
-			as.mov(rbp_reg_d(rv_ireg_sp), x86::ebx);
-			as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
-			as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
-			as.mov(rbp_reg_d(rv_ireg_a0), x86::r8d);
-			as.mov(rbp_reg_d(rv_ireg_a1), x86::r9d);
-			as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
-			as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
+			if (!MEMREG) {
+				as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
+				as.mov(rbp_reg_d(rv_ireg_sp), x86::ebx);
+				as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
+				as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
+				as.mov(rbp_reg_d(rv_ireg_a0), x86::r8d);
+				as.mov(rbp_reg_d(rv_ireg_a1), x86::r9d);
+				as.mov(rbp_reg_d(rv_ireg_a2), x86::r10d);
+				as.mov(rbp_reg_d(rv_ireg_a3), x86::r11d);
+			}
 			as.mov(x86::rdi, x86::rax);
 			as.call(Imm(func_address(lookup_trace_slow)));
 			as.test(x86::rax, x86::rax);
@@ -181,28 +193,34 @@ namespace riscv {
 			as.and_(x86::ecx, Imm(mask));
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_fn)), x86::rax);
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_pc)), x86::rdx);
-			as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
-			as.mov(x86::ebx, rbp_reg_d(rv_ireg_sp));
-			as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
-			as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));
-			as.mov(x86::r8d, rbp_reg_d(rv_ireg_a0));
-			as.mov(x86::r9d, rbp_reg_d(rv_ireg_a1));
-			as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
-			as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
+			if (!MEMREG) {
+				as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
+				as.mov(x86::ebx, rbp_reg_d(rv_ireg_sp));
+				as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
+				as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));
+				as.mov(x86::r8d, rbp_reg_d(rv_ireg_a0));
+				as.mov(x86::r9d, rbp_reg_d(rv_ireg_a1));
+				as.mov(x86::r10d, rbp_reg_d(rv_ireg_a2));
+				as.mov(x86::r11d, rbp_reg_d(rv_ireg_a3));
+			}
 			as.jmp(x86::rax);
 
 			/* fail path, return to emulator */
 			as.bind(lookup_fail);
-			as.mov(rbp_reg_d(rv_ireg_a4), x86::r12d);
-			as.mov(rbp_reg_d(rv_ireg_a5), x86::r13d);
-			as.mov(rbp_reg_d(rv_ireg_a6), x86::r14d);
-			as.mov(rbp_reg_d(rv_ireg_a7), x86::r15d);
+			if (!MEMREG) {
+				as.mov(rbp_reg_d(rv_ireg_a4), x86::r12d);
+				as.mov(rbp_reg_d(rv_ireg_a5), x86::r13d);
+				as.mov(rbp_reg_d(rv_ireg_a6), x86::r14d);
+				as.mov(rbp_reg_d(rv_ireg_a7), x86::r15d);
+			}
 			as.pop(x86::rbp);
-			as.pop(x86::rbx);
-			as.pop(x86::r15);
-			as.pop(x86::r14);
-			as.pop(x86::r13);
-			as.pop(x86::r12);
+			if (!MEMREG) {
+				as.pop(x86::rbx);
+				as.pop(x86::r15);
+				as.pop(x86::r14);
+				as.pop(x86::r13);
+				as.pop(x86::r12);
+			}
 			as.ret();
 
 			Error err = rt.add(&lookup_trace_fast, &code);
@@ -212,6 +230,7 @@ namespace riscv {
 
 		void save_volatile()
 		{
+			if (MEMREG) return;
 			as.mov(rbp_reg_d(rv_ireg_ra), x86::edx);
 			as.mov(rbp_reg_d(rv_ireg_t0), x86::esi);
 			as.mov(rbp_reg_d(rv_ireg_t1), x86::edi);
@@ -223,6 +242,7 @@ namespace riscv {
 
 		void restore_volatile()
 		{
+			if (MEMREG) return;
 			as.mov(x86::edx, rbp_reg_d(rv_ireg_ra));
 			as.mov(x86::esi, rbp_reg_d(rv_ireg_t0));
 			as.mov(x86::edi, rbp_reg_d(rv_ireg_t1));

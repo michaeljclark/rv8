@@ -242,28 +242,26 @@ namespace riscv {
 
 		void save_volatile()
 		{
-			if (!MEMREG) {
-				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
-				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
-				as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
-				as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
-				as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
-				as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
-				as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
-			}
+			if (MEMREG) return;
+			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
+			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
+			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
+			as.mov(rbp_reg_q(rv_ireg_a0), x86::r8);
+			as.mov(rbp_reg_q(rv_ireg_a1), x86::r9);
+			as.mov(rbp_reg_q(rv_ireg_a2), x86::r10);
+			as.mov(rbp_reg_q(rv_ireg_a3), x86::r11);
 		}
 
 		void restore_volatile()
 		{
-			if (!MEMREG) {
-				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
-				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
-				as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
-				as.mov(x86::r8, rbp_reg_q(rv_ireg_a0));
-				as.mov(x86::r9, rbp_reg_q(rv_ireg_a1));
-				as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
-				as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
-			}
+			if (MEMREG) return;
+			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
+			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
+			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
+			as.mov(x86::r8, rbp_reg_q(rv_ireg_a0));
+			as.mov(x86::r9, rbp_reg_q(rv_ireg_a1));
+			as.mov(x86::r10, rbp_reg_q(rv_ireg_a2));
+			as.mov(x86::r11, rbp_reg_q(rv_ireg_a3));
 		}
 
 		mmu_ops create_load_store(JitRuntime &rt)
