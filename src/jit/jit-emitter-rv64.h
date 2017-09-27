@@ -38,7 +38,7 @@ namespace riscv {
 			: proc(proc), as(&code), code(code), ops(ops),
 			  lookup_trace_slow(lookup_trace_slow),
 			  lookup_trace_fast(lookup_trace_fast),
-			  term_pc(0), instret(0), update_instret(true), use_mmu(false)
+			  term_pc(0), instret(0), update_instret(false), use_mmu(false)
 		{}
 
 		void log_trace(const char* fmt, ...)
