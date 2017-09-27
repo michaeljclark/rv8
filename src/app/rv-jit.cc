@@ -148,6 +148,7 @@ struct rv_jit
 	int trace_length = 0;
 	bool disable_fusion = false;
 	bool memory_registers = false;
+	bool update_instret = false;
 	bool help_or_error = false;
 	std::string elf_filename;
 	std::string stats_dirname;
@@ -203,6 +204,9 @@ struct rv_jit
 			{ "-M", "--memory-mapped-registers", cmdline_arg_type_none,
 				"Disable JIT host register mapping",
 				[&](std::string s) { return (memory_registers = true); } },
+			{ "-i", "--update-instret", cmdline_arg_type_none,
+				"Update instret in JIT code",
+				[&](std::string s) { return (update_instret = true); } },
 			{ "-t", "--no-trace", cmdline_arg_type_none,
 				"Disable JIT tracer",
 				[&](std::string s) { mode = jit_mode_none; return true; } },
@@ -280,6 +284,7 @@ struct rv_jit
 		proc.stats_dirname = stats_dirname;
 		proc.trace_iters = trace_iters;
 		proc.trace_length = trace_length;
+		proc.update_instret = update_instret;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {

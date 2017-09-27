@@ -30,7 +30,6 @@ namespace riscv {
 		std::vector<addr_t> callstack;
 		u64 term_pc;
 		int instret;
-		bool update_instret;
 		bool use_mmu;
 		Label start, term;
 
@@ -38,7 +37,7 @@ namespace riscv {
 			: proc(proc), as(&code), code(code), ops(ops),
 			  lookup_trace_slow(lookup_trace_slow),
 			  lookup_trace_fast(lookup_trace_fast),
-			  term_pc(0), instret(0), update_instret(false), use_mmu(false)
+			  term_pc(0), instret(0), use_mmu(false)
 		{}
 
 		void log_trace(const char* fmt, ...)
@@ -107,7 +106,7 @@ namespace riscv {
 
 		void commit_instret()
 		{
-			if (update_instret && instret > 0) {
+			if (proc.update_instret && instret > 0) {
 				as.add(x86::qword_ptr(x86::rbp, proc_offset(instret)), Imm(instret));
 				instret = 0;
 			}
