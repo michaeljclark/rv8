@@ -75,10 +75,6 @@
 #include "debug-cli.h"
 #include "processor-runloop.h"
 
-#if defined (ENABLE_GPERFTOOL)
-#include "gperftools/profiler.h"
-#endif
-
 using namespace riscv;
 
 /* Parameterized ABI proxy processor models */
@@ -303,10 +299,6 @@ struct rv_emulator
 		/* Initialize interpreter */
 		proc.init();
 
-#if defined (ENABLE_GPERFTOOL)
-		ProfilerStart("test-emulate.out");
-#endif
-
 		/*
 		 * Run the CPU until it halts
 		 *
@@ -314,10 +306,6 @@ struct rv_emulator
 		 */
 		proc.run(proc.log & proc_log_ebreak_cli
 			? exit_cause_cli : exit_cause_continue);
-
-#if defined (ENABLE_GPERFTOOL)
-		ProfilerStop();
-#endif
 
 		/* Unmap memory segments */
 		for (auto &seg: proc.mmu.mem->segments) {
