@@ -3600,10 +3600,18 @@ namespace riscv {
 				// nop
 			} else {
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
-				callstack.push_back(link_addr);
-				if (rdx > 0) {
+
+				if (dec.rd == rv_ireg_ra) {
+					callstack.push_back(link_addr);
+				}
+
+				if (dec.rd == rv_ireg_zero) {
+					// ret
+				}
+				else if (rdx > 0) {
 					as.mov(x86::gpq(rdx), Imm(link_addr));
-				} else {
+				}
+				else {
 					as.mov(x86::rax, Imm(link_addr));
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
@@ -3638,6 +3646,10 @@ namespace riscv {
 			} else {
 				term_pc = 0;
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
+
+				if (dec.rd == rv_ireg_ra) {
+					callstack.push_back(link_addr);
+				}
 
 				if (dec.rs1 == rv_ireg_zero) {
 					if (dec.imm == 0) {
