@@ -4,7 +4,10 @@
  *  mmap interception to move maps with default address to high memory
  */
 
+#include <stdio.h>
 #include <stdint.h>
+#include <stdarg.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #include <mach/vm_map.h>
 #include <mach/vm_param.h>
@@ -17,7 +20,7 @@ static const uintptr_t entropy_mask = 0xffffffUL;
 
 __attribute__((__always_inline__)) static uintptr_t round_page(uintptr_t x)
 {
-	return ((x + PAGE_SIZE - 1UL) & ~(PAGE_SIZE - 1UL));
+	return (x & ~(PAGE_SIZE - 1UL));
 }
 
 int guest_munmap(void *addr, size_t len)
@@ -36,7 +39,7 @@ __mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 	size_t incr = 0;
 	if (addr == 0) {
 		addr = (void*)map_base;
-		incr = round_page(len + PAGE_SIZE);
+		incr = round_page(len);
 	}
 	void *rv = mmap(addr, len, prot, flags, fd, offset);
 	if (rv != MAP_FAILED) map_base += incr;
@@ -58,7 +61,7 @@ __vm_allocate(vm_map_t task, vm_address_t *addr, vm_size_t size, int flags)
 	}
 	int rv = vm_allocate(task, addr, size, flags);
 	if (!rv) {
-		map_base = round_page(*addr + size + PAGE_SIZE);
+		map_base = round_page(*addr + size);
 	}
 	return rv;
 }
@@ -72,7 +75,7 @@ __mach_vm_allocate(vm_map_t task, mach_vm_address_t *addr, vm_size_t size, int f
 	}
 	int rv = mach_vm_allocate(task, addr, size, flags);
 	if (!rv) {
-		map_base = round_page(*addr + size + PAGE_SIZE);
+		map_base = round_page(*addr + size);
 	}
 	return rv;
 }
@@ -88,7 +91,7 @@ __vm_map(vm_map_t task, vm_address_t *addr, vm_size_t size, vm_offset_t mask,
 	int rv = vm_map(task, addr, size, mask, flags, object, offset, copy,
 		cur_protection, max_protection, inheritance);
 	if (!rv) {
-		map_base = round_page(*addr + size + PAGE_SIZE);
+		map_base = round_page(*addr + size);
 	}
 	return rv;
 }
@@ -104,7 +107,7 @@ __mach_vm_map(vm_map_t task, mach_vm_address_t *addr, vm_size_t size, mach_vm_of
 	int rv = mach_vm_map(task, addr, size, mask, flags, object, offset, copy,
 		cur_protection, max_protection, inheritance);
 	if (!rv) {
-		map_base = round_page(*addr + size + PAGE_SIZE);
+		map_base = round_page(*addr + size);
 	}
 	return rv;
 }
