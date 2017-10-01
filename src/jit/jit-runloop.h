@@ -23,9 +23,10 @@ namespace riscv {
 		}
 	};
 
-	template <typename P, typename J>
+	template <typename P, typename T, typename J>
 	struct jit_runloop : jit_singleton, ErrorHandler, P
 	{
+		typedef T jit_tracer;
 		typedef J jit_emitter;
 
 		static const size_t inst_cache_size = 8191;
@@ -69,7 +70,7 @@ namespace riscv {
 
 		static void signal_handler(int signum, siginfo_t *info, void *)
 		{
-			static_cast<jit_runloop<P,J>*>
+			static_cast<jit_runloop<P,T,J>*>
 				(jit_singleton::current)->signal_dispatch(signum, info);
 		}
 
@@ -106,7 +107,7 @@ namespace riscv {
 			// install signal handler
 			struct sigaction sigaction_handler;
 			memset(&sigaction_handler, 0, sizeof(sigaction_handler));
-			sigaction_handler.sa_sigaction = &jit_runloop<P,J>::signal_handler;
+			sigaction_handler.sa_sigaction = &jit_runloop<P,T,J>::signal_handler;
 			sigaction_handler.sa_flags = SA_SIGINFO;
 			sigaction(SIGSEGV, &sigaction_handler, nullptr);
 			sigaction(SIGTERM, &sigaction_handler, nullptr);
@@ -201,7 +202,7 @@ namespace riscv {
 
 		static uintptr_t lookup_trace(uintptr_t pc)
 		{
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			auto ti = proc->trace_cache_entry.find(pc);
 			uintptr_t fn = func_address(ti != proc->trace_cache_entry.end() ? ti->second : nullptr);
 			return fn;
@@ -210,7 +211,7 @@ namespace riscv {
 		static u8 mmu_lb(uintptr_t addr)
 		{
 			u8 val;
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template load<P,u8>(*proc, addr, val);
 			return val;
 		}
@@ -218,7 +219,7 @@ namespace riscv {
 		static u16 mmu_lh(uintptr_t addr)
 		{
 			u16 val;
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template load<P,u16>(*proc, addr, val);
 			return val;
 		}
@@ -226,7 +227,7 @@ namespace riscv {
 		static u32 mmu_lw(uintptr_t addr)
 		{
 			u32 val;
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template load<P,u32>(*proc, addr, val);
 			return val;
 		}
@@ -234,32 +235,32 @@ namespace riscv {
 		static u64 mmu_ld(uintptr_t addr)
 		{
 			u64 val;
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template load<P,u64>(*proc, addr, val);
 			return val;
 		}
 
 		static void mmu_sb(uintptr_t addr, u8 val)
 		{
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template store<P,u8>(*proc, addr, val);
 		}
 
 		static void mmu_sh(uintptr_t addr, u16 val)
 		{
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template store<P,u16>(*proc, addr, val);
 		}
 
 		static void mmu_sw(uintptr_t addr, u32 val)
 		{
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template store<P,u32>(*proc, addr, val);
 		}
 
 		static void mmu_sd(uintptr_t addr, u64 val)
 		{
-			auto *proc = static_cast<jit_runloop<P,J>*>(jit_singleton::current);
+			auto *proc = static_cast<jit_runloop<P,T,J>*>(jit_singleton::current);
 			proc->mmu.template store<P,u64>(*proc, addr, val);
 		}
 
@@ -322,6 +323,8 @@ namespace riscv {
 			logger.addOptions(Logger::kOptionBinaryForm | Logger::kOptionHexDisplacement | Logger::kOptionHexImmediate);
  			code.init(rt.getCodeInfo());
 			code.setErrorHandler(this);
+
+			jit_tracer tracer(*this);
 			jit_emitter emitter(*this, code, ops, lookup_trace, lookup_trace_fast);
 
 			typename P::ux trace_pc = P::pc;
@@ -337,9 +340,7 @@ namespace riscv {
 			}
 
 			P::log &= ~proc_log_jit_trap;
-
-			emitter.emit_prolog();
-			emitter.begin();
+			tracer.begin();
 			for(;;) {
 				typename P::decode_type dec;
 				typename P::ux pc_offset, new_offset;
@@ -347,16 +348,22 @@ namespace riscv {
 				P::inst_decode(dec, inst);
 				dec.pc = P::pc;
 				dec.inst = inst;
-				if (emitter.emit(dec) == false) break;
+				if (tracer.emit(dec) == false) break;
 				if ((new_offset = P::inst_exec(dec, pc_offset)) == typename P::ux(-1)) break;
 				P::pc += new_offset;
 				P::instret++;
 				if (P::trace_length != 0 && (P::instret - trace_instret) >= P::trace_length) break;
 			}
+			tracer.end();
+			P::log |= proc_log_jit_trap;
+
+			emitter.emit_prolog();
+			emitter.begin();
+			for (auto &dec : tracer.trace) {
+				emitter.emit(dec);
+			}
 			emitter.end();
 			emitter.emit_epilog();
-
-			P::log |= proc_log_jit_trap;
 
 			if (P::log & proc_log_jit_trace) {
 				if (P::xlen == 32) {

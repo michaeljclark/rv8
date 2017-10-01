@@ -9,33 +9,40 @@ namespace riscv {
 
 	struct jit_decode
 	{
-		u64    pc;         /* program counter */
-		u64    inst;       /* source instruction */
-		s32    imm;        /* decoded immediate */
-		u16    op;         /* (>256 entries) nearly full */
-		u8     codec;      /* (>32 entries) can grow */
-		u8     rd;         /* (5 bits) byte aligned for performance */
-		u8     rs1;        /* (5 bits) byte aligned for performance */
-		u8     rs2;        /* (5 bits) byte aligned for performance */
-		u8     rs3;        /* (5 bits) byte aligned for performance */
-		u8     rm;         /* round mode for some FPU ops */
-		u8     pred : 4;   /* pred for fence */
-		u8     succ : 4;   /* succ for fence */
-		u8     aq   : 1;   /* acquire for atomic ops */
-		u8     rl   : 1;   /* release for atomic ops */
-		u8     sz   : 4;   /* fused instruction size */
+		u64    pc;           /* program counter */
+		u64    inst;         /* source instruction */
+		s32    imm;          /* decoded immediate */
+		u16    op;           /* (>256 entries) nearly full */
+		u8     codec;        /* (>32 entries) can grow */
+		u8     rd;           /* (5 bits) byte aligned for performance */
+		u8     rs1;          /* (5 bits) byte aligned for performance */
+		u8     rs2;          /* (5 bits) byte aligned for performance */
+		u8     rs3;          /* (5 bits) byte aligned for performance */
+		u8     rm;           /* round mode for some FPU ops */
+		u8     pred : 4;     /* pred for fence */
+		u8     succ : 4;     /* succ for fence */
+		u8     aq   : 1;     /* acquire for atomic ops */
+		u8     rl   : 1;     /* release for atomic ops */
+
+		u8     brt  : 1;     /* branch target */
+		u8     brc  : 1;     /* branch condition */
+		u8     sz   : 4;     /* fused instruction size */
 
 		jit_decode()
-			: pc(0), inst(0), imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
+			: pc(0), inst(0), imm(0), op(0), codec(0), rd(0), rs1(0), rs2(0), rs3(0),
+			  rm(0), pred(0), succ(0), aq(0), rl(0), brt(0), brc(0), sz(0) {}
 
 		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, s32 imm)
-			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(0), rs2(0), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
+			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(0), rs2(0), rs3(0),
+			  rm(0), pred(0), succ(0), aq(0), rl(0), brt(0), brc(0), sz(0) {}
 
 		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, u8 rs1, s32 imm)
-			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(0), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
+			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(0), rs3(0),
+			  rm(0), pred(0), succ(0), aq(0), rl(0), brt(0), brc(0), sz(0) {}
 
 		jit_decode(addr_t pc, u64 inst, u16 op, u8 rd, u8 rs1, u8 rs2, s32 imm)
-			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(rs2), rs3(0), rm(0), pred(0), succ(0), aq(0), rl(0), sz(0) {}
+			: pc(pc), inst(inst), imm(imm), op(op), codec(0), rd(rd), rs1(rs1), rs2(rs2), rs3(0),
+			  rm(0), pred(0), succ(0), aq(0), rl(0), brt(0), brc(0), sz(0) {}
 	};
 
 	enum jit_op {

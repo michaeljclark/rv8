@@ -81,6 +81,7 @@
 #include "jit-emitter-rv32.h"
 #include "jit-emitter-rv64.h"
 #include "jit-fusion.h"
+#include "jit-tracer.h"
 #include "jit-runloop.h"
 
 using namespace riscv;
@@ -94,23 +95,29 @@ using proxy_model_rv64imafdc = processor_rv64imafdc_model<
 
 using proxy_jit_rv32imafdc_fusion = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
-	jit_fusion<jit_emitter_rv32<proxy_model_rv32imafdc>>>;
+	jit_fusion<jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>>,
+	jit_emitter_rv32<proxy_model_rv32imafdc>>;
 using proxy_jit_rv64imafdc_fusion = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
-	jit_fusion<jit_emitter_rv64<proxy_model_rv64imafdc>>>;
+	jit_fusion<jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>>,
+	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
 using proxy_jit_rv32imafdc_memreg = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
+	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
 	jit_emitter_rv32<proxy_model_rv32imafdc,true>>;
 using proxy_jit_rv64imafdc_memreg = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
+	jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>,
 	jit_emitter_rv64<proxy_model_rv64imafdc,true>>;
 
 using proxy_jit_rv32imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
+	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
 	jit_emitter_rv32<proxy_model_rv32imafdc>>;
 using proxy_jit_rv64imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv64imafdc>,
+	jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>,
 	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
 

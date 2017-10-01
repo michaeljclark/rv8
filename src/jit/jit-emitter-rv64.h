@@ -5,9 +5,97 @@
 #ifndef rv_jit_emitter_rv64_h
 #define rv_jit_emitter_rv64_h
 
+#include <bitset>
+
 namespace riscv {
 
 	using namespace asmjit;
+
+	struct jit_isa_rv64
+	{
+		std::bitset<2048> supported_ops;
+
+		jit_isa_rv64()
+		{
+			static const int ops[] = {
+				rv_op_auipc,
+				rv_op_add,
+				rv_op_sub,
+				rv_op_mul,
+				rv_op_mulh,
+				rv_op_mulhu,
+				rv_op_mulhsu,
+				rv_op_div,
+				rv_op_rem,
+				rv_op_divu,
+				rv_op_remu,
+				rv_op_slt,
+				rv_op_sltu,
+				rv_op_and,
+				rv_op_or,
+				rv_op_xor,
+				rv_op_sll,
+				rv_op_srl,
+				rv_op_sra,
+				rv_op_addw,
+				rv_op_subw,
+				rv_op_mulw,
+				rv_op_divw,
+				rv_op_remw,
+				rv_op_divuw,
+				rv_op_remuw,
+				rv_op_sllw,
+				rv_op_srlw,
+				rv_op_sraw,
+				rv_op_addi,
+				rv_op_slti,
+				rv_op_sltiu,
+				rv_op_andi,
+				rv_op_ori,
+				rv_op_xori,
+				rv_op_slli,
+				rv_op_srli,
+				rv_op_srai,
+				rv_op_addiw,
+				rv_op_slliw,
+				rv_op_srliw,
+				rv_op_sraiw,
+				rv_op_bne,
+				rv_op_beq,
+				rv_op_blt,
+				rv_op_bge,
+				rv_op_bltu,
+				rv_op_bgeu,
+				rv_op_ld,
+				rv_op_lw,
+				rv_op_lwu,
+				rv_op_lh,
+				rv_op_lhu,
+				rv_op_lb,
+				rv_op_lbu,
+				rv_op_sd,
+				rv_op_sw,
+				rv_op_sh,
+				rv_op_sb,
+				rv_op_lui,
+				rv_op_jal,
+				rv_op_jalr,
+				jit_op_la,
+				jit_op_call,
+				jit_op_zextw,
+				jit_op_addiwz,
+				jit_op_rorwi_rr,
+				jit_op_rorwi_lr,
+				jit_op_rordi_rr,
+				jit_op_rordi_lr,
+				jit_op_auipc_lw,
+				jit_op_auipc_ld,
+				rv_op_illegal
+			};
+			const int *op = ops;
+			while (*op != rv_op_illegal) supported_ops.set(*op++);
+		}
+	};
 
 	template <typename P, bool MEMREG = false>
 	struct jit_emitter_rv64
@@ -2872,38 +2960,32 @@ namespace riscv {
 
 		bool emit_bne(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.x.val != proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, x86::kCondNE, x86::kCondE);
+			return emit_branch(dec, dec.brc, x86::kCondNE, x86::kCondE);
 		}
 
 		bool emit_beq(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.x.val == proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, x86::kCondE, x86::kCondNE);
+			return emit_branch(dec, dec.brc, x86::kCondE, x86::kCondNE);
 		}
 
 		bool emit_blt(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.x.val < proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, x86::kCondL, x86::kCondGE);
+			return emit_branch(dec, dec.brc, x86::kCondL, x86::kCondGE);
 		}
 
 		bool emit_bge(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.x.val >= proc.ireg[dec.rs2].r.x.val;
-			return emit_branch(dec, cond, x86::kCondGE, x86::kCondL);
+			return emit_branch(dec, dec.brc, x86::kCondGE, x86::kCondL);
 		}
 
 		bool emit_bltu(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.xu.val < proc.ireg[dec.rs2].r.xu.val;
-			return emit_branch(dec, cond, x86::kCondB, x86::kCondAE);
+			return emit_branch(dec, dec.brc, x86::kCondB, x86::kCondAE);
 		}
 
 		bool emit_bgeu(decode_type &dec)
 		{
-			bool cond = proc.ireg[dec.rs1].r.xu.val >= proc.ireg[dec.rs2].r.xu.val;
-			return emit_branch(dec, cond, x86::kCondAE, x86::kCondB);
+			return emit_branch(dec, dec.brc, x86::kCondAE, x86::kCondB);
 		}
 
 		bool emit_ld(decode_type &dec)
