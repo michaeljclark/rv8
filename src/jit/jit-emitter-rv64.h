@@ -4252,6 +4252,7 @@ namespace riscv {
 			if (li != labels.end()) {
 				return false; /* trace complete */
 			}
+			if (dec.brt) commit_instret();
 			Label l = as.newLabel();
 			labels[dec.pc] = l;
 			as.bind(l);
