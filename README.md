@@ -240,6 +240,9 @@ usage: rv-jit [<options>] <elf_file> [<options>]
  --instruction-usage-histogram, -I            Record instruction usage
                        --debug, -d            Start up in debugger CLI
                    --no-pseudo, -x            Disable Pseudoinstruction decoding
+                   --no-fusion, -N            Disable JIT macro-op fusion
+     --memory-mapped-registers, -M            Disable JIT host register mapping
+              --update-instret, -i            Update instret in JIT code
                     --no-trace, -t            Disable JIT tracer
                        --audit, -a            Enable JIT audit
                  --trace-iters, -I <string>   Trace iterations
