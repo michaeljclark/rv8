@@ -4257,7 +4257,7 @@ namespace riscv {
 			labels[dec.pc] = l;
 			as.bind(l);
 			switch(dec.op) {
-				case rv_op_auipc:     instret++;   return emit_auipc(dec);
+				case rv_op_auipc:     instret++;    return emit_auipc(dec);
 				case rv_op_add:       instret++;    return emit_add(dec);
 				case rv_op_sub:       instret++;    return emit_sub(dec);
 				case rv_op_mul:       instret++;    return emit_mul(dec);
