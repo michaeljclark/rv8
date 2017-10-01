@@ -3710,8 +3710,6 @@ namespace riscv {
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
 
-				commit_instret();
-
 				auto etl = create_exit_tramp(dec.pc);
 				if (rs1x > 0) {
 					if (link_addr < std::numeric_limits<u32>::max()) {
@@ -3728,6 +3726,8 @@ namespace riscv {
 
 				return true;
 			} else {
+				commit_instret();
+
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
 
 				if (dec.rd == rv_ireg_ra) {
@@ -3762,8 +3762,6 @@ namespace riscv {
 					as.mov(x86::rax, Imm(link_addr));
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-
-				commit_instret();
 
 				as.jmp(Imm(func_address(lookup_trace_fast)));
 
