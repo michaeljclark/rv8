@@ -48,7 +48,7 @@ namespace riscv {
 				P::print_csr_registers();
 
 				/* print program counter histogram */
-				if (P::log & proc_log_hist_pc) {
+				if ((P::log & proc_log_hist_pc) && !(P::log & proc_log_jit_trap)) {
 					printf("\n");
 					printf("program counter histogram\n");
 					printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -57,7 +57,7 @@ namespace riscv {
 				}
 
 				/* print register histogram */
-				if (P::log & proc_log_hist_reg) {
+				if ((P::log & proc_log_hist_reg) && !(P::log & proc_log_jit_trap)) {
 					printf("\n");
 					printf("register usage histogram\n");
 					printf("~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -65,7 +65,7 @@ namespace riscv {
 				}
 
 				/* print register histogram */
-				if (P::log & proc_log_hist_inst) {
+				if ((P::log & proc_log_hist_inst) && !(P::log & proc_log_jit_trap)) {
 					printf("\n");
 					printf("instruction usage histogram\n");
 					printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -74,7 +74,7 @@ namespace riscv {
 				}
 			}
 
-			if (P::log & proc_log_exit_save_stats) {
+			if ((P::log & proc_log_exit_save_stats) && !(P::log & proc_log_jit_trap)) {
 				if (P::log & proc_log_hist_pc) {
 					std::string filename = stats_dirname + "/" + "hist-pc.csv";
 					histogram_pc_save(*this, filename);
