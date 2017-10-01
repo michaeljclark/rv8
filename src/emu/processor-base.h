@@ -168,10 +168,11 @@ namespace riscv {
 		SX badaddr;                   /* Fault address */
 		jmp_buf env;                  /* Fault handler */
 
-		bool running;                 /* Run Loop control */
-		bool debugging;               /* Debug Step control */
-		bool exceptions;              /* Trap on exceptions */
-		bool update_instret;          /* Update instret (JIT) */
+		UX running          : 1;      /* Run Loop control */
+		UX debugging        : 1;      /* Debug Step control */
+		UX exceptions       : 1;      /* Trap on exceptions */
+		UX update_instret   : 1;      /* Update instret (JIT) */
+		UX memory_registers : 1;      /* Memory backed registers (JIT) */
 		UX breakpoint;                /* Breakpoint */
 		UX trace_iters;               /* Trace iterations (JIT) */
 		UX trace_length;              /* Trace length (JIT) */
@@ -187,7 +188,8 @@ namespace riscv {
 
 		processor_base() : pc(0), ireg(), freg(),
 			node_id(0), hart_id(0), log(0), lr(0), cause(0), badaddr(0), env(),
-			running(true), debugging(false), exceptions(true), update_instret(false),
+			running(true), debugging(false), exceptions(true),
+			update_instret(false), memory_registers(false),
 			breakpoint(0), trace_iters(0), trace_length(0),
 			trace_pc(), trace_fn(),
 			time(0), instret(0), fcsr(0) {}

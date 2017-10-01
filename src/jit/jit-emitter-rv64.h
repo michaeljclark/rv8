@@ -97,7 +97,7 @@ namespace riscv {
 		}
 	};
 
-	template <typename P, bool MEMREG = false>
+	template <typename P>
 	struct jit_emitter_rv64
 	{
 		typedef P processor_type;
@@ -145,9 +145,9 @@ namespace riscv {
 			return false;
 		}
 
-		static int x86_reg(int rd)
+		int x86_reg(int rd)
 		{
-			if (MEMREG) {
+			if (proc.memory_registers) {
 				return -1; /* all registers are memory backed */
 			}
 			switch (rd) {
@@ -202,7 +202,7 @@ namespace riscv {
 
 		void emit_prolog()
 		{
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.push(x86::r12);
 				as.push(x86::r13);
 				as.push(x86::r14);
@@ -211,7 +211,7 @@ namespace riscv {
 			}
 			as.push(x86::rbp);
 			as.mov(x86::rbp, x86::rdi);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
 				as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
 				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
@@ -233,7 +233,7 @@ namespace riscv {
 		{
 			commit_instret();
 
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
 				as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
 				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
@@ -248,7 +248,7 @@ namespace riscv {
 				as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
 			}
 			as.pop(x86::rbp);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.pop(x86::rbx);
 				as.pop(x86::r15);
 				as.pop(x86::r14);
@@ -287,7 +287,7 @@ namespace riscv {
 
 			/* slow path lookup cache pc -> trace fn */
 			as.bind(lookup_slow);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
 				as.mov(rbp_reg_q(rv_ireg_sp), x86::rbx);
 				as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
@@ -306,7 +306,7 @@ namespace riscv {
 			as.and_(x86::rcx, Imm(mask));
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_fn)), x86::rax);
 			as.mov(x86::qword_ptr(x86::rbp, x86::rcx, 4, proc_offset(trace_pc)), x86::rdx);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
 				as.mov(x86::rbx, rbp_reg_q(rv_ireg_sp));
 				as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
@@ -320,14 +320,14 @@ namespace riscv {
 
 			/* fail path, return to emulator */
 			as.bind(lookup_fail);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.mov(rbp_reg_q(rv_ireg_a4), x86::r12);
 				as.mov(rbp_reg_q(rv_ireg_a5), x86::r13);
 				as.mov(rbp_reg_q(rv_ireg_a6), x86::r14);
 				as.mov(rbp_reg_q(rv_ireg_a7), x86::r15);
 			}
 			as.pop(x86::rbp);
-			if (!MEMREG) {
+			if (!proc.memory_registers) {
 				as.pop(x86::rbx);
 				as.pop(x86::r15);
 				as.pop(x86::r14);
@@ -343,7 +343,7 @@ namespace riscv {
 
 		void save_volatile()
 		{
-			if (MEMREG) return;
+			if (proc.memory_registers) return;
 			as.mov(rbp_reg_q(rv_ireg_ra), x86::rdx);
 			as.mov(rbp_reg_q(rv_ireg_t0), x86::rsi);
 			as.mov(rbp_reg_q(rv_ireg_t1), x86::rdi);
@@ -355,7 +355,7 @@ namespace riscv {
 
 		void restore_volatile()
 		{
-			if (MEMREG) return;
+			if (proc.memory_registers) return;
 			as.mov(x86::rdx, rbp_reg_q(rv_ireg_ra));
 			as.mov(x86::rsi, rbp_reg_q(rv_ireg_t0));
 			as.mov(x86::rdi, rbp_reg_q(rv_ireg_t1));
@@ -855,7 +855,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (!MEMREG && rdx != 2 /* x86::rdx */) {
+				if (!proc.memory_registers && rdx != 2 /* x86::rdx */) {
 					as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
 				}
 
@@ -874,7 +874,7 @@ namespace riscv {
 					as.mov(rbp_reg_q(dec.rd), x86::rdx);
 				}
 
-				if (!MEMREG && rdx != 2 /* x86::rdx */) {
+				if (!proc.memory_registers && rdx != 2 /* x86::rdx */) {
 					as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}
@@ -893,7 +893,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (!MEMREG && rdx != 2 /* x86::rdx */) {
+				if (!proc.memory_registers && rdx != 2 /* x86::rdx */) {
 					as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
 				}
 
@@ -912,7 +912,7 @@ namespace riscv {
 					as.mov(rbp_reg_q(dec.rd), x86::rdx);
 				}
 
-				if (!MEMREG && rdx != 2 /* x86::rdx */) {
+				if (!proc.memory_registers && rdx != 2 /* x86::rdx */) {
 					as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}
@@ -931,7 +931,7 @@ namespace riscv {
 				emit_zero_rd(dec);
 			}
 			else {
-				if (!MEMREG && (rdx != 2 /* x86::rdx */ || (rs1x == 2 /* x86::rdx */ || rs2x == 2 /* x86::rdx */))) {
+				if (!proc.memory_registers && (rdx != 2 /* x86::rdx */ || (rs1x == 2 /* x86::rdx */ || rs2x == 2 /* x86::rdx */))) {
 					as.mov(x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])), x86::rdx);
 				}
 
@@ -954,7 +954,7 @@ namespace riscv {
 				as.mov(x86::rcx, x86::rdx);
 
 				/* if necessary restore rdx input operand */
-				if (!MEMREG && (rs1x == 2 || rs2x == 2 /* x86::rdx */)) {
+				if (!proc.memory_registers && (rs1x == 2 || rs2x == 2 /* x86::rdx */)) {
 					as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 
@@ -992,7 +992,7 @@ namespace riscv {
 					as.mov(rbp_reg_q(dec.rd), x86::rdx);
 				}
 
-				if (!MEMREG && (rdx != 2 /* x86::rdx */)) {
+				if (!proc.memory_registers && (rdx != 2 /* x86::rdx */)) {
 					as.mov(x86::rdx, x86::qword_ptr(x86::rbp, proc_offset(ireg[rv_ireg_ra])));
 				}
 			}

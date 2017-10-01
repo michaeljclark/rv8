@@ -94,15 +94,6 @@ using proxy_model_rv32imafdc = processor_rv32imafdc_model<
 using proxy_model_rv64imafdc = processor_rv64imafdc_model<
 	jit_decode, processor_rv64imafd, mmu_proxy_rv64>;
 
-using proxy_jit_rv32imafdc_memreg = jit_runloop<
-	processor_proxy<proxy_model_rv32imafdc>,
-	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
-	jit_emitter_rv32<proxy_model_rv32imafdc,true>>;
-using proxy_jit_rv64imafdc_memreg = jit_runloop<
-	processor_proxy<proxy_model_rv64imafdc>,
-	jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>,
-	jit_emitter_rv64<proxy_model_rv64imafdc,true>>;
-
 using proxy_jit_rv32imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
 	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
@@ -115,6 +106,7 @@ using proxy_jit_rv64imafdc = jit_runloop<
 template <typename P>
 struct rv_test_jit
 {
+	bool memory_registers = false;
 	int total_tests = 0;
 	int tests_passed = 0;
 
@@ -147,6 +139,7 @@ struct rv_test_jit
 
 		/* compile the program buffer trace */
 		printf("\n--[ jit ]------------------\n");
+		proc.memory_registers = memory_registers;
 		proc.log = proc_log_jit_trace;
 		proc.pc = pc;
 		proc.jit_trace();
@@ -2043,11 +2036,9 @@ void test(T &test)
 
 int main(int argc, char *argv[])
 {
+	rv_test_jit<proxy_jit_rv64imafdc> proc;
 	if (argc == 2 && strcmp(argv[1], "-M") == 0) {
-		rv_test_jit<proxy_jit_rv64imafdc_memreg> proc;
-		test(proc);
-	} else {
-		rv_test_jit<proxy_jit_rv64imafdc> proc;
-		test(proc);
+		proc.memory_registers = true;
 	}
+	test(proc);
 }

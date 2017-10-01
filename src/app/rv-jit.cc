@@ -102,15 +102,6 @@ using proxy_jit_rv64imafdc_fusion = jit_runloop<
 	jit_fusion<jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>>,
 	jit_emitter_rv64<proxy_model_rv64imafdc>>;
 
-using proxy_jit_rv32imafdc_memreg = jit_runloop<
-	processor_proxy<proxy_model_rv32imafdc>,
-	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
-	jit_emitter_rv32<proxy_model_rv32imafdc,true>>;
-using proxy_jit_rv64imafdc_memreg = jit_runloop<
-	processor_proxy<proxy_model_rv64imafdc>,
-	jit_tracer<proxy_model_rv64imafdc,jit_isa_rv64>,
-	jit_emitter_rv64<proxy_model_rv64imafdc,true>>;
-
 using proxy_jit_rv32imafdc = jit_runloop<
 	processor_proxy<proxy_model_rv32imafdc>,
 	jit_tracer<proxy_model_rv32imafdc,jit_isa_rv32>,
@@ -292,6 +283,7 @@ struct rv_jit
 		proc.trace_iters = trace_iters;
 		proc.trace_length = trace_length;
 		proc.update_instret = update_instret;
+		proc.memory_registers = memory_registers;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
@@ -322,18 +314,7 @@ struct rv_jit
 	void exec()
 	{
 		/* execute */
-		if (memory_registers) {
-			switch (elf.ei_class) {
-				case ELFCLASS32:
-					start_jit<proxy_jit_rv32imafdc_memreg>(); break;
-					break;
-				case ELFCLASS64:
-					start_jit<proxy_jit_rv64imafdc_memreg>(); break;
-					break;
-				default: panic("illegal elf class");
-			}
-		}
-		else if (disable_fusion) {
+		if (disable_fusion) {
 			switch (elf.ei_class) {
 				case ELFCLASS32:
 					start_jit<proxy_jit_rv32imafdc>(); break;
