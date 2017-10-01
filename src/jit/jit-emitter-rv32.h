@@ -2574,11 +2574,13 @@ namespace riscv {
 		bool emit_jalr(decode_type &dec)
 		{
 			log_trace("\t# 0x%016llx\t%s", dec.pc, disasm_inst_simple(dec).c_str());
+			term_pc = 0;
 			int rdx = x86_reg(dec.rd), rs1x = x86_reg(dec.rs1);
 			if (dec.rd == rv_ireg_zero && dec.rs1 == rv_ireg_ra && callstack.size() > 0) {
-				term_pc = 0;
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
+
+				commit_instret();
 
 				auto etl = create_exit_tramp(dec.pc);
 				if (rs1x > 0) {
@@ -2591,7 +2593,6 @@ namespace riscv {
 
 				return true;
 			} else {
-				term_pc = 0;
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
 
 				if (dec.rd == rv_ireg_ra) {
@@ -2626,6 +2627,8 @@ namespace riscv {
 					as.mov(x86::eax, Imm(link_addr));
 					as.mov(rbp_reg_d(dec.rd), x86::eax);
 				}
+
+				commit_instret();
 
 				as.jmp(Imm(func_address(lookup_trace_fast)));
 
@@ -2769,6 +2772,7 @@ namespace riscv {
 			if (li != labels.end()) {
 				return false; /* trace complete */
 			}
+			if (dec.brt) commit_instret();
 			Label l = as.newLabel();
 			labels[dec.pc] = l;
 			as.bind(l);

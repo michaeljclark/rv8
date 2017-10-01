@@ -3710,6 +3710,8 @@ namespace riscv {
 				addr_t link_addr = callstack.back();
 				callstack.pop_back();
 
+				commit_instret();
+
 				auto etl = create_exit_tramp(dec.pc);
 				if (rs1x > 0) {
 					if (link_addr < std::numeric_limits<u32>::max()) {
@@ -3726,7 +3728,6 @@ namespace riscv {
 
 				return true;
 			} else {
-				term_pc = 0;
 				addr_t link_addr = dec.pc + inst_length(dec.inst);
 
 				if (dec.rd == rv_ireg_ra) {
