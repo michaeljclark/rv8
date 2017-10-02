@@ -4251,10 +4251,12 @@ namespace riscv {
 			if (li != labels.end()) {
 				return false; /* trace complete */
 			}
-			if (dec.brt) commit_instret();
-			Label l = as.newLabel();
-			labels[dec.pc] = l;
-			as.bind(l);
+			if (dec.brt) {
+				commit_instret();
+				Label l = as.newLabel();
+				labels[dec.pc] = l;
+				as.bind(l);
+			}
 			switch(dec.op) {
 				case rv_op_auipc:     instret++;    return emit_auipc(dec);
 				case rv_op_add:       instret++;    return emit_add(dec);

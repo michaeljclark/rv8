@@ -111,7 +111,7 @@ namespace riscv {
 					auto cont_i = labels.find(cont_pc);
 					/* label basic blocks */
 					if (branch_i != labels.end()) trace[branch_i->second].brt = true;
-					else if (cont_i != labels.end()) trace[cont_i->second].brt = true;
+					if (cont_i != labels.end()) trace[cont_i->second].brt = true;
 					trace.push_back(dec);
 					return true;
 				}
