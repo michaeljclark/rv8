@@ -175,7 +175,6 @@ namespace riscv {
 		UX memory_registers : 1;      /* Memory backed registers (JIT) */
 		UX breakpoint;                /* Breakpoint */
 		UX trace_iters;               /* Trace iterations (JIT) */
-		UX trace_length;              /* Trace length (JIT) */
 
 		u64 trace_pc[trace_l1_size];
 		u64 trace_fn[trace_l1_size];
@@ -190,8 +189,7 @@ namespace riscv {
 			node_id(0), hart_id(0), log(0), lr(0), cause(0), badaddr(0), env(),
 			running(true), debugging(false), exceptions(true),
 			update_instret(false), memory_registers(false),
-			breakpoint(0), trace_iters(0), trace_length(0),
-			trace_pc(), trace_fn(),
+			breakpoint(0), trace_iters(0), trace_pc(), trace_fn(),
 			time(0), instret(0), fcsr(0) {}
 
 		/* Internal setjmp/longjump causes */

@@ -352,7 +352,6 @@ namespace riscv {
 				if ((new_offset = P::inst_exec(dec, pc_offset)) == typename P::ux(-1)) break;
 				P::pc += new_offset;
 				P::instret++;
-				if (P::trace_length != 0 && (P::instret - trace_instret) >= P::trace_length) break;
 			}
 			tracer.end();
 			P::log |= proc_log_jit_trap;

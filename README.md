@@ -246,7 +246,6 @@ usage: rv-jit [<options>] <elf_file> [<options>]
                     --no-trace, -t            Disable JIT tracer
                        --audit, -a            Enable JIT audit
                  --trace-iters, -I <string>   Trace iterations
-                --trace-length, -L <string>   Trace length
                         --help, -h            Show help
 ```
 

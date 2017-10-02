@@ -214,9 +214,6 @@ struct rv_jit
 			{ "-I", "--trace-iters", cmdline_arg_type_string,
 				"Trace iterations",
 				[&](std::string s) { trace_iters = strtoull(s.c_str(), nullptr, 10); return true; } },
-			{ "-L", "--trace-length", cmdline_arg_type_string,
-				"Trace length",
-				[&](std::string s) { trace_length = strtoull(s.c_str(), nullptr, 10); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -281,7 +278,6 @@ struct rv_jit
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
 		proc.stats_dirname = stats_dirname;
 		proc.trace_iters = trace_iters;
-		proc.trace_length = trace_length;
 		proc.update_instret = update_instret;
 		proc.memory_registers = memory_registers;
 
