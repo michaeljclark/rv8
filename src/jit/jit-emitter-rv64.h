@@ -2360,16 +2360,24 @@ namespace riscv {
 			}
 			else if (dec.rs1 == rv_ireg_zero) {
 				if (rdx > 0) {
-					as.mov(x86::gpq(rdx), Imm(dec.imm));
+					if (dec.imm) {
+						as.mov(x86::gpq(rdx), Imm(dec.imm));
+					} else {
+						as.xor_(x86::gpq(rdx), x86::gpq(rdx));
+					}
 				} else {
 					as.mov(rbp_reg_q(dec.rd), Imm(dec.imm));
 				}
 			}
 			else if (dec.rd == dec.rs1) {
 				if (rdx > 0) {
-					as.add(x86::gpq(rdx), Imm(dec.imm));
+					if (dec.imm) {
+						as.add(x86::gpq(rdx), Imm(dec.imm));
+					}
 				} else {
-					as.add(rbp_reg_q(dec.rd), Imm(dec.imm));
+					if (dec.imm) {
+						as.add(rbp_reg_q(dec.rd), Imm(dec.imm));
+					}
 				}
 			}
 			else if (dec.imm == 0) {
@@ -2674,33 +2682,70 @@ namespace riscv {
 			}
 			else if (dec.rs1 == rv_ireg_zero) {
 				if (rdx > 0) {
-					as.mov(x86::gpd(rdx), Imm(dec.imm));
+					if (dec.imm) {
+						as.mov(x86::gpq(rdx), Imm(dec.imm));
+					} else {
+						as.xor_(x86::gpq(rdx), x86::gpq(rdx));
+					}
 				} else {
-					as.mov(rbp_reg_d(dec.rd), Imm(dec.imm));
+					if (dec.imm) {
+						as.mov(x86::rax, Imm(dec.imm));
+					} else {
+						as.xor_(x86::eax, x86::eax);
+					}
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-				emit_sx_32_rd(dec);
 			}
 			else if (dec.rd == dec.rs1) {
 				if (rdx > 0) {
-					as.add(x86::gpd(rdx), Imm(dec.imm));
+					if (dec.imm) {
+						as.add(x86::gpd(rdx), Imm(dec.imm));
+					}
+					emit_sx_32_rd(dec);
 				} else {
-					as.add(rbp_reg_d(dec.rd), Imm(dec.imm));
+					if (dec.imm) {
+						as.mov(x86::eax, rbp_reg_d(dec.rd));
+						as.add(x86::eax, Imm(dec.imm));
+						as.movsxd(x86::rax, x86::eax);
+						as.mov(rbp_reg_q(dec.rd), x86::rax);
+					} else {
+						as.movsxd(x86::rax, rbp_reg_d(dec.rd));
+						as.mov(rbp_reg_q(dec.rd), x86::rax);
+					}
 				}
-				emit_sx_32_rd(dec);
+			}
+			else if (rdx > 0 && rs1x > 0) {
+				if (dec.imm) {
+					as.lea(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), int32_t(dec.imm)));
+					emit_sx_32_rd(dec);
+				} else {
+					as.movsxd(x86::gpq(rdx), x86::gpd(rs1x));
+				}
 			}
 			else if (rdx < 0) {
-				if (rs1x > 0) {
-					as.mov(x86::eax, x86::gpd(rs1x));
+				if (dec.imm) {
+					if (rs1x > 0) {
+						as.mov(x86::eax, x86::gpd(rs1x));
+					} else {
+						as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					}
+					as.add(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				} else {
-					as.mov(x86::eax, rbp_reg_d(dec.rs1));
+					if (rs1x > 0) {
+						as.movsxd(x86::rax, x86::gpd(rs1x));
+					} else {
+						as.movsxd(x86::rax, rbp_reg_d(dec.rs1));
+					}
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-				as.add(x86::eax, Imm(dec.imm));
-				as.movsxd(x86::rax, x86::eax);
-				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
 				emit_mv_rd_rs1_32(dec);
-				as.add(x86::gpd(rdx), Imm(dec.imm));
+				if (dec.imm) {
+					as.add(x86::gpd(rdx), Imm(dec.imm));
+				}
 				emit_sx_32_rd(dec);
 			}
 			return true;
@@ -2720,10 +2765,13 @@ namespace riscv {
 			else if (dec.rd == dec.rs1) {
 				if (rdx > 0) {
 					as.shl(x86::gpd(rdx), Imm(dec.imm));
+					emit_sx_32_rd(dec);
 				} else {
-					as.shl(rbp_reg_d(dec.rd), Imm(dec.imm));
+					as.mov(x86::eax, rbp_reg_d(dec.rd));
+					as.shl(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-				emit_sx_32_rd(dec);
 			}
 			else if (rdx < 0) {
 				if (rs1x > 0) {
@@ -2757,10 +2805,13 @@ namespace riscv {
 			else if (dec.rd == dec.rs1) {
 				if (rdx > 0) {
 					as.shr(x86::gpd(rdx), Imm(dec.imm));
+					emit_sx_32_rd(dec);
 				} else {
-					as.shr(rbp_reg_d(dec.rd), Imm(dec.imm));
+					as.mov(x86::eax, rbp_reg_d(dec.rd));
+					as.shr(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-				emit_sx_32_rd(dec);
 			}
 			else if (rdx < 0) {
 				if (rs1x > 0) {
@@ -2794,10 +2845,13 @@ namespace riscv {
 			else if (dec.rd == dec.rs1) {
 				if (rdx > 0) {
 					as.sar(x86::gpd(rdx), Imm(dec.imm));
+					emit_sx_32_rd(dec);
 				} else {
-					as.sar(rbp_reg_d(dec.rd), Imm(dec.imm));
+					as.mov(x86::eax, rbp_reg_d(dec.rd));
+					as.sar(x86::eax, Imm(dec.imm));
+					as.movsxd(x86::rax, x86::eax);
+					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
-				emit_sx_32_rd(dec);
 			}
 			else if (rdx < 0) {
 				if (rs1x > 0) {
