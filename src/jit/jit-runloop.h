@@ -330,6 +330,7 @@ namespace riscv {
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
 
+			/* log start of trace */
 			if (P::log & proc_log_jit_trace) {
 				if (P::xlen == 32) {
 					printf("jit-trace-begin pc=0x%08x\n", (u32)P::pc);
@@ -339,6 +340,7 @@ namespace riscv {
 	 			code.setLogger(&logger);
 			}
 
+			/* trace code and accumlate trace buffer */
 			P::log &= ~proc_log_jit_trap;
 			tracer.begin();
 			for(;;) {
@@ -356,6 +358,7 @@ namespace riscv {
 			tracer.end();
 			P::log |= proc_log_jit_trap;
 
+			/* emit trace buffer as native code */
 			emitter.emit_prolog();
 			emitter.begin();
 			for (auto &dec : tracer.trace) {
@@ -364,6 +367,7 @@ namespace riscv {
 			emitter.end();
 			emitter.emit_epilog();
 
+			/* log end of trace */
 			if (P::log & proc_log_jit_trace) {
 				if (P::xlen == 32) {
 					printf("jit-trace-end   pc=0x%08x\n", (u32)P::pc);
