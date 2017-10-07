@@ -17,6 +17,8 @@ namespace riscv {
 		typedef typename P::decode_type decode_type;
 
 		std::vector<bool> reglive;
+		std::vector<bool> bb;
+		std::vector<std::string> bbinfo;
 		std::vector<std::vector<std::string>> reginfo;
 
 		const char* inst_format(decode_type &dec)
@@ -68,6 +70,7 @@ namespace riscv {
 			 *        and eliminate some copied code
 			 */
 			switch (rd) {
+				case rv_ireg_zero: return 0;
 				case rv_ireg_ra: return 2;  /* rdx */
 				case rv_ireg_sp: return 3;  /* rbx */
 				case rv_ireg_t0: return 6;  /* rsi */
@@ -187,32 +190,27 @@ namespace riscv {
 		{
 			reglive.resize(P::ireg_count);
 			reginfo.resize(trace.size());
+			bb.resize(trace.size());
 			for (size_t i = 0; i < trace.size(); i++) {
 				auto &dec = trace[i];
-				bool bbe = (i + 1 < trace.size() && trace[i + 1].brt) || is_branch(dec) || is_jump(dec);
-				reginfo[i] = std::vector<std::string>(P::ireg_count - 1, std::string(bbe ? "-" : " "));
+				bb[i] = (i + 1 < trace.size() && trace[i + 1].brt) || is_branch(dec) || is_jump(dec);
+				reginfo[i] = std::vector<std::string>(P::ireg_count, std::string(bb[i] ? "-" : " "));
 				const char *fmt = inst_format(dec);
 				while (*fmt) {
 					switch (*fmt) {
 						case '0':
-							if (dec.rd) {
-								reginfo[i][dec.rd - 1] = "D";
-								reglive[dec.rd - 1] = true;
-							}
+							reginfo[i][dec.rd] = "D";
+							reglive[dec.rd] = true;
 							break;
 						case '1':
-							if (dec.rs1) {
-								reginfo[i][dec.rs1 - 1] = reginfo[i][dec.rs1 - 1] == "D" ? "X" : "U";
-								scan_def(trace, i - 1, dec.rs1 - 1);
-								reglive[dec.rs1 - 1] = true;
-							}
+							reginfo[i][dec.rs1] = reginfo[i][dec.rs1] == "D" ? "X" : "U";
+							if (dec.rs1) scan_def(trace, i - 1, dec.rs1);
+							reglive[dec.rs1] = true;
 							break;
 						case '2':
-							if (dec.rs2) {
-								reginfo[i][dec.rs2 - 1] = reginfo[i][dec.rs2 - 1] == "D" ? "X" : "U";
-								scan_def(trace, i - 1, dec.rs2 - 1);
-								reglive[dec.rs2 - 1] = true;
-							}
+							reginfo[i][dec.rs2] = reginfo[i][dec.rs2] == "D" ? "X" : "U";
+							if (dec.rs2) scan_def(trace, i - 1, dec.rs2);
+							reglive[dec.rs2] = true;
 							break;
 						default: break;
 					}
@@ -224,7 +222,7 @@ namespace riscv {
 		void scan_live_exit(std::vector<decode_type> &trace)
 		{
 			for (size_t i = 1; i < trace.size(); i++) {
-				for (size_t r = 0; r < 31; r++) {
+				for (size_t r = 1; r < P::ireg_count; r++) {
 					if (!reglive[r]) continue;
 					if (reginfo[i - 1][r] != " " &&
 						reginfo[i - 1][r] != "-" &&
@@ -242,13 +240,41 @@ namespace riscv {
 			}
 		}
 
+		void sum_bb_info(std::vector<decode_type> &trace)
+		{
+			bbinfo.resize(trace.size());
+			size_t natreg = 0, memreg = 0, maxlive = 0;
+			for (size_t i = 0; i < trace.size(); i++) {
+				size_t live = 0;
+				for (size_t r = 1; r < P::ireg_count; r++) {
+					if (reginfo[i][r] == "U" || reginfo[i][r] == "D" || reginfo[i][r] == "X") {
+						int rx = x86_reg(r);
+						size_t use_count = (reginfo[i][r] == "X" ? 2 : 1);
+						if (rx == -1) {
+							memreg += use_count;
+						}
+						else {
+							natreg += use_count;
+						}
+					}
+					live += !(reginfo[i][r] == " " || reginfo[i][r] == "-");
+				}
+				if (live > maxlive) maxlive = live;
+				if (bb[i]) {
+					bbinfo[i] = format_string(" reg:%-3d mem:%-3d live:%d",
+						natreg, memreg, maxlive);
+					memreg = natreg = maxlive = 0;
+				}
+			}
+		}
+
 		std::string join_reginfo(size_t i)
 		{
 			std::string str;
-			for (size_t r = 0; r < 31; r++) {
+			for (size_t r = 0; r < P::ireg_count; r++) {
 				std::string &s = reginfo[i][r];
 				std::string sc, ec;
-				int rx = x86_reg(r + 1);
+				int rx = x86_reg(r);
 				if (s == "U" || s == "D" || s == "X") {
 					sc = (rx == -1) ? std::string(_COLOR_MEM) : std::string(_COLOR_REG);
 					ec = std::string(_COLOR_RESET);
@@ -265,11 +291,12 @@ namespace riscv {
 			printf("0x%016llx-0x%016llx\n", trace.front().pc, trace.back().pc);
 			scan_def_use(trace);
 			scan_live_exit(trace);
+			sum_bb_info(trace);
 			for (size_t i = 0; i < trace.size(); i++) {
 				auto &dec = trace[i];
 				std::string disasm = disasm_inst(dec);
-				printf("\t0x%016llx\t%-40s [%s]\n",
-					dec.pc, disasm.c_str(), join_reginfo(i).c_str());
+				printf("    0x%016llx    %-40s [%s]%s\n",
+					dec.pc, disasm.c_str(), join_reginfo(i).c_str(), bbinfo[i].c_str());
 			}
 			printf("\n");
 		}
