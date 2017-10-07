@@ -1755,7 +1755,7 @@ namespace riscv {
 				} else {
 					as.add(x86::eax, rbp_reg_d(dec.rs2));
 				}
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -1842,7 +1842,7 @@ namespace riscv {
 				} else {
 					as.sub(x86::eax, rbp_reg_d(dec.rs2));
 				}
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -1982,7 +1982,7 @@ namespace riscv {
 				if (rdx > 0) {
 					as.movsxd(x86::gpq(rdx), x86::eax);
 				} else {
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -2126,7 +2126,7 @@ namespace riscv {
 				if (rdx > 0) {
 					as.movsxd(x86::gpq(rdx), x86::eax);
 				} else {
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -2232,7 +2232,7 @@ namespace riscv {
 				} else {
 					as.shl(x86::eax, x86::cl);
 				}
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -2283,7 +2283,7 @@ namespace riscv {
 				} else {
 					as.shr(x86::eax, x86::cl);
 				}
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -2334,7 +2334,7 @@ namespace riscv {
 				} else {
 					as.sar(x86::eax, x86::cl);
 				}
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -2733,7 +2733,7 @@ namespace riscv {
 					if (dec.imm) {
 						as.mov(x86::eax, rbp_reg_d(dec.rd));
 						as.add(x86::eax, Imm(dec.imm));
-						as.movsxd(x86::rax, x86::eax);
+						as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 						as.mov(rbp_reg_q(dec.rd), x86::rax);
 					} else {
 						as.movsxd(x86::rax, rbp_reg_d(dec.rd));
@@ -2757,7 +2757,7 @@ namespace riscv {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					}
 					as.add(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				} else {
 					if (rs1x > 0) {
@@ -2796,7 +2796,7 @@ namespace riscv {
 				} else {
 					as.mov(x86::eax, rbp_reg_d(dec.rd));
 					as.shl(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -2807,7 +2807,7 @@ namespace riscv {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
 				}
 				as.shl(x86::eax, Imm(dec.imm));
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -2836,7 +2836,7 @@ namespace riscv {
 				} else {
 					as.mov(x86::eax, rbp_reg_d(dec.rd));
 					as.shr(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -2847,7 +2847,7 @@ namespace riscv {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
 				}
 				as.shr(x86::eax, Imm(dec.imm));
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -2876,7 +2876,7 @@ namespace riscv {
 				} else {
 					as.mov(x86::eax, rbp_reg_d(dec.rd));
 					as.sar(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -2887,7 +2887,7 @@ namespace riscv {
 					as.mov(x86::eax, rbp_reg_d(dec.rs1));
 				}
 				as.sar(x86::eax, Imm(dec.imm));
-				as.movsxd(x86::rax, x86::eax);
+				as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 				as.mov(rbp_reg_q(dec.rd), x86::rax);
 			}
 			else {
@@ -3153,7 +3153,7 @@ namespace riscv {
 					if (rdx > 0) {
 						as.movsxd(x86::gpq(rdx), x86::eax);
 					} else {
-						as.movsxd(x86::rax, x86::eax);
+						as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 						as.mov(rbp_reg_q(dec.rd), x86::rax);
 					}
 				}
@@ -3978,7 +3978,7 @@ namespace riscv {
 				if (rdx > 0) {
 					as.movsxd(x86::gpq(rdx), x86::eax);
 				} else {
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			} else {
@@ -3999,7 +3999,7 @@ namespace riscv {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					}
 					as.sar(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rs2), x86::rax);
 				}
 
@@ -4015,7 +4015,7 @@ namespace riscv {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					}
 					as.ror(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -4049,7 +4049,7 @@ namespace riscv {
 				if (rdx > 0) {
 					as.movsxd(x86::gpq(rdx), x86::eax);
 				} else {
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			} else {
@@ -4069,7 +4069,7 @@ namespace riscv {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					}
 					as.shl(x86::eax, Imm(32 - dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rs2), x86::rax);
 				}
 
@@ -4085,7 +4085,7 @@ namespace riscv {
 						as.mov(x86::eax, rbp_reg_d(dec.rs1));
 					}
 					as.ror(x86::eax, Imm(dec.imm));
-					as.movsxd(x86::rax, x86::eax);
+					as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 					as.mov(rbp_reg_q(dec.rd), x86::rax);
 				}
 			}
@@ -4245,7 +4245,7 @@ namespace riscv {
 					if (rdx > 0) {
 						as.movsxd(x86::gpq(rdx), x86::eax);
 					} else {
-						as.movsxd(x86::rax, x86::eax);
+						as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 						as.mov(rbp_reg_q(dec.rd), x86::rax);
 					}
 				}
@@ -4257,7 +4257,7 @@ namespace riscv {
 						}
 						else {
 							as.mov(x86::eax, x86::dword_ptr(addr));
-							as.movsxd(x86::rax, x86::eax);
+							as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 							as.mov(rbp_reg_q(dec.rd), x86::rax);
 						}
 					} else {
@@ -4268,7 +4268,7 @@ namespace riscv {
 						}
 						else {
 							as.mov(x86::eax, x86::dword_ptr(x86::rax));
-							as.movsxd(x86::rax, x86::eax);
+							as.movsxd(x86::rax, x86::eax); /* consider as.cdqe(); */
 							as.mov(rbp_reg_q(dec.rd), x86::rax);
 						}
 					}
