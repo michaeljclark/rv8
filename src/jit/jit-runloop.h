@@ -326,6 +326,7 @@ namespace riscv {
 
 			jit_tracer tracer(*this);
 			jit_emitter emitter(*this, code, ops, lookup_trace, lookup_trace_fast);
+			jit_regalloc<P> regalloc;
 
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
@@ -357,6 +358,10 @@ namespace riscv {
 			}
 			tracer.end();
 			P::log |= proc_log_jit_trap;
+
+			if (P::log & proc_log_jit_regalloc) {
+				regalloc.analyse(tracer.trace);
+			}
 
 			/* emit trace buffer as native code */
 			emitter.emit_prolog();

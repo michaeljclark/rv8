@@ -82,6 +82,7 @@
 #include "jit-emitter-rv64.h"
 #include "jit-fusion.h"
 #include "jit-tracer.h"
+#include "jit-regalloc.h"
 #include "jit-runloop.h"
 
 #include "assembler.h"

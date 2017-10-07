@@ -82,6 +82,7 @@
 #include "jit-emitter-rv64.h"
 #include "jit-fusion.h"
 #include "jit-tracer.h"
+#include "jit-regalloc.h"
 #include "jit-runloop.h"
 
 using namespace riscv;
@@ -175,6 +176,9 @@ struct rv_jit
 			{ "-T", "--log-jit-trace", cmdline_arg_type_none,
 				"Log JIT trace",
 				[&](std::string s) { return (proc_logs |= proc_log_jit_trace); } },
+			{ "-T", "--log-jit-regalloc", cmdline_arg_type_none,
+				"Log JIT register allocation",
+				[&](std::string s) { return (proc_logs |= proc_log_jit_regalloc); } },
 			{ "-E", "--log-exit-stats", cmdline_arg_type_none,
 				"Log Registers and Statistics at Exit",
 				[&](std::string s) { return (proc_logs |= proc_log_exit_log_stats); } },

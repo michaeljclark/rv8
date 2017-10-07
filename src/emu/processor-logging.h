@@ -29,8 +29,9 @@ namespace riscv {
 		proc_log_jit_trap =        1<<16,      /* Trap on interpreted program counter iterations */
 		proc_log_jit_trace =       1<<17,      /* Log JIT trace */
 		proc_log_jit_audit =       1<<18,      /* Log JIT audit */
-		proc_log_exit_log_stats =  1<<19,      /* Log statistics on interpreter exit */
-		proc_log_exit_save_stats = 1<<20,      /* Save statistics on interpreter exit */
+		proc_log_jit_regalloc =    1<<19,      /* Log JIT register allocation */
+		proc_log_exit_log_stats =  1<<20,      /* Log statistics on interpreter exit */
+		proc_log_exit_save_stats = 1<<21,      /* Save statistics on interpreter exit */
 	};
 
 }
