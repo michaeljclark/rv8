@@ -164,7 +164,7 @@ namespace riscv {
 			for (size_t i = 0; i < trace.size(); i++) {
 				auto &dec = trace[i];
 				bool bbe = (i + 1 < trace.size() && trace[i + 1].brt) || is_branch(dec) || is_jump(dec);
-				reginfo[i] = std::vector<std::string>(P::ireg_count - 1, std::string(bbe ? "_" : " "));
+				reginfo[i] = std::vector<std::string>(P::ireg_count - 1, std::string(bbe ? "-" : " "));
 				const char *fmt = inst_format(dec);
 				while (*fmt) {
 					switch (*fmt) {
@@ -197,11 +197,20 @@ namespace riscv {
 
 		void scan_live_exit(std::vector<decode_type> &trace)
 		{
-			for (ssize_t i = trace.size() - 1; i >= 0; i--) {
+			for (size_t i = 1; i < trace.size(); i++) {
 				for (size_t r = 0; r < 31; r++) {
 					if (!reglive[r]) continue;
-					if (reginfo[i][r] == " ") {
-						//reginfo[i][r] = ":";
+					if (reginfo[i - 1][r] != " " &&
+						reginfo[i - 1][r] != "-" &&
+						reginfo[i - 1][r] != "+" &&
+						(reginfo[i][r] == " " || reginfo[i][r] == "-"))
+					{
+						if (reginfo[i][r] == "-") {
+							reginfo[i][r] = "+";
+						}
+						else {
+							reginfo[i][r] = "|";
+						}
 					}
 				}
 			}
