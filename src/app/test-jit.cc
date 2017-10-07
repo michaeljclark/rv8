@@ -53,6 +53,7 @@
 #include "util.h"
 #include "host.h"
 #include "cmdline.h"
+#include "color.h"
 #include "codec.h"
 #include "elf.h"
 #include "elf-file.h"

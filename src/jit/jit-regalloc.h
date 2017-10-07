@@ -5,6 +5,9 @@
 #ifndef rv_jit_regalloc_h
 #define rv_jit_regalloc_h
 
+#define _COLOR_REG _COLOR_BEGIN _COLOR_BG_GREEN _COLOR_END
+#define _COLOR_MEM _COLOR_BEGIN _COLOR_BG_RED _COLOR_END
+
 namespace riscv {
 
 	template <typename P>
@@ -55,6 +58,29 @@ namespace riscv {
 				return rv_inst_name_sym[dec.op];
 			} else {
 				return jit_name_sym[dec.op - 1024];
+			}
+		}
+
+		int x86_reg(int rd)
+		{
+			/*
+			 * TODO - get the emitter to use common code
+			 *        and eliminate some copied code
+			 */
+			switch (rd) {
+				case rv_ireg_ra: return 2;  /* rdx */
+				case rv_ireg_sp: return 3;  /* rbx */
+				case rv_ireg_t0: return 6;  /* rsi */
+				case rv_ireg_t1: return 7;  /* rdi */
+				case rv_ireg_a0: return 8;  /* r8  */
+				case rv_ireg_a1: return 9;  /* r9  */
+				case rv_ireg_a2: return 10; /* r10 */
+				case rv_ireg_a3: return 11; /* r11 */
+				case rv_ireg_a4: return 12; /* r12 */
+				case rv_ireg_a5: return 13; /* r13 */
+				case rv_ireg_a6: return 14; /* r14 */
+				case rv_ireg_a7: return 15; /* r15 */
+				default: return -1;
 			}
 		}
 
@@ -219,7 +245,18 @@ namespace riscv {
 		std::string join_reginfo(size_t i)
 		{
 			std::string str;
-			for (auto &s : reginfo[i]) str.append(s);
+			for (size_t r = 0; r < 31; r++) {
+				std::string &s = reginfo[i][r];
+				std::string sc, ec;
+				int rx = x86_reg(r + 1);
+				if (s == "U" || s == "D" || s == "X") {
+					sc = (rx == -1) ? std::string(_COLOR_MEM) : std::string(_COLOR_REG);
+					ec = std::string(_COLOR_RESET);
+				}
+				str.append(sc);
+				str.append(s);
+				str.append(ec);
+			}
 			return str;
 		}
 
