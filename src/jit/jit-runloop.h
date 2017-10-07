@@ -331,16 +331,6 @@ namespace riscv {
 			typename P::ux trace_pc = P::pc;
 			typename P::ux trace_instret = P::instret;
 
-			/* log start of trace */
-			if (P::log & proc_log_jit_trace) {
-				if (P::xlen == 32) {
-					printf("jit-trace-begin pc=0x%08x\n", (u32)P::pc);
-				} else if (P::xlen == 64) {
-					printf("jit-trace-begin pc=0x%016llx\n", (u64)P::pc);
-				}
-	 			code.setLogger(&logger);
-			}
-
 			/* trace code and accumlate trace buffer */
 			P::log &= ~proc_log_jit_trap;
 			tracer.begin();
@@ -359,8 +349,16 @@ namespace riscv {
 			tracer.end();
 			P::log |= proc_log_jit_trap;
 
+			/* log register allocation */
 			if (P::log & proc_log_jit_regalloc) {
+				printf("jit-regalloc 0x%016llx-0x%016llx\n\n", (u64)trace_pc, (u64)P::pc);
 				regalloc.analyse(tracer.trace);
+			}
+
+			/* log start of trace */
+			if (P::log & proc_log_jit_trace) {
+				printf("jit-trace 0x%016llx-0x%016llx\n\n", (u64)trace_pc, (u64)P::pc);
+				code.setLogger(&logger);
 			}
 
 			/* emit trace buffer as native code */
@@ -374,11 +372,7 @@ namespace riscv {
 
 			/* log end of trace */
 			if (P::log & proc_log_jit_trace) {
-				if (P::xlen == 32) {
-					printf("jit-trace-end   pc=0x%08x\n", (u32)P::pc);
-				} else if (P::xlen == 64) {
-					printf("jit-trace-end   pc=0x%016llx\n", (u64)P::pc);
-				}
+				printf("\n");
 			}
 
 			if (P::instret == trace_instret) {

@@ -5,8 +5,10 @@
 #ifndef rv_jit_regalloc_h
 #define rv_jit_regalloc_h
 
-#define _COLOR_REG _COLOR_BEGIN _COLOR_BG_GREEN _COLOR_END
-#define _COLOR_MEM _COLOR_BEGIN _COLOR_BG_RED _COLOR_END
+#define _BG_COLOR_REG _COLOR_BEGIN _COLOR_BG_GREEN _COLOR_END
+#define _BG_COLOR_MEM _COLOR_BEGIN _COLOR_BG_RED _COLOR_END
+#define _FG_COLOR_REG _COLOR_BEGIN _COLOR_FG_GREEN _COLOR_END
+#define _FG_COLOR_MEM _COLOR_BEGIN _COLOR_FG_RED _COLOR_END
 
 namespace riscv {
 
@@ -240,7 +242,7 @@ namespace riscv {
 			}
 		}
 
-		void sum_bb_info(std::vector<decode_type> &trace)
+		void sum_bb_info(std::vector<decode_type> &trace, std::map<size_t,size_t> &regfreq)
 		{
 			bbinfo.resize(trace.size());
 			size_t natreg = 0, memreg = 0, maxlive = 0;
@@ -256,6 +258,12 @@ namespace riscv {
 						else {
 							natreg += use_count;
 						}
+						auto rfi = regfreq.find(r);
+						if (rfi == regfreq.end()) {
+							regfreq.insert(regfreq.begin(), std::pair<size_t,size_t>(r,1));
+						} else {
+							rfi->second++;
+						}
 					}
 					live += !(reginfo[i][r] == " " || reginfo[i][r] == "-");
 				}
@@ -268,6 +276,38 @@ namespace riscv {
 			}
 		}
 
+		static std::string repeat_str(std::string str, size_t count)
+		{
+			std::string s;
+			for (size_t i = 0; i < count; i++) s += str;
+			return s;
+		}
+
+		void print_regfreq(std::map<size_t,size_t> &regfreq)
+		{
+			size_t max = 0, total = 0;
+			std::vector<std::pair<size_t,size_t>> hist_reg;
+			for (auto ent : regfreq) {
+				if (ent.second > max) max = ent.second;
+				total += ent.second;
+				hist_reg.push_back(ent);
+			}
+
+			std::sort(hist_reg.begin(), hist_reg.end(), [&] (const std::pair<size_t,size_t> &a,
+				const std::pair<size_t,size_t> &b) { return a.second > b.second; });
+
+			size_t i = 0;
+			for (auto ent : hist_reg) {
+				int rx = x86_reg(ent.first);
+				printf("%5lu. %-10s %5.2f%% [%-3lu] %s%s%s\n",
+					++i, rv_ireg_name_sym[ent.first],
+					(float)ent.second / (float)total * 100.0f, ent.second,
+					((rx == -1) ? _FG_COLOR_MEM : _FG_COLOR_REG),
+					repeat_str("█", ent.second * (max_chars - 1) / max).c_str(),
+					_COLOR_RESET);
+			}
+		}
+
 		std::string join_reginfo(size_t i)
 		{
 			std::string str;
@@ -276,7 +316,7 @@ namespace riscv {
 				std::string sc, ec;
 				int rx = x86_reg(r);
 				if (s == "U" || s == "D" || s == "X") {
-					sc = (rx == -1) ? std::string(_COLOR_MEM) : std::string(_COLOR_REG);
+					sc = (rx == -1) ? std::string(_BG_COLOR_MEM) : std::string(_BG_COLOR_REG);
 					ec = std::string(_COLOR_RESET);
 				}
 				str.append(sc);
@@ -289,16 +329,18 @@ namespace riscv {
 		void analyse(std::vector<decode_type> &trace)
 		{
 			if (!trace.size()) return;
-			printf("0x%016llx-0x%016llx\n", trace.front().pc, trace.back().pc);
+			std::map<size_t,size_t> regfreq;
 			scan_def_use(trace);
 			scan_live_exit(trace);
-			sum_bb_info(trace);
+			sum_bb_info(trace, regfreq);
 			for (size_t i = 0; i < trace.size(); i++) {
 				auto &dec = trace[i];
 				std::string disasm = disasm_inst(dec);
 				printf("    0x%016llx    %-40s [%s]%s\n",
 					dec.pc, disasm.c_str(), join_reginfo(i).c_str(), bbinfo[i].c_str());
 			}
+			printf("\n");
+			print_regfreq(regfreq);
 			printf("\n");
 		}
 	};
