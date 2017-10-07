@@ -223,19 +223,15 @@ namespace riscv {
 
 		void scan_live_exit(std::vector<decode_type> &trace)
 		{
-			for (size_t i = 1; i < trace.size(); i++) {
+			for (ssize_t i = trace.size() - 1; i >= 0; i--) {
+				if (!(bb[i] || i == ssize_t(trace.size() - 1))) continue;
 				for (size_t r = 1; r < P::ireg_count; r++) {
 					if (!reglive[r]) continue;
-					if (reginfo[i - 1][r] != " " &&
-						reginfo[i - 1][r] != "-" &&
-						reginfo[i - 1][r] != "+" &&
-						(reginfo[i][r] == " " || reginfo[i][r] == "-"))
-					{
-						if (reginfo[i][r] == "-") {
-							reginfo[i][r] = "+";
-						}
-						else {
-							reginfo[i][r] = "·";
+					ssize_t j;
+					for (j = i; j > 0 && reginfo[j-1][r] == " "; j--);
+					if (j > 0 && (reginfo[j-1][r] == "U" || reginfo[j-1][r] == "D" || reginfo[j-1][r] == "X")) {
+						for (ssize_t k = j; k <= i; k++) {
+							reginfo[k][r] = (reginfo[k][r] == "-") ? "+" : "·";
 						}
 					}
 				}
