@@ -288,6 +288,7 @@ namespace riscv {
 
 		void analyse(std::vector<decode_type> &trace)
 		{
+			if (!trace.size()) return;
 			printf("0x%016llx-0x%016llx\n", trace.front().pc, trace.back().pc);
 			scan_def_use(trace);
 			scan_live_exit(trace);
