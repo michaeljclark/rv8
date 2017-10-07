@@ -235,7 +235,7 @@ namespace riscv {
 							reginfo[i][r] = "+";
 						}
 						else {
-							reginfo[i][r] = "|";
+							reginfo[i][r] = "·";
 						}
 					}
 				}
