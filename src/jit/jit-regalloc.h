@@ -231,7 +231,14 @@ namespace riscv {
 					for (j = i; j > 0 && reginfo[j-1][r] == " "; j--);
 					if (j > 0 && (reginfo[j-1][r] == "U" || reginfo[j-1][r] == "D" || reginfo[j-1][r] == "X")) {
 						for (ssize_t k = j; k <= i; k++) {
-							reginfo[k][r] = (reginfo[k][r] == "-") ? "+" : "·";
+							if (reginfo[k][r] == "-") {
+								reginfo[k][r] = "+";
+								break;
+							} else if (reginfo[k][r] == " ") {
+								reginfo[k][r] = "·";
+							} else {
+								break;
+							}
 						}
 					}
 				}
