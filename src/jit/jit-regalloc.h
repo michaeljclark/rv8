@@ -281,6 +281,9 @@ namespace riscv {
 
 		void print_regfreq(std::map<size_t,size_t> &regfreq)
 		{
+			const size_t regalloc_max_chars = 80;
+
+			/* create histogram array */
 			size_t max = 0, total = 0;
 			std::vector<std::pair<size_t,size_t>> hist_reg;
 			for (auto ent : regfreq) {
@@ -289,17 +292,30 @@ namespace riscv {
 				hist_reg.push_back(ent);
 			}
 
+			/* add unused host registers */
+			for (size_t r = 1; r < 32; r++) {
+				int rx = x86_reg(r);
+				if (rx > 0 && regfreq.find(r) == regfreq.end()) {
+					hist_reg.push_back(std::pair<size_t,size_t>(r,0));
+				}
+			}
+
+			/* sort histogram */
 			std::sort(hist_reg.begin(), hist_reg.end(), [&] (const std::pair<size_t,size_t> &a,
 				const std::pair<size_t,size_t> &b) { return a.second > b.second; });
 
+			/* print histogram */
 			size_t i = 0;
 			for (auto ent : hist_reg) {
 				int rx = x86_reg(ent.first);
-				printf("%5lu. %-10s %5.2f%% [%-3lu] %s%s%s\n",
-					++i, rv_ireg_name_sym[ent.first],
+				printf("%4lu. %s%-5s%s%4.1f%% [%-3lu] %s%s%s\n",
+					++i,
+					((rx == -1) ? _FG_COLOR_MEM : _FG_COLOR_REG),
+					rv_ireg_name_sym[ent.first],
+					_COLOR_RESET,
 					(float)ent.second / (float)total * 100.0f, ent.second,
 					((rx == -1) ? _FG_COLOR_MEM : _FG_COLOR_REG),
-					repeat_str("█", ent.second * (max_chars - 1) / max).c_str(),
+					repeat_str("█", ent.second * (regalloc_max_chars - 1) / max).c_str(),
 					_COLOR_RESET);
 			}
 		}
