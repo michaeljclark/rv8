@@ -308,7 +308,7 @@ namespace riscv {
 			size_t i = 0;
 			for (auto ent : hist_reg) {
 				int rx = x86_reg(ent.first);
-				printf("%4lu. %s%-5s%s%4.1f%% [%-3lu] %s%s%s\n",
+				printf("%4lu. %s%-4s%s%5.1f%% [%-3lu] %s%s%s\n",
 					++i,
 					((rx == -1) ? _FG_COLOR_MEM : _FG_COLOR_REG),
 					rv_ireg_name_sym[ent.first],
