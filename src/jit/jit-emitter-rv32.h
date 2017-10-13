@@ -222,12 +222,14 @@ namespace riscv {
 			as.ret();
 
 			for (auto &jtl : jmp_tramp_labels) {
+				as.align(kAlignCode, 16);
 				as.bind(jtl.second);
 				emit_pc(jtl.first);
 				as.jmp(Imm(func_address(lookup_trace_fast)));
 			}
 
 			for (auto &jtl : exit_tramp_labels) {
+				as.align(kAlignCode, 16);
 				as.bind(jtl.second);
 				emit_pc(jtl.first);
 				as.jmp(term);
