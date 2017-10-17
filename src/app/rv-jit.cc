@@ -286,10 +286,10 @@ struct rv_jit
 		proc.update_instret = update_instret;
 		proc.memory_registers = memory_registers;
 
-		/* choose an offset if this is a dynamic object with a virtual address of 0 */
+		/* map dynamic loader into high memory (1GB below memory top) */
 		voffset = (elf.ehdr.e_type == ET_DYN &&
 				   elf.phdrs.size() > 0 &&
-				   elf.phdrs[0].p_vaddr == 0) ? 0x10000 : 0;
+				   elf.phdrs[0].p_vaddr == 0) ? P::mmu_type::memory_top - 0x40000000 : 0;
 		proc.pc = elf.ehdr.e_entry + voffset;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
