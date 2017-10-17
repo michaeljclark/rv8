@@ -250,7 +250,7 @@ namespace riscv {
 				std::fexcept_t flags;
 				fegetexceptflag(&flags, FE_ALL_EXCEPT);
 				if (!(P::log & proc_log_no_pseudo)) decode_pseudo_inst(dec);
-				if (symlookup) printf("%30s ", symlookup(P::pc));
+				if (symlookup) printf("%32s ", symlookup(P::pc));
 				std::string args = disasm_inst_simple(dec);
 				std::string op_args = (P::log & proc_log_operands) ? format_operands(dec) : std::string();
 				printf(P::xlen == 32 ? fmt_32 : P::xlen == 64 ? fmt_64 : fmt_128,
