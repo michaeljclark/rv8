@@ -200,7 +200,7 @@ namespace riscv {
 		}
 
 		/* Map ELF load segments into proxy MMU address space */
-		void map_load_segment_user(const char* filename, Elf64_Phdr &phdr)
+		void map_load_segment_user(const char* filename, Elf64_Phdr &phdr, addr_t voffset)
 		{
 			int fd = open(filename, O_RDONLY);
 			if (fd < 0) {
@@ -210,11 +210,13 @@ namespace riscv {
 			/* round the mmap start address and length to the nearest page size */
 			addr_t map_delta = phdr.p_offset & (page_size-1);
 			addr_t map_offset = phdr.p_offset - map_delta;
-			addr_t map_vaddr = phdr.p_vaddr - map_delta;
+			addr_t map_vaddr = phdr.p_vaddr + voffset - map_delta;
 			addr_t map_len = round_up(phdr.p_memsz + map_delta, page_size);
 			addr_t map_end = map_vaddr + map_len;
-			addr_t brk = addr_t(phdr.p_vaddr + phdr.p_memsz);
+			addr_t brk = addr_t(phdr.p_vaddr + voffset + phdr.p_memsz);
 			if (!imagebase) imagebase = map_vaddr;
+
+			/* map the segment */
 			void *addr = guest_mmap((void*)map_vaddr, map_len,
 				elf_p_flags_mmap(phdr.p_flags), MAP_FIXED | MAP_PRIVATE, fd, map_offset);
 			close(fd);
@@ -224,7 +226,7 @@ namespace riscv {
 
 			/* erase trailing bytes past the end of the mapping */
 			if ((phdr.p_flags & PF_W) && phdr.p_memsz > phdr.p_filesz) {
-				addr_t start = addr_t(phdr.p_vaddr + phdr.p_filesz), len = map_end - start;
+				addr_t start = addr_t(phdr.p_vaddr + voffset + phdr.p_filesz), len = map_end - start;
 				memset((void*)start, 0, len);
 			}
 
@@ -236,7 +238,7 @@ namespace riscv {
 			}
 
 			/* add the mmap to the emulator proxy_mmu */
-			P::mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)phdr.p_vaddr, phdr.p_memsz));
+			P::mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)map_vaddr, map_len));
 
 			/* set heap mmap area begin and end */
 			if (P::mmu.mem->heap_begin < map_end) {

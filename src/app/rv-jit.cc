@@ -142,6 +142,7 @@ struct rv_jit
 	jit_mode mode = jit_mode_trace;
 	elf_file elf;
 	uintptr_t imagebase = 0;
+	uintptr_t voffset = 0;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	int trace_iters = 100;
@@ -279,18 +280,23 @@ struct rv_jit
 		/* instantiate processor, set log options and program counter to entry address */
 		P proc;
 		proc.log = proc_logs;
-		proc.pc = elf.ehdr.e_entry;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
 		proc.stats_dirname = stats_dirname;
 		proc.trace_iters = trace_iters;
 		proc.update_instret = update_instret;
 		proc.memory_registers = memory_registers;
 
+		/* choose an offset if this is a dynamic object with a virtual address of 0 */
+		voffset = (elf.ehdr.e_type == ET_DYN &&
+				   elf.phdrs.size() > 0 &&
+				   elf.phdrs[0].p_vaddr == 0) ? 0x10000 : 0;
+		proc.pc = elf.ehdr.e_entry + voffset;
+
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_flags & (PT_LOAD | PT_DYNAMIC)) {
-				proc.map_load_segment_user(elf_filename.c_str(), phdr);
+			if (phdr.p_type == PT_LOAD) {
+				proc.map_load_segment_user(elf_filename.c_str(), phdr, voffset);
 			}
 		}
 
