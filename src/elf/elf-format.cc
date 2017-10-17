@@ -70,6 +70,9 @@ const char* elf_p_type_name(int v)
 		case PT_PHDR: return "PHDR";
 		case PT_SHLIB: return "SHLIB";
 		case PT_TLS: return "TLS";
+		case PT_GNU_EH_FRAME: return "GNU_EH_FRAME";
+		case PT_GNU_STACK: return "GNU_STACK";
+		case PT_GNU_RELRO: return "GNU_RELRO";
 		default: return "UNKNOWN";
 	}
 }

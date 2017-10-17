@@ -221,6 +221,9 @@ enum {
 	PT_PHDR = 6,                     /* Program header table */
 	PT_TLS = 7,                      /* Thread local storage header table */
 	PT_LOOS = 0x60000000,            /* Environment-specific use */
+	PT_GNU_EH_FRAME = 0x6474e550,    /* GCC .eh_frame_hdr segment */
+	PT_GNU_STACK = 0x6474e551,       /* GCC stack executability */
+	PT_GNU_RELRO = 0x6474e552,       /* GCC Read-only after relocation */
 	PT_HIOS = 0x6fffffff,
 	PT_LOPROC = 0x70000000,          /* Processor-specific use */
 	PT_HIPROC = 0x7fffffff
