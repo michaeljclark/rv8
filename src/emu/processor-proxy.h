@@ -110,8 +110,7 @@ namespace riscv {
 
 			/* keep track of the mapped segment and set the stack_top */
 			P::mmu.mem->segments.push_back(std::pair<void*,size_t>((void*)(stack_top - stack_size), stack_size));
-			*(u64*)(stack_top - sizeof(u64)) = 0xfeedcafebabef00dULL;
-			P::ireg[rv_ireg_sp] = stack_top - sizeof(u64);
+			P::ireg[rv_ireg_sp] = stack_top;
 
 			/* log stack creation */
 			if (P::log & proc_log_memory) {
@@ -139,6 +138,7 @@ namespace riscv {
 
 			/*
 				STACK TOP
+				random (16 bytes)
 				env data
 				arg data
 				padding, align 16
@@ -148,6 +148,14 @@ namespace riscv {
 				argc <- stack pointer
 			*/
 
+			/* setup 16 bytes of random data at the top of the stack */
+			for (int i = 0; i < 4; i++) {
+				u32 random = cpu.get_random_seed();
+				P::ireg[rv_ireg_sp].r.xu.val -= sizeof(u32);
+				memcpy((void*)(uintptr_t)P::ireg[rv_ireg_sp].r.xu.val, &random, sizeof(random));
+			}
+			typename P::ux random_data = P::ireg[rv_ireg_sp];
+
 			/* set up aux data */
 			std::vector<typename P::ux> aux_data = {
 				AT_BASE, typename P::ux(imagebase),
@@ -155,7 +163,7 @@ namespace riscv {
 				AT_PHNUM, elf.ehdr.e_phnum,
 				AT_PHENT, elf.ehdr.e_phentsize,
 				AT_PAGESZ, page_size,
-				AT_RANDOM, cpu.get_random_seed(),
+				AT_RANDOM, random_data,
 				AT_UID, getuid(),
 				AT_EUID, geteuid(),
 				AT_GID, getgid(),
