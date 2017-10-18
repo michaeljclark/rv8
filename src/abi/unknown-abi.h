@@ -19,18 +19,21 @@ namespace riscv {
 		abi_syscall_writev = 66,
 		abi_syscall_pread = 67,
 		abi_syscall_pwrite = 68,
+		abi_syscall_fstatat = 79,
 		abi_syscall_fstat = 80,
 		abi_syscall_exit = 93,
 		abi_syscall_exit_group = 94,
 		abi_syscall_set_tid_address = 96,
 		abi_syscall_clock_gettime = 113,
 		abi_syscall_uname = 160,
+		abi_syscall_getrusage = 165,
 		abi_syscall_gettimeofday = 169,
 		abi_syscall_brk = 214,
 		abi_syscall_munmap = 215,
 		abi_syscall_mmap = 222,
 		abi_syscall_mprotect = 226,
 		abi_syscall_madvise = 233,
+		abi_syscall_prlimit64 = 261,
 		abi_syscall_open = 1024,
 		abi_syscall_unlink = 1026,
 		abi_syscall_stat = 1038,
@@ -65,6 +68,34 @@ namespace riscv {
 
 	enum {
 		abi_utsname_NEW_UTS_LEN = 64
+	};
+
+	enum {
+		abi_fstatat_AT_SYMLINK_NOFOLLOW = 0x100
+	};
+
+	enum {
+		abi_rusage_RUSAGE_SELF = 0,
+		abi_rusage_RUSAGE_CHILDREN = -1
+	};
+
+	enum {
+		abi_rlimit_RLIMIT_CPU = 0,
+		abi_rlimit_RLIMIT_FSIZE = 1,
+		abi_rlimit_RLIMIT_DATA = 2,
+		abi_rlimit_RLIMIT_STACK = 3,
+		abi_rlimit_RLIMIT_CORE = 4,
+		abi_rlimit_RLIMIT_RSS = 5,
+		abi_rlimit_RLIMIT_NPROC = 6,
+		abi_rlimit_RLIMIT_NOFILE = 7,
+		abi_rlimit_RLIMIT_MEMLOCK = 8,
+		abi_rlimit_RLIMIT_AS = 9,
+		abi_rlimit_RLIMIT_LOCKS = 10,
+		abi_rlimit_RLIMIT_SIGPENDING = 11,
+		abi_rlimit_RLIMIT_MSGQUEUE = 12,
+		abi_rlimit_RLIMIT_NICE = 13,
+		abi_rlimit_RLIMIT_RTPRIO = 14,
+		abi_rlimit_RLIMIT_NLIMITS = 15
 	};
 
 	struct abi_new_utsname {
@@ -125,6 +156,33 @@ namespace riscv {
 		typename P::ulong_t ctime_nsec;
 		typename P::uint_t  __unused4;
 		typename P::uint_t  __unused5;
+	};
+
+	template <typename P> struct abi_rusage
+	{
+        abi_timeval<P> ru_utime;
+        abi_timeval<P> ru_stime;
+        typename P::long_t ru_maxrss;
+        typename P::long_t ru_ixrss;
+        typename P::long_t ru_idrss;
+        typename P::long_t ru_isrss;
+        typename P::long_t ru_minflt;
+        typename P::long_t ru_majflt;
+        typename P::long_t ru_nswap;
+        typename P::long_t ru_inblock;
+        typename P::long_t ru_oublock;
+        typename P::long_t ru_msgsnd;
+        typename P::long_t ru_msgrcv;
+        typename P::long_t ru_nsignals;
+        typename P::long_t ru_nvcsw;
+        typename P::long_t ru_nivcsw;
+        typename P::long_t __reserved[16];
+	};
+
+	template <typename P> struct abi_rlimit
+	{
+        u64 rlim_cur;
+        u64 rlim_max;
 	};
 
 	template <typename P>
@@ -257,6 +315,19 @@ namespace riscv {
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
+	template <typename P> void abi_sys_fstatat(P &proc)
+	{
+		struct stat host_stat;
+		const char* path = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		int abi_flags = (proc.ireg[rv_ireg_a3] == abi_fstatat_AT_SYMLINK_NOFOLLOW)
+			? AT_SYMLINK_NOFOLLOW : 0;
+		memset(&host_stat, 0, sizeof(host_stat));
+		int ret = fstatat(proc.ireg[rv_ireg_a0], path, &host_stat, abi_flags);
+		abi_stat<P> *guest_stat = (abi_stat<P>*)(addr_t)proc.ireg[rv_ireg_a2].r.xu.val;
+		cvt_abi_stat(guest_stat, &host_stat);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
 	template <typename P> void abi_sys_fstat(P &proc)
 	{
 		struct stat host_stat;
@@ -343,6 +414,38 @@ namespace riscv {
 		strncpy(ustname->release, host_utsname.release, abi_utsname_NEW_UTS_LEN);
 		strncpy(ustname->version, host_utsname.version, abi_utsname_NEW_UTS_LEN);
 		strncpy(ustname->machine, host_utsname.machine, abi_utsname_NEW_UTS_LEN);
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_getrusage(P &proc)
+	{
+		struct rusage host_rusage;
+		int who;
+		switch (proc.ireg[rv_ireg_a0]) {
+			case abi_rusage_RUSAGE_SELF: who = RUSAGE_SELF; break;
+			case abi_rusage_RUSAGE_CHILDREN: who = RUSAGE_CHILDREN; break;
+			default: who = 0; break;
+		}
+		int ret = getrusage(who, &host_rusage);
+		abi_rusage<P> *guest_rusage = (abi_rusage<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		guest_rusage->ru_utime.tv_sec = host_rusage.ru_utime.tv_sec;
+		guest_rusage->ru_utime.tv_usec = host_rusage.ru_utime.tv_usec;
+		guest_rusage->ru_stime.tv_sec = host_rusage.ru_stime.tv_sec;
+		guest_rusage->ru_stime.tv_usec = host_rusage.ru_stime.tv_usec;
+		guest_rusage->ru_maxrss = host_rusage.ru_maxrss;
+		guest_rusage->ru_ixrss = host_rusage.ru_ixrss;
+		guest_rusage->ru_idrss = host_rusage.ru_idrss;
+		guest_rusage->ru_isrss = host_rusage.ru_isrss;
+		guest_rusage->ru_minflt = host_rusage.ru_minflt;
+		guest_rusage->ru_majflt = host_rusage.ru_majflt;
+		guest_rusage->ru_nswap = host_rusage.ru_nswap;
+		guest_rusage->ru_inblock = host_rusage.ru_inblock;
+		guest_rusage->ru_oublock = host_rusage.ru_oublock;
+		guest_rusage->ru_msgsnd = host_rusage.ru_msgsnd;
+		guest_rusage->ru_msgrcv = host_rusage.ru_msgrcv;
+		guest_rusage->ru_nsignals = host_rusage.ru_nsignals;
+		guest_rusage->ru_nvcsw = host_rusage.ru_nvcsw;
+		guest_rusage->ru_nivcsw = host_rusage.ru_nivcsw;
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
@@ -447,6 +550,49 @@ namespace riscv {
 		proc.ireg[rv_ireg_a0] = 0; /* nop */
 	}
 
+	template <typename P> void abi_sys_prlimit64(P &proc)
+	{
+		int resource, ret;
+		switch (proc.ireg[rv_ireg_a0]) {
+			case abi_rlimit_RLIMIT_CPU: resource = RLIMIT_CPU;
+			case abi_rlimit_RLIMIT_FSIZE: resource = RLIMIT_FSIZE;
+			case abi_rlimit_RLIMIT_DATA: resource = RLIMIT_DATA;
+			case abi_rlimit_RLIMIT_STACK: resource = RLIMIT_STACK;
+			case abi_rlimit_RLIMIT_CORE: resource = RLIMIT_CORE;
+			case abi_rlimit_RLIMIT_RSS: resource = RLIMIT_RSS;
+			case abi_rlimit_RLIMIT_NPROC: resource = RLIMIT_NPROC;
+			case abi_rlimit_RLIMIT_NOFILE: resource = RLIMIT_NOFILE;
+			case abi_rlimit_RLIMIT_MEMLOCK: resource = RLIMIT_MEMLOCK;
+			case abi_rlimit_RLIMIT_AS: resource = RLIMIT_AS;
+			default:
+				proc.ireg[rv_ireg_a0] = abi_errno_EINVAL;
+				return;
+		}
+		abi_rlimit<P> *guest_new_limit = (abi_rlimit<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		abi_rlimit<P> *guest_old_limit = (abi_rlimit<P>*)(addr_t)proc.ireg[rv_ireg_a2].r.xu.val;
+		struct rlimit host_new_limit;
+		struct rlimit host_old_limit;
+		if (guest_old_limit) {
+			ret = getrlimit(resource, &host_old_limit);
+			if (ret) {
+				proc.ireg[rv_ireg_a0] = -errno;
+				return;
+			}
+			guest_old_limit->rlim_cur = host_old_limit.rlim_cur;
+			guest_old_limit->rlim_max = host_old_limit.rlim_max;
+		}
+		if (guest_new_limit) {
+			host_new_limit.rlim_cur = guest_new_limit->rlim_cur;
+			host_new_limit.rlim_max = guest_new_limit->rlim_max;
+			ret = setrlimit(resource, &host_new_limit);
+			if (ret) {
+				proc.ireg[rv_ireg_a0] = -errno;
+				return;
+			}
+		}
+		proc.ireg[rv_ireg_a0] = 0;
+	}
+
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
@@ -460,18 +606,21 @@ namespace riscv {
 			case abi_syscall_writev:          abi_sys_writev(proc); break;
 			case abi_syscall_pread:           abi_sys_pread(proc); break;
 			case abi_syscall_pwrite:          abi_sys_pwrite(proc); break;
+			case abi_syscall_fstatat:         abi_sys_fstatat(proc); break;
 			case abi_syscall_fstat:           abi_sys_fstat(proc); break;
 			case abi_syscall_exit:            abi_sys_exit(proc); break;
 			case abi_syscall_exit_group:      abi_sys_exit(proc); break;
 			case abi_syscall_set_tid_address: abi_sys_set_tid_address(proc); break;
 			case abi_syscall_clock_gettime:   abi_sys_clock_gettime(proc); break;
 			case abi_syscall_uname:           abi_sys_uname(proc); break;
+			case abi_syscall_getrusage:       abi_sys_getrusage(proc); break;
 			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
 			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
 			case abi_syscall_mprotect:        abi_sys_mprotect(proc); break;
 			case abi_syscall_madvise:         abi_sys_madvise(proc); break;
+			case abi_syscall_prlimit64:       abi_sys_prlimit64(proc); break;
 			case abi_syscall_open:            abi_sys_open(proc); break;
 			case abi_syscall_unlink:          abi_sys_unlink(proc); break;
 			case abi_syscall_stat:            abi_sys_stat(proc); break;
