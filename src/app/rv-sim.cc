@@ -41,6 +41,7 @@
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
+#include <sys/resource.h>
 
 #include "host-endian.h"
 #include "types.h"
