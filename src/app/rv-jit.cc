@@ -141,8 +141,7 @@ struct rv_jit
 
 	jit_mode mode = jit_mode_trace;
 	elf_file elf;
-	uintptr_t imagebase = 0;
-	uintptr_t voffset = 0;
+	addr_t imageoffset = 0;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	int trace_iters = 100;
@@ -287,16 +286,16 @@ struct rv_jit
 		proc.memory_registers = memory_registers;
 
 		/* map dynamic loader into high memory (1GB below memory top) */
-		voffset = (elf.ehdr.e_type == ET_DYN &&
-				   elf.phdrs.size() > 0 &&
-				   elf.phdrs[0].p_vaddr == 0) ? P::mmu_type::memory_top - 0x40000000 : 0;
-		proc.pc = elf.ehdr.e_entry + voffset;
+		imageoffset = (elf.ehdr.e_type == ET_DYN &&
+					   elf.phdrs.size() > 0 &&
+					   elf.phdrs[0].p_vaddr == 0) ? P::mmu_type::memory_top - 0x40000000 : 0;
+		proc.pc = elf.ehdr.e_entry + imageoffset;
 
 		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
 		for (size_t i = 0; i < elf.phdrs.size(); i++) {
 			Elf64_Phdr &phdr = elf.phdrs[i];
 			if (phdr.p_type == PT_LOAD) {
-				proc.map_load_segment_user(elf_filename.c_str(), phdr, voffset);
+				proc.map_load_segment_user(elf_filename.c_str(), phdr, imageoffset);
 			}
 		}
 
