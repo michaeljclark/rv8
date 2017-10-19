@@ -24,9 +24,15 @@ std::pair<arg_list,bool> cmdline_option::process_options(cmdline_option *options
 		args.push_back(argv[i]);
 	}
 	
+	bool passthrough = false;
 	arg_list remaining_args;
 	while (args.size() > 0) {
 		std::string arg = args.front();
+		if (passthrough) {
+			args.pop_front();
+			remaining_args.push_back(arg);
+			continue;
+		}
 		cmdline_option *o = options, *found_opt = nullptr;
 		while (o->short_option) {
 			if (arg == o->short_option || arg == o->long_option) {
@@ -36,6 +42,10 @@ std::pair<arg_list,bool> cmdline_option::process_options(cmdline_option *options
 			o++;
 		}
 		args.pop_front();
+		if (arg == "--") {
+			passthrough = true;
+			continue;
+		}
 		if (!found_opt) {
 			remaining_args.push_back(arg);
 			continue;
