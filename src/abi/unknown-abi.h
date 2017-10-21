@@ -9,9 +9,11 @@ namespace riscv {
 
 	enum abi_syscall
 	{
+		abi_syscall_getcwd = 17,
 		abi_syscall_fcntl = 25,
 		abi_syscall_ioctl = 29,
 		abi_syscall_unlinkat = 35,
+		abi_syscall_faccessat = 48,
 		abi_syscall_openat = 56,
 		abi_syscall_close = 57,
 		abi_syscall_lseek = 62,
@@ -21,15 +23,20 @@ namespace riscv {
 		abi_syscall_writev = 66,
 		abi_syscall_pread = 67,
 		abi_syscall_pwrite = 68,
+		abi_syscall_readlinkat = 78,
 		abi_syscall_fstatat = 79,
 		abi_syscall_fstat = 80,
 		abi_syscall_exit = 93,
 		abi_syscall_exit_group = 94,
 		abi_syscall_set_tid_address = 96,
 		abi_syscall_clock_gettime = 113,
+		abi_syscall_rt_sigaction = 134,
+		abi_syscall_rt_sigprocmask = 135,
+		abi_syscall_times = 153,
 		abi_syscall_uname = 160,
 		abi_syscall_getrusage = 165,
 		abi_syscall_gettimeofday = 169,
+		abi_syscall_sysinfo = 179,
 		abi_syscall_brk = 214,
 		abi_syscall_munmap = 215,
 		abi_syscall_mmap = 222,
@@ -78,6 +85,10 @@ namespace riscv {
 
 	enum {
 		abi_unlinkat_AT_REMOVEDIR = 0x200
+	};
+
+	enum {
+		abi_faccessat_AT_EACCESS = 0x200
 	};
 
 	enum {
@@ -144,6 +155,14 @@ namespace riscv {
 		typename P::int_t tz_dsttime;
 	};
 
+	template <typename P> struct abi_tms
+	{
+		typename P::long_t tms_utime;
+		typename P::long_t tms_stime;
+		typename P::long_t tms_cutime;
+		typename P::long_t tms_cstime;
+	};
+
 	template <typename P> struct abi_stat
 	{
 		typename P::ulong_t dev;
@@ -170,30 +189,48 @@ namespace riscv {
 
 	template <typename P> struct abi_rusage
 	{
-        abi_timeval<P> ru_utime;
-        abi_timeval<P> ru_stime;
-        typename P::long_t ru_maxrss;
-        typename P::long_t ru_ixrss;
-        typename P::long_t ru_idrss;
-        typename P::long_t ru_isrss;
-        typename P::long_t ru_minflt;
-        typename P::long_t ru_majflt;
-        typename P::long_t ru_nswap;
-        typename P::long_t ru_inblock;
-        typename P::long_t ru_oublock;
-        typename P::long_t ru_msgsnd;
-        typename P::long_t ru_msgrcv;
-        typename P::long_t ru_nsignals;
-        typename P::long_t ru_nvcsw;
-        typename P::long_t ru_nivcsw;
-        typename P::long_t __reserved[16];
+		abi_timeval<P> ru_utime;
+		abi_timeval<P> ru_stime;
+		typename P::long_t ru_maxrss;
+		typename P::long_t ru_ixrss;
+		typename P::long_t ru_idrss;
+		typename P::long_t ru_isrss;
+		typename P::long_t ru_minflt;
+		typename P::long_t ru_majflt;
+		typename P::long_t ru_nswap;
+		typename P::long_t ru_inblock;
+		typename P::long_t ru_oublock;
+		typename P::long_t ru_msgsnd;
+		typename P::long_t ru_msgrcv;
+		typename P::long_t ru_nsignals;
+		typename P::long_t ru_nvcsw;
+		typename P::long_t ru_nivcsw;
+		typename P::long_t __reserved[16];
 	};
 
 	template <typename P> struct abi_rlimit
 	{
-        u64 rlim_cur;
-        u64 rlim_max;
+		u64 rlim_cur;
+		u64 rlim_max;
 	};
+
+	template <typename P> struct abi_sysinfo
+	{
+		typename P::ulong_t uptime;
+		typename P::ulong_t loads[3];
+		typename P::ulong_t totalram;
+		typename P::ulong_t freeram;
+		typename P::ulong_t sharedram;
+		typename P::ulong_t bufferram;
+		typename P::ulong_t totalswap;
+		typename P::ulong_t freeswap;
+		unsigned short procs, pad;
+		typename P::ulong_t totalhigh;
+		typename P::ulong_t freehigh;
+		typename P::uint_t mem_unit;
+		char __reserved[256];
+	};
+
 
 	template <typename P>
 	void cvt_abi_stat(abi_stat<P> *guest_stat, struct stat *host_stat)
@@ -240,6 +277,18 @@ namespace riscv {
 		abi_fcntl_F_SETLKW = 7,
 		abi_fcntl_F_DUPFD_CLOEXEC = 1030
 	};
+
+	template <typename P> void abi_sys_getcwd(P &proc)
+	{
+		char *buf = (char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		char *ret = getcwd(buf, proc.ireg[rv_ireg_a1]);
+		if (proc.log & proc_log_syscall) {
+			printf("getcwd(%ld,0x%lx) = %d",
+				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
+				ret ? 0 : -EINVAL);
+		}
+		proc.ireg[rv_ireg_a0] = ret ? 0 : -EINVAL;
+	}
 
 	template <typename P> void abi_sys_fcntl(P &proc)
 	{
@@ -330,6 +379,31 @@ namespace riscv {
 			printf("unlinkat(%ld,%s,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
 				ret >= 0 ? ret : -errno);
+		}
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_faccessat(P &proc)
+	{
+		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		int fd;
+		switch(proc.ireg[rv_ireg_a0]) {
+			case abi_openat_AT_FDCWD:
+				fd = AT_FDCWD;
+				break;
+			default:
+				fd = proc.ireg[rv_ireg_a0];
+				break;
+		}
+		int flag = 0;
+		if(proc.ireg[rv_ireg_a3].r.xu.val & abi_faccessat_AT_EACCESS) {
+			flag |= AT_EACCESS;
+		}
+		int ret = faccessat(fd, pathname, proc.ireg[rv_ireg_a2], flag);
+		if (proc.log & proc_log_syscall) {
+			printf("faccessat(%ld,%s,%ld,%ld) = %d\n",
+				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
+				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
 		}
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
@@ -463,6 +537,28 @@ namespace riscv {
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
 				(long)proc.ireg[rv_ireg_a2], (long)proc.ireg[rv_ireg_a3],
 				ret >= 0 ? ret : -errno);
+		}
+		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_readlinkat(P &proc)
+	{
+		int fd;
+		switch(proc.ireg[rv_ireg_a0]) {
+			case abi_openat_AT_FDCWD:
+				fd = AT_FDCWD;
+				break;
+			default:
+				fd = proc.ireg[rv_ireg_a0];
+				break;
+		}
+		const char* path = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		char* buf = (char*)(addr_t)proc.ireg[rv_ireg_a2].r.xu.val;
+		int ret = readlinkat(fd, path, buf, proc.ireg[rv_ireg_a3].r.xu.val);
+		if (proc.log & proc_log_syscall) {
+			printf("readlinkat(%ld,%s,0x%lx,%ld) = %d\n",
+				(long)proc.ireg[rv_ireg_a0], path, (long)proc.ireg[rv_ireg_a2],
+				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
 		}
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
@@ -609,6 +705,32 @@ namespace riscv {
 		}
 	}
 
+	template <typename P> void abi_sys_rt_sigaction(P &proc)
+	{
+		proc.ireg[rv_ireg_a0] = 0; /* nop */
+	}
+
+	template <typename P> void abi_sys_rt_sigprocmask(P &proc)
+	{
+		proc.ireg[rv_ireg_a0] = 0; /* nop */
+	}
+
+	template <typename P> void abi_sys_times(P &proc)
+	{
+		struct tms host_tms;
+		typename P::long_t ret = times(&host_tms);
+		abi_tms<P> *guest_tms = (abi_tms<P>*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
+		guest_tms->tms_utime = host_tms.tms_utime;
+		guest_tms->tms_stime = host_tms.tms_stime;
+		guest_tms->tms_cutime = host_tms.tms_cutime;
+		guest_tms->tms_cstime = host_tms.tms_cstime;
+		if (proc.log & proc_log_syscall) {
+			printf("times(0x%lx) = %ld\n",
+				(long)proc.ireg[rv_ireg_a0], (long)ret);
+		}
+		proc.ireg[rv_ireg_a0] = ret;
+	}
+
 	template <typename P> void abi_sys_uname(P &proc)
 	{
 		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
@@ -686,6 +808,13 @@ namespace riscv {
 				ret >= 0 ? ret : -errno);
 		}
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+	}
+
+	template <typename P> void abi_sys_sysinfo(P &proc)
+	{
+		abi_sysinfo<P> *guest_sysinfo = (abi_sysinfo<P>*)(addr_t)proc.ireg[rv_ireg_a0];
+		memset(guest_sysinfo, 0, sizeof(*guest_sysinfo));
+		proc.ireg[rv_ireg_a0] = 0;
 	}
 
 	template <typename P> void abi_sys_brk(P &proc)
@@ -864,9 +993,11 @@ namespace riscv {
 	template <typename P> void proxy_syscall(P &proc)
 	{
 		switch (proc.ireg[rv_ireg_a7]) {
+			case abi_syscall_getcwd:          abi_sys_getcwd(proc); break;
 			case abi_syscall_fcntl:           abi_sys_fcntl(proc); break;
 			case abi_syscall_ioctl:           abi_sys_ioctl(proc); break;
 			case abi_syscall_unlinkat:        abi_sys_unlinkat(proc); break;
+			case abi_syscall_faccessat:       abi_sys_faccessat(proc); break;
 			case abi_syscall_openat:          abi_sys_openat(proc); break;
 			case abi_syscall_close:           abi_sys_close(proc); break;
 			case abi_syscall_lseek:           abi_sys_lseek(proc); break;
@@ -876,15 +1007,20 @@ namespace riscv {
 			case abi_syscall_writev:          abi_sys_writev(proc); break;
 			case abi_syscall_pread:           abi_sys_pread(proc); break;
 			case abi_syscall_pwrite:          abi_sys_pwrite(proc); break;
+			case abi_syscall_readlinkat:      abi_sys_readlinkat(proc); break;
 			case abi_syscall_fstatat:         abi_sys_fstatat(proc); break;
 			case abi_syscall_fstat:           abi_sys_fstat(proc); break;
 			case abi_syscall_exit:            abi_sys_exit(proc); break;
 			case abi_syscall_exit_group:      abi_sys_exit(proc); break;
 			case abi_syscall_set_tid_address: abi_sys_set_tid_address(proc); break;
 			case abi_syscall_clock_gettime:   abi_sys_clock_gettime(proc); break;
+			case abi_syscall_rt_sigaction:    abi_sys_rt_sigaction(proc); break;
+			case abi_syscall_rt_sigprocmask:  abi_sys_rt_sigprocmask(proc); break;
+			case abi_syscall_times:           abi_sys_times(proc); break;
 			case abi_syscall_uname:           abi_sys_uname(proc); break;
 			case abi_syscall_getrusage:       abi_sys_getrusage(proc); break;
 			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
+			case abi_syscall_sysinfo:         abi_sys_sysinfo(proc);break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
 			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
