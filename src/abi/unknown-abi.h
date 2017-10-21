@@ -119,6 +119,22 @@ namespace riscv {
 		abi_rlimit_RLIMIT_NLIMITS = 15
 	};
 
+	enum {
+		abi_fcntl_F_DUPFD = 0,
+		abi_fcntl_F_GETFD = 1,
+		abi_fcntl_F_SETFD = 2,
+		abi_fcntl_F_GETFL = 3,
+		abi_fcntl_F_SETFL = 4,
+		abi_fcntl_F_SETOWN = 8,
+		abi_fcntl_F_GETOWN = 9,
+		abi_fcntl_F_SETSIG = 10,
+		abi_fcntl_F_GETSIG = 11,
+		abi_fcntl_F_GETLK = 5,
+		abi_fcntl_F_SETLK = 6,
+		abi_fcntl_F_SETLKW = 7,
+		abi_fcntl_F_DUPFD_CLOEXEC = 1030
+	};
+
 	struct abi_new_utsname {
 		char sysname[abi_utsname_NEW_UTS_LEN + 1];
 		char nodename[abi_utsname_NEW_UTS_LEN + 1];
@@ -262,21 +278,19 @@ namespace riscv {
 	#endif
 	}
 
-	enum {
-		abi_fcntl_F_DUPFD = 0,
-		abi_fcntl_F_GETFD = 1,
-		abi_fcntl_F_SETFD = 2,
-		abi_fcntl_F_GETFL = 3,
-		abi_fcntl_F_SETFL = 4,
-		abi_fcntl_F_SETOWN = 8,
-		abi_fcntl_F_GETOWN = 9,
-		abi_fcntl_F_SETSIG = 10,
-		abi_fcntl_F_GETSIG = 11,
-		abi_fcntl_F_GETLK = 5,
-		abi_fcntl_F_SETLK = 6,
-		abi_fcntl_F_SETLKW = 7,
-		abi_fcntl_F_DUPFD_CLOEXEC = 1030
-	};
+	int cvt_open_flags(int lxflags)
+	{
+		int hostflags = 0;
+		if (lxflags & 01) hostflags |= O_WRONLY;
+		if (lxflags & 02) hostflags |= O_RDWR;
+		if (lxflags & 0100) hostflags |= O_CREAT;
+		if (lxflags & 0200) hostflags |= O_EXCL;
+		if (lxflags & 01000) hostflags |= O_TRUNC;
+		if (lxflags & 02000) hostflags |= O_APPEND;
+		if (lxflags & 04000) hostflags |= O_NONBLOCK;
+		if (lxflags & 04010000) hostflags |= O_SYNC;
+		return hostflags;
+	}
 
 	template <typename P> void abi_sys_getcwd(P &proc)
 	{
@@ -420,7 +434,8 @@ namespace riscv {
 				fd = proc.ireg[rv_ireg_a0];
 				break;
 		}
-		int ret = openat(fd, pathname, proc.ireg[rv_ireg_a2], proc.ireg[rv_ireg_a3]);
+		int hostflags = cvt_open_flags(proc.ireg[rv_ireg_a2]);
+		int ret = openat(fd, pathname, hostflags, proc.ireg[rv_ireg_a3]);
 		if (proc.log & proc_log_syscall) {
 			printf("openat(%ld,%s,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
@@ -607,15 +622,7 @@ namespace riscv {
 
 	template <typename P> void abi_sys_open(P &proc)
 	{
-		int lxflags = proc.ireg[rv_ireg_a1], hostflags = 0;
-		if (lxflags & 01) hostflags |= O_WRONLY;
-		if (lxflags & 02) hostflags |= O_RDWR;
-		if (lxflags & 0100) hostflags |= O_CREAT;
-		if (lxflags & 0200) hostflags |= O_EXCL;
-		if (lxflags & 01000) hostflags |= O_TRUNC;
-		if (lxflags & 02000) hostflags |= O_APPEND;
-		if (lxflags & 04000) hostflags |= O_NONBLOCK;
-		if (lxflags & 04010000) hostflags |= O_SYNC;
+		int hostflags = cvt_open_flags(proc.ireg[rv_ireg_a1]);
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
 		int ret = open(pathname, hostflags, proc.ireg[rv_ireg_a2].r.xu.val);
 		if (proc.log & proc_log_syscall) {
