@@ -36,6 +36,7 @@ namespace riscv {
 		abi_syscall_uname = 160,
 		abi_syscall_getrusage = 165,
 		abi_syscall_gettimeofday = 169,
+		abi_syscall_gettid = 178,
 		abi_syscall_sysinfo = 179,
 		abi_syscall_brk = 214,
 		abi_syscall_munmap = 215,
@@ -817,10 +818,23 @@ namespace riscv {
 		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
 	}
 
+	template <typename P> void abi_sys_gettid(P &proc)
+	{
+		int tid = getpid();
+		if (proc.log & proc_log_syscall) {
+			printf("gettid() = %d\n", tid);
+		}
+		proc.ireg[rv_ireg_a0] = tid;
+	}
+
 	template <typename P> void abi_sys_sysinfo(P &proc)
 	{
 		abi_sysinfo<P> *guest_sysinfo = (abi_sysinfo<P>*)(addr_t)proc.ireg[rv_ireg_a0];
 		memset(guest_sysinfo, 0, sizeof(*guest_sysinfo));
+		if (proc.log & proc_log_syscall) {
+			printf("sysinfo(0x%lx) = %d\n",
+				(long)proc.ireg[rv_ireg_a0], 0);
+		}
 		proc.ireg[rv_ireg_a0] = 0;
 	}
 
@@ -1027,7 +1041,8 @@ namespace riscv {
 			case abi_syscall_uname:           abi_sys_uname(proc); break;
 			case abi_syscall_getrusage:       abi_sys_getrusage(proc); break;
 			case abi_syscall_gettimeofday:    abi_sys_gettimeofday(proc);break;
-			case abi_syscall_sysinfo:         abi_sys_sysinfo(proc);break;
+			case abi_syscall_gettid:          abi_sys_gettid(proc); break;
+			case abi_syscall_sysinfo:         abi_sys_sysinfo(proc); break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
 			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
