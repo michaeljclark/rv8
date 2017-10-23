@@ -956,6 +956,11 @@ namespace riscv {
 	template <typename P> void abi_sys_munmap(P &proc)
 	{
 		int ret = guest_munmap((void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1]);
+		if (proc.log & proc_log_syscall) {
+			printf("munmap(0x%lx,%ld) = %d\n",
+				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
+				cvt_error(ret));
+		}
 		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
