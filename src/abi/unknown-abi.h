@@ -53,55 +53,68 @@ namespace riscv {
 	enum {
 		abi_mmap_PROT_READ = 1,
 		abi_mmap_PROT_WRITE = 2,
-		abi_mmap_PROT_EXEC = 4
-	};
+		abi_mmap_PROT_EXEC = 4,
 
-	enum {
 		abi_mmap_MAP_SHARED = 0x1,
 		abi_mmap_MAP_PRIVATE = 0x2,
 		abi_mmap_MAP_FIXED = 0x10,
-		abi_mmap_MAP_ANON = 0x20
-	};
+		abi_mmap_MAP_ANON = 0x20,
 
-	enum {
-		abi_ioctl_TIOCGWINSZ = 0x5413
-	};
+		abi_ioctl_TIOCGWINSZ = 0x5413,
 
-	enum {
-		abi_errno_EINVAL = 22
-	};
+		abi_errno_EPERM = 1,
+		abi_errno_ENOENT= 2,
+		abi_errno_ESRCH = 3,
+		abi_errno_EINTR = 4,
+		abi_errno_EIO = 5,
+		abi_errno_ENXIO = 6,
+		abi_errno_E2BIG = 7,
+		abi_errno_ENOEXEC = 8,
+		abi_errno_EBADF = 9,
+		abi_errno_ECHILD = 10,
+		abi_errno_EAGAIN = 11,
+		abi_errno_ENOMEM = 12,
+		abi_errno_EACCES = 13,
+		abi_errno_EFAULT = 14,
+		abi_errno_ENOTBLK = 15,
+		abi_errno_EBUSY = 16,
+		abi_errno_EEXIST = 17,
+		abi_errno_EXDEV = 18,
+		abi_errno_ENODEV = 19,
+		abi_errno_ENOTDIR = 20,
+		abi_errno_EISDIR = 21,
+		abi_errno_EINVAL = 22,
+		abi_errno_ENFILE = 23,
+		abi_errno_EMFILE = 24,
+		abi_errno_ENOTTY = 25,
+		abi_errno_ETXTBSY = 26,
+		abi_errno_EFBIG = 27,
+		abi_errno_ENOSPC = 28,
+		abi_errno_ESPIPE = 29,
+		abi_errno_EROFS = 30,
+		abi_errno_EMLINK = 31,
+		abi_errno_EPIPE = 32,
+		abi_errno_EDOM = 33,
+		abi_errno_ERANGE = 34,
+		abi_errno_EDEADLK = 35,
+		abi_errno_ENAMETOOLONG = 36,
+		abi_errno_ENOLCK = 37,
+		abi_errno_ENOSYS = 38,
 
-	enum {
 		abi_clock_CLOCK_REALTIME = 0,
-		abi_clock_CLOCK_MONOTONIC = 1
-	};
+		abi_clock_CLOCK_MONOTONIC = 1,
 
-	enum {
-		abi_utsname_NEW_UTS_LEN = 64
-	};
+		abi_PATH_MAX = 4096,
+		abi_NEW_UTS_LEN = 64,
 
-	enum {
-		abi_openat_AT_FDCWD = -100
-	};
-
-	enum {
-		abi_unlinkat_AT_REMOVEDIR = 0x200
-	};
-
-	enum {
-		abi_faccessat_AT_EACCESS = 0x200
-	};
-
-	enum {
+		abi_openat_AT_FDCWD = -100,
+		abi_unlinkat_AT_REMOVEDIR = 0x200,
+		abi_faccessat_AT_EACCESS = 0x200,
 		abi_fstatat_AT_SYMLINK_NOFOLLOW = 0x100,
-	};
 
-	enum {
 		abi_rusage_RUSAGE_SELF = 0,
-		abi_rusage_RUSAGE_CHILDREN = -1
-	};
+		abi_rusage_RUSAGE_CHILDREN = -1,
 
-	enum {
 		abi_rlimit_RLIMIT_CPU = 0,
 		abi_rlimit_RLIMIT_FSIZE = 1,
 		abi_rlimit_RLIMIT_DATA = 2,
@@ -117,10 +130,8 @@ namespace riscv {
 		abi_rlimit_RLIMIT_MSGQUEUE = 12,
 		abi_rlimit_RLIMIT_NICE = 13,
 		abi_rlimit_RLIMIT_RTPRIO = 14,
-		abi_rlimit_RLIMIT_NLIMITS = 15
-	};
+		abi_rlimit_RLIMIT_NLIMITS = 15,
 
-	enum {
 		abi_fcntl_F_DUPFD = 0,
 		abi_fcntl_F_GETFD = 1,
 		abi_fcntl_F_SETFD = 2,
@@ -137,12 +148,12 @@ namespace riscv {
 	};
 
 	struct abi_new_utsname {
-		char sysname[abi_utsname_NEW_UTS_LEN + 1];
-		char nodename[abi_utsname_NEW_UTS_LEN + 1];
-		char release[abi_utsname_NEW_UTS_LEN + 1];
-		char version[abi_utsname_NEW_UTS_LEN + 1];
-		char machine[abi_utsname_NEW_UTS_LEN + 1];
-		char domainname[abi_utsname_NEW_UTS_LEN + 1];
+		char sysname[abi_NEW_UTS_LEN + 1];
+		char nodename[abi_NEW_UTS_LEN + 1];
+		char release[abi_NEW_UTS_LEN + 1];
+		char version[abi_NEW_UTS_LEN + 1];
+		char machine[abi_NEW_UTS_LEN + 1];
+		char domainname[abi_NEW_UTS_LEN + 1];
 	};
 
 	struct abi_winsize {
@@ -293,6 +304,52 @@ namespace riscv {
 		return hostflags;
 	}
 
+	int cvt_error(int ret)
+	{
+		if (ret >= 0) return ret;
+		switch (errno) {
+			case EPERM:    return -abi_errno_EPERM;
+			case ENOENT:   return -abi_errno_ENOENT;
+			case ESRCH:    return -abi_errno_ESRCH;
+			case EINTR:    return -abi_errno_EINTR;
+			case EIO:      return -abi_errno_EIO;
+			case ENXIO:    return -abi_errno_ENXIO;
+			case E2BIG:    return -abi_errno_E2BIG;
+			case ENOEXEC:  return -abi_errno_ENOEXEC;
+			case EBADF:    return -abi_errno_EBADF;
+			case ECHILD:   return -abi_errno_ECHILD;
+			case EAGAIN:   return -abi_errno_EAGAIN;
+			case ENOMEM:   return -abi_errno_ENOMEM;
+			case EACCES:   return -abi_errno_EACCES;
+			case EFAULT:   return -abi_errno_EFAULT;
+			case ENOTBLK:  return -abi_errno_ENOTBLK;
+			case EBUSY:    return -abi_errno_EBUSY;
+			case EEXIST:   return -abi_errno_EEXIST;
+			case EXDEV:    return -abi_errno_EXDEV;
+			case ENODEV:   return -abi_errno_ENODEV;
+			case ENOTDIR:  return -abi_errno_ENOTDIR;
+			case EISDIR:   return -abi_errno_EISDIR;
+			case EINVAL:   return -abi_errno_EINVAL;
+			case ENFILE:   return -abi_errno_ENFILE;
+			case EMFILE:   return -abi_errno_EMFILE;
+			case ENOTTY:   return -abi_errno_ENOTTY;
+			case ETXTBSY:  return -abi_errno_ETXTBSY;
+			case EFBIG:    return -abi_errno_EFBIG;
+			case ENOSPC:   return -abi_errno_ENOSPC;
+			case ESPIPE:   return -abi_errno_ESPIPE;
+			case EROFS:    return -abi_errno_EROFS;
+			case EMLINK:   return -abi_errno_EMLINK;
+			case EPIPE:    return -abi_errno_EPIPE;
+			case EDOM:     return -abi_errno_EDOM;
+			case ERANGE:   return -abi_errno_ERANGE;
+			case EDEADLK:  return -abi_errno_EDEADLK;
+			case ENAMETOOLONG: return -abi_errno_ENAMETOOLONG;
+			case ENOLCK:   return -abi_errno_ENOLCK;
+			case ENOSYS:   return -abi_errno_ENOSYS;
+			default:       return -abi_errno_EINVAL;
+		}
+	}
+
 	template <typename P> void abi_sys_getcwd(P &proc)
 	{
 		char *buf = (char*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
@@ -338,9 +395,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("fcntl(%ld,%ld,0x%lx) = %d",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_ioctl(P &proc)
@@ -358,9 +415,9 @@ namespace riscv {
 				}
 				if (proc.log & proc_log_syscall) {
 					printf("ioctl(%ld,%ld) = %d\n",
-						(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1], ret >= 0 ? ret : -errno);
+						(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1], cvt_error(ret));
 				}
-				proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+				proc.ireg[rv_ireg_a0] = cvt_error(ret);
 				break;
 			}
 			default:
@@ -393,9 +450,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("unlinkat(%ld,%s,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_faccessat(P &proc)
@@ -418,9 +475,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("faccessat(%ld,%s,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
-				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a3], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_openat(P &proc)
@@ -440,9 +497,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("openat(%ld,%s,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], pathname, (long)proc.ireg[rv_ireg_a2],
-				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a3], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_close(P &proc)
@@ -450,9 +507,9 @@ namespace riscv {
 		int ret = close(proc.ireg[rv_ireg_a0]);
 		if (proc.log & proc_log_syscall) {
 			printf("close(%ld) = %d\n",
-				(long)proc.ireg[rv_ireg_a0], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a0], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_lseek(P &proc)
@@ -462,9 +519,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("lseek(%ld,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_read(P &proc)
@@ -474,9 +531,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("read(%ld,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_write(P &proc)
@@ -486,9 +543,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("write(%ld,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_readv(P &proc)
@@ -505,9 +562,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("readv(%ld,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_writev(P &proc)
@@ -524,9 +581,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("writev(%ld,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_pread(P &proc)
@@ -538,9 +595,9 @@ namespace riscv {
 			printf("pread(%ld,0x%lx,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
 				(long)proc.ireg[rv_ireg_a2], (long)proc.ireg[rv_ireg_a3],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_pwrite(P &proc)
@@ -552,9 +609,9 @@ namespace riscv {
 			printf("pwrite(%ld,0x%lx,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
 				(long)proc.ireg[rv_ireg_a2], (long)proc.ireg[rv_ireg_a3],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_readlinkat(P &proc)
@@ -574,9 +631,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("readlinkat(%ld,%s,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], path, (long)proc.ireg[rv_ireg_a2],
-				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a3], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_fstatat(P &proc)
@@ -601,9 +658,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("fstatat(%ld,%s,0x%lx,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], path, (long)proc.ireg[rv_ireg_a2],
-				(long)proc.ireg[rv_ireg_a3], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a3], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_fstat(P &proc)
@@ -616,9 +673,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("fstat(%ld,0x%lx) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_open(P &proc)
@@ -629,9 +686,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("open(%s,%ld,%ld) = %d\n",
 				pathname, (long)proc.ireg[rv_ireg_a1], (long)proc.ireg[rv_ireg_a2],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_unlink(P &proc)
@@ -640,9 +697,9 @@ namespace riscv {
 		int ret = unlink(pathname);
 		if (proc.log & proc_log_syscall) {
 			printf("unlink(%s) = %d\n",
-				pathname, ret >= 0 ? ret : -errno);
+				pathname, cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_stat(P &proc)
@@ -656,9 +713,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("stat(%s,0x%lx) = %d\n",
 				pathname, (long)proc.ireg[rv_ireg_a1],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_chown(P &proc)
@@ -668,9 +725,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("chown(%s,%ld,%ld) = %d\n",
 				pathname, (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_exit(P &proc)
@@ -744,16 +801,16 @@ namespace riscv {
 		abi_new_utsname *ustname = (abi_new_utsname*)(addr_t)proc.ireg[rv_ireg_a0].r.xu.val;
 		struct utsname host_utsname;
 		int ret = uname(&host_utsname);
-		strncpy(ustname->sysname, host_utsname.sysname, abi_utsname_NEW_UTS_LEN);
-		strncpy(ustname->nodename, host_utsname.nodename, abi_utsname_NEW_UTS_LEN);
-		strncpy(ustname->release, host_utsname.release, abi_utsname_NEW_UTS_LEN);
-		strncpy(ustname->version, host_utsname.version, abi_utsname_NEW_UTS_LEN);
-		strncpy(ustname->machine, host_utsname.machine, abi_utsname_NEW_UTS_LEN);
+		strncpy(ustname->sysname, host_utsname.sysname, abi_NEW_UTS_LEN);
+		strncpy(ustname->nodename, host_utsname.nodename, abi_NEW_UTS_LEN);
+		strncpy(ustname->release, host_utsname.release, abi_NEW_UTS_LEN);
+		strncpy(ustname->version, host_utsname.version, abi_NEW_UTS_LEN);
+		strncpy(ustname->machine, host_utsname.machine, abi_NEW_UTS_LEN);
 		if (proc.log & proc_log_syscall) {
 			printf("uname(0x%lx) = %d\n",
-				(long)proc.ireg[rv_ireg_a0], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a0], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_getrusage(P &proc)
@@ -788,9 +845,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("getrusage(%ld, 0x%lx) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_gettimeofday(P &proc)
@@ -813,9 +870,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("gettimeofday(0x%lx, 0x%lx) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				ret >= 0 ? ret : -errno);
+				cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_gettid(P &proc)
@@ -899,7 +956,7 @@ namespace riscv {
 	template <typename P> void abi_sys_munmap(P &proc)
 	{
 		int ret = guest_munmap((void*)(uintptr_t)proc.ireg[rv_ireg_a0], proc.ireg[rv_ireg_a1]);
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_mmap(P &proc)
@@ -938,9 +995,9 @@ namespace riscv {
 		if (proc.log & proc_log_syscall) {
 			printf("mprotect(0x%lx,%ld,%ld) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
-				(long)proc.ireg[rv_ireg_a2], ret >= 0 ? ret : -errno);
+				(long)proc.ireg[rv_ireg_a2], cvt_error(ret));
 		}
-		proc.ireg[rv_ireg_a0] = ret >= 0 ? ret : -errno;
+		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
 	template <typename P> void abi_sys_madvise(P &proc)
