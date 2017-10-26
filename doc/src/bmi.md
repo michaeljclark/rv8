@@ -11,13 +11,13 @@ RLL.{w,d,q} rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 
 RRL.{w,d,q} rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2
 RLLI.{w,d,q} rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate
 RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate
-BCLZ.{w,d,q} rd,rs1       | Bit Count Leading Zero         | Count leading zero bits in rs1
-BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zero        | Count trailing zero bits in rs1
+BCLZ.{w,d,q} rd,rs1       | Bit Count Leading Zeros        | Count leading zero bits in rs1
+BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zeros       | Count trailing zero bits in rs1
 BCNT.{w,d,q} rd,rs1       | Bit Count                      | Count number of bits set in rs1
 BREV.{w,d,q} rd,rs1       | Bit Reverse                    | Reverse bits in rs1
 BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in rs1
-BEXT.{w,d,q} rd,rs1,rs2   | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
-BDEP.{w,d,q} rd,rs1,rs2   | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2
+BEXT.{w,d,q} rd,rs1,rs2   | Bit Extract                    | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
+BDEP.{w,d,q} rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified contiguous bits from rs1 using mask in rs2
 
 == Count leading and trailing zeros
 
@@ -47,8 +47,8 @@ Notes
 - RV32B, RV64B and RV128B
 - Candidate Bit Manipulation Instructions should require at least 4 Base ISA instructions to be considered
 - Rotate instructions are used frequenty in cyptographic ciphers and hashing algorithms
-- Parallel Bit Extract could potentially be named Parallel Bit Gather
-- Parallel Bit Deposit could potentially be named Parallel Bit Scatter
+- Bit Extract could potentially be named Parallel Bit Extract or Parallel Bit Gather
+- Bit Deposit could potentially be named Parallel Bit Deposit or Parallel Bit Scatter
 - Investigate static versus dynamic bit extraction (implementation dependent)
 - Investigate Butterfly and Inverse Butterfly bit permutation instructions
 
