@@ -16,8 +16,8 @@ BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zero        | Count trailing zero
 BCNT.{w,d,q} rd,rs1       | Bit Count                      | Count number of bits set in rs1
 BREV.{w,d,q} rd,rs1       | Bit Reverse                    | Reverse bits in rs1
 BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in rs1
-PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
-PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2
+BEXT.{w,d,q} rd,rs1,rs2   | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
+BDEP.{w,d,q} rd,rs1,rs2   | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2
 
 == Count leading and trailing zeros
 
