@@ -19,6 +19,29 @@ BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in 
 PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
 PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2
 
+== Count leading and trailing zeros
+
+Count leading and trailing zeros can be constructed using popcount (`BCNT`) and bit reverse (`BREV`):
+
+```
+# count trailing zeros
+.macro BCTZ.X  rd, rs`
+	neg     \rd, \rs
+	and     \rd, \rd, \rs
+	addi    \rd, \rd, -1
+	bcnt    \rd, \rd
+.endm
+
+# count leading zeros
+.macro BCLZ.X  rd, rs`
+	brev    t0,  \rs
+	neg     \rd, t0
+	and     \rd, \rd, t0
+	addi    \rd, \rd, -1
+	bcnt    \rd, \rd
+.endm
+```
+
 Notes
 ==========
 - RV32B, RV64B and RV128B
