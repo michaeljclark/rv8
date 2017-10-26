@@ -14,6 +14,7 @@ RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 
 BCLZ.{w,d,q} rd,rs1       | Bit Count Leading Zero         | Count leading zero bits in rs1
 BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zero        | Count trailing zero bits in rs1
 BCNT.{w,d,q} rd,rs1       | Bit Count                      | Count number of bits set in rs1
+BREV.{w,d,q} rd,rs1       | Bit Reverse                    | Reverse bits in rs1
 BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in rs1
 PBE.{w,d,q} rd,rs1,rs2    | Parallel Bit Extract           | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
 PBD.{w,d,q} rd,rs1,rs2    | Parallel Bit Deposit           | Scatter LSB justified contiguous bits from rs1 using mask in rs2
