@@ -5,19 +5,19 @@ _work in progress_
 
 Candidate instructions for Bit Manipulation (unofficial)
 
-Opcode                    | Long Name                      | Description
-:----------               | :-------------                 | :---------------
-RLL.{w,d,q} rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 left by the amount in rs2 
-RRL.{w,d,q} rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2
-RLLI.{w,d,q} rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate
-RRLI.{w,d,q} rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate
-BCLZ.{w,d,q} rd,rs1       | Bit Count Leading Zeros        | Count leading zero bits in rs1
-BCTZ.{w,d,q} rd,rs1       | Bit Count Trailing Zeros       | Count trailing zero bits in rs1
-BCNT.{w,d,q} rd,rs1       | Bit Count                      | Count number of bits set in rs1
-BREV.{w,d,q} rd,rs1       | Bit Reverse                    | Reverse bits in rs1
-BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in rs1
-BEXT.{w,d,q} rd,rs1,rs2   | Bit Extract                    | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
-BDEP.{w,d,q} rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified contiguous bits from rs1 using mask in rs2
+Opcode               | Long Name                      | Description
+:----------          | :-------------                 | :---------------
+RLL[W] rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 left by the amount in rs2 
+RRL[W] rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2
+RLLI[W] rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate
+RRLI[W] rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate
+BCLZ[W] rd,rs1       | Bit Count Leading Zeros        | Count leading zero bits in rs1
+BCTZ[W] rd,rs1       | Bit Count Trailing Zeros       | Count trailing zero bits in rs1
+BCNT[W] rd,rs1       | Bit Count                      | Count number of bits set in rs1
+BREV[W] rd,rs1       | Bit Reverse                    | Reverse bits in rs1
+BSWAP[W] rd,rs1      | Byte Swap                      | Swap byte order in rs1
+BEXT[W] rd,rs1,rs2   | Bit Extract                    | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
+BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified contiguous bits from rs1 using mask in rs2
 
 ## Count leading and trailing zeros
 
