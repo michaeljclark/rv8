@@ -135,7 +135,7 @@ static bool allow_env_var(const char *var)
 
 /* RISC-V User Mode Emulator and Binary Translator */
 
-struct rv_jit
+struct rv_jit_emulator
 {
 	/*
 		ABI/AEE RISC-V user mode interpreter and binary translator.
@@ -165,13 +165,41 @@ struct rv_jit
 	bool memory_registers = false;
 	bool update_instret = false;
 	bool help_or_error = false;
+	bool symbolicate = false;
+	uint64_t initial_seed = 0;
 	std::string elf_filename;
 	std::string stats_dirname;
 
 	std::vector<std::string> host_cmdline;
 	std::vector<std::string> host_env;
 
-	rv_jit() : cpu(host_cpu::get_instance()) {}
+	rv_jit_emulator() : cpu(host_cpu::get_instance()) {}
+
+	const char* symlookup(addr_t addr)
+	{
+		static char symbol_tmpname[256];
+		if (addr < imageoffset) {
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+				"0x%016llx", addr);
+			return symbol_tmpname;
+		}
+		addr -= imageoffset;
+		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
+		if (sym) {
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"%s", elf.sym_name(sym));
+			return symbol_tmpname;
+		}
+		sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
+		if (sym) {
+			int64_t offset = int64_t(addr) - sym->st_value;
+			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+				"%s%s0x%" PRIx64, elf.sym_name(sym),
+				offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
+			return symbol_tmpname;
+		}
+		return nullptr;
+	}
 
 	void parse_commandline(int argc, const char* argv[], const char* envp[])
 	{
@@ -183,6 +211,9 @@ struct rv_jit
 			{ "-o", "--log-operands", cmdline_arg_type_none,
 				"Log Instructions and Operands",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap | proc_log_operands)); } },
+			{ "-S", "--symbolicate", cmdline_arg_type_none,
+				"Symbolicate addresses in instruction log",
+				[&](std::string s) { return (symbolicate = true); } },
 			{ "-m", "--log-memory-map", cmdline_arg_type_none,
 				"Log Memory Map Information",
 				[&](std::string s) { return (proc_logs |= proc_log_memory); } },
@@ -237,6 +268,9 @@ struct rv_jit
 			{ "-I", "--trace-iters", cmdline_arg_type_string,
 				"Trace iterations",
 				[&](std::string s) { trace_iters = strtoull(s.c_str(), nullptr, 10); return true; } },
+			{ "-s", "--seed", cmdline_arg_type_string,
+				"Random seed",
+				[&](std::string s) { initial_seed = strtoull(s.c_str(), nullptr, 10); return true; } },
 			{ "-h", "--help", cmdline_arg_type_none,
 				"Show help",
 				[&](std::string s) { return (help_or_error = true); } },
@@ -251,8 +285,7 @@ struct rv_jit
 			help_or_error = true;
 		}
 
-		if (help_or_error)
-		{
+		if (help_or_error) {
 			printf("usage: %s [<options>] <elf_file> [<options>]\n", argv[0]);
 			cmdline_option::print_options(options);
 			exit(9);
@@ -271,8 +304,8 @@ struct rv_jit
 			}
 		}
 
-		/* load ELF (headers only) */
-		elf.load(elf_filename, true);
+		/* load ELF (headers only unless symbolicating) */
+		elf.load(elf_filename, !symbolicate);
 	}
 
 	/* Start the execuatable with the given proxy processor template */
@@ -294,14 +327,20 @@ struct rv_jit
 				break;
 		}
 
-		/* instantiate processor, set log options and program counter to entry address */
+		/* instantiate processor and set log options */
 		P proc;
 		proc.log = proc_logs;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
 		proc.stats_dirname = stats_dirname;
+		if (symbolicate) proc.symlookup = [&](addr_t va) { return this->symlookup(va); };
+
+		/* set JIT options */
 		proc.trace_iters = trace_iters;
 		proc.update_instret = update_instret;
 		proc.memory_registers = memory_registers;
+
+		/* randomise integer register state with 512 bits of entropy */
+		proc.seed_registers(cpu, initial_seed, 512);
 
 		/* map dynamic loader into high memory (1GB below memory top) */
 		imageoffset = (elf.ehdr.e_type == ET_DYN &&
@@ -335,8 +374,16 @@ struct rv_jit
 		}
 	}
 
+	/* Start a specific processor implementation based on ELF type */
 	void exec()
 	{
+		/* check for RDTSCP on X86 */
+		#if X86_USE_RDTSCP
+		if (cpu.caps.size() > 0 && cpu.caps.find("RDTSCP") == cpu.caps.end()) {
+			panic("error: x86 host without RDTSCP. Recompile with -DX86_NO_RDTSCP");
+		}
+		#endif
+
 		/* execute */
 		if (disable_fusion) {
 			switch (elf.ei_class) {
@@ -367,7 +414,7 @@ struct rv_jit
 
 int main(int argc, const char *argv[], const char* envp[])
 {
-	rv_jit jit;
+	rv_jit_emulator jit;
 	jit.parse_commandline(argc, argv, envp);
 	jit.exec();
 	return 0;

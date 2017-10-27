@@ -81,16 +81,12 @@ using namespace riscv;
 
 /* Parameterized ABI proxy processor models */
 
-using proxy_emulator_rv32i = processor_runloop<processor_proxy<processor_rv32i_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
-using proxy_emulator_rv32ima = processor_runloop<processor_proxy<processor_rv32ima_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
-using proxy_emulator_rv32imac = processor_runloop<processor_proxy<processor_rv32imac_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
-using proxy_emulator_rv32imafd = processor_runloop<processor_proxy<processor_rv32imafd_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
-using proxy_emulator_rv32imafdc = processor_runloop<processor_proxy<processor_rv32imafdc_model<decode,processor_rv32imafd,mmu_proxy_rv32>>>;
-using proxy_emulator_rv64i = processor_runloop<processor_proxy<processor_rv64i_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
-using proxy_emulator_rv64ima = processor_runloop<processor_proxy<processor_rv64ima_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
-using proxy_emulator_rv64imac = processor_runloop<processor_proxy<processor_rv64imac_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
-using proxy_emulator_rv64imafd = processor_runloop<processor_proxy<processor_rv64imafd_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
-using proxy_emulator_rv64imafdc = processor_runloop<processor_proxy<processor_rv64imafdc_model<decode,processor_rv64imafd,mmu_proxy_rv64>>>;
+using proxy_emulator_rv32imafdc = processor_runloop<
+	processor_proxy<processor_rv32imafdc_model<
+	decode, processor_rv32imafd, mmu_proxy_rv32>>>;
+using proxy_emulator_rv64imafdc = processor_runloop<
+	processor_proxy<processor_rv64imafdc_model<
+	decode, processor_rv64imafd, mmu_proxy_rv64>>>;
 
 
 /* environment variables */
@@ -132,7 +128,6 @@ struct rv_emulator
 	bool help_or_error = false;
 	bool symbolicate = false;
 	uint64_t initial_seed = 0;
-	int ext = rv_set_imafdc;
 	std::string elf_filename;
 	std::string stats_dirname;
 
@@ -140,25 +135,6 @@ struct rv_emulator
 	std::vector<std::string> host_env;
 
 	rv_emulator() : cpu(host_cpu::get_instance()) {}
-
-	static rv_set decode_isa_ext(std::string ext)
-	{
-		if (ext == "i") return rv_set_i;
-		else if (ext == "ima") return rv_set_ima;
-		else if (ext == "imac") return rv_set_imac;
-		else if (ext == "imafd") return rv_set_imafd;
-		else if (ext == "imafdc") return rv_set_imafdc;
-		else return rv_set_none;
-	}
-
-	static const int elf_p_flags_mmap(int v)
-	{
-		int prot = 0;
-		if (v & PF_X) prot |= PROT_EXEC;
-		if (v & PF_W) prot |= PROT_WRITE;
-		if (v & PF_R) prot |= PROT_READ;
-		return prot;
-	}
 
 	const char* symlookup(addr_t addr)
 	{
@@ -190,11 +166,6 @@ struct rv_emulator
 	{
 		cmdline_option options[] =
 		{
-		#if ENABLE_EXTENSION_SWITCH
-			{ "-i", "--isa", cmdline_arg_type_string,
-				"ISA Extensions (i, ima, imac, imafd, imafdc)",
-				[&](std::string s) { return (ext = decode_isa_ext(s)); } },
-		#endif
 			{ "-l", "--log-instructions", cmdline_arg_type_none,
 				"Log Instructions",
 				[&](std::string s) { return (proc_logs |= (proc_log_inst | proc_log_trap)); } },
@@ -281,7 +252,7 @@ struct rv_emulator
 		/* setup floating point exception mask */
 		fenv_init();
 
-		/* instantiate processor, set log options and program counter to entry address */
+		/* instantiate processor and set log options */
 		P proc;
 		proc.log = proc_logs;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
@@ -323,7 +294,7 @@ struct rv_emulator
 		}
 	}
 
-	/* Start a specific processor implementation based on ELF type and ISA extensions */
+	/* Start a specific processor implementation based on ELF type */
 	void exec()
 	{
 		/* check for RDTSCP on X86 */
@@ -336,28 +307,10 @@ struct rv_emulator
 		/* execute */
 		switch (elf.ei_class) {
 			case ELFCLASS32:
-				switch (ext) {
-				#if ENABLE_EXTENSION_SWITCH
-					case rv_set_i: start_proxy<proxy_emulator_rv32i>(); break;
-					case rv_set_ima: start_proxy<proxy_emulator_rv32ima>(); break;
-					case rv_set_imac: start_proxy<proxy_emulator_rv32imac>(); break;
-					case rv_set_imafd: start_proxy<proxy_emulator_rv32imafd>(); break;
-				#endif
-					case rv_set_imafdc: start_proxy<proxy_emulator_rv32imafdc>(); break;
-					case rv_set_none: panic("illegal isa extension"); break;
-				}
+				start_proxy<proxy_emulator_rv32imafdc>(); break;
 				break;
 			case ELFCLASS64:
-				switch (ext) {
-				#if ENABLE_EXTENSION_SWITCH
-					case rv_set_i: start_proxy<proxy_emulator_rv64i>(); break;
-					case rv_set_ima: start_proxy<proxy_emulator_rv64ima>(); break;
-					case rv_set_imac: start_proxy<proxy_emulator_rv64imac>(); break;
-					case rv_set_imafd: start_proxy<proxy_emulator_rv64imafd>(); break;
-				#endif
-					case rv_set_imafdc: start_proxy<proxy_emulator_rv64imafdc>(); break;
-					case rv_set_none: panic("illegal isa extension"); break;
-				}
+				start_proxy<proxy_emulator_rv64imafdc>(); break;
 				break;
 			default: panic("illegal elf class");
 		}
