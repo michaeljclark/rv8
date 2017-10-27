@@ -107,8 +107,8 @@ and popcount instructions however the area saving is a few muxes and the set
 trailing zeros to ones circuit `(x & -x) - 1)`. The major area contributors with
 either approach are the bit reverse and popcount functional units.
 
-The following shows C and assembler for bount leading and trailing zeros
-constructed in terms of bit reverse and popcount.
+The following shows C and assembler for count leading and trailing zeros
+constructed in terms of (`BREV`) bit reverse and (`BCNT`) popcount.
 
 ### C
 ```
