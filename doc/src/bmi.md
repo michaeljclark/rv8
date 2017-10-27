@@ -14,8 +14,34 @@ BCTZ[W] rd,rs1       | Bit Count Trailing Zeros       | Count trailing zero bits
 BCNT[W] rd,rs1       | Bit Count                      | Count number of bits set in rs1
 BREV[W] rd,rs1       | Bit Reverse                    | Reverse bits in rs1
 BSWAP[W] rd,rs1      | Byte Swap                      | Swap byte order in rs1
-BEXT[W] rd,rs1,rs2   | Bit Extract                    | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
-BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified contiguous bits from rs1 using mask in rs2
+BEXT[W] rd,rs1,rs2   | Bit Extract                    | Gather LSB justified bits to rd from rs1 using extract mask in rs2
+BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified bits from rs2 to rd using deposit mask in rs2
+
+## Bit Extract
+
+Gather LSB justified bits to rd from rs1 using extract mask in rs2.
+Bits are extracted from the source register using bit positions
+enabled in the mask register and are placed in the result as
+popcount(mask) LSB contiguous bits.
+
+Register | Value
+:--      | :--
+source   | 0b11110100
+mask     | 0b01100011
+result   | 0b00001100
+
+## Bit Deposit
+
+Scatter LSB justified bits from rs2 to rd using deposit mask in rs2.
+Bits are deposited from the source register using popcount(mask)
+LSB contiguous bits and are placed in the result at the bit positions
+enabled in the mask register.
+
+Register | Value
+:--      | :--
+source   | 0b11110100
+mask     | 0b01100011
+result   | 0b00100000
 
 ## Count leading and trailing zeros
 
