@@ -1,9 +1,7 @@
 Bit Manipulation
 =====================
 
-_work in progress_
-
-Candidate instructions for Bit Manipulation (unofficial)
+Candidate instructions for B extension (Bit Manipulation)
 
 Opcode               | Long Name                      | Description
 :----------          | :-------------                 | :---------------
@@ -21,7 +19,18 @@ BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified co
 
 ## Count leading and trailing zeros
 
-Count leading and trailing zeros can be constructed using popcount (`BCNT`) and bit reverse (`BREV`):
+Count leading and trailing zeros can be constructed using popcount (`BCNT`)
+and bit reverse (`BREV`) instructions or functional units. Given the length
+of the instruction sequences and the possibility to multiplex via shared bit
+reverse and popcount functional units, the count leading and trailing zeros
+instructions are included.
+
+One area saving approach would be to multiplex via functional units in a pipeline
+containing bit reverse, neg+and+sub (leading/traling) and popcount. The critical
+path the length for these bit manipulation instructions would then be the fanout
+of the bit reverse circuit plus the neg+and+sub circuit for (`BCLZ`) and (`BCTZ`)
+plus the popcount circuit. The popcount instruction (`BCNT`) would have an input
+bypass and bit reverse instruction (`BREV`) would have an output bypass.
 
 ### C
 ```
