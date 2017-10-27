@@ -17,31 +17,70 @@ BSWAP[W] rd,rs1      | Byte Swap                      | Swap byte order in rs1
 BEXT[W] rd,rs1,rs2   | Bit Extract                    | Gather LSB justified bits to rd from rs1 using extract mask in rs2
 BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified bits from rs2 to rd using deposit mask in rs2
 
-## Bit Extract
+## Rotate
 
-Gather LSB justified bits to rd from rs1 using extract mask in rs2.
-Bits are extracted from the source register using bit positions
-enabled in the mask register and are placed in the result as
-popcount(mask) LSB contiguous bits.
+Rotate instructions can be implemented very easily with the addition
+of carry-out carry-in to an existing shifter. Rotates are very
+simple instructions but they are frequently used in cryptographic
+ciphers so the small saving in cycles (3:1) is likely worth the
+additional area for processors that implement the B extension.
 
-Register | Value
-:--      | :--
-source   | 0b11110100
-mask     | 0b01100011
-result   | 0b00001100
+## Byte swap
 
-## Bit Deposit
+Byte swapping instructions are essential for networking code
+and cryptographic ciphers which typically use big endian formats.
+A 32-bit byte swap takes 14 instructions and a 64-bit byte swap
+takes 30 instructions.
 
-Scatter LSB justified bits from rs2 to rd using deposit mask in rs2.
-Bits are deposited from the source register using popcount(mask)
-LSB contiguous bits and are placed in the result at the bit positions
-enabled in the mask register.
+```
+bswap_32:
+  slliw a3,a0,24
+  srliw a5,a0,24
+  slliw a4,a0,8
+  or a5,a5,a3
+  li a3,16711680
+  and a4,a4,a3
+  or a5,a5,a4
+  li a4,65536
+  addi a4,a4,-256
+  srliw a0,a0,8
+  and a0,a0,a4
+  or a0,a5,a0
+  sext.w a0,a0
+  ret
 
-Register | Value
-:--      | :--
-source   | 0b11110100
-mask     | 0b01100011
-result   | 0b00100000
+bswap_64:
+  slli a2,a0,56
+  srli a5,a0,56
+  or a5,a5,a2
+  li a2,65536
+  srli a3,a0,40
+  addi a2,a2,-256
+  and a3,a3,a2
+  li a4,255
+  srli a2,a0,24
+  or a5,a5,a3
+  li a3,16711680
+  and a2,a2,a3
+  slli a1,a4,24
+  srli a3,a0,8
+  and a3,a3,a1
+  or a5,a5,a2
+  slli a1,a4,32
+  slli a2,a0,8
+  and a2,a2,a1
+  or a5,a5,a3
+  slli a1,a4,40
+  slli a3,a0,24
+  or a5,a5,a2
+  and a3,a3,a1
+  slli a4,a4,48
+  slli a0,a0,40
+  or a5,a5,a3
+  and a0,a0,a4
+  or a0,a5,a0
+  ret
+```
 
 ## Count leading and trailing zeros
 
@@ -103,27 +142,28 @@ uint64_t bclz_d(uint64_t x) { uint64_t y = __builtin_bitreverse64(x); return __b
 .endm
 ```
 
-Notes
-==========
-- Candidate Bit Manipulation Instructions should require at least 4 Base ISA instructions to be considered
-- Rotate instructions are used frequenty in cyptographic ciphers and hashing algorithms
-- Bit Extract could potentially be named Parallel Bit Extract or Parallel Bit Gather
-- Bit Deposit could potentially be named Parallel Bit Deposit or Parallel Bit Scatter
-- Investigate static versus dynamic bit extraction (implementation dependent)
-- Investigate Butterfly and Inverse Butterfly bit permutation instructions
+## Bit Extract
 
-RISC-V Immediates
-=======================
+Gather LSB justified bits to rd from rs1 using extract mask in rs2.
+Bits are extracted from the source register using bit positions
+enabled in the mask register and are placed in the result as
+popcount(mask) LSB contiguous bits.
 
-There are a number of costly operations for decoding RISC-V instructions in software.
-As an effort to virtualise the ISA both form the Popek and Goldberg model and from
-a fast translation model, specific instructions are proposed that will aid in fast
-decoding of RISC-V instructions in software.
+Register | Value
+:--      | :--
+source   | 0b11110100
+mask     | 0b01100011
+result   | 0b00001100
 
-- Parallel Bit Extract and Parallel Bit Deposit for accelerated immediate extraction
-- Bit Extend Immediate for sign and zero extension can be accomplished with SLL and SRA
+## Bit Deposit
 
-References
-================
-- [Fast Bit Gather, Bit Scatter and Bit Permutation Instructions for Commodity Microprocessors](http://palms.princeton.edu/system/files/Hilewitz_JSPS_08.pdf)
-- [Fast Bit Compression and Expansion with Parallel Extract and Parallel Deposit Instructions](http://palms.ee.princeton.edu/PALMSopen/hilewitz06FastBitCompression.pdf)
+Scatter LSB justified bits from rs2 to rd using deposit mask in rs2.
+Bits are deposited from the source register using popcount(mask)
+LSB contiguous bits and are placed in the result at the bit positions
+enabled in the mask register.
+
+Register | Value
+:--      | :--
+source   | 0b11110100
+mask     | 0b01100011
+result   | 0b00100000
