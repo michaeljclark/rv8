@@ -51,11 +51,11 @@ of the instruction sequences and the possibility to multiplex via shared bit
 reverse and popcount functional units, the count leading and trailing zeros
 instructions are included.
 
-One area saving approach would be to multiplex via functional units in a pipeline
-containing bit reverse, neg+and+sub (leading/traling) and popcount. The critical
-path the length for these bit manipulation instructions would then be the fanout
-of the bit reverse circuit plus the neg+and+sub circuit for (`BCLZ`) and (`BCTZ`)
-plus the popcount circuit. The popcount instruction (`BCNT`) would have an input
+One area saving implementation approach involves multiplexing functional units in
+a pipeline containing bit reverse, neg+and+sub (leading/traling) and popcount.
+The critical path the length for these bit manipulation instructions would be the
+fanout of the bit reverse circuit, the neg+and+sub circuit for (`BCLZ`) and (`BCTZ`)
+and the popcount circuit. The popcount instruction (`BCNT`) would have an input
 bypass and bit reverse instruction (`BREV`) would have an output bypass.
 
 ### C
