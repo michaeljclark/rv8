@@ -19,10 +19,21 @@ BSWAP.{w,d,q} rd,rs1      | Byte Swap                      | Swap byte order in 
 BEXT.{w,d,q} rd,rs1,rs2   | Bit Extract                    | Gather bits from rs1 using mask in rs2 to LSB justified contiguous bits
 BDEP.{w,d,q} rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified contiguous bits from rs1 using mask in rs2
 
-== Count leading and trailing zeros
+## Count leading and trailing zeros
 
 Count leading and trailing zeros can be constructed using popcount (`BCNT`) and bit reverse (`BREV`):
 
+### C
+```
+#include <stdint.h>
+
+uint32_t bctz_w(uint32_t x) { return __builtin_popcount((x & -x) - 1); }
+uint64_t bctz_d(uint64_t x) { return __builtin_popcountll((x & -x) - 1); }
+uint32_t bclz_w(uint32_t x) { uint32_t y = __builtin_bitreverse32(x); return __builtin_popcount((y & -y) - 1); }
+uint64_t bclz_d(uint64_t x) { uint64_t y = __builtin_bitreverse64(x); return __builtin_popcountll((y & -y) - 1); }
+```
+
+### Asssembler
 ```
 # count trailing zeros
 .macro BCTZ.X  rd, rs`
@@ -31,7 +42,9 @@ Count leading and trailing zeros can be constructed using popcount (`BCNT`) and 
 	addi    \rd, \rd, -1
 	bcnt    \rd, \rd
 .endm
+```
 
+```
 # count leading zeros
 .macro BCLZ.X  rd, rs`
 	brev    t0,  \rs
