@@ -184,14 +184,14 @@ namespace riscv {
 					/* nop */
 					return pc_offset;
 				case rv_op_fence_i:
-					clear_trace_cache_prolog();
+					clear_trace_cache();
 					return pc_offset;
 				default: break;
 			}
 			return -1; /* illegal instruction */
 		}
 
-		void clear_trace_cache_prolog()
+		void clear_trace_cache()
 		{
 			for (auto ent : trace_cache_prolog) {
 				rt.release(ent.second);
