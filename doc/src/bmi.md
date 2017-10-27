@@ -123,7 +123,7 @@ uint64_t bclz_d(uint64_t x) { uint64_t y = __builtin_bitreverse64(x); return __b
 ### Asssembler
 ```
 # count trailing zeros
-.macro BCTZ.X  rd, rs`
+.macro BCTZ.X  rd, rs
 	neg     \rd, \rs
 	and     \rd, \rd, \rs
 	addi    \rd, \rd, -1
@@ -133,7 +133,7 @@ uint64_t bclz_d(uint64_t x) { uint64_t y = __builtin_bitreverse64(x); return __b
 
 ```
 # count leading zeros
-.macro BCLZ.X  rd, rs`
+.macro BCLZ.X  rd, rs
 	brev    t0,  \rs
 	neg     \rd, t0
 	and     \rd, \rd, t0
