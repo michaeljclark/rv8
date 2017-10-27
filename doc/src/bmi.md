@@ -92,7 +92,6 @@ uint64_t bclz_d(uint64_t x) { uint64_t y = __builtin_bitreverse64(x); return __b
 
 Notes
 ==========
-- RV32B, RV64B and RV128B
 - Candidate Bit Manipulation Instructions should require at least 4 Base ISA instructions to be considered
 - Rotate instructions are used frequenty in cyptographic ciphers and hashing algorithms
 - Bit Extract could potentially be named Parallel Bit Extract or Parallel Bit Gather
