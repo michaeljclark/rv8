@@ -215,7 +215,7 @@ struct rv_parse_elf
 				[&](std::string s) { return (decode_pseudo = true); } },
 			{ "-h", "--print-headers", cmdline_arg_type_none,
 				"Print All Headers",
-				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = true); } },
+				[&](std::string s) { return (elf_header = section_headers = program_headers = true); } },
 			{ "-a", "--print-all", cmdline_arg_type_none,
 				"Print All Headers and Disassembly",
 				[&](std::string s) { return (elf_header = section_headers = program_headers = symbol_table = disassebly = true); } },
