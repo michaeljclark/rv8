@@ -133,8 +133,21 @@ static bool allow_env_var(const char *var)
 	return false;
 }
 
+/* RISC-V User Mode Emulator and Binary Translator */
+
 struct rv_jit
 {
+	/*
+		ABI/AEE RISC-V user mode interpreter and binary translator.
+		Code is interpreted and profiled for hot paths which are translated
+		to native x86-64 machine code and executed from a trace cache.
+
+		A subset of linux syscalls are proxied to the host operating system
+
+		(ABI) application binary interface
+		(AEE) application execution environment
+	*/
+
 	enum jit_mode {
 		jit_mode_none,
 		jit_mode_trace,

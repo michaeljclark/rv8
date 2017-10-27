@@ -111,17 +111,15 @@ static bool allow_env_var(const char *var)
 }
 
 
-/* RISC-V Emulator */
+/* RISC-V User Mode Emulator */
 
 struct rv_emulator
 {
 	/*
-		Simple ABI/AEE RISC-V emulator that uses a machine generated interpreter
+		ABI/AEE RISC-V emulator using a machine generated interpreter
 		created by parse-meta using the C-psuedo code in meta/instructions
 
-		Currently only a small number of syscalls are implemented
-
-		privileged emulator with soft-mmu is a work in progress
+		A subset of linux syscalls are proxied to the host operating system
 
 		(ABI) application binary interface
 		(AEE) application execution environment
@@ -315,11 +313,7 @@ struct rv_emulator
 		/* Initialize interpreter */
 		proc.init();
 
-		/*
-		 * Run the CPU until it halts
-		 *
-		 * when --debug flag is present we start in the debugger
-		 */
+		/* Run the CPU until it halts */
 		proc.run(proc.log & proc_log_ebreak_cli
 			? exit_cause_cli : exit_cause_continue);
 
