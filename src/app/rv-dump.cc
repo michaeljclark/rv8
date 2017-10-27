@@ -281,6 +281,7 @@ struct rv_parse_elf
 			print_heading("Disassembly");
 			print_disassembly();
 		}
+		printf("\n");
 	}
 };
 
