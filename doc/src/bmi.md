@@ -58,6 +58,10 @@ fanout of the bit reverse circuit, the neg+and+sub circuit for (`BCLZ`) and (`BC
 and the popcount circuit. The popcount instruction (`BCNT`) would have an input
 bypass and bit reverse instruction (`BREV`) would have an output bypass.
 
+![Area efficient implementation approach](bitmanip.png)
+
+_**Figure 1: Area efficient implementation approach for count leading and trailing zeros**_
+
 ### C
 ```
 #include <stdint.h>
