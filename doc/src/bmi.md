@@ -3,19 +3,19 @@ Bit Manipulation
 
 Candidate instructions for B extension (Bit Manipulation)
 
-Opcode               | Long Name                      | Description
-:----------          | :-------------                 | :---------------
-RLL[W] rd,rs1,rs2    | Rotate Left Logical            | Rotate bits in rs1 left by the amount in rs2 
-RRL[W] rd,rs1,rs2    | Rotate Right Logical           | Rotate bits in rs1 right by the amount in rs2
-RLLI[W] rd,rs1,shamt | Rotate Left Logical Immediate  | Rotate bits in rs1 left by the immediate
-RRLI[W] rd,rs1,shamt | Rotate Right Logical Immediate | Rotate bits in rs1 right by the immediate
-BCLZ[W] rd,rs1       | Bit Count Leading Zeros        | Count leading zero bits in rs1
-BCTZ[W] rd,rs1       | Bit Count Trailing Zeros       | Count trailing zero bits in rs1
-BCNT[W] rd,rs1       | Bit Count                      | Count number of bits set in rs1
-BREV[W] rd,rs1       | Bit Reverse                    | Reverse bits in rs1
-BSWAP[W] rd,rs1      | Byte Swap                      | Swap byte order in rs1
-BEXT[W] rd,rs1,rs2   | Bit Extract                    | Gather LSB justified bits to rd from rs1 using extract mask in rs2
-BDEP[W] rd,rs1,rs2   | Bit Deposit                    | Scatter LSB justified bits from rs2 to rd using deposit mask in rs2
+Opcode                          | Long Name                                 | Description
+:----------                     | :-------------                            | :---------------
+<sub>RLL[W] rd,rs1,rs2</sub>    | <sub>Rotate Left Logical</sub>            | <sub>Rotate bits in rs1 left by the amount in rs2</sub>
+<sub>RRL[W] rd,rs1,rs2</sub>    | <sub>Rotate Right Logical</sub>           | <sub>Rotate bits in rs1 right by the amount in rs2</sub>
+<sub>RLLI[W] rd,rs1,shamt</sub> | <sub>Rotate Left Logical Immediate</sub>  | <sub>Rotate bits in rs1 left by the immediate</sub>
+<sub>RRLI[W] rd,rs1,shamt</sub> | <sub>Rotate Right Logical Immediate</sub> | <sub>Rotate bits in rs1 right by the immediate</sub>
+<sub>BCLZ[W] rd,rs1</sub>       | <sub>Bit Count Leading Zeros</sub>        | <sub>Count leading zero bits in rs1</sub>
+<sub>BCTZ[W] rd,rs1</sub>       | <sub>Bit Count Trailing Zeros</sub>       | <sub>Count trailing zero bits in rs1</sub>
+<sub>BCNT[W] rd,rs1</sub>       | <sub>Bit Count</sub>                      | <sub>Count number of bits set in rs1</sub>
+<sub>BREV[W] rd,rs1</sub>       | <sub>Bit Reverse</sub>                    | <sub>Reverse bits in rs1</sub>
+<sub>BSWAP[W] rd,rs1</sub>      | <sub>Byte Swap</sub>                      | <sub>Swap byte order in rs1</sub>
+<sub>BEXT[W] rd,rs1,rs2</sub>   | <sub>Bit Extract</sub>                    | <sub>Gather LSB justified bits to rd from rs1 using extract mask in rs2</sub>
+<sub>BDEP[W] rd,rs1,rs2</sub>   | <sub>Bit Deposit</sub>                    | <sub>Scatter LSB justified bits from rs2 to rd using deposit mask in rs2</sub>
 
 ## Rotate
 
