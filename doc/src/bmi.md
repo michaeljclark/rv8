@@ -20,7 +20,7 @@ Opcode                          | Long Name                                 | De
 ## Rotate
 
 Rotate instructions can be implemented very easily with the addition
-of carry-out carry-in to an existing shifter. Rotates are very
+of carry-out carry-in logic to an existing shifter. Rotates are very
 simple instructions but they are frequently used in cryptographic
 ciphers so the small saving in cycles (3:1) is likely worth the
 additional area for processors that implement the B extension.
