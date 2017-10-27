@@ -54,13 +54,22 @@ instructions are included.
 One area saving implementation approach involves multiplexing functional units in
 a pipeline containing bit reverse, neg+and+sub (leading/traling) and popcount.
 The critical path the length for these bit manipulation instructions would be the
-fanout of the bit reverse circuit, the neg+and+sub circuit for (`BCLZ`) and (`BCTZ`)
-and the popcount circuit. The popcount instruction (`BCNT`) would have an input
-bypass and bit reverse instruction (`BREV`) would have an output bypass.
+fanout of the bit reverse circuit, the neg+and+sub (set trailing zeros to ones)
+circuit for (`BCLZ`) and (`BCTZ`) and the popcount circuit. The popcount instruction
+(`BCNT`) would have an input bypass and bit reverse instruction (`BREV`) would have
+an output bypass.
 
 ![Area efficient implementation approach](bitmanip.png)
 
 _**Figure 1: Area efficient implementation approach for count leading and trailing zeros**_
+
+Count leading and trailing zeros could be constructed in terms of bit reverse
+and popcount instructions however the area saving is a few muxes and the set
+trailing zeros to ones circuit `(x & -x) - 1)`. The major area contributors with
+either approach are the bit reverse and popcount functional units.
+
+The following shows C and assembler for bount leading and trailing zeros
+constructed in terms of bit reverse and popcount.
 
 ### C
 ```
