@@ -286,8 +286,6 @@ void elf_file::load(std::string filename, bool headers_only)
 			break;
 	}
 
-	if (headers_only) return;
-
 	// Find interp
 	for (size_t i = 0; i < phdrs.size(); i++) {
 		if (phdrs[i].p_type == PT_INTERP) {
@@ -303,6 +301,8 @@ void elf_file::load(std::string filename, bool headers_only)
 			break;
 		}
 	}
+
+	if (headers_only) return;
 
 	// Find shstrtab, strtab and symtab
 	for (size_t i = 0; i < shdrs.size(); i++) {
