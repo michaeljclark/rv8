@@ -227,12 +227,15 @@ RISC-V x86-64 JIT Simulator command line options:
 
 ```
 $ rv-jit -h
-usage: rv-jit [<options>] <elf_file> [<options>]
+usage: rv-jit [<emulator_options>] [--] <elf_file> [<options>]
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
+                 --symbolicate, -S            Symbolicate addresses in instruction log
               --log-memory-map, -m            Log Memory Map Information
+                --log-syscalls, -c            Log System Calls
                --log-registers, -r            Log Registers (defaults to integer registers)
                --log-jit-trace, -T            Log JIT trace
+            --log-jit-regalloc, -T            Log JIT register allocation
               --log-exit-stats, -E            Log Registers and Statistics at Exit
              --save-exit-stats, -D <string>   Save Registers and Statistics at Exit
           --pc-usage-histogram, -P            Record program counter usage
@@ -246,6 +249,7 @@ usage: rv-jit [<options>] <elf_file> [<options>]
                     --no-trace, -t            Disable JIT tracer
                        --audit, -a            Enable JIT audit
                  --trace-iters, -I <string>   Trace iterations
+                        --seed, -s <string>   Random seed
                         --help, -h            Show help
 ```
 
@@ -260,11 +264,12 @@ The ABI Proxy Simulator command line options:
 
 ```
 $ rv-sim -h
-usage: rv-sim [<options>] <elf_file> [<options>]
+usage: rv-sim [<emulator_options>] [--] <elf_file> [<options>]
             --log-instructions, -l            Log Instructions
                 --log-operands, -o            Log Instructions and Operands
                  --symbolicate, -S            Symbolicate addresses in instruction log
               --log-memory-map, -m            Log Memory Map Information
+                --log-syscalls, -c            Log System Calls
                --log-registers, -r            Log Registers (defaults to integer registers)
               --log-exit-stats, -E            Log Registers and Statistics at Exit
              --save-exit-stats, -D <string>   Save Registers and Statistics at Exit
