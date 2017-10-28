@@ -38,6 +38,7 @@
 #include <sys/uio.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/ioctl.h>

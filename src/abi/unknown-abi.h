@@ -40,9 +40,12 @@ namespace riscv {
 		abi_syscall_sysinfo = 179,
 		abi_syscall_brk = 214,
 		abi_syscall_munmap = 215,
+		abi_syscall_clone = 220,
+		abi_syscall_execve = 221,
 		abi_syscall_mmap = 222,
 		abi_syscall_mprotect = 226,
 		abi_syscall_madvise = 233,
+		abi_syscall_wait4 = 260,
 		abi_syscall_prlimit64 = 261,
 		abi_syscall_open = 1024,
 		abi_syscall_unlink = 1026,
@@ -100,6 +103,47 @@ namespace riscv {
 		abi_errno_ENAMETOOLONG = 36,
 		abi_errno_ENOLCK = 37,
 		abi_errno_ENOSYS = 38,
+
+		abi_signal_SIGHUP = 1,
+		abi_signal_SIGINT = 2,
+		abi_signal_SIGQUIT = 3,
+		abi_signal_SIGILL = 4,
+		abi_signal_SIGTRAP = 5,
+		abi_signal_SIGABRT = 6,
+		abi_signal_SIGIOT = abi_signal_SIGABRT,
+		abi_signal_SIGBUS = 7,
+		abi_signal_SIGFPE = 8,
+		abi_signal_SIGKILL = 9,
+		abi_signal_SIGUSR1 = 10,
+		abi_signal_SIGSEGV = 11,
+		abi_signal_SIGUSR2 = 12,
+		abi_signal_SIGPIPE = 13,
+		abi_signal_SIGALRM = 14,
+		abi_signal_SIGTERM = 15,
+		abi_signal_SIGSTKFLT = 16,
+		abi_signal_SIGCHLD = 17,
+		abi_signal_SIGCONT = 18,
+		abi_signal_SIGSTOP = 19,
+		abi_signal_SIGTSTP = 20,
+		abi_signal_SIGTTIN = 21,
+		abi_signal_SIGTTOU = 22,
+		abi_signal_SIGURG = 23,
+		abi_signal_SIGXCPU = 24,
+		abi_signal_SIGXFSZ = 25,
+		abi_signal_SIGVTALRM = 26,
+		abi_signal_SIGPROF = 27,
+		abi_signal_SIGWINCH = 28,
+		abi_signal_SIGIO = 29,
+		abi_signal_SIGPOLL = abi_signal_SIGIO,
+		abi_signal_SIGPWR = 30,
+		abi_signal_SIGSYS = 31,
+		abi_signal_NSIG = 65,
+
+		abi_wait_WNOHANG = 1,
+		abi_wait_WUNTRACED = 2,
+		abi_wait_WSTOPPED = 2,
+		abi_wait_WEXITED = 4,
+		abi_wait_WCONTINUED = 8,
 
 		abi_clock_CLOCK_REALTIME = 0,
 		abi_clock_CLOCK_MONOTONIC = 1,
@@ -288,6 +332,29 @@ namespace riscv {
 		guest_stat->ctime      = host_stat->st_ctim.tv_sec;
 		guest_stat->ctime_nsec = host_stat->st_ctim.tv_nsec;
 	#endif
+	}
+
+	template <typename P>
+	void cvt_abi_rusage(abi_rusage<P> *guest_rusage, struct rusage *host_rusage)
+	{
+		guest_rusage->ru_utime.tv_sec = host_rusage->ru_utime.tv_sec;
+		guest_rusage->ru_utime.tv_usec = host_rusage->ru_utime.tv_usec;
+		guest_rusage->ru_stime.tv_sec = host_rusage->ru_stime.tv_sec;
+		guest_rusage->ru_stime.tv_usec = host_rusage->ru_stime.tv_usec;
+		guest_rusage->ru_maxrss = host_rusage->ru_maxrss;
+		guest_rusage->ru_ixrss = host_rusage->ru_ixrss;
+		guest_rusage->ru_idrss = host_rusage->ru_idrss;
+		guest_rusage->ru_isrss = host_rusage->ru_isrss;
+		guest_rusage->ru_minflt = host_rusage->ru_minflt;
+		guest_rusage->ru_majflt = host_rusage->ru_majflt;
+		guest_rusage->ru_nswap = host_rusage->ru_nswap;
+		guest_rusage->ru_inblock = host_rusage->ru_inblock;
+		guest_rusage->ru_oublock = host_rusage->ru_oublock;
+		guest_rusage->ru_msgsnd = host_rusage->ru_msgsnd;
+		guest_rusage->ru_msgrcv = host_rusage->ru_msgrcv;
+		guest_rusage->ru_nsignals = host_rusage->ru_nsignals;
+		guest_rusage->ru_nvcsw = host_rusage->ru_nvcsw;
+		guest_rusage->ru_nivcsw = host_rusage->ru_nivcsw;
 	}
 
 	int cvt_open_flags(int lxflags)
@@ -824,24 +891,9 @@ namespace riscv {
 		}
 		int ret = getrusage(who, &host_rusage);
 		abi_rusage<P> *guest_rusage = (abi_rusage<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-		guest_rusage->ru_utime.tv_sec = host_rusage.ru_utime.tv_sec;
-		guest_rusage->ru_utime.tv_usec = host_rusage.ru_utime.tv_usec;
-		guest_rusage->ru_stime.tv_sec = host_rusage.ru_stime.tv_sec;
-		guest_rusage->ru_stime.tv_usec = host_rusage.ru_stime.tv_usec;
-		guest_rusage->ru_maxrss = host_rusage.ru_maxrss;
-		guest_rusage->ru_ixrss = host_rusage.ru_ixrss;
-		guest_rusage->ru_idrss = host_rusage.ru_idrss;
-		guest_rusage->ru_isrss = host_rusage.ru_isrss;
-		guest_rusage->ru_minflt = host_rusage.ru_minflt;
-		guest_rusage->ru_majflt = host_rusage.ru_majflt;
-		guest_rusage->ru_nswap = host_rusage.ru_nswap;
-		guest_rusage->ru_inblock = host_rusage.ru_inblock;
-		guest_rusage->ru_oublock = host_rusage.ru_oublock;
-		guest_rusage->ru_msgsnd = host_rusage.ru_msgsnd;
-		guest_rusage->ru_msgrcv = host_rusage.ru_msgrcv;
-		guest_rusage->ru_nsignals = host_rusage.ru_nsignals;
-		guest_rusage->ru_nvcsw = host_rusage.ru_nvcsw;
-		guest_rusage->ru_nivcsw = host_rusage.ru_nivcsw;
+		if (guest_rusage) {
+			cvt_abi_rusage(guest_rusage, &host_rusage);
+		}
 		if (proc.log & proc_log_syscall) {
 			printf("getrusage(%ld, 0x%lx) = %d\n",
 				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
@@ -964,6 +1016,33 @@ namespace riscv {
 		proc.ireg[rv_ireg_a0] = cvt_error(ret);
 	}
 
+	template <typename P> void abi_sys_clone(P &proc)
+	{
+		int flags = proc.ireg[rv_ireg_a0];
+		if (flags == abi_signal_SIGCHLD) {
+			int ret = fork();
+			if (proc.log & proc_log_syscall) {
+				printf("clone(%ld,%ld) = %d\n",
+					(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
+					cvt_error(ret));
+			}
+			proc.ireg[rv_ireg_a0] = cvt_error(ret);
+		} else {
+			if (proc.log & proc_log_syscall) {
+				printf("clone(%ld,%ld) = %d\n",
+					(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
+					abi_errno_EINVAL);
+			}
+			proc.ireg[rv_ireg_a0] = -abi_errno_EINVAL;
+		}
+	}
+
+	template <typename P> void abi_sys_execve(P &proc)
+	{
+		/* todo */
+		proc.ireg[rv_ireg_a0] = -abi_errno_ENOSYS;
+	}
+
 	template <typename P> void abi_sys_mmap(P &proc)
 	{
 		int prot = 0, flags = 0;
@@ -1013,6 +1092,30 @@ namespace riscv {
 				(long)proc.ireg[rv_ireg_a2], 0);
 		}
 		proc.ireg[rv_ireg_a0] = 0; /* nop */
+	}
+
+	template <typename P> void abi_sys_wait4(P &proc)
+	{
+		struct rusage host_rusage;
+		int ret = wait4(proc.ireg[rv_ireg_a0], (int*)(addr_t)proc.ireg[rv_ireg_a1],
+			(long)proc.ireg[rv_ireg_a2], &host_rusage);
+		if (proc.log & proc_log_syscall) {
+			printf("wait4(%ld,0x%lx,%ld,%ld) = %d\n",
+				(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a1],
+				(long)proc.ireg[rv_ireg_a2], (long)proc.ireg[rv_ireg_a3],
+				cvt_error(ret));
+		}
+		abi_rusage<P> *guest_rusage = (abi_rusage<P>*)(addr_t)proc.ireg[rv_ireg_a3].r.xu.val;
+		if (guest_rusage) {
+			cvt_abi_rusage(guest_rusage, &host_rusage);
+		}
+		int abi_ret = 0;
+		if (ret > 0) {
+			abi_ret |= WEXITSTATUS(ret) & 0xff << 8;
+			abi_ret |= WTERMSIG(ret) & 0x7f;
+			/* todo */
+		}
+		proc.ireg[rv_ireg_a0] = cvt_error(abi_ret);
 	}
 
 	template <typename P> void abi_sys_prlimit64(P &proc)
@@ -1107,9 +1210,12 @@ namespace riscv {
 			case abi_syscall_sysinfo:         abi_sys_sysinfo(proc); break;
 			case abi_syscall_brk:             abi_sys_brk(proc); break;
 			case abi_syscall_munmap:          abi_sys_munmap(proc); break;
+			case abi_syscall_clone:           abi_sys_clone(proc); break;
+			case abi_syscall_execve:          abi_sys_execve(proc); break;
 			case abi_syscall_mmap:            abi_sys_mmap(proc); break;
 			case abi_syscall_mprotect:        abi_sys_mprotect(proc); break;
 			case abi_syscall_madvise:         abi_sys_madvise(proc); break;
+			case abi_syscall_wait4:           abi_sys_wait4(proc); break;
 			case abi_syscall_prlimit64:       abi_sys_prlimit64(proc); break;
 			case abi_syscall_open:            abi_sys_open(proc); break;
 			case abi_syscall_unlink:          abi_sys_unlink(proc); break;
