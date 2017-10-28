@@ -34,6 +34,7 @@
 #include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <termios.h>
 #include <sys/uio.h>
 #include <sys/mman.h>
@@ -262,6 +263,19 @@ struct rv_emulator
 
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
+
+		/* load dynamic loader if we have a dynamic executable */
+		const char* interp_name = elf.interp_name();
+		if (interp_name) {
+			const char* interp_path = proc.find_interp_path(elf_filename.c_str(), interp_name);
+			if (interp_path) {
+				host_cmdline.insert(host_cmdline.begin(), interp_path);
+				elf.load(interp_path, !symbolicate);
+				elf_filename = interp_path;
+			} else {
+				panic("error: can't find interpreter: %s", interp_name);
+			}
+		}
 
 		/* map dynamic loader into high memory (1GB below memory top) */
 		imageoffset = (elf.ehdr.e_type == ET_DYN &&

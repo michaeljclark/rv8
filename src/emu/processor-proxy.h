@@ -99,6 +99,30 @@ namespace riscv {
 			return prot;
 		}
 
+		char* find_interp_path(const char* elf_filename, const char* interp_name)
+		{
+			static char search_path[PATH_MAX + 1];
+			static char interp_path[PATH_MAX + 1];
+
+			struct stat statbuf;
+
+			if (!interp_name) return nullptr;
+
+			strncpy(search_path, elf_filename, PATH_MAX);
+			while (strlen(search_path) > 1) {
+				char *path = dirname(search_path);
+				strncpy(search_path, path, PATH_MAX);
+				snprintf(interp_path, PATH_MAX,
+					interp_name[0] == '/' ? "%s%s" : "%s/%s",
+					search_path, interp_name);
+				if (stat(interp_path, &statbuf) == 0) {
+					return interp_path;
+				}
+			}
+
+			return nullptr;
+		}
+
 		/* Map a single stack segment into user address space */
 		void map_proxy_stack(addr_t stack_top, size_t stack_size)
 		{

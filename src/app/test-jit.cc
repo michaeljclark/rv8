@@ -35,6 +35,7 @@
 #include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <termios.h>
 #include <sys/uio.h>
 #include <sys/mman.h>
