@@ -308,6 +308,9 @@ void elf_print_header_info(elf_file &elf, elf_symbol_colorize_fn colorize)
 	printf("%sData                   %s%s\n", colorize("legend"), colorize("reset"), elf_ei_data_name(elf.ei_data));
 	printf("%sType                   %s%s\n", colorize("legend"), colorize("reset"), elf_e_type_name(elf.ehdr.e_type));
 	printf("%sMachine                %s%s\n", colorize("legend"), colorize("reset"), elf_e_machine_name(elf.ehdr.e_machine));
+	if (elf.interp_name()) {
+		printf("%sInterp                 %s%s\n", colorize("legend"), colorize("reset"), elf.interp_name());
+	}
 }
 
 void elf_print_header_ext_info(elf_file &elf, elf_symbol_colorize_fn colorize)

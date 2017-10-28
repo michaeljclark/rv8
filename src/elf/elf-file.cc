@@ -288,6 +288,22 @@ void elf_file::load(std::string filename, bool headers_only)
 
 	if (headers_only) return;
 
+	// Find interp
+	for (size_t i = 0; i < phdrs.size(); i++) {
+		if (phdrs[i].p_type == PT_INTERP) {
+			size_t size = phdrs[i].p_filesz;
+			size_t offset = phdrs[i].p_offset;
+			interp.clear();
+			interp.insert(0, size, 0);
+			fseek(file, offset, SEEK_SET);
+			if (fread((void*)interp.data(), 1, size, file) != size) {
+				fclose(file);
+				panic("error fread: %s", filename.c_str());
+			}
+			break;
+		}
+	}
+
 	// Find shstrtab, strtab and symtab
 	for (size_t i = 0; i < shdrs.size(); i++) {
 		if (shstrtab == 0 && shdrs[i].sh_type == SHT_STRTAB && ehdr.e_shstrndx == i) {
@@ -721,6 +737,11 @@ elf_section* elf_file::section(size_t offset)
 		}
 	}
 	return nullptr;
+}
+
+const char* elf_file::interp_name()
+{
+	return (interp.size() > 0) ? interp.c_str() : nullptr;
 }
 
 const char* elf_file::shdr_name(size_t i)

@@ -20,6 +20,7 @@ struct elf_section
 struct elf_file
 {
 	std::string filename;
+	std::string interp;
 	ssize_t filesize;
 	int ei_class;
 	int ei_data;
@@ -71,6 +72,7 @@ struct elf_file
 	uint8_t* offset(size_t offset);
 	elf_section* section(size_t offset);
 
+	const char* interp_name();
 	const char* shdr_name(size_t i);
 	const char* sym_name(size_t i);
 	const char* sym_name(const Elf64_Sym *sym);
