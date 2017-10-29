@@ -16,6 +16,7 @@ Opcode                          | Long Name                                 | De
 <sub>BSWAP[W] rd,rs1</sub>      | <sub>Byte Swap</sub>                      | <sub>Swap byte order in rs1</sub>
 <sub>BEXT[W] rd,rs1,rs2</sub>   | <sub>Bit Extract</sub>                    | <sub>Gather LSB justified bits to rd from rs1 using extract mask in rs2</sub>
 <sub>BDEP[W] rd,rs1,rs2</sub>   | <sub>Bit Deposit</sub>                    | <sub>Scatter LSB justified bits from rs2 to rd using deposit mask in rs2</sub>
+<sub>GREVI[W] rd,rs1,imm7</sub> | <sub>Generalized Bit Reversal</sub>       | <sub>Apply generalized bit reversal transorm using k=imm7 to value in rs1</sub>
 
 ## Rotate
 
@@ -167,3 +168,25 @@ Register | Value
 source   | 0b11110100
 mask     | 0b01100011
 result   | 0b00100000
+
+## Generalized Bit Reversal
+
+The GREV instruction performs the following operation:
+
+```
+uint32_t grev32(uint32_t x, int k)
+{
+    if (k &  1) x = ((x & 0x55555555) <<  1) | ((x & 0xAAAAAAAA) >>  1);
+    if (k &  2) x = ((x & 0x33333333) <<  2) | ((x & 0xCCCCCCCC) >>  2);
+    if (k &  4) x = ((x & 0x0F0F0F0F) <<  4) | ((x & 0xF0F0F0F0) >>  4);
+    if (k &  8) x = ((x & 0x00FF00FF) <<  8) | ((x & 0xFF00FF00) >>  8);
+    if (k & 16) x = ((x & 0x0000FFFF) << 16) | ((x & 0xFFFF0000) >> 16);
+    return x;
+}
+```
+
+- Byte swap (`BSWAP`) can be formulated as a pseudo instruction in terms
+  of GREVI where k=24.
+
+- Bit Reverse (`BREV`) can be formulated as a pseudo instruction in terms
+  of GREVI where k=31.
