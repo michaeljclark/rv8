@@ -138,7 +138,7 @@ size_t elf_file::section_num(std::string section_name)
 	else return SHN_UNDEF;
 }
 
-void elf_file::load(std::string filename, bool headers_only)
+void elf_file::load(std::string filename, elf_load load_type)
 {
 	FILE *file;
 	struct stat stat_buf;
@@ -203,6 +203,11 @@ void elf_file::load(std::string filename, bool headers_only)
 			phdr_end = ehdr.e_phoff + ehdr.e_phnum * sizeof(Elf64_Phdr);
 			shdr_end = ehdr.e_shoff + ehdr.e_shnum * sizeof(Elf64_Shdr);
 			break;
+	}
+
+	if (load_type == elf_load_exec) {
+		fclose(file);
+		return;
 	}
 
 	// check program and section header offsets are within the file size
@@ -302,7 +307,10 @@ void elf_file::load(std::string filename, bool headers_only)
 		}
 	}
 
-	if (headers_only) return;
+	if (load_type == elf_load_headers) {
+		fclose(file);
+		return;
+	}
 
 	// Find shstrtab, strtab and symtab
 	for (size_t i = 0; i < shdrs.size(); i++) {

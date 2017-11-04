@@ -304,9 +304,9 @@ struct rv_emulator
 			}
 		}
 
-		/* load ELF (headers only) */
+		/* load ELF */
 		if (ram_boot == 0) {
-			elf.load(boot_filename, true);
+			elf.load(boot_filename, elf_load_headers);
 		}
 	}
 

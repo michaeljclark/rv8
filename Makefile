@@ -666,7 +666,7 @@ $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
-$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
+$(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
 	@mkdir -p $(shell dirname $@) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 

@@ -15,12 +15,22 @@ namespace riscv {
 		int set_child_tid;
 		int clear_child_tid;
 
+		elf_file elf;
+		addr_t imageoffset;
 		addr_t imagebase;
 		std::string stats_dirname;
 
 		const char* name() { return "rv-sim"; }
 
 		void init() {}
+
+		void destroy()
+		{
+			/* Unmap memory segments */
+			for (auto &seg: P::mmu.mem->segments) {
+				guest_munmap(seg.first, seg.second);
+			}
+		}
 
 		void exit(int rc)
 		{
@@ -99,6 +109,34 @@ namespace riscv {
 			return prot;
 		}
 
+		/* resolve a symbol from the ELF symbol table */
+		const char* symlookup_elf(addr_t addr)
+		{
+			static char symbol_tmpname[256];
+			if (addr < imageoffset) {
+				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"0x%016llx", addr);
+				return symbol_tmpname;
+			}
+			addr -= imageoffset;
+			auto sym = elf.sym_by_addr((Elf64_Addr)addr);
+			if (sym) {
+				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+						"%s", elf.sym_name(sym));
+				return symbol_tmpname;
+			}
+			sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
+			if (sym) {
+				int64_t offset = int64_t(addr) - sym->st_value;
+				snprintf(symbol_tmpname, sizeof(symbol_tmpname),
+					"%s%s0x%" PRIx64, elf.sym_name(sym),
+					offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
+				return symbol_tmpname;
+			}
+			return nullptr;
+		}
+
+		/* search for the ELF interpreter if one exists */
 		char* find_interp_path(const char* elf_filename, const char* interp_name)
 		{
 			static char search_path[PATH_MAX + 1];
@@ -121,6 +159,40 @@ namespace riscv {
 			}
 
 			return nullptr;
+		}
+
+		/* Map ELF executable into address space */
+		void map_executable(std::string elf_filename, std::vector<std::string> &cmdline, bool symbolicate)
+		{
+			/* load ELF (headers only unless symbolicating) */
+			elf.load(elf_filename, symbolicate ? elf_load_all : elf_load_headers);
+
+			/* load dynamic loader if we have a dynamic executable */
+			const char* interp_name = elf.interp_name();
+			if (interp_name) {
+				const char* interp_path = find_interp_path(elf_filename.c_str(), interp_name);
+				if (interp_path) {
+					cmdline.insert(cmdline.begin(), interp_path);
+					elf.load(interp_path, symbolicate ? elf_load_all : elf_load_headers);
+					elf_filename = interp_path;
+				} else {
+					panic("error: can't find interpreter: %s", interp_name);
+				}
+			}
+
+			/* map dynamic loader into high memory (1GB below memory top) */
+			imageoffset = (elf.ehdr.e_type == ET_DYN &&
+						   elf.phdrs.size() > 0 &&
+						   elf.phdrs[0].p_vaddr == 0) ? P::mmu_type::memory_top - 0x40000000 : 0;
+			P::pc = elf.ehdr.e_entry + imageoffset;
+
+			/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
+			for (size_t i = 0; i < elf.phdrs.size(); i++) {
+				Elf64_Phdr &phdr = elf.phdrs[i];
+				if (phdr.p_type == PT_LOAD) {
+					map_load_segment_user(elf_filename.c_str(), phdr, imageoffset);
+				}
+			}
 		}
 
 		/* Map a single stack segment into user address space */
@@ -153,7 +225,7 @@ namespace riscv {
 			memcpy((void*)(uintptr_t)P::ireg[rv_ireg_sp].r.xu.val, data, len);
 		}
 
-		void setup_proxy_stack(elf_file &elf, host_cpu &cpu,
+		void setup_proxy_stack(host_cpu &cpu,
 			std::vector<std::string> &host_cmdline,
 			std::vector<std::string> &host_env,
 			addr_t stack_top, size_t stack_size)

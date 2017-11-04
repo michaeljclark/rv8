@@ -17,6 +17,13 @@ struct elf_section
 	std::vector<uint8_t> buf;
 };
 
+enum elf_load
+{
+	elf_load_all,
+	elf_load_headers,
+	elf_load_exec,
+};
+
 struct elf_file
 {
 	std::string filename;
@@ -57,7 +64,7 @@ struct elf_file
 		Elf64_Xword r_type, Elf64_Sxword r_addend);
 	size_t section_num(std::string name);
 
-	void load(std::string filename, bool headers_only = false);
+	void load(std::string filename, elf_load load_type = elf_load_all);
 	void save(std::string filename);
 
 	void byteswap_symbol_table(ELFENDIAN endian);

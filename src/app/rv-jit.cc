@@ -157,8 +157,6 @@ struct rv_jit_emulator
 	};
 
 	jit_mode mode = jit_mode_trace;
-	elf_file elf;
-	addr_t imageoffset = 0;
 	host_cpu &cpu;
 	int proc_logs = 0;
 	int trace_iters = 100;
@@ -176,32 +174,6 @@ struct rv_jit_emulator
 	std::vector<std::string> host_env;
 
 	rv_jit_emulator() : cpu(host_cpu::get_instance()) {}
-
-	const char* symlookup(addr_t addr)
-	{
-		static char symbol_tmpname[256];
-		if (addr < imageoffset) {
-			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-				"0x%016llx", addr);
-			return symbol_tmpname;
-		}
-		addr -= imageoffset;
-		auto sym = elf.sym_by_addr((Elf64_Addr)addr);
-		if (sym) {
-			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-					"%s", elf.sym_name(sym));
-			return symbol_tmpname;
-		}
-		sym = elf.sym_by_nearest_addr((Elf64_Addr)addr);
-		if (sym) {
-			int64_t offset = int64_t(addr) - sym->st_value;
-			snprintf(symbol_tmpname, sizeof(symbol_tmpname),
-				"%s%s0x%" PRIx64, elf.sym_name(sym),
-				offset < 0 ? "-" : "+", offset < 0 ? -offset : offset);
-			return symbol_tmpname;
-		}
-		return nullptr;
-	}
 
 	void parse_commandline(int argc, const char* argv[], const char* envp[])
 	{
@@ -305,9 +277,6 @@ struct rv_jit_emulator
 				host_env.push_back(*env);
 			}
 		}
-
-		/* load ELF (headers only unless symbolicating) */
-		elf.load(elf_filename, !symbolicate);
 	}
 
 	/* Start the execuatable with the given proxy processor template */
@@ -334,7 +303,7 @@ struct rv_jit_emulator
 		proc.log = proc_logs;
 		proc.mmu.mem->log = (proc.log & proc_log_memory);
 		proc.stats_dirname = stats_dirname;
-		if (symbolicate) proc.symlookup = [&](addr_t va) { return this->symlookup(va); };
+		if (symbolicate) proc.symlookup = [&](addr_t va) { return proc.symlookup_elf(va); };
 
 		/* set JIT options */
 		proc.trace_iters = trace_iters;
@@ -344,54 +313,24 @@ struct rv_jit_emulator
 		/* randomise integer register state with 512 bits of entropy */
 		proc.seed_registers(cpu, initial_seed, 512);
 
-		/* load dynamic loader if we have a dynamic executable */
-		const char* interp_name = elf.interp_name();
-		if (interp_name) {
-			const char* interp_path = proc.find_interp_path(elf_filename.c_str(), interp_name);
-			if (interp_path) {
-				host_cmdline.insert(host_cmdline.begin(), interp_path);
-				elf.load(interp_path, !symbolicate);
-				elf_filename = interp_path;
-			} else {
-				panic("error: can't find interpreter: %s", interp_name);
-			}
-		}
+		/* Map ELF executable and setup the stack */
+		proc.map_executable(elf_filename, host_cmdline, symbolicate);
+		proc.map_proxy_stack(P::mmu_type::memory_top, P::mmu_type::stack_size);
+		proc.setup_proxy_stack(cpu, host_cmdline, host_env,
+			P::mmu_type::memory_top, P::mmu_type::stack_size);
 
-		/* map dynamic loader into high memory (1GB below memory top) */
-		imageoffset = (elf.ehdr.e_type == ET_DYN &&
-					   elf.phdrs.size() > 0 &&
-					   elf.phdrs[0].p_vaddr == 0) ? P::mmu_type::memory_top - 0x40000000 : 0;
-		proc.pc = elf.ehdr.e_entry + imageoffset;
-
-		/* Find the ELF executable PT_LOAD segments and mmap them into user memory */
-		for (size_t i = 0; i < elf.phdrs.size(); i++) {
-			Elf64_Phdr &phdr = elf.phdrs[i];
-			if (phdr.p_type == PT_LOAD) {
-				proc.map_load_segment_user(elf_filename.c_str(), phdr, imageoffset);
-			}
-		}
-
-		/* Map a stack and set the stack pointer */
-		static const size_t stack_size = 0x00100000; // 1 MiB
-		proc.map_proxy_stack(P::mmu_type::memory_top, stack_size);
-		proc.setup_proxy_stack(elf, cpu, host_cmdline, host_env, P::mmu_type::memory_top, stack_size);
-
-		/* Initialize interpreter */
+		/* Initialize and run the processor */
 		proc.init();
-
-		/* Run the CPU until it halts */
-		proc.run(proc.log & proc_log_ebreak_cli
-			? exit_cause_cli : exit_cause_continue);
-
-		/* Unmap memory segments */
-		for (auto &seg: proc.mmu.mem->segments) {
-			guest_munmap(seg.first, seg.second);
-		}
+		proc.run(proc.log & proc_log_ebreak_cli ? exit_cause_cli : exit_cause_continue);
+		proc.destroy();
 	}
 
 	/* Start a specific processor implementation based on ELF type */
 	void exec()
 	{
+		elf_file elf;
+		elf.load(elf_filename, elf_load_exec);
+
 		/* check for RDTSCP on X86 */
 		#if X86_USE_RDTSCP
 		if (cpu.caps.size() > 0 && cpu.caps.find("RDTSCP") == cpu.caps.end()) {
