@@ -53,17 +53,10 @@ namespace riscv {
 		abi_syscall_chown = 1039,
 	};
 
-	enum {
-		abi_mmap_PROT_READ = 1,
-		abi_mmap_PROT_WRITE = 2,
-		abi_mmap_PROT_EXEC = 4,
-
-		abi_mmap_MAP_SHARED = 0x1,
-		abi_mmap_MAP_PRIVATE = 0x2,
-		abi_mmap_MAP_FIXED = 0x10,
-		abi_mmap_MAP_ANON = 0x20,
-
-		abi_ioctl_TIOCGWINSZ = 0x5413,
+	enum
+	{
+		abi_clock_CLOCK_REALTIME = 0,
+		abi_clock_CLOCK_MONOTONIC = 1,
 
 		abi_errno_EPERM = 1,
 		abi_errno_ENOENT= 2,
@@ -103,6 +96,51 @@ namespace riscv {
 		abi_errno_ENAMETOOLONG = 36,
 		abi_errno_ENOLCK = 37,
 		abi_errno_ENOSYS = 38,
+
+		abi_fcntl_F_DUPFD = 0,
+		abi_fcntl_F_GETFD = 1,
+		abi_fcntl_F_SETFD = 2,
+		abi_fcntl_F_GETFL = 3,
+		abi_fcntl_F_SETFL = 4,
+		abi_fcntl_F_SETOWN = 8,
+		abi_fcntl_F_GETOWN = 9,
+		abi_fcntl_F_SETSIG = 10,
+		abi_fcntl_F_GETSIG = 11,
+		abi_fcntl_F_GETLK = 5,
+		abi_fcntl_F_SETLK = 6,
+		abi_fcntl_F_SETLKW = 7,
+		abi_fcntl_F_DUPFD_CLOEXEC = 1030,
+
+		abi_ioctl_TIOCGWINSZ = 0x5413,
+
+		abi_mmap_PROT_READ = 1,
+		abi_mmap_PROT_WRITE = 2,
+		abi_mmap_PROT_EXEC = 4,
+
+		abi_mmap_MAP_SHARED = 0x1,
+		abi_mmap_MAP_PRIVATE = 0x2,
+		abi_mmap_MAP_FIXED = 0x10,
+		abi_mmap_MAP_ANON = 0x20,
+
+		abi_rusage_RUSAGE_SELF = 0,
+		abi_rusage_RUSAGE_CHILDREN = -1,
+
+		abi_rlimit_RLIMIT_CPU = 0,
+		abi_rlimit_RLIMIT_FSIZE = 1,
+		abi_rlimit_RLIMIT_DATA = 2,
+		abi_rlimit_RLIMIT_STACK = 3,
+		abi_rlimit_RLIMIT_CORE = 4,
+		abi_rlimit_RLIMIT_RSS = 5,
+		abi_rlimit_RLIMIT_NPROC = 6,
+		abi_rlimit_RLIMIT_NOFILE = 7,
+		abi_rlimit_RLIMIT_MEMLOCK = 8,
+		abi_rlimit_RLIMIT_AS = 9,
+		abi_rlimit_RLIMIT_LOCKS = 10,
+		abi_rlimit_RLIMIT_SIGPENDING = 11,
+		abi_rlimit_RLIMIT_MSGQUEUE = 12,
+		abi_rlimit_RLIMIT_NICE = 13,
+		abi_rlimit_RLIMIT_RTPRIO = 14,
+		abi_rlimit_RLIMIT_NLIMITS = 15,
 
 		abi_signal_SIGHUP = 1,
 		abi_signal_SIGINT = 2,
@@ -145,94 +183,29 @@ namespace riscv {
 		abi_wait_WEXITED = 4,
 		abi_wait_WCONTINUED = 8,
 
-		abi_clock_CLOCK_REALTIME = 0,
-		abi_clock_CLOCK_MONOTONIC = 1,
+		abi_AT_FDCWD = -100,
+		abi_AT_REMOVEDIR = 0x200,
+		abi_AT_EACCESS = 0x200,
+		abi_AT_SYMLINK_NOFOLLOW = 0x100,
 
 		abi_PATH_MAX = 4096,
 		abi_NEW_UTS_LEN = 64,
-
-		abi_openat_AT_FDCWD = -100,
-		abi_unlinkat_AT_REMOVEDIR = 0x200,
-		abi_faccessat_AT_EACCESS = 0x200,
-		abi_fstatat_AT_SYMLINK_NOFOLLOW = 0x100,
-
-		abi_rusage_RUSAGE_SELF = 0,
-		abi_rusage_RUSAGE_CHILDREN = -1,
-
-		abi_rlimit_RLIMIT_CPU = 0,
-		abi_rlimit_RLIMIT_FSIZE = 1,
-		abi_rlimit_RLIMIT_DATA = 2,
-		abi_rlimit_RLIMIT_STACK = 3,
-		abi_rlimit_RLIMIT_CORE = 4,
-		abi_rlimit_RLIMIT_RSS = 5,
-		abi_rlimit_RLIMIT_NPROC = 6,
-		abi_rlimit_RLIMIT_NOFILE = 7,
-		abi_rlimit_RLIMIT_MEMLOCK = 8,
-		abi_rlimit_RLIMIT_AS = 9,
-		abi_rlimit_RLIMIT_LOCKS = 10,
-		abi_rlimit_RLIMIT_SIGPENDING = 11,
-		abi_rlimit_RLIMIT_MSGQUEUE = 12,
-		abi_rlimit_RLIMIT_NICE = 13,
-		abi_rlimit_RLIMIT_RTPRIO = 14,
-		abi_rlimit_RLIMIT_NLIMITS = 15,
-
-		abi_fcntl_F_DUPFD = 0,
-		abi_fcntl_F_GETFD = 1,
-		abi_fcntl_F_SETFD = 2,
-		abi_fcntl_F_GETFL = 3,
-		abi_fcntl_F_SETFL = 4,
-		abi_fcntl_F_SETOWN = 8,
-		abi_fcntl_F_GETOWN = 9,
-		abi_fcntl_F_SETSIG = 10,
-		abi_fcntl_F_GETSIG = 11,
-		abi_fcntl_F_GETLK = 5,
-		abi_fcntl_F_SETLK = 6,
-		abi_fcntl_F_SETLKW = 7,
-		abi_fcntl_F_DUPFD_CLOEXEC = 1030
 	};
 
-	struct abi_new_utsname {
+	template <typename P> struct abi_iovec
+	{
+		typename P::ulong_t iov_base;
+		typename P::ulong_t iov_len;
+	};
+
+	struct abi_new_utsname
+	{
 		char sysname[abi_NEW_UTS_LEN + 1];
 		char nodename[abi_NEW_UTS_LEN + 1];
 		char release[abi_NEW_UTS_LEN + 1];
 		char version[abi_NEW_UTS_LEN + 1];
 		char machine[abi_NEW_UTS_LEN + 1];
 		char domainname[abi_NEW_UTS_LEN + 1];
-	};
-
-	struct abi_winsize {
-		unsigned short ws_row;
-		unsigned short ws_col;
-		unsigned short ws_xpixel;
-		unsigned short ws_ypixel;
-	};
-
-	template <typename P> struct abi_iovec {
-		typename P::ux iov_base;
-		typename P::ux iov_len;
-	};
-
-	template <typename P> struct abi_timespec {
-		typename P::long_t tv_sec;
-		typename P::long_t tv_nsec;
-	};
-
-	template <typename P> struct abi_timeval {
-		typename P::long_t tv_sec;
-		typename P::long_t tv_usec;
-	};
-
-	template <typename P> struct abi_timezone {
-		typename P::int_t tz_minuteswest;
-		typename P::int_t tz_dsttime;
-	};
-
-	template <typename P> struct abi_tms
-	{
-		typename P::long_t tms_utime;
-		typename P::long_t tms_stime;
-		typename P::long_t tms_cutime;
-		typename P::long_t tms_cstime;
 	};
 
 	template <typename P> struct abi_stat
@@ -259,6 +232,49 @@ namespace riscv {
 		typename P::uint_t  __unused5;
 	};
 
+	template <typename P> struct abi_sysinfo
+	{
+		typename P::ulong_t uptime;
+		typename P::ulong_t loads[3];
+		typename P::ulong_t totalram;
+		typename P::ulong_t freeram;
+		typename P::ulong_t sharedram;
+		typename P::ulong_t bufferram;
+		typename P::ulong_t totalswap;
+		typename P::ulong_t freeswap;
+		unsigned short procs, pad;
+		typename P::ulong_t totalhigh;
+		typename P::ulong_t freehigh;
+		typename P::uint_t mem_unit;
+		char __reserved[256];
+	};
+
+	template <typename P> struct abi_timespec
+	{
+		typename P::long_t tv_sec;
+		typename P::long_t tv_nsec;
+	};
+
+	template <typename P> struct abi_timeval
+	{
+		typename P::long_t tv_sec;
+		typename P::long_t tv_usec;
+	};
+
+	struct abi_timezone
+	{
+		int tz_minuteswest;
+		int tz_dsttime;
+	};
+
+	template <typename P> struct abi_tms
+	{
+		typename P::long_t tms_utime;
+		typename P::long_t tms_stime;
+		typename P::long_t tms_cutime;
+		typename P::long_t tms_cstime;
+	};
+
 	template <typename P> struct abi_rusage
 	{
 		abi_timeval<P> ru_utime;
@@ -280,29 +296,19 @@ namespace riscv {
 		typename P::long_t __reserved[16];
 	};
 
-	template <typename P> struct abi_rlimit
+	struct abi_rlimit
 	{
 		u64 rlim_cur;
 		u64 rlim_max;
 	};
 
-	template <typename P> struct abi_sysinfo
+	struct abi_winsize
 	{
-		typename P::ulong_t uptime;
-		typename P::ulong_t loads[3];
-		typename P::ulong_t totalram;
-		typename P::ulong_t freeram;
-		typename P::ulong_t sharedram;
-		typename P::ulong_t bufferram;
-		typename P::ulong_t totalswap;
-		typename P::ulong_t freeswap;
-		unsigned short procs, pad;
-		typename P::ulong_t totalhigh;
-		typename P::ulong_t freehigh;
-		typename P::uint_t mem_unit;
-		char __reserved[256];
+		unsigned short ws_row;
+		unsigned short ws_col;
+		unsigned short ws_xpixel;
+		unsigned short ws_ypixel;
 	};
-
 
 	template <typename P>
 	void cvt_abi_stat(abi_stat<P> *guest_stat, struct stat *host_stat)
@@ -502,7 +508,7 @@ namespace riscv {
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 		int fd;
 		switch(proc.ireg[rv_ireg_a0]) {
-			case abi_openat_AT_FDCWD:
+			case abi_AT_FDCWD:
 				fd = AT_FDCWD;
 				break;
 			default:
@@ -510,7 +516,7 @@ namespace riscv {
 				break;
 		}
 		int flag = 0;
-		if(proc.ireg[rv_ireg_a2].r.xu.val & abi_unlinkat_AT_REMOVEDIR) {
+		if(proc.ireg[rv_ireg_a2].r.xu.val & abi_AT_REMOVEDIR) {
 			flag |= AT_REMOVEDIR;
 		}
 		int ret = unlinkat(fd, pathname, flag);
@@ -527,7 +533,7 @@ namespace riscv {
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 		int fd;
 		switch(proc.ireg[rv_ireg_a0]) {
-			case abi_openat_AT_FDCWD:
+			case abi_AT_FDCWD:
 				fd = AT_FDCWD;
 				break;
 			default:
@@ -535,7 +541,7 @@ namespace riscv {
 				break;
 		}
 		int flag = 0;
-		if(proc.ireg[rv_ireg_a3].r.xu.val & abi_faccessat_AT_EACCESS) {
+		if(proc.ireg[rv_ireg_a3].r.xu.val & abi_AT_EACCESS) {
 			flag |= AT_EACCESS;
 		}
 		int ret = faccessat(fd, pathname, proc.ireg[rv_ireg_a2], flag);
@@ -552,7 +558,7 @@ namespace riscv {
 		const char* pathname = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 		int fd;
 		switch(proc.ireg[rv_ireg_a0]) {
-			case abi_openat_AT_FDCWD:
+			case abi_AT_FDCWD:
 				fd = AT_FDCWD;
 				break;
 			default:
@@ -685,7 +691,7 @@ namespace riscv {
 	{
 		int fd;
 		switch(proc.ireg[rv_ireg_a0]) {
-			case abi_openat_AT_FDCWD:
+			case abi_AT_FDCWD:
 				fd = AT_FDCWD;
 				break;
 			default:
@@ -708,7 +714,7 @@ namespace riscv {
 		struct stat host_stat;
 		int fd;
 		switch(proc.ireg[rv_ireg_a0]) {
-			case abi_openat_AT_FDCWD:
+			case abi_AT_FDCWD:
 				fd = AT_FDCWD;
 				break;
 			default:
@@ -716,7 +722,7 @@ namespace riscv {
 				break;
 		}
 		const char* path = (const char*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-		int abi_flags = (proc.ireg[rv_ireg_a3] == abi_fstatat_AT_SYMLINK_NOFOLLOW)
+		int abi_flags = (proc.ireg[rv_ireg_a3] == abi_AT_SYMLINK_NOFOLLOW)
 			? AT_SYMLINK_NOFOLLOW : 0;
 		memset(&host_stat, 0, sizeof(host_stat));
 		int ret = fstatat(fd, path, &host_stat, abi_flags);
@@ -915,7 +921,7 @@ namespace riscv {
 			guest_tp->tv_usec = host_tp.tv_usec;
 		}
 		if (proc.ireg[rv_ireg_a1].r.xu.val != 0) {
-			abi_timezone<P> *guest_tzp = (abi_timezone<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+			abi_timezone *guest_tzp = (abi_timezone*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
 			guest_tzp->tz_minuteswest = host_tzp.tz_minuteswest;
 			guest_tzp->tz_dsttime = host_tzp.tz_dsttime;
 		}
@@ -1136,8 +1142,8 @@ namespace riscv {
 				proc.ireg[rv_ireg_a0] = abi_errno_EINVAL;
 				return;
 		}
-		abi_rlimit<P> *guest_new_limit = (abi_rlimit<P>*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
-		abi_rlimit<P> *guest_old_limit = (abi_rlimit<P>*)(addr_t)proc.ireg[rv_ireg_a2].r.xu.val;
+		abi_rlimit *guest_new_limit = (abi_rlimit*)(addr_t)proc.ireg[rv_ireg_a1].r.xu.val;
+		abi_rlimit *guest_old_limit = (abi_rlimit*)(addr_t)proc.ireg[rv_ireg_a2].r.xu.val;
 		struct rlimit host_new_limit;
 		struct rlimit host_old_limit;
 		if (guest_old_limit) {
