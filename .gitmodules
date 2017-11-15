@@ -4,3 +4,6 @@
 [submodule "asmjit"]
 	path = third_party/asmjit
 	url = https://github.com/michaeljclark/asmjit.git
+[submodule "meta"]
+	path = meta
+	url = https://github.com/michaeljclark/riscv-meta.git
