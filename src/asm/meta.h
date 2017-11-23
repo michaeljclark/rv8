@@ -261,6 +261,7 @@ enum rv_csr
 	rv_csr_sideleg = 0x103,             /* Supervisor interrupt delegation register */
 	rv_csr_sie = 0x104,                 /* Supervisor interrupt-enable register */
 	rv_csr_stvec = 0x105,               /* Supervisor trap handler base address */
+	rv_csr_scounteren = 0x106,          /* Supervisor counter enable */
 	rv_csr_sscratch = 0x140,            /* Scratch register for supervisor trap handlers */
 	rv_csr_sepc = 0x141,                /* Supervisor exception program counter */
 	rv_csr_scause = 0x142,              /* Supervisor trap cause */
@@ -301,6 +302,7 @@ enum rv_csr
 	rv_csr_mideleg = 0x303,             /* Machine interrupt delegation register */
 	rv_csr_mie = 0x304,                 /* Machine interrupt-enable register */
 	rv_csr_mtvec = 0x305,               /* Machine trap-handler base address */
+	rv_csr_mcounteren = 0x306,          /* Machine counter enable */
 	rv_csr_mscratch = 0x340,            /* Scratch register for machine trap handlers */
 	rv_csr_mepc = 0x341,                /* Machine exception program counter */
 	rv_csr_mcause = 0x342,              /* Machine trap cause */
