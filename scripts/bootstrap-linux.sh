@@ -10,7 +10,6 @@ TOPDIR=$(pwd)
 ARCHIVE_DIR=${TOPDIR}/build/archive
 BUILD_DIR=${TOPDIR}/build/linux
 
-RISCV_LINUX_REPO=https://github.com/michaeljclark/riscv-linux.git
 RISCV_BBL_REPO=https://github.com/michaeljclark/bbl-lite.git
 
 BUSYBOX_VERSION=1.26.1
@@ -18,10 +17,10 @@ BUSYBOX_ARCHIVE=busybox-${BUSYBOX_VERSION}.tar.bz2
 BUSYBOX_URL=https://busybox.net/downloads/${BUSYBOX_ARCHIVE}
 BUSYBOX_BUILD_DIR=${TOPDIR}/build/busybox-${BUSYBOX_VERSION}
 
-LINUX_VERSION=4.6.2
-LINUX_ARCHIVE=linux-${LINUX_VERSION}.tar.xz
-LINUX_URL=https://cdn.kernel.org/pub/linux/kernel/v4.x/${LINUX_ARCHIVE}
-LINUX_BUILD_DIR=${TOPDIR}/build/linux-${LINUX_VERSION}
+LINUX_VERSION=4.6.2-riscv-a1
+LINUX_ARCHIVE=riscv-linux-${LINUX_VERSION}.tar.gz
+LINUX_URL=https://github.com/michaeljclark/riscv-linux/archive/v${LINUX_VERSION}.tar.gz
+LINUX_BUILD_DIR=${TOPDIR}/build/riscv-linux-${LINUX_VERSION}
 
 BBL_BUILD_DIR=${TOPDIR}/build/bbl-lite
 
@@ -91,25 +90,14 @@ echo "===[ Building Busybox ]==="
 
 if [ ! -f "${ARCHIVE_DIR}/${LINUX_ARCHIVE}" ]; then
 	echo "===[ Downloading Linux Kernel ]==="
-	curl -o ${ARCHIVE_DIR}/${LINUX_ARCHIVE} ${LINUX_URL}
+	curl -L -o ${ARCHIVE_DIR}/${LINUX_ARCHIVE} ${LINUX_URL}
 fi
 
 if [ ! -d "${LINUX_BUILD_DIR}" ]; then
 	echo "===[ Extracting Linux Kernel ]==="
 	(
 		cd build
-		tar xJf ${ARCHIVE_DIR}/${LINUX_ARCHIVE}
-	)
-fi
-
-if [ ! -d "${LINUX_BUILD_DIR}/.git" ]; then
-	echo "===[ Cloning RISC-V Linux Repository ]==="
-	(
-		cd  ${LINUX_BUILD_DIR}
-		git init
-		git remote add -t master origin ${RISCV_LINUX_REPO}
-		git fetch
-		git checkout -f -t origin/master
+		tar xzf ${ARCHIVE_DIR}/${LINUX_ARCHIVE}
 	)
 fi
 
