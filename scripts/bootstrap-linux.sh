@@ -10,7 +10,7 @@ TOPDIR=$(pwd)
 ARCHIVE_DIR=${TOPDIR}/build/archive
 BUILD_DIR=${TOPDIR}/build/linux
 
-RISCV_BBL_REPO=https://github.com/michaeljclark/bbl-lite.git
+RISCV_RISCV_PK_REPO=https://github.com/michaeljclark/riscv-pk.git
 
 BUSYBOX_VERSION=1.26.1
 BUSYBOX_ARCHIVE=busybox-${BUSYBOX_VERSION}.tar.bz2
@@ -22,7 +22,7 @@ LINUX_ARCHIVE=riscv-linux-${LINUX_VERSION}.tar.gz
 LINUX_URL=https://github.com/michaeljclark/riscv-linux/archive/v${LINUX_VERSION}.tar.gz
 LINUX_BUILD_DIR=${TOPDIR}/build/riscv-linux-${LINUX_VERSION}
 
-BBL_BUILD_DIR=${TOPDIR}/build/bbl-lite
+RISCV_PK_BUILD_DIR=${TOPDIR}/build/riscv-pk
 
 XCODE_DIR=/Applications/Xcode.app/
 XCODE_INCLUDE=${XCODE_DIR}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/
@@ -127,37 +127,37 @@ echo "===[ Building RISC-V Linux kernel ]==="
 )
 
 #
-# Download and build bbl-lite
+# Download and build riscv-pk
 #
 
-if [ ! -d "${BBL_BUILD_DIR}" ]; then
-	echo "===[ Cloning BBL-Lite Repository ]==="
+if [ ! -d "${RISCV_PK_BUILD_DIR}" ]; then
+	echo "===[ Cloning riscv-pk repository ]==="
 	(
 		cd build
-		git clone ${RISCV_BBL_REPO}
+		git clone --branch bbl-lite ${RISCV_RISCV_PK_REPO}
 	)
 fi
 
-if [ ! -d "${BBL_BUILD_DIR}/build" ]; then
-	echo "===[ Configuring BBL-Lite Repository ]==="
+if [ ! -d "${RISCV_PK_BUILD_DIR}/build" ]; then
+	echo "===[ Configuring riscv-pk repository ]==="
 	(
-		mkdir ${BBL_BUILD_DIR}/build
-		cd ${BBL_BUILD_DIR}/build
+		mkdir ${RISCV_PK_BUILD_DIR}/build
+		cd ${RISCV_PK_BUILD_DIR}/build
 		../configure --host=riscv64-unknown-elf --with-payload=${LINUX_BUILD_DIR}/vmlinux
 	)
 fi
 
-echo "===[ Building BBL-Lite Repository ]==="
+echo "===[ Building riscv-pk Repository ]==="
 (
-	cd ${BBL_BUILD_DIR}/build
+	cd ${RISCV_PK_BUILD_DIR}/build
 	make -j$NPROCS
 )
 
-echo "===[ Copying BBL-Lite to target directory ]==="
+echo "===[ Copying riscv-pk to target directory ]==="
 if [ ! -d "build/riscv64-unknown-elf/bin" ]; then
 	mkdir -p build/riscv64-unknown-elf/bin
 fi
-cp ${BBL_BUILD_DIR}/build/bbl build/riscv64-unknown-elf/bin/bbl
+cp ${RISCV_PK_BUILD_DIR}/build/bbl build/riscv64-unknown-elf/bin/bbl
 
 #
 # Ready to run
