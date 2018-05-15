@@ -131,6 +131,7 @@ namespace riscv
 	inst_t emit_mret();
 	inst_t emit_dret();
 	inst_t emit_sfence_vm(ireg5 rs1);
+	inst_t emit_sfence_vma(ireg5 rs1, ireg5 rs2);
 	inst_t emit_wfi();
 	inst_t emit_csrrw(ireg5 rd, ireg5 rs1, uimm12 csr12);
 	inst_t emit_csrrs(ireg5 rd, ireg5 rs1, uimm12 csr12);
@@ -357,6 +358,7 @@ namespace riscv
 	bool asm_mret(assembler &as);
 	bool asm_dret(assembler &as);
 	bool asm_sfence_vm(assembler &as, ireg5 rs1);
+	bool asm_sfence_vma(assembler &as, ireg5 rs1, ireg5 rs2);
 	bool asm_wfi(assembler &as);
 	bool asm_csrrw(assembler &as, ireg5 rd, ireg5 rs1, uimm12 csr12);
 	bool asm_csrrs(assembler &as, ireg5 rd, ireg5 rs1, uimm12 csr12);

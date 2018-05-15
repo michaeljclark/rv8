@@ -93,6 +93,7 @@ const rvc_constraint rvcc_c_nop[] = {
 
 const rvc_constraint rvcc_c_addi[] = {
 	rvc_simm_6,
+	rvc_imm_nz,
 	rvc_rd_ne_x0,
 	rvc_rd_eq_rs1,
 	rvc_end
@@ -106,14 +107,14 @@ const rvc_constraint rvcc_c_jal[] = {
 };
 
 const rvc_constraint rvcc_c_li[] = {
-	rvc_imm_6,
+	rvc_simm_6,
 	rvc_rd_ne_x0,
 	rvc_rs1_eq_x0,
 	rvc_end
 };
 
 const rvc_constraint rvcc_c_addi16sp[] = {
-	rvc_imm_10,
+	rvc_simm_10,
 	rvc_imm_x4,
 	rvc_imm_nz,
 	rvc_rd_eq_sp,
@@ -129,6 +130,7 @@ const rvc_constraint rvcc_c_lui[] = {
 };
 
 const rvc_constraint rvcc_c_srli_rv32c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_eq_rs1,
 	rvc_rd_b3,
@@ -137,6 +139,7 @@ const rvc_constraint rvcc_c_srli_rv32c[] = {
 };
 
 const rvc_constraint rvcc_c_srai_rv32c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_eq_rs1,
 	rvc_rd_b3,
@@ -145,6 +148,7 @@ const rvc_constraint rvcc_c_srai_rv32c[] = {
 };
 
 const rvc_constraint rvcc_c_andi[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_eq_rs1,
 	rvc_rd_b3,
@@ -201,14 +205,14 @@ const rvc_constraint rvcc_c_addw[] = {
 };
 
 const rvc_constraint rvcc_c_j[] = {
-	rvc_imm_12,
+	rvc_simm_12,
 	rvc_imm_x2,
 	rvc_rd_eq_x0,
 	rvc_end
 };
 
 const rvc_constraint rvcc_c_beqz[] = {
-	rvc_imm_9,
+	rvc_simm_9,
 	rvc_imm_x2,
 	rvc_rs1_b3,
 	rvc_rs2_eq_x0,
@@ -216,7 +220,7 @@ const rvc_constraint rvcc_c_beqz[] = {
 };
 
 const rvc_constraint rvcc_c_bnez[] = {
-	rvc_imm_9,
+	rvc_simm_9,
 	rvc_imm_x2,
 	rvc_rs1_b3,
 	rvc_rs2_eq_x0,
@@ -224,6 +228,7 @@ const rvc_constraint rvcc_c_bnez[] = {
 };
 
 const rvc_constraint rvcc_c_slli_rv32c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_ne_x0,
 	rvc_rd_eq_rs1,
@@ -253,6 +258,7 @@ const rvc_constraint rvcc_c_flwsp[] = {
 };
 
 const rvc_constraint rvcc_c_jr[] = {
+	rvc_imm_eq_zero,
 	rvc_rd_eq_x0,
 	rvc_rs1_ne_x0,
 	rvc_end
@@ -269,6 +275,7 @@ const rvc_constraint rvcc_c_ebreak[] = {
 };
 
 const rvc_constraint rvcc_c_jalr[] = {
+	rvc_imm_eq_zero,
 	rvc_rd_eq_ra,
 	rvc_rs1_ne_x0,
 	rvc_end
@@ -319,13 +326,14 @@ const rvc_constraint rvcc_c_sd[] = {
 };
 
 const rvc_constraint rvcc_c_addiw[] = {
-	rvc_imm_6,
+	rvc_simm_6,
 	rvc_rd_ne_x0,
 	rvc_rd_eq_rs1,
 	rvc_end
 };
 
 const rvc_constraint rvcc_c_srli_rv64c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_eq_rs1,
 	rvc_rd_b3,
@@ -334,6 +342,7 @@ const rvc_constraint rvcc_c_srli_rv64c[] = {
 };
 
 const rvc_constraint rvcc_c_srai_rv64c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_eq_rs1,
 	rvc_rd_b3,
@@ -342,6 +351,7 @@ const rvc_constraint rvcc_c_srai_rv64c[] = {
 };
 
 const rvc_constraint rvcc_c_slli_rv64c[] = {
+	rvc_imm_5,
 	rvc_imm_nz,
 	rvc_rd_ne_x0,
 	rvc_rd_eq_rs1,
@@ -1378,6 +1388,12 @@ const rv_operand_data rv_operands_sx_rs1_f64_frs2_T_simm12[] = {
 	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
 };
 
+const rv_operand_data rv_operands_sx_rs1_sx_rs2[] = {
+	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_rs2, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
+	{ rv_operand_name_none, rv_operand_type_none, rv_primitive_none, rv_type_none, 0 }
+};
+
 const rv_operand_data rv_operands_sx_rs1_sx_rs2_T_sbimm12[] = {
 	{ rv_operand_name_rs1, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
 	{ rv_operand_name_rs2, rv_operand_type_ireg5, rv_primitive_sx, rv_type_ireg, 5 },
@@ -1571,6 +1587,7 @@ const rv_codec rv_inst_codec[] = {
 	/*                 mret */ rv_codec_none,
 	/*                 dret */ rv_codec_none,
 	/*            sfence.vm */ rv_codec_r,
+	/*           sfence.vma */ rv_codec_r,
 	/*                  wfi */ rv_codec_none,
 	/*                csrrw */ rv_codec_i_csr,
 	/*                csrrs */ rv_codec_i_csr,
@@ -1892,6 +1909,7 @@ const char* rv_inst_format[] = {
 	/*                 mret */ rv_fmt_none,
 	/*                 dret */ rv_fmt_none,
 	/*            sfence.vm */ rv_fmt_rs1,
+	/*           sfence.vma */ rv_fmt_rs1_rs2,
 	/*                  wfi */ rv_fmt_none,
 	/*                csrrw */ rv_fmt_rd_csr_rs1,
 	/*                csrrs */ rv_fmt_rd_csr_rs1,
@@ -2213,6 +2231,7 @@ const rv_operand_data* rv_inst_operand_data[] = {
 	/*                 mret */ rv_operands_none,
 	/*                 dret */ rv_operands_none,
 	/*            sfence.vm */ rv_operands_sx_rs1,
+	/*           sfence.vma */ rv_operands_sx_rs1_sx_rs2,
 	/*                  wfi */ rv_operands_none,
 	/*                csrrw */ rv_operands_sx_rd_sx_rs1_T_csr12,
 	/*                csrrs */ rv_operands_sx_rd_sx_rs1_T_csr12,
@@ -2534,6 +2553,7 @@ const riscv::inst_t rv_inst_match[] = {
 	/*                 mret */ 0x0000000030200073,
 	/*                 dret */ 0x000000007b200073,
 	/*            sfence.vm */ 0x0000000010400073,
+	/*           sfence.vma */ 0x0000000012000073,
 	/*                  wfi */ 0x0000000010500073,
 	/*                csrrw */ 0x0000000000001073,
 	/*                csrrs */ 0x0000000000002073,
@@ -2855,6 +2875,7 @@ const riscv::inst_t rv_inst_mask[] = {
 	/*                 mret */ 0x00000000ffffffff,
 	/*                 dret */ 0x00000000ffffffff,
 	/*            sfence.vm */ 0x00000000fff07fff,
+	/*           sfence.vma */ 0x00000000fe007fff,
 	/*                  wfi */ 0x00000000ffffffff,
 	/*                csrrw */ 0x000000000000707f,
 	/*                csrrs */ 0x000000000000707f,
@@ -3091,7 +3112,7 @@ const rvc_constraint rvcc_negw[] = {
 };
 
 const rvc_constraint rvcc_sext_w[] = {
-	rvc_rs2_eq_x0,
+	rvc_imm_eq_zero,
 	rvc_end
 };
 
@@ -3588,6 +3609,7 @@ const rv_comp_data* rv_inst_pseudo[] = {
 	/*                 mret */ nullptr,
 	/*                 dret */ nullptr,
 	/*            sfence.vm */ nullptr,
+	/*           sfence.vma */ nullptr,
 	/*                  wfi */ nullptr,
 	/*                csrrw */ rvcp_csrrw,
 	/*                csrrs */ rvcp_csrrs,
@@ -3909,6 +3931,7 @@ const rv_comp_data rv_inst_depseudo[] = {
 	/*                 mret */ { rv_op_illegal, nullptr },
 	/*                 dret */ { rv_op_illegal, nullptr },
 	/*            sfence.vm */ { rv_op_illegal, nullptr },
+	/*           sfence.vma */ { rv_op_illegal, nullptr },
 	/*                  wfi */ { rv_op_illegal, nullptr },
 	/*                csrrw */ { rv_op_illegal, nullptr },
 	/*                csrrs */ { rv_op_illegal, nullptr },
@@ -4230,6 +4253,7 @@ const rv_comp_data* rv_inst_comp_rv32[] = {
 	/*                 mret */ nullptr,
 	/*                 dret */ nullptr,
 	/*            sfence.vm */ nullptr,
+	/*           sfence.vma */ nullptr,
 	/*                  wfi */ nullptr,
 	/*                csrrw */ nullptr,
 	/*                csrrs */ nullptr,
@@ -4551,6 +4575,7 @@ const rv_comp_data* rv_inst_comp_rv64[] = {
 	/*                 mret */ nullptr,
 	/*                 dret */ nullptr,
 	/*            sfence.vm */ nullptr,
+	/*           sfence.vma */ nullptr,
 	/*                  wfi */ nullptr,
 	/*                csrrw */ nullptr,
 	/*                csrrs */ nullptr,
@@ -4872,6 +4897,7 @@ const rv_comp_data* rv_inst_comp_rv128[] = {
 	/*                 mret */ nullptr,
 	/*                 dret */ nullptr,
 	/*            sfence.vm */ nullptr,
+	/*           sfence.vma */ nullptr,
 	/*                  wfi */ nullptr,
 	/*                csrrw */ nullptr,
 	/*                csrrs */ nullptr,
@@ -5193,6 +5219,7 @@ const int rv_inst_decomp_rv32[] = {
 	/*                 mret */ rv_op_illegal,
 	/*                 dret */ rv_op_illegal,
 	/*            sfence.vm */ rv_op_illegal,
+	/*           sfence.vma */ rv_op_illegal,
 	/*                  wfi */ rv_op_illegal,
 	/*                csrrw */ rv_op_illegal,
 	/*                csrrs */ rv_op_illegal,
@@ -5514,6 +5541,7 @@ const int rv_inst_decomp_rv64[] = {
 	/*                 mret */ rv_op_illegal,
 	/*                 dret */ rv_op_illegal,
 	/*            sfence.vm */ rv_op_illegal,
+	/*           sfence.vma */ rv_op_illegal,
 	/*                  wfi */ rv_op_illegal,
 	/*                csrrw */ rv_op_illegal,
 	/*                csrrs */ rv_op_illegal,
@@ -5835,6 +5863,7 @@ const int rv_inst_decomp_rv128[] = {
 	/*                 mret */ rv_op_illegal,
 	/*                 dret */ rv_op_illegal,
 	/*            sfence.vm */ rv_op_illegal,
+	/*           sfence.vma */ rv_op_illegal,
 	/*                  wfi */ rv_op_illegal,
 	/*                csrrw */ rv_op_illegal,
 	/*                csrrs */ rv_op_illegal,

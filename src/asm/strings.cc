@@ -202,6 +202,7 @@ const char* rv_inst_name_sym[] = {
 	"mret",
 	"dret",
 	"sfence.vm",
+	"sfence.vma",
 	"wfi",
 	"csrrw",
 	"csrrs",

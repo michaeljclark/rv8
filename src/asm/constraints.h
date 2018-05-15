@@ -15,13 +15,17 @@ inline bool constraint_check(T &dec, const rvc_constraint *c)
 	while (*c != rvc_end) {
 		switch (*c) {
 			case rvc_simm_6:         if (!(imm >= -32 && imm < 32)) return false; break;
-			case rvc_imm_6:          if (!(imm <= 0b111111)) return false; break;
-			case rvc_imm_7:          if (!(imm <= 0b1111111)) return false; break;
-			case rvc_imm_8:          if (!(imm <= 0b11111111)) return false; break;
-			case rvc_imm_9:          if (!(imm <= 0b111111111)) return false; break;
-			case rvc_imm_10:         if (!(imm <= 0b1111111111)) return false; break;
-			case rvc_imm_12:         if (!(imm <= 0b111111111111)) return false; break;
-			case rvc_imm_18:         if (!(imm <= 0b111111111111111111)) return false; break;
+			case rvc_simm_9:         if (!(imm >= -256 && imm < 256)) return false; break;
+			case rvc_simm_10:        if (!(imm >= -512 && imm < 512)) return false; break;
+			case rvc_simm_12:        if (!(imm >= -2048 && imm < 2048)) return false; break;
+			case rvc_imm_5:          if (!(imm >= 0 && imm <= 0b11111)) return false; break;
+			case rvc_imm_6:          if (!(imm >= 0 && imm <= 0b111111)) return false; break;
+			case rvc_imm_7:          if (!(imm >= 0 && imm <= 0b1111111)) return false; break;
+			case rvc_imm_8:          if (!(imm >= 0 && imm <= 0b11111111)) return false; break;
+			case rvc_imm_9:          if (!(imm >= 0 && imm <= 0b111111111)) return false; break;
+			case rvc_imm_10:         if (!(imm >= 0 && imm <= 0b1111111111)) return false; break;
+			case rvc_imm_12:         if (!(imm >= 0 && imm <= 0b111111111111)) return false; break;
+			case rvc_imm_18:         if (!(imm >= 0 && imm <= 0b111111111111111111)) return false; break;
 			case rvc_imm_nz:         if (!(imm != 0)) return false; break;
 			case rvc_imm_x2:         if (!((imm & 0b1) == 0)) return false; break;
 			case rvc_imm_x4:         if (!((imm & 0b11) == 0)) return false; break;

@@ -616,58 +616,54 @@ inline opcode_t decode_inst_op(riscv::inst_t inst)
 					break;
 				case 27: if (rvi) op = rv_op_jal; break;
 				case 28:
-					// ecall ebreak uret sret hret mret dret sfence.vm wfi csrrw csrrs csrrc ...
+					// ecall ebreak uret sret hret mret dret sfence.vm sfence.vma wfi csrrw csrrs ...
 					switch (((inst >> 12) & 0b111) /* inst[14:12] */) {
 						case 0:
-							// ecall ebreak uret sret hret mret dret sfence.vm wfi
-							switch (((inst >> 15) & 0b11111111111100000) | ((inst >> 7) & 0b00000000000011111) /* inst[31:20|11:7] */) {
+							// ecall ebreak uret sret hret mret dret sfence.vm sfence.vma wfi
+							switch (((inst >> 20) & 0b111111100000) | ((inst >> 7) & 0b000000011111) /* inst[31:25|11:7] */) {
 								case 0:
-									// ecall
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+									// ecall ebreak uret
+									switch (((inst >> 15) & 0b1111111111) /* inst[24:15] */) {
 										case 0: if (rvs) op = rv_op_ecall; break;
+										case 32: if (rvs) op = rv_op_ebreak; break;
+										case 64: if (rvs) op = rv_op_uret; break;
 									}
 									break;
-								case 32:
-									// ebreak
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_ebreak; break;
+								case 256:
+									// sret sfence.vm wfi
+									switch (((inst >> 20) & 0b11111) /* inst[24:20] */) {
+										case 2:
+											// sret
+											switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+												case 0: if (rvs) op = rv_op_sret; break;
+											}
+											break;
+										case 4: if (rvs) op = rv_op_sfence_vm; break;
+										case 5:
+											// wfi
+											switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
+												case 0: if (rvs) op = rv_op_wfi; break;
+											}
+											break;
 									}
 									break;
-								case 64:
-									// uret
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_uret; break;
-									}
-									break;
-								case 8256:
-									// sret
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_sret; break;
-									}
-									break;
-								case 8320: if (rvs) op = rv_op_sfence_vm; break;
-								case 8352:
-									// wfi
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_wfi; break;
-									}
-									break;
-								case 16448:
+								case 288: if (rvs) op = rv_op_sfence_vma; break;
+								case 512:
 									// hret
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_hret; break;
+									switch (((inst >> 15) & 0b1111111111) /* inst[24:15] */) {
+										case 64: if (rvs) op = rv_op_hret; break;
 									}
 									break;
-								case 24640:
+								case 768:
 									// mret
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_mret; break;
+									switch (((inst >> 15) & 0b1111111111) /* inst[24:15] */) {
+										case 64: if (rvs) op = rv_op_mret; break;
 									}
 									break;
-								case 63040:
+								case 1952:
 									// dret
-									switch (((inst >> 15) & 0b11111) /* inst[19:15] */) {
-										case 0: if (rvs) op = rv_op_dret; break;
+									switch (((inst >> 15) & 0b1111111111) /* inst[24:15] */) {
+										case 576: if (rvs) op = rv_op_dret; break;
 									}
 									break;
 							}

@@ -1389,6 +1389,16 @@ inst_t riscv::emit_sfence_vm(ireg5 rs1)
 	return encode_inst(dec);
 }
 
+inst_t riscv::emit_sfence_vma(ireg5 rs1, ireg5 rs2)
+{
+	decode dec;
+	if (!(rs1.valid() && rs2.valid())) return 0; /* illegal instruction */
+	dec.op = rv_op_sfence_vma;
+	dec.rs1 = rs1;
+	dec.rs2 = rs2;
+	return encode_inst(dec);
+}
+
 inst_t riscv::emit_wfi()
 {
 	decode dec;
@@ -4031,6 +4041,17 @@ bool riscv::asm_sfence_vm(assembler &as, ireg5 rs1)
 	if (!(rs1.valid())) return false; /* illegal instruction */
 	dec.op = rv_op_sfence_vm;
 	dec.rs1 = rs1;
+	as.add_inst(encode_inst(dec));
+	return true;
+}
+
+bool riscv::asm_sfence_vma(assembler &as, ireg5 rs1, ireg5 rs2)
+{
+	decode dec;
+	if (!(rs1.valid() && rs2.valid())) return false; /* illegal instruction */
+	dec.op = rv_op_sfence_vma;
+	dec.rs1 = rs1;
+	dec.rs2 = rs2;
 	as.add_inst(encode_inst(dec));
 	return true;
 }
