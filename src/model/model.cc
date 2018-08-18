@@ -749,11 +749,11 @@ bool rv_meta_model::is_extension(std::string mnem)
 
 void rv_meta_model::parse_operand(std::vector<std::string> &part)
 {
-	if (part.size() < 6) {
-		panic("operands requires 6 parameters: %s", join(part, " ").c_str());
+	if (part.size() < 4) {
+		panic("operands requires 4 parameters: %s", join(part, " ").c_str());
 	}
 	auto operand = operands_by_name[part[0]] = std::make_shared<rv_operand>(
-		part[0], part[1], part[2], part[3], part[4], part[5]
+		part[0], part[1], part[2], part[3]
 	);
 	operands.push_back(operand);
 }
@@ -761,7 +761,7 @@ void rv_meta_model::parse_operand(std::vector<std::string> &part)
 void rv_meta_model::parse_enum(std::vector<std::string> &part)
 {
 	if (part.size() < 5) {
-		panic("operands requires 5 parameters: %s", join(part, " ").c_str());
+		panic("enums requires 5 parameters: %s", join(part, " ").c_str());
 	}
 	auto enumv = enums_by_name[part[0]] = std::make_shared<rv_enum>(
 		part[0], part[1], part[2], part[3], decode_version_spec(part[4])

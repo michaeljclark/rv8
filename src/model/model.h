@@ -177,13 +177,10 @@ struct rv_operand
 	rv_bitspec bitspec;
 	std::string type;
 	std::string label;
-	std::string fg_color;
-	std::string bg_color;
 
 	rv_operand(std::string name, std::string bitspec, std::string type,
-		  std::string label, std::string fg_color, std::string bg_color)
-		: name(name), bitspec(bitspec), type(type),
-		  label(label), fg_color(fg_color), bg_color(bg_color) {}
+		  std::string label)
+		: name(name), bitspec(bitspec), type(type), label(label) {}
 
 	std::string char_code() {
 		if (type == "ireg") return "R";
@@ -194,6 +191,32 @@ struct rv_operand
 		else if (type == "uimm") return "U";
 		else if (type == "offset") return "O";
 		else return "?";
+	}
+
+	std::string fg_color() {
+		if (name.find("rd") != std::string::npos ||
+			name.find("rs1") != std::string::npos ||
+			name.find("rs2") != std::string::npos ||
+			name.find("rs2") != std::string::npos)
+		{
+			return "white";
+		} else {
+			return "green";
+		}
+	}
+
+	std::string bg_color() {
+		if (name.find("rd") != std::string::npos) {
+			return "magenta";
+		} else if (name.find("rs1") != std::string::npos) {
+			return "cyan";
+		} else if (name.find("rs2") != std::string::npos) {
+			return "green";
+		} else if (name.find("rs3") != std::string::npos) {
+			return "yellow";
+		} else {
+			return "none";
+		}
 	}
 };
 
