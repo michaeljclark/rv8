@@ -126,7 +126,7 @@ static void print_map(rv_gen *gen)
 				default:
 				{
 					rv_operand_ptr operand = opcode->find_operand(bit);
-					if (operand) {
+					if (operand && opcode->name[0] != '@') {
 						printf("%s%s%s",
 							enable_colorize ? rv_colors_to_ansi_escape_sequence(
 								operand->fg_color(), operand->bg_color()
