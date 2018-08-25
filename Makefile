@@ -585,27 +585,27 @@ $(TEST_CC_SRC): $(RV_META_BIN) $(RV_META_DATA)
 # lib targets
 
 $(ASMJIT_LIB): $(ASMJIT_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_ASM_LIB): $(RV_ASM_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_ELF_LIB): $(RV_ELF_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_MODEL_LIB): $(RV_MODEL_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_GEN_LIB): $(RV_GEN_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 $(RV_UTIL_LIB): $(RV_UTIL_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, AR $@, $(AR) cr $@ $^)
 
 # mmap interception
@@ -625,77 +625,77 @@ $(MMAP_MACOS_OBJS): CFLAGS += -fPIC
 $(MMAP_LINUX_OBJS): CFLAGS += -fPIC
 
 $(MMAP_MACOS_LIB): $(MMAP_MACOS_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, DYLIB $@, $(CC) $(MMAP_MACOS_LDFLAGS) -o $@ $^)
 
 $(MMAP_LINUX_LIB): $(MMAP_LINUX_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, SOLIB $@, $(CC) $(MMAP_LINUX_LDFLAGS) -o $@ $^ -ldl)
 
 # binary targets
 
 $(RV_META_BIN): $(RV_META_OBJS) $(RV_MODEL_LIB) $(RV_GEN_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(RV_BIN_BIN): $(RV_BIN_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(RV_JIT_BIN): $(RV_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
 $(RV_SIM_BIN): $(RV_SIM_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(MMAP_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
 $(RV_SYS_BIN): $(RV_SYS_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_BITS_BIN): $(TEST_BITS_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENCODER_BIN): $(TEST_ENCODER_OBJS) $(RV_ASM_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_ENDIAN_BIN): $(TEST_ENDIAN_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_JIT_BIN): $(TEST_JIT_OBJS) $(RV_ASM_LIB) $(RV_ELF_LIB) $(RV_UTIL_LIB) $(ASMJIT_LIB) $(MMAP_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_MMAP_BIN): $(TEST_MMAP_OBJS) $(MMAP_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) $(MMAP_FLAGS) -o $@)
 
 $(TEST_MMU_BIN): $(TEST_MMU_OBJS) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_MUL_BIN): $(TEST_MUL_OBJS)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_OPERATORS_BIN): $(TEST_OPERATORS_OBJS) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_PRINTF_BIN): $(TEST_PRINTF_OBJS) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_RAND_BIN): $(TEST_RAND_OBJS) $(RV_UTIL_LIB)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, LD $@, $(LD) $^ $(LDFLAGS) -o $@)
 
 $(TEST_CC_ASM): $(TEST_CC_SRC)
-	@mkdir -p $(shell dirname $@) ;
+	@mkdir -p $(@D) ;
 	$(call cmd, CXXASM $@, $(CXX) -fno-omit-frame-pointer $(CXXFLAGS) $^ -S -o $@)
 
 # build recipes
@@ -705,19 +705,19 @@ else
 cmd = @echo "$1"; $2
 endif
 
-$(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(shell dirname $@) ;
+$(OBJ_DIR)/%.o : $(ASMJIT_SRC_DIR)/%.cpp ; @mkdir -p $(@D) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
 
-$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cc ; @mkdir -p $(@D) ;
 	$(call cmd, CXX $@, $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@)
-$(DEP_DIR)/%.cc.P : $(SRC_DIR)/%.cc ; @mkdir -p $(shell dirname $@) ;
+$(DEP_DIR)/%.cc.P : $(SRC_DIR)/%.cc ; @mkdir -p $(@D) ;
 	$(call cmd, MKDEP $@, $(CXX) $(CXXFLAGS) -E -MM $< 2> /dev/null | \
 		( SUB_DIR=$(subst $(DEP_DIR),,$(shell dirname $@)); \
 			sed "s#\(.*\)\.o#$(OBJ_DIR)$${SUB_DIR}/\1.o $(DEP_DIR)$${SUB_DIR}/\1.cc.P#"  > $@) )
 
-$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c ; @mkdir -p $(@D) ;
 	$(call cmd, CC $@, $(CC) $(CCFLAGS) $(CPPFLAGS) -c $< -o $@)
-$(DEP_DIR)/%.c.P : $(SRC_DIR)/%.c ; @mkdir -p $(shell dirname $@) ;
+$(DEP_DIR)/%.c.P : $(SRC_DIR)/%.c ; @mkdir -p $(@D) ;
 	$(call cmd, MKDEP $@, $(CC) $(CCFLAGS) -E -MM $< 2> /dev/null | \
 		( SUB_DIR=$(subst $(DEP_DIR),,$(shell dirname $@)); \
 			sed "s#\(.*\)\.o#$(OBJ_DIR)$${SUB_DIR}/\1.o $(DEP_DIR)$${SUB_DIR}/\1.c.P#"  > $@) )
