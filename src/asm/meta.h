@@ -314,9 +314,9 @@ enum rv_csr
 	rv_csr_mtval = 0x343,               /* Machine bad address or instruction */
 	rv_csr_mip = 0x344,                 /* Machine interrupt pending */
 	rv_csr_pmpcfg0 = 0x3A0,             /* Physical memory protection configuration */
-	rv_csr_pmpcfg1 = 0x3A0,             /* Physical memory protection configuration (RV32 only) */
-	rv_csr_pmpcfg2 = 0x3A0,             /* Physical memory protection configuration */
-	rv_csr_pmpcfg3 = 0x3A0,             /* Physical memory protection configuration (RV32 only) */
+	rv_csr_pmpcfg1 = 0x3A1,             /* Physical memory protection configuration (RV32 only) */
+	rv_csr_pmpcfg2 = 0x3A2,             /* Physical memory protection configuration */
+	rv_csr_pmpcfg3 = 0x3A3,             /* Physical memory protection configuration (RV32 only) */
 	rv_csr_pmpaddr0 = 0x3B0,            /* Physical memory protection address register */
 	rv_csr_pmpaddr1 = 0x3B1,            /* Physical memory protection address register */
 	rv_csr_pmpaddr2 = 0x3B2,            /* Physical memory protection address register */
