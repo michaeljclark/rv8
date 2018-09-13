@@ -36,7 +36,7 @@ namespace riscv {
 		struct { u32 val; } xu;
 		struct {
 			u32 pg_off : 12;
-			u32 vpn    : 10; /* 10,10 */
+			u32 vpn    : 20; /* 10,10 */
 		} va;
 	};
 
@@ -45,7 +45,7 @@ namespace riscv {
 		struct {
 			u64 pg_off  : 12;
 			u64 ppn     : 22; /* 12,10 */
-			u64 rsrv_30 : 30;
+			u64 rsrv    : 30;
 		} pa;
 	};
 
@@ -75,8 +75,8 @@ namespace riscv {
 		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
-			u64 vpn_0   : 27; /* 9,9,9 */
-			u64 rsrv_25 : 25;
+			u64 vpn     : 27; /* 9,9,9 */
+			u64 rsrv    : 25;
 		} va;
 	};
 
@@ -84,8 +84,8 @@ namespace riscv {
 		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
-			u64 ppn     : 38; /* 20,9,9 */
-			u64 rsrv_14 : 14;
+			u64 ppn     : 44; /* 26,9,9 */
+			u64 rsrv    : 8;
 		} pa;
 	};
 
@@ -93,8 +93,8 @@ namespace riscv {
 		struct { u64 val; } xu;
 		struct {
 			u64 flags   : 10;
-			u64 ppn     : 38; /* 20,9,9 */
-			u64 rsrv_16 : 16;
+			u64 ppn     : 44; /* 26,9,9 */
+			u64 rsrv    : 10;
 		} val;
 	};
 
@@ -125,8 +125,8 @@ namespace riscv {
 		struct { u64 val; } xu;
 		struct {
 			u64 pg_off  : 12;
-			u64 ppn     : 38; /* 11,9,9,9 */
-			u64 rsrv_14 : 14;
+			u64 ppn     : 44; /* 17,9,9,9 */
+			u64 rsrv    : 8;
 		} pa;
 	};
 
@@ -134,8 +134,8 @@ namespace riscv {
 		struct { u64 val; } xu;
 		struct {
 			u64 flags   : 10;
-			u64 ppn     : 38; /* 11,9,9,9 */
-			u64 rsrv_16 : 16;
+			u64 ppn     : 44; /* 17,9,9,9 */
+			u64 rsrv    : 10;
 		} val;
 	};
 
