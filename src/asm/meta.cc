@@ -3276,7 +3276,7 @@ const rvc_constraint rvcc_rdtimeh[] = {
 
 const rvc_constraint rvcc_rdinstreth[] = {
 	rvc_rs1_eq_x0,
-	rvc_csr_eq_0xc80,
+	rvc_csr_eq_0xc82,
 	rvc_end
 };
 
