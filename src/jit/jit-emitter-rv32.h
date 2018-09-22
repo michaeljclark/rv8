@@ -573,9 +573,6 @@ namespace riscv {
 					}
 				}
 			}
-			else if (rdx > 0 && rs1x > 0 && rs2x > 0) {
-				as.lea(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), x86::gpd(rs2x)));
-			}
 			else if (rdx < 0 && (rs1x < 0 || rs2x < 0)) {
 				emit_mv_eax_rs1(dec);
 				if (rs2x > 0) {
@@ -858,7 +855,7 @@ namespace riscv {
 				as.test(x86::eax, x86::eax);
 				as.setz(x86::dl);
 				as.movzx(x86::edx, x86::dl);
-				as.lea(x86::edx, x86::dword_ptr(x86::edx, x86::ecx));
+				as.add(x86::edx, x86::ecx);
 				as.jmp(out);
 
 				/* unsigned multiply */
@@ -1610,9 +1607,6 @@ namespace riscv {
 			}
 			else if (dec.imm == 0) {
 				emit_mv_rd_rs1(dec);
-			}
-			else if (rdx > 0 && rs1x > 0) {
-				as.lea(x86::gpd(rdx), x86::dword_ptr(x86::gpd(rs1x), int32_t(dec.imm)));
 			}
 			else {
 				emit_mv_rd_rs1(dec);
