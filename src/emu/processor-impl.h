@@ -179,6 +179,9 @@ namespace riscv {
 				P::ireg[i].r.xu.val = *(u64*)(random + (rand_bytes & (SHA512_OUTPUT_BYTES - 1)));
 				rand_bytes += 8;
 			}
+
+			/* libc will register a0 into exit handler. We don't need it, so keep it as zero */
+			P::ireg[rv_ireg_a0].r.xu.val = 0;
 		}
 
 		std::string format_operands(T &dec)
