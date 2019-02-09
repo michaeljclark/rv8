@@ -112,6 +112,8 @@ namespace riscv {
 		abi_fcntl_F_DUPFD_CLOEXEC = 1030,
 
 		abi_ioctl_TIOCGWINSZ = 0x5413,
+        abi_ioctl_FBIOGET_VSCREENINFO = 0x4600,
+        abi_ioctl_FBIOGET_FSCREENINFO = 0x4602,
 
 		abi_mmap_PROT_READ = 1,
 		abi_mmap_PROT_WRITE = 2,
@@ -493,6 +495,30 @@ namespace riscv {
 				proc.ireg[rv_ireg_a0] = cvt_error(ret);
 				break;
 			}
+            case abi_ioctl_FBIOGET_VSCREENINFO: {
+                int ret = ioctl(
+                    (long)proc.ireg[rv_ireg_a0],
+                    FBIOGET_VSCREENINFO,
+                    (void*)proc.ireg[rv_ireg_a2].r.xu.val);
+				if (proc.log & proc_log_syscall) {
+					printf("ioctl(%ld,FBIOGET_VSCREENINFO,%ld) = %d\n",
+						(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a2], cvt_error(ret));
+				}
+                proc.ireg[rv_ireg_a0] = cvt_error(ret);
+                break;
+            }
+            case abi_ioctl_FBIOGET_FSCREENINFO: {
+                int ret = ioctl(
+                    (long)proc.ireg[rv_ireg_a0],
+                    FBIOGET_FSCREENINFO,
+                    (void*)proc.ireg[rv_ireg_a2].r.xu.val);
+				if (proc.log & proc_log_syscall) {
+					printf("ioctl(%ld,FBIOGET_FSCREENINFO,%ld) = %d\n",
+						(long)proc.ireg[rv_ireg_a0], (long)proc.ireg[rv_ireg_a2], cvt_error(ret));
+				}
+                proc.ireg[rv_ireg_a0] = cvt_error(ret);
+                break;
+            }
 			default:
 				if (proc.log & proc_log_syscall) {
 					printf("ioctl(%ld,%ld) = %d\n",
