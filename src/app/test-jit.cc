@@ -46,6 +46,7 @@
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
 #include <sys/resource.h>
+#include <linux/fb.h>
 
 #include "host-endian.h"
 #include "types.h"
