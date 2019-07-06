@@ -148,7 +148,7 @@ make CXX=g++-6 CC=gcc-6
 
 ![ASCII map screenshot](/doc/images/screenshot-1.png)
 
-*Example ASCII map output from make map*
+*Example ASCII map output from make map (using `rv-meta` tool)*
 
 ![Histogram screenshot](/doc/images/screenshot-2.png)
 
@@ -170,7 +170,7 @@ See [RISC-V Instruction Set Listing](/doc/pdf/riscv-instructions.pdf) and
 
 Command                | Description
 ----                   | ---
-```make map```         | print a colour opcode map
+```make map```         | print a colour opcode map (using _`rv-meta`_ tool)
 ```make latex```       | output a LaTeX opcode tex
 ```make pdf```         | output a LaTeX opcode pdf
 ```make test-spike```  | run the ABI Proxy Simulator tests with _`spike`_
