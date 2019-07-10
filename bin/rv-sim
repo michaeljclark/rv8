@@ -1,6 +1,7 @@
 #!/bin/sh
+BASEDIR="$(dirname "$(dirname "$(readlink -f "$0")")")"
 OS=$(uname -s | sed 's/ /_/' | tr A-Z a-z)
 CPU=$(uname -m | sed 's/ /_/' | tr A-Z a-z)
-test "$OS" = "darwin" &&  export DYLD_LIBRARY_PATH=build/${OS}_${CPU}/lib
-test "$OS" = "linux" &&  export LD_LIBRARY_PATH=build/${OS}_${CPU}/lib
-exec build/${OS}_${CPU}/bin/rv-sim "$@"
+test "$OS" = "darwin" &&  export DYLD_LIBRARY_PATH=${BASEDIR}/build/${OS}_${CPU}/lib
+test "$OS" = "linux" &&  export LD_LIBRARY_PATH=${BASEDIR}/build/${OS}_${CPU}/lib
+exec ${BASEDIR}/build/${OS}_${CPU}/bin/rv-sim "$@"
