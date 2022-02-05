@@ -12,6 +12,7 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <limits>
 
 #include "util.h"
 #include "cmdline.h"
